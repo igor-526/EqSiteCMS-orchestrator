@@ -1,0 +1,21 @@
+.idea/
+.dumps/
+*.log
+.DS_Store
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+.venv-*/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.env
+.env.*
+# Исходники сервисов — отдельные git-репозитории (см. services.manifest)
+/services/
+.claude/skills/api-researcher/task_*
+*/.obsidian/

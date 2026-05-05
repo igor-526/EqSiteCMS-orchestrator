@@ -1,0 +1,20 @@
+{
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.languageServer": "None",
+    "python.defaultInterpreterPath": "/home/igor/projects/eqSiteCMS/backend/.venv/bin/python",
+    "cursorpyright.analysis.autoImportCompletions": true,
+    "cursorpyright.analysis.diagnosticMode": "workspace",
+    "cursorpyright.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "error",
+        "reportMissingModuleSource": "error",
+        "reportImportCycles": "warning",
+    },
+    "cursorpyright.analysis.typeCheckingMode": "basic",
+    "cursorpyright.analysis.extraPaths": [
+        "${workspaceFolder}/backend/src"
+    ],
+}

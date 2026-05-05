@@ -1,0 +1,6 @@
+# eqSimeCMS services manifest
+# Корень репозитория = orchestration (монорепа). Ниже — подсервисы в services/<name>.
+# Format: <name> <git_repo_url>
+
+frontend git@github.com:igor-526/EqSiteCMS-frontend.git
+backend git@github.com:igor-526/EqSiteCMS-backend.git

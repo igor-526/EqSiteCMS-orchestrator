@@ -1,0 +1,21 @@
+services:
+  frontend:
+    build:
+      context: ../services/frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+        PORT: ${EXPOSE_APP_PORT}
+    container_name: eqsitecms-frontend
+    ports:
+      - "${EXPOSE_APP_PORT}:${EXPOSE_APP_PORT}"
+    restart: always
+    env_file:
+      - path: ../services/frontend/.env
+        required: true
+    networks:
+      - eqsitecms_network
+
+networks:
+  eqsitecms_network:
+    external: true

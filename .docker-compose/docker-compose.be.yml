@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: ../services/backend
+      dockerfile: Dockerfile
+    container_name: eqsitecms-app
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - path: ../services/backend/.env
+        required: true
+    environment:
+      LOGS_DIR: /eqsitecms/logs
+    ports:
+      - "${EXPOSE_APP_PORT}:8000"
+    volumes:
+      - ../services/backend/src:/eqsitecms/src:${DEV_MOUNT:-ro}
+      - ../services/backend/scripts:/eqsitecms/scripts:ro
+      - ../services/backend/storage:/eqsitecms/storage
+      - ../services/backend/logs:/eqsitecms/logs
+    working_dir: /eqsitecms
+    command: ["uv", "run", "src/main.py"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - eqsitecms_network
+  # migration:
+  #   build:
+  #     context: ../services/backend
+  #     dockerfile: Dockerfile
+  #   restart: "no"
+  #   env_file:
+  #     - path: ../services/backend/.env
+  #       required: true
+  #   volumes:
+  #     - ../services/backend/src:/eqsitecms/src:${DEV_MOUNT:-ro}
+  #   working_dir: /eqsitecms/src
+  #   command: >
+  #     sh -c 'if [ "$$SKIP_MIGRATIONS" = "true" ]; then
+  #       echo "Миграции пропущены (SKIP_MIGRATIONS=true)";
+  #       exit 0;
+  #     else
+  #       uv run alembic -c alembic.ini upgrade head;
+  #     fi'
+  #   networks:
+  #     - eqsitecms_network
+
+networks:
+  eqsitecms_network:
+    external: true

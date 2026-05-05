@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:17
+    container_name: eqsitecms-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NAME}
+    expose:
+      - 5432
+    ports:
+      - "${EXPOSE_DB_PORT}:5432"
+    volumes:
+      - eqsitecms_db_data:/var/lib/postgresql/data
+    networks:
+      - eqsitecms_network
+
+networks:
+  eqsitecms_network:
+    external: true
+
+volumes:
+  eqsitecms_db_data:
