@@ -99,12 +99,8 @@
 
 | Сервис | Путь | Описание |
 |---|---|---|
-| Backend Core | `services/be` | Основной API, бизнес-логика |
-| Frontend | `services/fe` | React/Next.js UI |
-| Vectorizing | `services/vectorizing-service` | AI/ML, embeddings |
-| Structure | `services/structure-service` | NATS: дерево структуры после кластеризации |
-| Orchestration | `services/orchestration` | Оркестрация задач |
-| Template | `fastapi_template/` | Эталонный шаблон нового сервиса |
+| Backend Core | `services/backend` | Основной API, бизнес-логика |
+| Frontend | `services/frontend` | React/Next.js UI |
 
 ---
 

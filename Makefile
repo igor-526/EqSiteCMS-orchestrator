@@ -25,7 +25,7 @@ DC_INFRA := docker compose -f $(COMPOSE_INFRA)
 
 SERVICES_MANIFEST ?= services.manifest
 
-.PHONY: up be fe fe-build infra setup sync build test run lint asyncapi-validate up-full
+.PHONY: up be fe fe-build infra setup sync build test run lint asyncapi-validate up-full 
 
 #=====ORCHESTRATOR COMMANDS=====
 
@@ -79,12 +79,7 @@ services-branches:
 build:
 	@echo "Building all docker-compose services..."
 	@docker compose -f $(COMPOSE_BE) build
-
 	@$(DC_FE) build
-	@$(DC_SEMANTIC_VECTORIZING) build
-	@docker compose -f $(COMPOSE_STRUCTURE) build
-	@docker compose -f $(COMPOSE_BEHAVIORAL_FACTOR) build
-	@$(DC_NOTIFICATION) build
 
 be-build:
 	@echo "Building backend image..."
@@ -111,78 +106,25 @@ be:
 fe:
 	$(DC_FE) -p eqsitecms up -d
 
-#=====TESTING=====
+#=====TESTING|LINTING|FORMATTING=====
 
 test:
 	@echo "Tests execution. Assuming local test running via docker-compose is not yet globally configured."
 	@echo "To run tests in a specific service, navigate to services/<service_name> and run its test command."
+	cd services/backend && uv run pytest
 
 lint:
 	@echo "Linting conceptually requires per-service configuration. You might want to run this inside individual service directories."
+	cd services/backend && uv run mypy src
 
-# Semantic: semantic stack, migrate, pytest
-test-docker-semantic-service:
-	@echo "=== test-docker: semantic-service ==="
-	@$(DC_SEMANTIC) up -d
-	@echo "Waiting for semantic-db..."
-	@for i in 1 2 3 4 5 6 7 8 9 10; do \
-		$(DC_SEMANTIC) exec -T semantic-db pg_isready -U seo -d seo 2>/dev/null && break; \
-		sleep 2; \
-	done
-	@$(DC_SEMANTIC) exec -T semantic-app uv run alembic upgrade head
-	@$(DC_SEMANTIC) exec -T semantic-app uv run pytest --cov=app --cov-report=term-missing tests/
+format:
+	cd services/backend && uv run isort src && uv run black src && uv run isort tests && uv run black tests
 
-# Behavioral-factor-service: full stack, migrate, pytest
-test-docker-behavioral-factor-service:
-	@echo "=== test-docker: behavioral-factor-service ==="
-	@$(DC_BEHAVIORAL_FACTOR) up -d
-	@echo "Waiting for behavioral-factor-db..."
-	@for i in 1 2 3 4 5 6 7 8 9 10; do \
-		$(DC_BEHAVIORAL_FACTOR) exec -T behavioral-factor-db pg_isready -U behavioral_factor_db_user -d behavioral_factor_db 2>/dev/null && break; \
-		sleep 2; \
-	done
-	@$(DC_BEHAVIORAL_FACTOR) exec -T behavioral-factor-app uv run alembic upgrade head
-	@$(DC_BEHAVIORAL_FACTOR) exec -T behavioral-factor-app uv run pytest --cov=app --cov-report=term-missing tests/
+#=====BACKEND MANAGEMENT=====
+be-makemigrations:
+	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic revision --autogenerate -m '$(msg)'"
 
-test-docker-structure-service:
-	@echo "=== test-docker: structure-service ==="
-	@$(DC_INFRA) up -d
-	@$(DC_STRUCTURE) up -d
-	@echo "Waiting for structure-db..."
-	@for i in 1 2 3 4 5 6 7 8 9 10; do \
-		$(DC_STRUCTURE) exec -T structure-db pg_isready -U structure -d structure 2>/dev/null && break; \
-		sleep 2; \
-	done
-	@$(DC_STRUCTURE) exec -T structure-app uv run pytest tests/ -q --cov=app --cov-report=term-missing
+be-migrate:
+	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic upgrade head"
 
-test-docker-notification-service:
-	@echo "=== test-docker: notification-service ==="
-	@$(DC_INFRA) up -d
-	@$(DC_NOTIFICATION) up -d
-	@echo "Waiting for notification-db..."
-	@for i in 1 2 3 4 5 6 7 8 9 10; do \
-		$(DC_NOTIFICATION) exec -T notification-db pg_isready -U notification -d notification 2>/dev/null && break; \
-		sleep 2; \
-	done
-	@$(DC_NOTIFICATION) exec -T notification-app uv run alembic upgrade head
-	@$(DC_NOTIFICATION) exec -T notification-app uv run pytest --cov=app --cov-report=term-missing tests/
 
-asyncapi-validate: ## Validate all AsyncAPI specs in services/*/docs/asyncapi.yaml
-	@echo "=== Validating AsyncAPI specs ==="
-	@found=0; failed=0; \
-	for spec in services/*/docs/asyncapi.yaml; do \
-		if [ -f "$$spec" ]; then \
-			found=$$((found+1)); \
-			echo ""; \
-			echo "--- $$spec ---"; \
-			if npx --yes @asyncapi/cli validate "$$spec" 2>&1; then \
-				echo "✓ $$spec — OK"; \
-			else \
-				echo "✗ $$spec — FAILED"; \
-				failed=$$((failed+1)); \
-			fi; \
-		fi; \
-	done; \
-	echo ""; \
-	echo "=== AsyncAPI validation: $$found spec(s) checked, $$failed failed ==="; \
-	exit $$failed

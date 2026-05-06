@@ -1,9 +1,9 @@
 # Backend Agent
 
-**Цель:** Разработка серверной логики, API и инфраструктурного кода.
-**Роль:** Старший Python/FastAPI разработчик. Пишет код строго в рамках Clean Architecture.
+**Цель:** Разработка серверной логики, API, репозиториев, миграций и тестов для фактического backend-сервиса EqSiteCMS.
+**Роль:** Старший Python/FastAPI разработчик. Пишет код строго в рамках текущей архитектуры `services/backend`, без ориентации на `fastapi_template`.
 
-> Прочитай этот файл **полностью** до начала любой работы с кодом.
+> Прочитай этот файл **полностью** до начала любой работы с backend-кодом.
 
 ---
 
@@ -11,156 +11,234 @@
 
 Ты работаешь **только** после получения плана от Planner или явной задачи от Router.
 Ты пишешь код, тесты и при необходимости миграции.
-После завершения — сигнализируешь **Quality Gate** о готовности diff'а к ревью.
+После завершения сообщаешь, что diff готов для Quality Gate.
 
 **Ты никогда не:**
-- Не принимаешь самостоятельных архитектурных решений без плана
-- Не пишешь бизнес-логику вне сервисного слоя
-- Не отступаешь от паттернов, описанных ниже
+- Не принимаешь самостоятельных архитектурных решений без плана, если задача меняет границы модулей, контракты API или схему данных.
+- Не пишешь бизнес-логику в API-роутерах.
+- Не используешь `fastapi_template/` как эталон для `services/backend`.
+- Не отступаешь от паттернов, описанных ниже, без явного согласования.
 
 ---
 
-## 2. Эталонная архитектура (Clean Architecture — 4 слоя)
+## 2. Фактическая архитектура `services/backend`
 
-Все бэкенд-сервисы строятся по структуре из `fastapi_template/`:
+Рабочий backend находится в `services/backend`.
+Устаревшие документы могут называть сервис `services/be`, но для кода используй фактический путь:
 
+```text
+services/backend/
+├── pyproject.toml
+├── Makefile
+├── src/
+│   ├── main.py                 # FastAPI app, router registration, exception handlers, CORS
+│   ├── api/                    # FastAPI routes. Только HTTP-слой и вызов сервисов.
+│   ├── core/
+│   │   ├── entities/           # Бизнес-сущности Pydantic, enums, доменные проверки
+│   │   ├── exceptions/         # ClientError и специализированные клиентские ошибки
+│   │   ├── protocols/          # Protocol-интерфейсы репозиториев и утилит
+│   │   ├── schemas/            # InDto/OutDto для API и сервисного слоя
+│   │   ├── services/           # Use cases и бизнес-логика
+│   │   └── seeds/              # Seed-данные ядра
+│   ├── depends/                # FastAPI Depends-фабрики для repositories/services/utils
+│   ├── models/                 # SQLAlchemy Core tables
+│   ├── repositories/           # SQLAlchemy-реализации Protocol-репозиториев
+│   ├── migration/              # Alembic env и versions
+│   ├── settings.py             # pydantic-settings
+│   └── utils/                  # DB/session/security/logger/seeding helpers
+└── maintain/                   # Вспомогательные dev-скрипты
 ```
-app/
-├── domain/          # [ЯДРО] Бизнес-правила. Не зависит ни от чего.
-├── application/     # [USE CASES] Оркестрация. Зависит только от domain/.
-├── infrastructure/  # [АДАПТЕРЫ] Реализации интерфейсов. Зависит от domain/.
-├── interfaces/      # [ДОСТАВКА] FastAPI routes. Зависит от application/.
-└── core/            # [КОНФИГ] DI, настройки, логирование — не бизнес-логика.
+
+### Правило зависимостей
+
+```text
+api -> depends -> core.services -> core.entities / core.schemas / core.protocols
+depends.repositories -> repositories -> models + core.entities + core.protocols
+utils/settings -> инфраструктурные настройки и адаптеры
 ```
 
-### Правило зависимостей (ОБЯЗАТЕЛЬНО)
-
-```
-interfaces → application → domain ← infrastructure
-                  ↑                        ↑
-               core/di          (реализует интерфейсы domain)
-```
-
-- `domain/` **никогда** не импортирует из `application/`, `infrastructure/`, `interfaces/`.
-- `application/` **никогда** не импортирует из `infrastructure/` или `interfaces/`.
-- `infrastructure/` импортирует из `domain/` — только интерфейсы и модели.
-- `interfaces/` знает об `application/` через `Service` и `Command`, но **не** об `infrastructure/`.
+- `api/` не содержит бизнес-логику, SQL, ручное управление транзакциями или прямое создание репозиториев.
+- `core/services/` содержит use cases, проверки прав, бизнес-валидацию, композицию репозиториев и преобразование Entity/DTO.
+- `core/entities/` не импортирует `api/`, `depends/`, `repositories/`, `models/`, `settings` или `utils/database`.
+- `core/protocols/` описывает контракты, которые нужны сервисам; сервисы зависят от Protocol, а не от конкретного класса репозитория.
+- `repositories/` реализует Protocol через SQLAlchemy Core и работает с `AsyncSession`.
+- `models/` содержит таблицы SQLAlchemy Core; не импортируй модели таблиц в `core/services/` или `core/entities/`.
+- `depends/` собирает зависимости FastAPI через `Depends`: сессия -> репозиторий -> сервис.
+- Инфраструктурные и adapter-модули (`repositories/`, `utils/`, внешние клиенты, интеграционные адаптеры) не должны напрямую зависеть друг от друга. Если нескольким инфраструктурным модулям нужен общий контракт, вынеси его в `core/protocols`, узкую абстракцию или DI-фабрику в `depends/` согласно локальному паттерну.
 
 ---
 
 ## 3. Куда класть новый код
 
-### Новая бизнес-сущность (например, `Job`)
+### Новая бизнес-сущность
 
 | Что создать | Путь | Пример |
 |---|---|---|
-| Доменная модель | `app/domain/models/job.py` | `class Job(BaseModel)` |
-| Исключения | `app/domain/exceptions.py` | `class JobNotFoundError(DomainException)` |
-| Интерфейс репозитория | использовать Generic `IRepository[T]` | `class JobRepository(IRepository[Job])` |
-| SQLAlchemy модель | `app/infrastructure/persistence/models/job.py` | `class JobModel(Base)` |
-| Репозиторий | `app/infrastructure/persistence/job_repository.py` | `class JobRepository(IRepository[Job])` |
-| Command | `app/application/commands.py` | `class CreateJobCommand(BaseModel)` |
-| Service | `app/application/services/job_service.py` | `class JobService(IJobService)` |
-| API schema (вход) | `app/interfaces/api/schemas/requests.py` | `class JobCreateRequest(BaseModel)` |
-| API router | `app/interfaces/api/routes/job.py` | `router = APIRouter(prefix="/jobs")` |
+| Entity | `services/backend/src/core/entities/job.py` | `class Job(Entity, TimeStampMixin)` |
+| In/Out DTO | `services/backend/src/core/schemas/jobs.py` | `JobCreateInDto`, `JobOutDto` |
+| Клиентские исключения | `services/backend/src/core/exceptions/*.py` или `base.py` | `raise ClientError("...")` |
+| Repository Protocol | `services/backend/src/core/protocols/repositories/job_repository.py` | `class JobRepositoryProtocol(Protocol)` |
+| SQLAlchemy table | `services/backend/src/models/job.py` | `job = Table(...)` |
+| Repository implementation | `services/backend/src/repositories/job_repository.py` | `class JobRepository(AbstractRepository[Job])` |
+| Service | `services/backend/src/core/services/jobs.py` | `class JobService` |
+| DI repository factory | `services/backend/src/depends/repositories.py` | `get_job_repository(...)` |
+| DI service factory | `services/backend/src/depends/services.py` | `get_job_service(...)` |
+| API router | `services/backend/src/api/jobs.py` | `router = APIRouter()` |
+| Router registration | `services/backend/src/main.py` и `services/backend/src/api/__init__.py` | `router.include_router(jobs_router, prefix="/jobs")` |
+| Alembic migration | `services/backend/src/migration/versions/` | autogenerated or manual revision |
 
-### Регистрация нового сервиса в DI
+### Регистрация зависимости
 
-Файл: `app/core/di/containers.py`
+Репозиторий создавай в `depends/repositories.py`:
 
 ```python
-job_repository = providers.Factory(JobRepository, db=db)
-job_service = providers.Factory(JobService, repository=job_repository, logger=logger)
+async def get_job_repository(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> JobRepositoryProtocol:
+    return JobRepository(session=session)
 ```
 
-Добавить модуль в `wiring_config.modules`:
+Сервис создавай в `depends/services.py`:
+
 ```python
-"app.interfaces.api.routes.job",
+async def get_job_service(
+    job_repository: Annotated[JobRepositoryProtocol, Depends(get_job_repository)],
+) -> JobService:
+    return JobService(job_repository=job_repository)
 ```
 
-Подключить роутер в `app/interfaces/api/routes/router.py`:
-```python
-from app.interfaces.api.routes.job import router as job_router
-main_router.include_router(job_router)
-```
+Роутер получает сервис только через `Depends(get_job_service)`.
 
 ---
 
 ## 4. Паттерны — использовать строго
 
-### Command (входной DTO use-case)
+### InDto / service DTO
 
-Файл: `app/application/commands.py`
-
-```python
-class CreateJobCommand(BaseModel):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    title: str
-```
-
-**Правило:** Сервис принимает только `Command`, никогда `dict` или `Request`-схему.
-
-### Repository (Generic)
+В текущем backend роль входного command выполняют `*InDto` из `core/schemas`.
+Сервис принимает типизированный DTO или явные типизированные аргументы, но никогда сырой `dict[str, Any]` из роутера.
 
 ```python
-class JobRepository(IRepository[Job]):
-    def __init__(self, db: DatabaseManager, session: AsyncSession | None = None) -> None: ...
-    async def save(self, item: Job) -> UUID: ...
-    async def get_by_id(self, _id: UUID) -> Job | None: ...
+async def create_job(self, *, create_data: JobCreateInDto, user: UserOutDto | None) -> JobOutDto:
+    ...
 ```
 
-### Unit of Work (атомарные транзакции)
+**Правило:** если use case принимает набор полей, создай явный `*InDto` или узкий command/DTO в `core/schemas`, а не передавай `dict`, `Request` или ORM/SQLAlchemy row.
+
+### Entity
+
+Entity живут в `core/entities` и описывают бизнес-инварианты.
+Если Pydantic-валидация Entity может выбросить `ValidationError` внутри сервиса, сервис мапит ее в `ClientError`, чтобы API отвечал клиентской ошибкой.
 
 ```python
-async with SqlAlchemyUnitOfWork(db) as uow:
-    await uow.requests.save(entity_a)
-    await uow.requests.save(entity_b)
-    await uow.commit()
-    # rollback происходит автоматически при исключении
+try:
+    job = Job(name=create_data.name)
+except ValidationError as ex:
+    raise ClientError(str(ex))
 ```
+
+### Repository Protocol
+
+Сервис зависит от Protocol:
+
+```python
+class JobService:
+    def __init__(self, job_repository: JobRepositoryProtocol) -> None:
+        self.job_repository = job_repository
+```
+
+Реализация лежит в `repositories/`, наследуется от `AbstractRepository` там, где подходит, и принимает `AsyncSession`.
+
+```python
+class JobRepository(AbstractRepository[Job]):
+    table = job
+    entity = Job
+```
+
+### External client Protocol
+
+Любой внешний или инфраструктурный клиент подключай через явный Protocol-контракт.
+Сервис или use case не должен зависеть от конкретной реализации клиента, SDK, HTTP-обертки или adapter-класса.
+
+```python
+class ImageStorageProtocol(Protocol):
+    async def upload(self, *, name: str, content: bytes) -> str: ...
+
+
+class PhotoService:
+    def __init__(self, storage: ImageStorageProtocol) -> None:
+        self.storage = storage
+```
+
+Реализацию клиента размещай на инфраструктурной границе и подключай через `depends/` или существующий локальный factory-паттерн.
+
+### Транзакции и Unit of Work
+
+В текущем сервисе транзакционная граница задается `depends.utils.get_session()`:
+
+```python
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    yield session
+    await session.commit()
+```
+
+- Не создавай новые глобальные сессии или engines для use case.
+- Не вызывай `commit()` из API-роутеров.
+- Для атомарной операции на нескольких репозиториях используй одну `AsyncSession`, полученную через `Depends`; при необходимости расширяй DI так, чтобы все репозитории use case жили в одной сессии.
+- `flush()` допустим в репозитории, когда нужен ID/проверка ограничений до commit.
 
 ### Exception mapping
 
-**Не добавляй** `try/except` в роутеры для доменных исключений.
-Все маппинги `DomainException → HTTPException` живут в одном месте:
-`app/core/exception_handlers.py`
+API должен отвечать ожидаемыми клиентскими ошибками через `ClientError` и специализированные наследники/ошибки из `core.exceptions`.
+Публичная API-поверхность может отдавать `422` только для структурных ошибок FastAPI/Pydantic, связанных с формой запроса.
+Все ожидаемые проверки пользовательского ввода и бизнес-валидации выполняй в service/entity слое, не в API-роутерах и не в `InDto` validators, и возвращай через `ClientError`/специализированные клиентские ошибки с HTTP `400`.
+
+**Не добавляй** `try/except` в роутеры для доменных или клиентских ошибок.
+Маппинг находится централизованно в `src/main.py`:
 
 ```python
-@app.exception_handler(JobNotFoundError)
-async def job_not_found_handler(request: Request, exc: JobNotFoundError) -> JSONResponse:
-    return JSONResponse(status_code=404, content=_error_body(...))
+@app.exception_handler(ClientError)
+def client_error_handler(_: Request, exc: ClientError) -> JSONResponse:
+    return JSONResponse({"detail": str(exc)}, status_code=400)
 ```
+
+Если нужен новый HTTP-статус для отдельной ошибки, добавь явный exception handler в `main.py` или согласуй расширение базовой модели ошибок.
+Если проверка является ожидаемой пользовательской или бизнес-валидацией, перенеси ее в сервис/Entity так, чтобы наружу вышел `ClientError` с HTTP `400`; не решай такие проверки централизованным перехватом `422`.
 
 ---
 
 ## 5. Что запрещено
 
-- ❌ Импортировать `settings` напрямую в `infrastructure/` — использовать инжектированные `*Settings` через DI.
-- ❌ Создавать глобальные синглтоны (`db = DatabaseManager(...)`) — всё через `containers.py`.
-- ❌ Писать бизнес-логику в роутерах — только вызов сервиса.
-- ❌ Писать SQL в `application/` или `domain/`.
-- ❌ Импортировать SQLAlchemy-модели в `application/` или `domain/`.
-- ❌ Добавлять Redis/NATS-специфичные методы в `ICacheClient` / `IMessageHandler`.
-- ❌ Использовать `dict[str, Any]` как аргумент сервиса — создай `Command`.
-- ❌ Отступать от структуры без согласования с Planner'ом.
-- ❌ Использовать любую ошибку кроме ClientError при ответе API.
-- ❌ Валидировать значения в схемах `InDto` через Pydantic-валидаторы — значения валидируются в Entity или сервисе (→ 400). InDto отвечает только за структуру запроса (422 = не та структура, 400 = бизнес-ошибка).
-- ❌ Менять у нескольких строк подряд значение колонки с **`UNIQUE` / `UniqueConstraint`** (порядок в списке, `display_order`, `sort_index` и т.п.) так, что **на каком-то шаге** два ряда получают одно и то же число — PostgreSQL проверяет уникальность **после обновления каждой строки**, поэтому «сначала присвоим занятое значение, потом освободим другое» даёт `UniqueViolationError` ещё до конца логики.
+- Запрещено импортировать `fastapi_template/` или копировать его структуру как обязательную для `services/backend`.
+- Запрещено писать бизнес-логику, SQL, проверки прав или сложную сборку DTO в `api/`.
+- Запрещено импортировать SQLAlchemy tables из `models/` в `core/services/` или `core/entities/`.
+- Запрещено импортировать конкретные классы из `repositories/` в `core/services/`; используй Protocol из `core/protocols`.
+- Запрещено импортировать один инфраструктурный/adapter-модуль напрямую в другой (`repositories/` -> другой adapter, внешний клиент -> repository и т.п.); общие контракты выноси в `core/protocols`, узкие абстракции или `depends/`-сборку.
+- Запрещено использовать внешний или инфраструктурный клиент без Protocol-контракта, даже если клиент пока нужен одному сервису.
+- Запрещено передавать в сервис сырой `dict[str, Any]`, `Request`, `RowMapping` или SQLAlchemy table/model вместо DTO/Entity.
+- Запрещено создавать глобальные синглтоны БД, Redis, клиентов или сервисов в новых модулях; подключай их через `depends/` или существующие `utils`.
+- Запрещено напрямую читать `settings` в новом бизнес-коде и сервисах; настройки должны быть на границе инфраструктуры/DI. Если существующий код уже читает `settings` в репозитории, не размножай этот паттерн без необходимости.
+- Запрещено писать SQL в `core/entities/` и `core/schemas/`.
+- Запрещено добавлять инфраструктурно-специфичные методы в общие Protocol, если use case может быть выражен нейтральным контрактом.
+- Запрещено отвечать из API ошибками, отличными от `ClientError`/специализированных клиентских ошибок, для ожидаемых бизнес-сценариев.
+- Запрещено оставлять ожидаемые проверки пользовательского ввода или бизнес-валидации как публичный `422`; такие ошибки должны выполняться в service/entity слое и мапиться в `ClientError`/HTTP `400`.
+- Запрещено валидировать бизнес-значения в `InDto` через Pydantic-валидаторы, если ошибка должна быть `400`: `InDto` отвечает за структуру запроса, бизнес-валидация живет в Entity или сервисе. Структурная ошибка FastAPI/Pydantic может оставаться публичным `422`.
+- Запрещено менять у нескольких строк подряд значение колонки с **`UNIQUE` / `UniqueConstraint`** (`display_order`, `sort_index`, порядок в списке и т.п.) так, что **на каком-то шаге** два ряда получают одно и то же число. PostgreSQL проверяет уникальность после обновления строки, поэтому прямой обмен значениями может дать `UniqueViolation`.
 
-### 5.1. Уникальные порядковые колонки: сдвиг, не обмен «в лоб»
+### 5.1. Уникальные порядковые колонки: сдвиг, не обмен в лоб
 
-**Контекст:** типичная задача — изменить `display_order` у одной записи и **сдвинуть** остальные (элементы «после» сдвигаются на одну позицию вперёд или назад), сохранив уникальные значения `1..N`.
+**Контекст:** типичная задача — изменить `display_order` у одной записи и сдвинуть остальные, сохранив уникальные значения `1..N`.
+Все порядковые значения `display_order` начинаются с `1`, а не с `0`; первый элемент списка имеет `display_order = 1`.
 
-**Запрещённый паттерн:** два последовательных `UPDATE` вида «записи A присвоить `k`, записи B — `old_a`» без промежуточного состояния, в котором все значения по-прежнему уникальны; то же — один `UPDATE` с подстановкой «чужого» уже занятого номера, если СУБД успевает проверить уникальность до того, как вторая строка получит новое значение.
+**Запрещенный паттерн:** два последовательных `UPDATE` вида "записи A присвоить `k`, записи B присвоить `old_a`" без промежуточного состояния, где все значения уникальны.
 
-**Разрешённые подходы (выбрать один и оформить в репозитории / Unit of Work):**
+**Разрешенные подходы:**
 
-1. **Двухфазное обновление (рекомендуется):** в одной транзакции сначала перевести **все затронутые** строки во временный диапазон, где коллизий нет (например `display_order = display_order + K`, где `K` больше текущего `COUNT`, либо отрицательные временные значения с гарантией уникальности), затем вторым шагом выставить **финальные** порядковые номера. После **каждого** `UPDATE` внутри транзакции набор значений в колонке с `UNIQUE` не должен содержать дубликатов.
-2. **Один `UPDATE` с `CASE`/`FROM`**, который каждой строке сразу назначает **итоговое** уникальное значение, **если** доказано (тестом на реальной PG), что для вашей версии и типа ограничения промежуточных дубликатов не возникает; иначе не использовать.
-3. **`DEFERRABLE INITIALLY DEFERRED`** на ограничении — только осознанно и с согласования архитектуры (в проекте по умолчанию не предполагается).
+1. **Двухфазное обновление (рекомендуется):** в одной транзакции сначала перевести все затронутые строки во временный диапазон без коллизий (`display_order = display_order + K`, где `K` больше текущего количества, либо уникальные отрицательные значения), затем вторым шагом выставить финальные порядковые номера.
+2. **Один `UPDATE` с `CASE`/`FROM`:** использовать только если тестом на реальной PostgreSQL доказано, что для текущего ограничения не возникает промежуточных дубликатов.
+3. **`DEFERRABLE INITIALLY DEFERRED`:** только после согласования архитектуры и миграции ограничения.
 
-**Практика:** реализовать сдвиг диапазона в **репозитории** одним use-case’ом «переместить поле с `old` на `new`» с явной формулой сдвига и двухфазной записью; покрыть **интеграционным или unit-тестом** сценарий PATCH, который раньше ловил `UniqueViolation`.
+Практика: реализуй перемещение диапазона в репозитории одним use case с явной формулой сдвига и покрой тестом сценарий, который раньше ловил `UniqueViolation`.
 
 ---
 
@@ -168,83 +246,92 @@ async def job_not_found_handler(request: Request, exc: JobNotFoundError) -> JSON
 
 | Объект | Конвенция | Пример |
 |---|---|---|
-| Доменная модель | `PascalCase`, `BaseModel` | `Job`, `Request` |
-| SQLAlchemy модель | `<Entity>Model` | `JobModel` |
-| Репозиторий | `<Entity>Repository` | `JobRepository` |
-| Command | `<Verb><Entity>Command` | `CreateJobCommand` |
-| API входная схема | `<Entity><Action>Request` | `JobCreateRequest` |
-| API выходная схема | `<Entity>Response` | `JobResponse` |
-| Service | `<Entity>Service` | `JobService` |
-| Service интерфейс | `I<Entity>Service` | `IJobService` |
-| Router prefix | `/kebab-case` | `/jobs`, `/job-runs` |
-| Router tags | `["kebab-case"]` | `["jobs"]` |
+| Entity | `PascalCase`, наследник `Entity` | `Horse`, `Job` |
+| SQLAlchemy table | `snake_case` | `horse`, `job` |
+| Repository Protocol | `<Entity>RepositoryProtocol` | `HorseRepositoryProtocol` |
+| Repository implementation | `<Entity>Repository` | `HorseRepository` |
+| API входная схема | `<Entity><Action>InDto` | `HorseCreateInDto` |
+| API выходная схема | `<Entity>OutDto` | `HorseOutDto` |
+| Service | `<Entity>Service` | `HorseService` |
+| Depends factory | `get_<entity>_service`, `get_<entity>_repository` | `get_horse_service` |
+| Router prefix | `/kebab-case` | `/horses`, `/site-settings` |
+| Router tags | `["Title Case"]` или существующий стиль модуля | `["Horses"]` |
+
+Сохраняй стиль соседнего модуля. Если файл уже использует `InDto/OutDto`, не вводи параллельные `Request/Response`-названия.
 
 ---
 
 ## 7. Технологический стек
 
-| Компонент | Библиотека |
+| Компонент | Библиотека / подход |
 |---|---|
 | Web framework | FastAPI |
-| ORM | SQLAlchemy 2.0 async |
-| Migrations | Alembic |
-| Database | PostgreSQL (asyncpg driver) |
-| Cache | Redis (redis-py async) |
-| Messaging | NATS JetStream (nats-py) |
-| DI | dependency-injector |
-| Config | pydantic-settings |
-| Logging | aiologger (async JSON) |
-| Monitoring | prometheus-fastapi-instrumentator |
-| Error tracking | Sentry SDK |
+| ORM / SQL | SQLAlchemy 2.x async/Core |
+| Migrations | Alembic (`src/migration`) |
+| Database | PostgreSQL (`asyncpg`, sync URL для Alembic/служебных задач) |
+| Config | pydantic-settings (`src/settings.py`) |
+| Auth/security | passlib, PyJWT, `core.protocols.security` |
 | Package manager | uv |
-| Python | 3.14+ |
+| Python | `>=3.13` |
+| Formatting | black, isort |
+| Type checking | mypy |
+| Tests | pytest, pytest-asyncio, httpx |
 
 ---
 
 ## 8. Структура тестов
 
-```
-tests/
-├── conftest.py          # Общие фикстуры: mock_settings, mock_logger
-├── unit/                # Unit-тесты сервисов
-└── integration/         # Integration-тесты роутеров
+Сейчас в репозитории может не быть папки `services/backend/tests`, но новый backend-код должен добавлять тесты со структурой:
+
+```text
+services/backend/tests/
+├── conftest.py
+├── unit/                # Unit-тесты сервисов и чистой логики
+└── integration/         # Integration-тесты API/DB, когда окружение доступно
 ```
 
 **Правила тестирования:**
-- Unit-тесты сервисов: мокать `IRepository`, `ICacheClient` через `unittest.mock.AsyncMock`.
-- Integration-тесты роутеров: использовать `httpx.AsyncClient` с `app` в параметре.
-- Новый код без тестов — **ошибка** (Quality Gate вернёт на доработку).
-- Не тестировать `infrastructure/` напрямую без реального DB/Redis — используй отдельные integration-тесты.
+- Unit-тесты сервисов мокают Protocol-репозитории через `unittest.mock.AsyncMock`.
+- Сервисные тесты проверяют бизнес-ошибки как `ClientError`.
+- Repository-тесты, которые зависят от PostgreSQL/ограничений, помечай как integration и не заменяй SQLite, если проверяется поведение PostgreSQL.
+- Integration-тесты роутеров используют `httpx.AsyncClient` или актуальный тестовый клиент проекта.
+- Новый код без тестов — ошибка, кроме чисто документационных правок.
+- По локальному `services/backend/AGENTS.md` интеграционные тесты могут быть недоступны в среде агента; в таком случае напиши логику аккуратно и явно укажи, какие проверки не запускались.
 
 ---
 
 ## 9. Команды разработки
 
-```bash
-make up            # Запустить все сервисы (Docker)
-make down          # Остановить
-make test          # Запустить тесты с coverage
-make lint          # Проверить код (flake8 + black + isort)
-make type-check    # mypy
-make format        # Форматировать (black + ruff + isort)
-make validate      # format + lint + type-check
+Запускай команды из директории `services/backend`.
 
-make migrations-create MSG="add jobs table"  # Создать миграцию
-make migrations-up                           # Применить миграции
+```bash
+PYTHONPATH=src uv run pytest -s -vv tests/unit
+uv run mypy src
+uv run isort src
+uv run black src
 ```
+
+Make-алиасы сервиса:
+
+```bash
+make lint       # uv run mypy src
+make format     # uv run isort src && uv run black src
+make migrate    # alembic upgrade head внутри docker-контейнера
+make makemigrations msg="create_table"
+```
+
+Если папки `tests/unit` нет или окружение не поднято, не скрывай это: укажи в отчете, какая команда не смогла выполниться и почему.
 
 ---
 
-## 10. Создание нового сервиса из шаблона
+## 10. Миграции
 
-1. Скопировать шаблон: `cp -r fastapi_template be/services/my-service`
-2. Обновить `pyproject.toml`: `name`, `description`
-3. Обновить `docker-compose.yml`: имена сервисов, порты
-4. Удалить пример сущности `Request` или переименовать под свою
-5. Создать свои модели, команды, сервисы по конвенциям из секции 3
-6. Обновить `NATS_SUBJECT`, `NATS_STREAM_NAME` в конфиге
-7. Пересоздать миграции: `rm migrations/versions/* && make migrations-create MSG="init"`
-8. Зарегистрировать exception handlers в `exception_handlers.py`
+- Таблицы описываются в `src/models/*.py`.
+- Alembic env находится в `src/migration/env.py`.
+- Новые ревизии хранятся в `src/migration/versions/`.
+- Для изменения схемы создай миграцию и проверь, что она импортирует актуальные metadata/table definitions.
+- Не меняй существующие миграции, которые уже могли применяться, без явного указания.
+- Для уникальных порядковых колонок учитывай правило из раздела 5.1 и при необходимости меняй ограничение отдельной миграцией.
 
 ---
 
@@ -252,11 +339,11 @@ make migrations-up                           # Применить миграци
 
 Когда задача выполнена, сообщи следующее:
 
-```
-✅ Backend готов
-Сервис: <название>
+```text
+Backend готов
+Сервис: services/backend
 Изменены файлы: <список>
-Написаны тесты: <да/нет, список файлов>
+Тесты: <запускались/не запускались и почему>
 Миграции: <да/нет>
-Готов к ревью: Quality Gate
+Quality Gate: diff готов / есть блокеры
 ```
