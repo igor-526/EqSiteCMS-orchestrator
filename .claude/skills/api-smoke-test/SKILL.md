@@ -7,7 +7,10 @@ allowed-tools: Read, Bash, Glob
 
 # SMOKE-тесты на реальном API
 
-Этот скилл запускает SMOKE-тесты из плана с автоматической авторизацией через cookie.
+Этот скилл запускает SMOKE-тесты из плана в двух режимах:
+
+- anonymous mode (без cookie) для проверки public `GET`,
+- authenticated mode (с cookie) для проверки protected write и CMS-сценариев.
 
 ## Аргументы
 
@@ -67,9 +70,22 @@ curl -s -b <cookie_jar> "<base_url>/api/auth/me"
 Для каждого теста из таблицы:
 
 1. Подставь переменные из блока переменных в URL и тело запроса
-2. Сформируй `curl`-команду с флагом `-b <cookie_jar>`
-3. Выполни запрос
-4. Проверь ответ по условию из колонки «Проверка»
+2. Определи `access class` теста:
+   - `public` (обычно `GET`) -> запуск в anonymous mode
+   - `protected` (обычно `POST/PATCH/DELETE`) -> запуск в authenticated mode
+3. Сформируй `curl`-команду:
+   - для `public`: **без** `-b <cookie_jar>`
+   - для `protected`: **с** `-b <cookie_jar>`
+4. Выполни запрос
+5. Проверь ответ по условию из колонки «Проверка»
+
+### Обязательная двойная проверка policy
+
+- Для public `GET` обязательно проверить, что запрос без cookie проходит по контракту.
+- Для protected write обязательно проверить:
+  - без cookie -> контрактный `401`/`403`,
+  - с cookie и валидной ролью -> контрактный успех.
+- Если по плану есть исключение (публичный write или защищенный `GET`), явно отметь его как exception и проверь оба режима по контракту.
 
 ### Формат curl-запроса
 
@@ -108,11 +124,12 @@ curl -s -b <cookie_jar> \
 По завершении всех тестов выведи итоговую таблицу:
 
 ```
-| #     | Запрос                        | Статус | Результат        |
-|-------|-------------------------------|--------|------------------|
-| SM-01 | GET /                         | ✅     | total=78         |
-| SM-02 | GET /?limit=1                 | ✅     | items содержат icon |
-| SM-05 | GET /?search=частотность      | ❌     | ожидал total=6, получил total=4 |
+| #     | Запрос                   | access class | Режим            | Статус | Результат |
+|-------|--------------------------|--------------|------------------|--------|-----------|
+| SM-01 | GET /api/public/items    | public       | anonymous        | ✅     | total=78  |
+| SM-02 | POST /api/admin/items    | protected    | no-cookie-check  | ✅     | 401       |
+| SM-03 | POST /api/admin/items    | protected    | authenticated    | ✅     | 201       |
+| SM-04 | GET /api/profile         | exception    | anonymous        | ✅     | 401 (by contract) |
 ```
 
 Итог: `N/M тестов прошли`.

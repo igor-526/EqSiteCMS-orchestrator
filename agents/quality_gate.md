@@ -25,17 +25,21 @@ SMOKE-тесты обязательны для каждого Quality Gate. Пе
 
 ## Чеклист: Архитектура (Backend)
 
-- [ ] `domain/` не импортирует из `application/`, `infrastructure/`, `interfaces/`
-- [ ] `application/` не импортирует из `infrastructure/` или `interfaces/`
-- [ ] Сервис принимает `Command`, а не `dict` или `Request`-схему
-- [ ] Бизнес-логика отсутствует в роутерах (только вызов сервиса)
-- [ ] SQL запросы только в `infrastructure/`
-- [ ] SQLAlchemy-модели не импортированы в `application/` или `domain/`
-- [ ] Новые `DomainException` → зарегистрированы в `exception_handlers.py`
-- [ ] Нет `try/except` доменных исключений в роутерах
-- [ ] Новые зависимости зарегистрированы в `containers.py`
-- [ ] Все бизнес-ошибки в сервисах выбрасываются через `ClientError` (не `NotFoundError` или иные кастомные исключения)
-- [ ] Валидация значений не находится в `InDto`-схемах — только структурная (422 = неверная структура, 400 = бизнес-ошибка)
+- [ ] `api/` не содержит бизнес-логики, SQL и ручного управления транзакциями
+- [ ] `core/services/` зависит от Protocol-контрактов (`core/protocols`), а не от конкретных `repositories/*`
+- [ ] `core/entities/` не импортирует `api/`, `depends/`, `repositories/`, `models/`, `settings`, `utils/database`
+- [ ] SQLAlchemy tables из `models/` не импортированы в `core/services/` и `core/entities/`
+- [ ] Depends-сборка соблюдена: `depends` собирает `session -> repository -> service`
+- [ ] Ожидаемые бизнес-ошибки мапятся через `ClientError`/специализированные клиентские ошибки
+- [ ] Бизнес-валидация не спрятана в `InDto`-валидации (422 только для структурных ошибок)
+
+## Чеклист: Access Policy (Backend/API)
+
+- [ ] Для каждого нового/измененного endpoint заполнен access-класс (`public`/`protected`) и он совпадает с планом
+- [ ] Публичные `GET` проверены без cookie и не требуют авторизации (если не зафиксировано исключение)
+- [ ] `POST/PATCH/DELETE` без cookie возвращают контрактный `401`/`403`
+- [ ] `POST/PATCH/DELETE` с валидной авторизацией проходят по контракту роли/прав
+- [ ] Любые исключения (публичный write или защищенный `GET`) явно задокументированы и покрыты тестами
 
 ## Чеклист: Код-стиль
 
@@ -119,7 +123,8 @@ AsyncAPI-спека должна соответствовать реальном
 - список изменённых файлов;
 - рекомендуемую ветку;
 - результаты unit/integration тестов;
-- результаты SMOKE-тестов с временем работы каждого эндпоинта.
+- результаты SMOKE-тестов с временем работы каждого эндпоинта;
+- раздел `Access verification results` (anonymous/public checks + authenticated/protected checks + исключения).
 
 ### ✅ APPROVED:
 
