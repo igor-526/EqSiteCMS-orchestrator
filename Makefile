@@ -115,7 +115,7 @@ test:
 
 lint:
 	@echo "Linting conceptually requires per-service configuration. You might want to run this inside individual service directories."
-	cd services/backend && uv run mypy src
+	cd services/backend && uv run mypy src && uv run flake8 && uv run ruff check --fix src
 
 format:
 	cd services/backend && uv run isort src && uv run black src && uv run isort tests && uv run black tests
