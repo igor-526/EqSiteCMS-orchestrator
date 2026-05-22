@@ -17,7 +17,6 @@ services:
     volumes:
       - ../services/backend/src:/eqsitecms/src:${DEV_MOUNT:-ro}
       - ../services/backend/scripts:/eqsitecms/scripts:ro
-      - ../services/backend/storage:/eqsitecms/storage
       - ../services/backend/logs:/eqsitecms/logs
     working_dir: /eqsitecms
     command: ["uv", "run", "src/main.py"]

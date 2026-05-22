@@ -19,3 +19,4 @@ htmlcov/
 /services/
 .claude/skills/api-researcher/task_*
 */.obsidian/
+.kube/

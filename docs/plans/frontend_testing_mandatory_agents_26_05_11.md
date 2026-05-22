@@ -163,42 +163,42 @@ Quality Gate должен ставить `REWORK`, если:
 
 ### Backend
 
-- [ ] Подтвердить, что backend, API endpoint'ы, БД и миграции не меняются
-- [ ] Подтвердить, что backend endpoint access policy не меняется
-- [ ] Подтвердить, что новых исключений из API Access Policy нет
+- [x] Подтвердить, что backend, API endpoint'ы, БД и миграции не меняются
+- [x] Подтвердить, что backend endpoint access policy не меняется
+- [x] Подтвердить, что новых исключений из API Access Policy нет
 
 ### Frontend
 
-- [ ] Обновить `agents/planner.md`: добавить секцию обязательного планирования тестов для каждой новой CMS frontend feature
-- [ ] Обновить `agents/planner.md`: добавить frontend test matrix с behavior diff, required tests, access scenarios и commands
-- [ ] Обновить `agents/planner.md`: требовать checklist-пункты на tests для anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`
-- [ ] Обновить `agents/planner.md`: требовать pagination coverage `limit/offset` и reset `offset`, если фича содержит списки/таблицы
-- [ ] Обновить `agents/planner.md`: требовать no `site-*` mixing self-check для CMS frontend фич
-- [ ] Обновить `agents/frontend.md`: добавить hard rule "любой behavior diff требует тестов"
-- [ ] Обновить `agents/frontend.md`: зафиксировать test stack Vitest/RTL/user-event/jest-dom/jsdom/MSW как текущий baseline
-- [ ] Обновить `agents/frontend.md`: описать test placement и использование `src/test` helpers/fixtures/MSW
-- [ ] Обновить `agents/frontend.md`: запретить live backend calls в unit/component/API-boundary tests
-- [ ] Обновить `agents/frontend.md`: добавить минимумы тестов по типам изменений
-- [ ] Обновить `agents/frontend.md`: добавить обязательные команды `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`
-- [ ] Обновить `agents/frontend.md`: добавить обязательные `rg` self-checks для direct fetch/API imports/pagination/site mixing/legacy dirs
-- [ ] Обновить `agents/frontend.md`: требовать completion report с tests/checks/access/scopes результатом
-- [ ] Обновить `agents/quality_gate.md`: добавить блокирующий `Frontend Mandatory Testing Gate`
-- [ ] Обновить `agents/quality_gate.md`: запретить approve без frontend tests/checks для CMS behavior diff
-- [ ] Обновить `agents/quality_gate.md`: требовать проверку качества tests относительно behavior diff, а не только факт наличия test files
-- [ ] Обновить `agents/quality_gate.md`: требовать review anonymous/authenticated, scope present/missing, Protected Write UX, `401/403`
-- [ ] Обновить `agents/quality_gate.md`: требовать report-раздел `Frontend test gate`
+- [x] Обновить `agents/planner.md`: добавить секцию обязательного планирования тестов для каждой новой CMS frontend feature
+- [x] Обновить `agents/planner.md`: добавить frontend test matrix с behavior diff, required tests, access scenarios и commands
+- [x] Обновить `agents/planner.md`: требовать checklist-пункты на tests для anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`
+- [x] Обновить `agents/planner.md`: требовать pagination coverage `limit/offset` и reset `offset`, если фича содержит списки/таблицы
+- [x] Обновить `agents/planner.md`: требовать no `site-*` mixing self-check для CMS frontend фич
+- [x] Обновить `agents/frontend.md`: добавить hard rule "любой behavior diff требует тестов"
+- [x] Обновить `agents/frontend.md`: зафиксировать test stack Vitest/RTL/user-event/jest-dom/jsdom/MSW как текущий baseline
+- [x] Обновить `agents/frontend.md`: описать test placement и использование `src/test` helpers/fixtures/MSW
+- [x] Обновить `agents/frontend.md`: запретить live backend calls в unit/component/API-boundary tests
+- [x] Обновить `agents/frontend.md`: добавить минимумы тестов по типам изменений
+- [x] Обновить `agents/frontend.md`: добавить обязательные команды `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`
+- [x] Обновить `agents/frontend.md`: добавить обязательные `rg` self-checks для direct fetch/API imports/pagination/site mixing/legacy dirs
+- [x] Обновить `agents/frontend.md`: требовать completion report с tests/checks/access/scopes результатом
+- [x] Обновить `agents/quality_gate.md`: добавить блокирующий `Frontend Mandatory Testing Gate`
+- [x] Обновить `agents/quality_gate.md`: запретить approve без frontend tests/checks для CMS behavior diff
+- [x] Обновить `agents/quality_gate.md`: требовать проверку качества tests относительно behavior diff, а не только факт наличия test files
+- [x] Обновить `agents/quality_gate.md`: требовать review anonymous/authenticated, scope present/missing, Protected Write UX, `401/403`
+- [x] Обновить `agents/quality_gate.md`: требовать report-раздел `Frontend test gate`
 
 ### Quality Gate
 
-- [ ] Проверить, что diff ограничен `agents/planner.md`, `agents/frontend.md`, `agents/quality_gate.md` и планом
-- [ ] Проверить, что инструкции не меняют backend endpoint policy
-- [ ] Проверить, что Planner теперь обязан планировать frontend tests для каждой новой CMS frontend feature
-- [ ] Проверить, что Frontend Agent теперь обязан добавлять/обновлять tests для любого CMS frontend behavior diff
-- [ ] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npm test`
-- [ ] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npm run lint`
-- [ ] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npx tsc --noEmit`
-- [ ] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npm run build`
-- [ ] Проверить, что Quality Gate требует применимые `rg` self-checks
-- [ ] Проверить, что обязательные scenarios включают anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`
-- [ ] Проверить, что pagination scenarios используют `limit/offset`, если применимо
-- [ ] Проверить, что инструкции запрещают смешение CMS frontend с `site-*` consumer контуром
+- [x] Проверить, что diff ограничен `agents/planner.md`, `agents/frontend.md`, `agents/quality_gate.md` и планом
+- [x] Проверить, что инструкции не меняют backend endpoint policy
+- [x] Проверить, что Planner теперь обязан планировать frontend tests для каждой новой CMS frontend feature
+- [x] Проверить, что Frontend Agent теперь обязан добавлять/обновлять tests для любого CMS frontend behavior diff
+- [x] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npm test`
+- [x] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npm run lint`
+- [x] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npx tsc --noEmit`
+- [x] Проверить, что Quality Gate блокирует merge без `cd services/frontend && npm run build`
+- [x] Проверить, что Quality Gate требует применимые `rg` self-checks
+- [x] Проверить, что обязательные scenarios включают anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`
+- [x] Проверить, что pagination scenarios используют `limit/offset`, если применимо
+- [x] Проверить, что инструкции запрещают смешение CMS frontend с `site-*` consumer контуром

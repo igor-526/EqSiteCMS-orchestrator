@@ -96,11 +96,11 @@ fe-build:
 # Infrastructure
 
 infra:
-	$(DC_INFRA) -p eqsitecms --env-file services/backend/.env up -d
+	$(DC_INFRA) -p eqsitecms --env-file $(COMPOSE_DIR)/.env up -d
 
 # Backend
 be:
-	$(DC_BE) -p eqsitecms --env-file services/backend/.env up -d
+	$(DC_BE) -p eqsitecms --env-file $(COMPOSE_DIR)/.env up -d
 
 # Frontend
 fe:

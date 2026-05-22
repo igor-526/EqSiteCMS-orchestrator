@@ -52,6 +52,100 @@
 - Для каждого endpoint в тестах должна прослеживаться связь с Access matrix.
 - Запрещено заполнять список однотипными happy-path проверками ради количества. Если тесты выглядят повторяющимися, Planner обязан переработать матрицу сценариев.
 
+### 2.2. Обязательное планирование тестов для CMS frontend-фич
+
+Для **каждой** новой или измененной feature в `services/frontend` Planner обязан включить frontend test plan. Это применяется к UI, hooks, services, API boundary, filters, tables, pagination, scopes, forms, modals и route/page flows.
+
+`services/frontend` является **Protected Admin UI**. Planner не меняет backend endpoint policy: `GET` остается Public Read по умолчанию для consumer-контуров, `POST/PATCH/DELETE` остаются Protected Write, auth `POST` остается явным исключением. Frontend-план описывает admin UX и тесты поверх этого контракта.
+
+#### Frontend test matrix
+
+В каждой CMS frontend-фиче план должен содержать таблицу:
+
+| Area | Behavior diff | Required tests | Access scenario | Commands |
+|---|---|---|---|---|
+| `<route/hook/service/component>` | `<что меняется для пользователя или API boundary>` | `<unit/component/API-boundary/e2e/manual>` | `<anonymous/authenticated/scopes/401/403>` | `<npm test/lint/typecheck/build/rg>` |
+
+Матрица должна явно покрывать:
+- anonymous redirect/block для CMS route/page и authenticated render для разрешенного пользователя;
+- scope present и scope missing для permissioned actions;
+- Protected Write UX: hidden/disabled/guarded action, mutation guard и backend denial surfaced through `401/403`;
+- MSW/mocks для success, empty, validation error, generic error, `401` и `403` в API-boundary/component tests;
+- запрет live backend calls в unit/component/API-boundary tests;
+- no `site-*` mixing: CMS frontend не импортирует и не использует Public Read consumer code;
+- pagination `limit/offset` coverage, если feature содержит списки/таблицы.
+
+#### Manual QA steps (UI тестирование)
+
+Если план содержит любые изменения UI/page/route/component/modal/form/table/list в CMS frontend, Planner обязан добавить отдельный раздел `## Manual QA steps (UI тестирование)` с уровнем детализации не ниже `docs/plans/feature/horses_management.md`.
+
+Раздел Manual QA должен содержать:
+- browser steps для проверки в реальном браузере, с предусловиями, URL/route, действиями пользователя и ожидаемым результатом для каждого шага;
+- viewports/responsive checks для desktop/tablet/mobile и явную проверку отсутствия overlap текста, кнопок, таблиц, modal/picker/layout элементов;
+- auth states: anonymous redirect/block для CMS route/page и authenticated render для разрешенного пользователя;
+- scopes/permissions: scope present и scope missing для permissioned actions;
+- Protected Write UX, когда frontend-изменение связано с `POST/PATCH/DELETE`: hidden/disabled/guarded action, mutation guard, double-submit guard и отображение backend denial через `401/403`;
+- validation/backend errors: клиентская валидация, backend validation error, generic error, сохранение состояния формы/modal/list после ошибки;
+- success refresh/invalidation: ожидаемое обновление таблицы/списка/карточки/tooltip/indicator после успешной mutation;
+- pagination/filter/search/sort browser checks, если feature содержит списки или таблицы, включая reset `offset`;
+- no `site-*` mixing/regression checks, если изменение может затронуть публичный consumer-контур;
+- итоговый отчет QA: passed/failed steps, screenshots для failed responsive/error/permission cases и network status/body для failed API cases.
+
+Запрещено заменять Manual QA только unit/component/API-boundary тестами или live-backend unit test substitution: автоматизированные тесты через MSW/mocks обязательны отдельно, а browser Manual QA фиксирует пользовательский flow и визуальное поведение.
+
+#### Минимумы frontend-тестов
+
+| Тип изменения | Минимум |
+|---|---|
+| Hook/service/helper | 3 unit tests: success/base, empty/edge input, error path |
+| Filter/search/sort | 4 tests: apply, clear/normalize, debounce/no-debounce expectation, reset `offset`; для sort - mapping и clear sort |
+| Pagination | 4 tests: initial `limit/offset`, page change, page size change, filter/search/sort resets `offset` |
+| Permissioned action | 4 tests: scope present, scope missing, disabled/hidden UX, `401/403` handling |
+| Table/list | 5 component tests: data, loading, empty, error, interaction callback; если есть actions - добавить permission case |
+| Modal/form mutation | 5 tests: open/close, valid submit, validation error, backend error, success refresh/invalidation; если Protected Write - permission case |
+| Новая feature page/flow | Component/API-boundary coverage + 1 smoke/e2e happy path; если Playwright еще не настроен для flow, manual QA steps в отчете |
+| Регрессия | Минимум 1 тест, который фиксирует исправленное поведение |
+
+#### Checklist tasks для Frontend и Quality Gate
+
+В `### Frontend` чеклиста Planner обязан добавлять конкретные test tasks для behavior diff, включая access scenarios: anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`.
+
+Если feature содержит списки/таблицы, чеклист обязан требовать pagination coverage:
+- initial `{ limit, offset }`;
+- page change;
+- page size change;
+- reset `offset` на filter/search/sort.
+
+Для CMS frontend-фич Planner обязан добавить no `site-*` mixing self-check и применимые `rg` checks:
+
+```bash
+rg -n "fetch\\(|axios" services/frontend/src -g '*.{ts,tsx}'
+rg -n "from ['\\\"]@/api" services/frontend/src/app services/frontend/src/features -g '*.{ts,tsx}'
+rg -n "\\bpage\\b|pageSize|page_size" services/frontend/src/features services/frontend/src/api services/frontend/src/types -g '*.{ts,tsx}'
+rg -n "site-ad|site-\\*|Public Read|public read" services/frontend/src -g '*.{ts,tsx}'
+find services/frontend/src -maxdepth 2 -type d \( -name shared -o -name widgets -o -name entities \)
+```
+
+В `### Quality Gate` чеклиста Planner обязан добавлять пункты запуска из `services/frontend`:
+
+```bash
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+Quality Gate checklist также должен требовать review качества tests относительно behavior diff, проверку access/scopes scenarios, MSW/no live backend calls, pagination `limit/offset` и no `site-*` mixing.
+
+#### ESLint rollout для CMS frontend refactor-планов
+
+Для планов рефакторинга/стандартизации `services/frontend` Planner обязан:
+
+- описать этапы `warn → error` и pilot scope (файлы/фичи);
+- включить миграцию на `src/lib/apiStatus.ts` (`API_STATUS`, `isApiSuccess` / `isApiError`);
+- зафиксировать отдельный этап rollout по фичам (prices, gallery, news, siteSettings) после pilot;
+- в Quality Gate требовать `npm run lint` (0 errors в `--quiet` или согласованный scope).
+
 #### Запрет на smoke как pytest-скрипты
 
 **Smoke-тесты никогда не планируются как pytest-скрипты.**

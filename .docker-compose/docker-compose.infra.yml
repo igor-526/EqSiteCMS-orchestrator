@@ -16,9 +16,34 @@ services:
     networks:
       - eqsitecms_network
 
+  minio:
+    image: minio/minio:latest
+    container_name: eqsitecms-minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    expose:
+      - 9000
+    ports:
+      - "${EXPOSE_MINIO_API_PORT:-9000}:9000"
+      - "${EXPOSE_MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - eqsitecms_minio_data:/data
+    networks:
+      - eqsitecms_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
 networks:
   eqsitecms_network:
     external: true
 
 volumes:
   eqsitecms_db_data:
+  eqsitecms_minio_data:
