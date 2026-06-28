@@ -1,0 +1,1143 @@
+{
+  "total": 344,
+  "from_step1": 136,
+  "discovered": 208,
+  "skipped": {},
+  "warnings_count": 682,
+  "warnings_by_path": {
+    "/index.php/ferma/horses/item/202-gospoja": [
+      "pedigree.sire: unparsed date 'САЯН'",
+      "pedigree.dam: unparsed date '082 ГАЗЕЛЬ'"
+    ],
+    "/index.php/ferma/horses/item/200-sivilla": [
+      "pedigree.sire: unparsed date 'НЕИЗВЕСТНО'",
+      "pedigree.dam: unparsed date '084 СВОБОДА'"
+    ],
+    "/index.php/ferma/horses/item/201-fatima": [
+      "pedigree.sire: unparsed date 'НЕИЗВЕСТНО'",
+      "pedigree.dam: unparsed date '019 ФАВОРИТКА'"
+    ],
+    "/index.php/ferma/horses/buden/rezak": [
+      "child 'Розарио': cache-derived photo",
+      "child 'Партнер': cache-derived photo",
+      "child 'Ретро 32': cache-derived photo",
+      "child 'Артефакт': cache-derived photo",
+      "child 'Реприза': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/buden/zernovka": [
+      "child 'Розарио': cache-derived photo",
+      "child 'Реприза': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/zabaikal/milisa": [
+      "child 'Маффин': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "bdate not found",
+      "coat_color not found"
+    ],
+    "/index.php/ferma/horses/zabaikal/solnishko": [
+      "child 'No Name': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/zabaikal/flek": [
+      "child 'Факел': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Маффин': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/arab/gnev": [
+      "child 'Гильгамеш': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/pasifea": [
+      "child 'Аппликация': cache-derived photo",
+      "child 'Феспия': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/filosof": [
+      "child 'Фальконе': cache-derived photo",
+      "child 'Фальконет': cache-derived photo",
+      "child 'Фольксваген': cache-derived photo",
+      "child 'Фейхоа': cache-derived photo",
+      "child 'Формула': cache-derived photo",
+      "child 'Мафия': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/item/390-ivolga-2019": [
+      "empty service/status label 'Продан'",
+      "coat_color not found"
+    ],
+    "/index.php/ferma/horses/item/490-bespredelniy": [
+      "empty service/status label 'Продается'",
+      "pedigree table not found"
+    ],
+    "/index.php/ferma/horses/item/326-gracia": [
+      "pedigree.sire.dam: unparsed date 'Птичка Пеночка, II C, вор.-пег.'"
+    ],
+    "/index.php/ferma/horses/gan-trk/grinfild": [
+      "pedigree.sire.dam: unparsed date 'S.N313318474'",
+      "child 'Хогвард': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/item/411-zevs": [
+      "pedigree table not found",
+      "coat_color not found"
+    ],
+    "/index.php/ferma/horses/gan-trk/malvina": [
+      "pedigree.sire: unparsed date 'Кузнецк'",
+      "pedigree.dam: unparsed date 'Кармен'",
+      "child 'Формула': cache-derived photo",
+      "child 'Мафия': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/mafia": [
+      "pedigree.dam.sire: unparsed date 'Кузнецк'",
+      "pedigree.dam.dam: unparsed date 'Кармен'",
+      "child 'Триумф': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/item/489-maestro": [
+      "empty service/status label 'Продается'",
+      "pedigree table not found",
+      "coat_color not found"
+    ],
+    "/index.php/ferma/horses/item/488-pastel": [
+      "pedigree table not found",
+      "coat_color not found"
+    ],
+    "/index.php/ferma/horses/item/318-pilada": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/horses/item/113-repriza": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/horses/gan-trk/fishka": [
+      "child 'Фор-де-Франс': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/item/143-formula": [
+      "empty service/status label 'Продана'",
+      "pedigree.dam.sire: unparsed date 'Кузнецк'",
+      "pedigree.dam.dam: unparsed date 'Кармен'"
+    ],
+    "/index.php/ferma/horses/item/371-charodey": [
+      "pedigree table not found"
+    ],
+    "/index.php/ferma/horses/item/199-chelentano": [
+      "pedigree.sire: unparsed date 'ЦЕЗАРЬ'",
+      "pedigree.dam: unparsed date 'ЧУЛИТА'"
+    ],
+    "/index.php/ferma/horses/item/325-chigla": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/horses/item/314-bip-bip": [
+      "pedigree.sire.sire: unparsed date 'Похвал IIС, т.-гн.-пег.'",
+      "pedigree.sire.dam: unparsed date 'Пчелка С, т.-гн.'",
+      "pedigree.dam.sire: unparsed date 'Баркас С, т.-рыж.'",
+      "pedigree.dam.dam: unparsed date 'Бабочка IIIВ, св.-гн.-пег.'"
+    ],
+    "/index.php/ferma/horses/sport/gladysh": [
+      "pedigree.sire.sire: unparsed date 'Похвал IIС, т.-гн.-пег.'",
+      "pedigree.sire.dam: unparsed date 'Пчелка С, т.-гн.'",
+      "pedigree.dam.sire: unparsed date 'Могучий С, т.-гн.'",
+      "pedigree.dam.dam: unparsed date 'Чайка IВ, рыж.-пег.'",
+      "child 'Игарка': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/sport/ivolga": [
+      "pedigree.dam.dam: unparsed date 'Белка'",
+      "child 'Играйка': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Игарка': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/item/315-igrayka": [
+      "pedigree.sire.sire: unparsed date 'Алтай, рыж.-чуб.'",
+      "pedigree.sire.dam: unparsed date 'Гривна В, рыж.'"
+    ],
+    "/index.php/ferma/horses/gan-trk/arhona": [
+      "child 'Фальконе': cache-derived photo",
+      "child 'Фальконет': cache-derived photo",
+      "child 'Фольксваген': cache-derived photo",
+      "child 'Фейхоа': cache-derived photo",
+      "child 'Антей': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/porfea": [
+      "child 'Партнер': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/fihta": [
+      "child 'Феерия Витта': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/valter": [
+      "child 'Отважный': cache-derived photo",
+      "child 'Феерия Витта': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/hvylya": [
+      "child 'Хогвард': cache-derived photo",
+      "child '19 Архона': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/applikacia": [
+      "child 'Артефакт': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/aresibo": [
+      "child 'Аристарх': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/falkone": [
+      "child 'Фор-де-Франс': cache-derived photo",
+      "child 'Феспия': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/gan-trk/hogvard": [
+      "child 'No Name': cache-derived photo",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian": [
+      "pedigree.sire.sire: unparsed date 'RIOS RANDY, SPOTTED'",
+      "pedigree.sire.dam: unparsed date 'BAYERNS MELINA, SPOTTED'",
+      "pedigree.dam.dam: unparsed date 'ZONNETJE VD MUSSENBERG\\nSHETLAND PON'",
+      "child 'Арфа А17': cache-derived photo",
+      "child 'Альф А15': cache-derived photo",
+      "child 'Афон': cache-derived photo",
+      "child 'Альфавиль': cache-derived photo",
+      "child 'Афалина': cache-derived photo",
+      "child 'Афсалина': cache-derived photo",
+      "child 'Афоня': cache-derived photo",
+      "child 'Лили-Флауэр': cache-derived photo",
+      "child 'Ефимка': cache-derived photo",
+      "child 'Альфа': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/akapella": [
+      "child 'Афалина': cache-derived photo",
+      "child 'Афсалина': cache-derived photo",
+      "child 'Афоня': cache-derived photo",
+      "bdate not found"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/annemun": [
+      "child 'Акапелла': cache-derived photo",
+      "child Акапелла: unparsed date 'кобыла,'",
+      "child 'Арфа А17': cache-derived photo",
+      "child 'Альф А15': cache-derived photo",
+      "child 'Афон': cache-derived photo",
+      "child 'Альфавиль': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/knopka": [
+      "empty service/status label 'Продана'",
+      "pedigree.sire: unparsed date 'Маркиз, бул.'",
+      "pedigree.dam: unparsed date 'Краска, гн.'",
+      "child 'Тифани': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan": [
+      "pedigree.sire.sire: unparsed date 'Москито А 106'",
+      "pedigree.sire.dam: unparsed date 'Катя A 469 H'",
+      "child 'Тифани': cache-derived photo",
+      "child 'Ласточка III': cache-derived photo",
+      "child 'Баунти (Блестка АРТ)': cache-derived photo",
+      "child 'Метель': cache-derived photo",
+      "child 'Артистка': cache-derived photo",
+      "child 'Гитарист': cache-derived photo",
+      "child 'Василиса (Медиум Васка)': cache-derived photo",
+      "child 'Тагир': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet": [
+      "child 'Еллоу Ра': cache-derived photo",
+      "child 'Оригами': cache-derived photo",
+      "child 'Аргентум А15': cache-derived photo",
+      "child 'Карьерист': cache-derived photo",
+      "child 'Крамер': cache-derived photo",
+      "child 'Ажур': cache-derived photo",
+      "child 'Марсельеза': cache-derived photo",
+      "child 'Пристелла': cache-derived photo",
+      "child 'Алери': cache-derived photo",
+      "child 'Престиж': cache-derived photo",
+      "child '334 Орсей': cache-derived photo",
+      "child 'Карлин': cache-derived photo",
+      "child 'Драже': cache-derived photo",
+      "child '330 Шафран': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/mazurka": [
+      "child 'Майкоп': cache-derived photo",
+      "child '294 Мон Праун': cache-derived photo",
+      "child '318 Монпасье': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/siesta": [
+      "child 'Спартанец': cache-derived photo",
+      "child 'Суприма': cache-derived photo",
+      "child 'Маленький Принц': cache-derived photo",
+      "child 'Симпатяга': cache-derived photo",
+      "child '646 Ленточка': cache-derived photo",
+      "child '572 Эльсона': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/elan": [
+      "child 'Ефимка': cache-derived photo",
+      "child 'Епифань (Елейная Плюшка)': cache-derived photo",
+      "child 'Евпатория': cache-derived photo",
+      "child '335 Егерь': cache-derived photo",
+      "child '623 Капелла': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/listva": [
+      "child 'Липучка': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/metka": [
+      "child '722 Миссисипи': cache-derived photo",
+      "child 'Млечный Путь': cache-derived photo",
+      "child 'Метель': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/lanka": [
+      "pedigree.dam.sire: unparsed date 'Айстерн А 167 (GER)\\n(Eisstern A 167)'",
+      "child 'Лапако': cache-derived photo",
+      "child 'Любопытный': cache-derived photo",
+      "child 'Линдор': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/melba": [
+      "child 'Марсельеза': cache-derived photo",
+      "child 'Мариуполь': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/pastila": [
+      "child 'Пристелла': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/lady-lynn": [
+      "child 'Леонайд А15': cache-derived photo",
+      "child 'Лакруэль': cache-derived photo",
+      "child 'Леди Макбет': cache-derived photo",
+      "child 'Луидор': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/leyzi": [
+      "child 'Лейна': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/lizet": [
+      "pedigree.sire.dam: unparsed date 'BREE PATRICIA, WELSH PONY'",
+      "pedigree.dam.dam: unparsed date 'AMANDAS EMMELY\\nWELSH PONY'",
+      "child 'Ландау А17': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Ладный': cache-derived photo",
+      "child 'Ладан': cache-derived photo",
+      "child 'Лагерфельд': cache-derived photo",
+      "child 'Ламборджини А15': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/item/48-magistr": [
+      "pedigree table not found"
+    ],
+    "/index.php/ferma/pony/item/323-pego": [
+      "pedigree table not found"
+    ],
+    "/index.php/ferma/pony/shetlend/penkeyk": [
+      "child 'Лейна': cache-derived photo",
+      "child 'Мах': cache-derived photo",
+      "child 'Альпа': cache-derived photo",
+      "child 'Тигода': cache-derived photo",
+      "child 'Золотинка': cache-derived photo",
+      "child 'Зорька': cache-derived photo",
+      "child 'Запонька': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/salut": [
+      "child 'Зарисовка': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/till": [
+      "pedigree.dam.dam: unparsed date \"FLEVOZICHT'S HENNY\\nWELSH MOUNTAIN PONY\"",
+      "child 'Тики Мадиш А17': cache-derived photo",
+      "child 'Тамплиер': cache-derived photo",
+      "child 'Труффальдино': cache-derived photo",
+      "child 'Тирамису': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/lentochka": [
+      "child 'Ласточка III': cache-derived photo",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/meri-poppins": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina": [
+      "pedigree.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'",
+      "child 'Маскарпоне А16': cache-derived photo",
+      "child 'Медалист': cache-derived photo",
+      "child 'Миропия А15': cache-derived photo",
+      "child 'Марципан': cache-derived photo",
+      "child 'Моя Прелесть': cache-derived photo",
+      "child '0535 Мельпомена': cache-derived photo",
+      "child 'Мопассан': cache-derived photo",
+      "child 'Элька': cache-derived photo",
+      "child Элька: unparsed date 'кобыла'"
+    ],
+    "/index.php/ferma/pony/sport-pony/babochka": [
+      "child 'Балетмейстер А16': cache-derived photo",
+      "child 'Бакарди': cache-derived photo",
+      "child 'Балтика': cache-derived photo",
+      "child 'Баунти (Блестка АРТ)': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/desert": [
+      "pedigree.dam.dam: unparsed date 'KIENBERGS DAISY\\nWELSH PONY'",
+      "child 'Мерседес А15': cache-derived photo",
+      "child 'Ландау А17': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Ладный': cache-derived photo",
+      "child 'Ладан': cache-derived photo",
+      "child 'Лагерфельд': cache-derived photo",
+      "child 'Медалист': cache-derived photo",
+      "child 'Ламборджини А15': cache-derived photo",
+      "child 'Леонайд А15': cache-derived photo",
+      "child 'Труффальдино': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/jastin": [
+      "pedigree.sire.dam: unparsed date 'Lacy Sable'"
+    ],
+    "/index.php/ferma/pony/welsh/kasparov": [
+      "child 'Бакарди': cache-derived photo",
+      "child 'Лакруэль': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/lady-vinter": [
+      "child 'Лимонад': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/majkl": [
+      "child 'Лимонад': cache-derived photo",
+      "child 'Оман': cache-derived photo",
+      "child 'Тики Мадиш А17': cache-derived photo",
+      "child 'Тамплиер': cache-derived photo",
+      "child 'Темпико А17': cache-derived photo",
+      "child 'Балетмейстер А16': cache-derived photo",
+      "child 'Турмалин А16': cache-derived photo",
+      "child 'Тимберлейк': cache-derived photo",
+      "child 'Тирамису': cache-derived photo",
+      "child 'Леди Макбет': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/welsh/tinkerbel": [
+      "pedigree.dam.dam: unparsed date 'Corners Iyala 98.01490 (Гол), бул.'",
+      "child 'Темпико А17': cache-derived photo",
+      "child 'Турмалин А16': cache-derived photo",
+      "child 'Тимберлейк': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/belosnegka": [
+      "pedigree.sire.sire: unparsed date 'Фаворит S 539 (Гол)\\n(Favorit S 539)'",
+      "pedigree.sire.dam: unparsed date 'Ханни S 19727 (Гол)\\n(Hanny S 19725)'",
+      "pedigree.dam.sire: unparsed date 'Каспер S 664 (Гол)\\n(Kasper S 664)'",
+      "pedigree.dam.dam: unparsed date 'Лилиан S 22565 (Гол)\\n(Lilian S 22565)'",
+      "child 'Бабочка': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/gita": [
+      "child 'Гало': cache-derived photo",
+      "child 'Гран-При А14': cache-derived photo",
+      "child 'Гиппомания': cache-derived photo",
+      "child 'Гуппи': cache-derived photo",
+      "child 'Гопак': cache-derived photo",
+      "child 'Гипрок': cache-derived photo",
+      "child 'Гипербола': cache-derived photo",
+      "child 'Гитарист': cache-derived photo",
+      "child 'Тагир': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/feya": [
+      "child 'Флиппер': cache-derived photo",
+      "child 'Филипинка': cache-derived photo",
+      "child 'Фунтик-Пунтик': cache-derived photo",
+      "child 'Василиса (Медиум Васка)': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/pier": [
+      "child 'Агапа А16': cache-derived photo",
+      "child 'Евлампия': cache-derived photo",
+      "child 'Мерпл А23': cache-derived photo",
+      "child 'Меппи': cache-derived photo",
+      "child 'Есперанса': cache-derived photo",
+      "child '722 Миссисипи': cache-derived photo",
+      "child 'Запир': cache-derived photo",
+      "child 'Липисина А17': cache-derived photo",
+      "child 'Ливерпуль': cache-derived photo",
+      "child 'Опра': cache-derived photo",
+      "child 'Оптима': cache-derived photo",
+      "child 'Лили-Лупси А16': cache-derived photo",
+      "child 'Маскарпоне А16': cache-derived photo",
+      "child 'Сопрано А16': cache-derived photo",
+      "child 'Лемпи А15': cache-derived photo",
+      "child 'Миропия А15': cache-derived photo",
+      "child 'Гран-При А14': cache-derived photo",
+      "child 'Апониви А14': cache-derived photo",
+      "child 'Лепший А14': cache-derived photo",
+      "child 'Скипирич': cache-derived photo",
+      "child 'Марципан': cache-derived photo",
+      "child 'Липучка': cache-derived photo",
+      "child 'Млечный Путь': cache-derived photo",
+      "child 'Лапако': cache-derived photo",
+      "child 'Флиппер': cache-derived photo",
+      "child 'Спартанец': cache-derived photo",
+      "child 'Гиппомания': cache-derived photo",
+      "child 'Сингапур': cache-derived photo",
+      "child 'Суприма': cache-derived photo",
+      "child 'Ланприз': cache-derived photo",
+      "child 'Гуппи': cache-derived photo",
+      "child 'Гопак': cache-derived photo",
+      "child 'Гипрок': cache-derived photo",
+      "child 'Моя Прелесть': cache-derived photo",
+      "child 'Сарпинка': cache-derived photo",
+      "child 'Майкоп': cache-derived photo",
+      "child 'Аппатит': cache-derived photo",
+      "child 'Филипинка': cache-derived photo",
+      "child 'Компашка': cache-derived photo",
+      "child 'Капля А18': cache-derived photo",
+      "child 'Клементина': cache-derived photo",
+      "child 'Любопытный': cache-derived photo",
+      "child 'Мариуполь': cache-derived photo",
+      "child 'Ампир': cache-derived photo",
+      "child 'Маленький Принц': cache-derived photo",
+      "child 'Скриппи': cache-derived photo",
+      "child 'Гипербола': cache-derived photo",
+      "child '784 Сапфира': cache-derived photo",
+      "child 'Апельсин': cache-derived photo",
+      "child 'Криспир': cache-derived photo",
+      "child 'Кипарис': cache-derived photo",
+      "child '0535 Мельпомена': cache-derived photo",
+      "child '294 Мон Праун': cache-derived photo",
+      "child 'Пушкин': cache-derived photo",
+      "child 'Епифань (Елейная Плюшка)': cache-derived photo",
+      "child 'Фунтик-Пунтик': cache-derived photo",
+      "child 'Симпатика': cache-derived photo",
+      "child 'Евпатория': cache-derived photo",
+      "child 'Симпатяга': cache-derived photo",
+      "child 'Лаперузо': cache-derived photo",
+      "child '801 Мери Поппинс': cache-derived photo",
+      "child 'Кассиопея': cache-derived photo",
+      "child '318 Монпасье': cache-derived photo",
+      "child 'Мопассан': cache-derived photo",
+      "child 'Веня': cache-derived photo",
+      "child '335 Егерь': cache-derived photo",
+      "child '324 Пуфик': cache-derived photo",
+      "child '646 Ленточка': cache-derived photo",
+      "child '623 Капелла': cache-derived photo",
+      "child 'Клиппер': cache-derived photo",
+      "child '572 Эльсона': cache-derived photo",
+      "child 'Элька': cache-derived photo",
+      "child Элька: unparsed date 'кобыла'"
+    ],
+    "/index.php/ferma/pony/shetlend/evgenika": [
+      "empty service/status label 'Продана'",
+      "pedigree.sire.sire: unparsed date 'Норманн А 68 (GER)'",
+      "pedigree.sire.dam: unparsed date 'Натя А 216 Н (GER)'",
+      "pedigree.dam.sire: unparsed date 'Вилдфанг А 187 (GER)\\n(Wildfang A 187)'",
+      "child 'Еллоу Ра': cache-derived photo",
+      "child 'Еллоу Шайн': cache-derived photo",
+      "child 'Еврик А16': cache-derived photo",
+      "child 'Ежик А15': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/elzhbetta": [
+      "pedigree.dam.sire: unparsed date 'Вилдфанг А 187 (GER)\\n(Wildfang A 187)'",
+      "child 'Евлампия': cache-derived photo",
+      "child '850 Евстория': cache-derived photo",
+      "child 'Есмиэла А18': cache-derived photo",
+      "child 'Есперанса': cache-derived photo",
+      "child 'Ефлакс': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin": [
+      "child 'Ассасин': cache-derived photo",
+      "child 'Оболенский': cache-derived photo",
+      "child 'Асса': cache-derived photo",
+      "child 'Кирса': cache-derived photo",
+      "child 'Елесия': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Есмира': cache-derived photo",
+      "child 'Асати А17': cache-derived photo",
+      "child 'Ельсай': cache-derived photo",
+      "child 'Особа': cache-derived photo",
+      "child 'Астана А17': cache-derived photo",
+      "child 'Асгард': cache-derived photo",
+      "child 'Осси': cache-derived photo",
+      "child 'Осинка': cache-derived photo",
+      "child 'Осирис': cache-derived photo",
+      "child 'Ексель': cache-derived photo",
+      "child 'Есмиэла А18': cache-derived photo",
+      "child 'Смусси': cache-derived photo",
+      "child 'Селестина А22': cache-derived photo",
+      "child 'Манюня А17': cache-derived photo",
+      "child 'Сим-Сим': cache-derived photo",
+      "child 'Саргерас': cache-derived photo",
+      "child 'Ассоль': cache-derived photo",
+      "child 'Артист': cache-derived photo",
+      "child 'Зозуля': cache-derived photo",
+      "child 'Лола': cache-derived photo",
+      "child 'Оса': cache-derived photo",
+      "child '320 Лучистый': cache-derived photo",
+      "child 'Маттиас': cache-derived photo",
+      "child 'Малефисента': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj": [
+      "child 'Еллоу Шайн': cache-derived photo",
+      "child 'Абрикоска': cache-derived photo",
+      "child 'Аракс': cache-derived photo",
+      "child 'Мамука': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Маришка': cache-derived photo",
+      "child 'Микаэла': cache-derived photo",
+      "child 'Оккервиль А17': cache-derived photo",
+      "child 'Марсик А16': cache-derived photo",
+      "child 'Еврик А16': cache-derived photo",
+      "child 'Оливка А16': cache-derived photo",
+      "child 'Екатерина А16': cache-derived photo",
+      "child 'Макадами А16': cache-derived photo",
+      "child 'Ежик А15': cache-derived photo",
+      "child 'Макэрия А15': cache-derived photo",
+      "child 'Окинава А15': cache-derived photo",
+      "child 'Каракум А14': cache-derived photo",
+      "child 'Очаровашка А14': cache-derived photo",
+      "child 'Макраме А14': cache-derived photo",
+      "child 'Аквамарин': cache-derived photo",
+      "child '865 Зайка': cache-derived photo",
+      "child '346 Кокошник': cache-derived photo",
+      "child '305 Шаман': cache-derived photo",
+      "child '325 Шрайбикус': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/mandarinka": [
+      "child 'Манюня А17': cache-derived photo",
+      "child '769 Марселла': cache-derived photo",
+      "child 'Маттиас': cache-derived photo",
+      "child 'Малефисента': cache-derived photo",
+      "child 'Макадами А16': cache-derived photo",
+      "child 'Мермерис А14': cache-derived photo",
+      "child 'Мушка': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/mysl": [
+      "child 'Скриппи': cache-derived photo",
+      "child '801 Мери Поппинс': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/krustina": [
+      "pedigree.sire.sire: unparsed date 'Москито А 106'",
+      "pedigree.sire.dam: unparsed date 'Катя A 469 H'",
+      "pedigree.dam.sire: unparsed date 'Мариус А 159 (GER)\\n(Marius A 159)'",
+      "pedigree.dam.dam: unparsed date 'Катя А 253 Н (GER)\\n(Kate A 253 H)'",
+      "child 'Кирса': cache-derived photo",
+      "child 'Каракум А14': cache-derived photo",
+      "child 'Карьерист': cache-derived photo",
+      "child 'Крамер': cache-derived photo",
+      "child 'Карлин': cache-derived photo",
+      "child 'Компашка': cache-derived photo",
+      "child 'Капля А18': cache-derived photo",
+      "child 'Клементина': cache-derived photo",
+      "child 'Криспир': cache-derived photo",
+      "child 'Кипарис': cache-derived photo",
+      "child 'Кассиопея': cache-derived photo",
+      "child 'Клиппер': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/azalia": [
+      "child 'Ассасин': cache-derived photo",
+      "child 'Асати А17': cache-derived photo",
+      "child '564 Астра': cache-derived photo",
+      "child 'Аргентум А15': cache-derived photo",
+      "child 'Аквамарин': cache-derived photo",
+      "child 'Ажур': cache-derived photo",
+      "child 'Альфа': cache-derived photo",
+      "child 'Апельсин': cache-derived photo",
+      "child 'Артистка': cache-derived photo",
+      "child 'Аскольд': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/lozanna": [
+      "empty service/status label 'Продана'",
+      "child 'Липисина А17': cache-derived photo",
+      "child 'Ливерпуль': cache-derived photo",
+      "child 'Лили-Лупси А16': cache-derived photo",
+      "child 'Лемпи А15': cache-derived photo",
+      "child 'Лепший А14': cache-derived photo",
+      "child 'Лили-Флауэр': cache-derived photo",
+      "child 'Ланприз': cache-derived photo",
+      "child 'Лаперузо': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/skazka": [
+      "empty service/status label 'Продана'",
+      "child 'Смусси': cache-derived photo",
+      "child 'Селестина А22': cache-derived photo",
+      "child 'Сим-Сим': cache-derived photo",
+      "child 'Саргерас': cache-derived photo",
+      "child 'Сопрано А16': cache-derived photo",
+      "child 'Скипирич': cache-derived photo",
+      "child 'Сингапур': cache-derived photo",
+      "child 'Сарпинка': cache-derived photo",
+      "child '784 Сапфира': cache-derived photo",
+      "child 'Симпатика': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/astra": [
+      "child 'Агапа А16': cache-derived photo",
+      "child 'Астана А17': cache-derived photo",
+      "child 'Асгард': cache-derived photo",
+      "child 'Ассоль': cache-derived photo",
+      "child 'Апониви А14': cache-derived photo",
+      "child 'Алери': cache-derived photo",
+      "child 'Аппатит': cache-derived photo",
+      "child 'Ампир': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/zosya": [
+      "child 'Зевс': cache-derived photo",
+      "child 'Зорька': cache-derived photo",
+      "child 'Зилола': cache-derived photo",
+      "child 'Золя': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/omega": [
+      "child 'Оболенский': cache-derived photo",
+      "child 'Оригами': cache-derived photo",
+      "child 'Оккервиль А17': cache-derived photo",
+      "child 'Опра': cache-derived photo",
+      "child 'Оптима': cache-derived photo",
+      "child 'Оливка А16': cache-derived photo",
+      "child 'Окинава А15': cache-derived photo",
+      "child 'Очаровашка А14': cache-derived photo",
+      "child '334 Орсей': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/missisipi": [
+      "child 'Молли': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/marsella": [
+      "child 'Маришка': cache-derived photo",
+      "child 'Микаэла': cache-derived photo",
+      "child 'Марсик А16': cache-derived photo",
+      "child 'Макэрия А15': cache-derived photo",
+      "child 'Макраме А14': cache-derived photo",
+      "child 'Мексика': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/evstoria": [
+      "child 'Елесия': cache-derived photo",
+      "child 'No Name': cache-derived photo",
+      "child 'Елка А17': cache-derived photo",
+      "child 'Екатерина А16': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/asati": [
+      "child 'Аракс': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/astana": [
+      "child 'Абрикоска': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/eva": [
+      "bdate not found"
+    ],
+    "/index.php/ferma/pony/shetlend/evlampia": [
+      "child 'Есмира': cache-derived photo",
+      "child 'Ельсай': cache-derived photo",
+      "child 'Елейный': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/evropeyka": [
+      "child 'Елла': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/ellou-ra": [
+      "child 'Ексель': cache-derived photo",
+      "child 'Елизар': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/ellou-shain": [
+      "child 'Легендарный': cache-derived photo",
+      "child 'Елик': cache-derived photo",
+      "child 'Евлалия': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/esperansa": [
+      "child 'Елай': cache-derived photo",
+      "child 'Ельхард': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/zabava": [
+      "child 'Запонька': cache-derived photo",
+      "child 'Запир': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/zevs": [
+      "child 'Езер': cache-derived photo",
+      "child 'Азиз': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/lenger": [
+      "child 'Елка А17': cache-derived photo",
+      "child 'Зилола': cache-derived photo",
+      "child 'Легендарный': cache-derived photo",
+      "child 'Елик': cache-derived photo",
+      "child 'Золя': cache-derived photo",
+      "child 'Елла': cache-derived photo",
+      "child 'Молли': cache-derived photo",
+      "child 'Елай': cache-derived photo",
+      "child 'Вольта': cache-derived photo",
+      "child 'Евлалия': cache-derived photo",
+      "child 'Смайлик': cache-derived photo",
+      "child 'Тильда': cache-derived photo",
+      "child 'Тиль': cache-derived photo",
+      "child 'Елизар': cache-derived photo",
+      "child 'Ельхард': cache-derived photo",
+      "child 'Гало': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/manuna": [
+      "child 'Мамука': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/origamy": [
+      "child 'Особа': cache-derived photo",
+      "child 'Осси': cache-derived photo",
+      "child 'Осинка': cache-derived photo",
+      "child 'Осирис': cache-derived photo",
+      "child 'No Name': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/sim-sim": [
+      "child 'Смайлик': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/tagi": [
+      "child 'Тигода': cache-derived photo",
+      "child 'Тильда': cache-derived photo",
+      "child 'Тиль': cache-derived photo"
+    ],
+    "/index.php/ferma/horses/buden/rezak/item/114-rozario": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/horses/buden/rezak/item/328-artefact": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/horses/zabaikal/milisa/item/427-milisa-2021": [
+      "pedigree.dam: unparsed date 'Милиса'"
+    ],
+    "/index.php/ferma/horses/arab/gnev/item/322-gilgamesh": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/horses/gan-trk/filosof/item/130-folksvagen": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/horses/gan-trk/aresibo/item/410-aristarh": [
+      "pedigree.sire: unparsed date \"Quentin's Heart\"",
+      "pedigree.dam.sire: unparsed date '5 Аристей 35, глш\\nЗАО \"Конный завод \"Георгенбург\"\\nрыж., 198'",
+      "coat_color not found"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/219-arfa": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/85-alf": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/374-afon": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/378-afalina": [
+      "empty service/status label 'Продана'",
+      "pedigree.dam: unparsed date 'Акапелла\\nвор.-чуб.'"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/433-afsalina": [
+      "pedigree.dam: unparsed date 'Акапелла\\nвор.-чуб.'"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/408-afonya": [
+      "pedigree.dam: unparsed date 'Акапелла\\nвор.-чуб.'"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/234-lili-flauer": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/291-efimka": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/appaluza-pony/florian/item/243-alfa": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/knopka/item/290-tifany": [
+      "empty service/status label 'Продана'",
+      "pedigree.dam.sire: unparsed date 'Маркиз, бул.'",
+      "pedigree.dam.dam: unparsed date 'Краска, гн.'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/270-lastochka": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/222-baunty": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/289-metel": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/218-artistka": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/223-gitarist": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/268-vasilisa": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/tamerlan/item/224-tagir": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/88-argentum": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/248-karierist": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/217-agur": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/262-marselieza": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/264-pristella": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/220-alery": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/261-prestig": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/258-orsey": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/249-karlin": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/259-draje": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/rassvet/item/260-shafran": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/mazurka/item/284-mon-praun": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/siesta/item/275-spartanec": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/siesta/item/272-elsona": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/elan/item/79-evpatoria": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/elan/item/164-eger": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/elan/item/165-kapella": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/listva/item/282-lipuchka": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/metka/item/288-mlechnyi-put": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/lanka/item/279-lapako": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/lanka/item/281-lindor": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/melba/item/286-mariupol": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/welsh/lady-lynn/item/237-leonaid": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/welsh/lady-lynn/item/235-lady-makbet": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/welsh/lizet/item/240-lambordgini": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/penkeyk/item/402-adelia-2020": [
+      "pedigree.dam: unparsed date 'Аделия, гн.'",
+      "pedigree.dam.sire: unparsed date 'Аделина'"
+    ],
+    "/index.php/ferma/pony/shetlend/penkeyk/item/393-tigoda": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/welsh/till/item/239-tiramisu": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/180-maskarpone": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/381-malvina-2019": [
+      "empty service/status label 'Продан'",
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/182-miropia": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/179-marcipan": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/183-prelest": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/181-melpomena": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/184-mopassan": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/malvina/item/185-elka": [
+      "pedigree.dam.sire: unparsed date 'РВ Нахимовец\\nШаховской к/з, т.-гн'",
+      "no sigPro/gallery photos found",
+      "bdate not found"
+    ],
+    "/index.php/ferma/pony/sport-pony/babochka/item/92-baletmeister": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/sport-pony/babochka/item/221-baltika": [
+      "pedigree.sire.sire: unparsed date 'Henshof Rafael, гн.'",
+      "pedigree.sire.dam: unparsed date 'Heidi M28675, сер.'"
+    ],
+    "/index.php/ferma/pony/welsh/desert/item/242-mersedes": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/welsh/lady-vinter/item/151-limonad": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/welsh/majkl/item/353-oman": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/welsh/majkl/item/231-turmalin": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/gita/item/95-gran-pri": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/gita/item/77-gippomania": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/gita/item/78-guppy": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/gita/item/350-gita-2017": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/gita/item/351-giprok": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/gita/item/75-giperbola": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/feya/item/94-flipper": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/feya/item/157-filipinka": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/feya/item/156-funtik-puntik": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/188-lili-lupsy": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/87-aponivi": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/84-lepshyi": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/171-skipirich": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/161-singapur": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/174-sarpinka": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/74-appatit": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/245-kompashka": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/352-kaplya": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/382-klementina": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/73-ampir": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/155-skrippi": [
+      "empty service/status label 'Продана'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/72-apelsin": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/244-krispir": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/166-pushkin": [
+      "empty service/status label 'Продан'",
+      "pedigree.dam.sire: unparsed date 'Маркиз, бул.'",
+      "pedigree.dam.dam: unparsed date 'Краска, гн.'"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/233-laperuzo": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/247-kassiopea": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/277-venya": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/pier/item/278-pufik": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/elzhbetta/item/297-eflaks": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/425-esmira": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/483-asgard": [
+      "child 'Абрикоска': cache-derived photo"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/344-smussy": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/333-artist": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/334-zozulya": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/331-lola": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/335-osa": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/332-luchistyi": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/serpantin/item/387-malefisenta": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/383-mikaela": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/253-marsik": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/254-makadami": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/252-makeria": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/147-okinava": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/250-karakum": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/251-makrame": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/82-akvamarin": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/kashkaj/item/296-shaman": [
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/mandarinka/item/255-mermeris": [
+      "empty service/status label 'Продан'"
+    ],
+    "/index.php/ferma/pony/shetlend/mandarinka/item/256-mushka": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/azalia/item/89-askold": [
+      "empty service/status label 'Продан'",
+      "no sigPro/gallery photos found"
+    ],
+    "/index.php/ferma/pony/shetlend/marsella/item/298-meksika": [
+      "empty service/status label 'Продана'"
+    ],
+    "/index.php/ferma/pony/shetlend/ellou-shain/item/435-elik": [
+      "coat_color not found"
+    ],
+    "/index.php/ferma/pony/shetlend/zevs/item/480-aziz": [
+      "pedigree.dam: unparsed date 'Арса'"
+    ],
+    "/index.php/ferma/pony/shetlend/lenger/item/452-volta": [
+      "pedigree.dam: unparsed date 'Василиса'"
+    ]
+  }
+}

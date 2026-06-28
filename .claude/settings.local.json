@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(api-smoke-test)",
+      "Skill(smoke)"
+    ]
+  }
+}
