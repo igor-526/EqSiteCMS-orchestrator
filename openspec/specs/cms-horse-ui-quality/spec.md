@@ -6,7 +6,7 @@
 ## Requirements
 
 ### Requirement: Защищённый CMS-контур управления лошадьми
-CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
+CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. Вкладка «Лошади» SHALL отображать nullable `code` отдельной колонкой «Код», а create/edit modal SHALL предоставлять строковое поле «Код» длиной не более 31 символа, сохраняющее допустимые значения без trim и позволяющее очистить существующий code. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
 
 #### Scenario: Неавторизованный пользователь открывает CMS
 - **WHEN** загрузка текущего пользователя для защищённого CMS-маршрута не возвращает успешную сессию
@@ -15,6 +15,30 @@ CMS SHALL предоставлять маршрут `/horses` только в au
 #### Scenario: Авторизованный пользователь открывает лошадей
 - **WHEN** authenticated CMS-пользователь открывает `/horses`
 - **THEN** интерфейс получает его scopes из `UserContext` и отображает доступные horse UI-сценарии в tenant пользователя без consumer service key
+
+#### Scenario: Авторизованный просмотр таблицы
+- **WHEN** authenticated CMS пользователь открывает `/horses` и вкладку «Лошади»
+- **THEN** таблица отображает колонку «Код» со строкой либо устойчивым пустым представлением для `null`, не нарушая loading/empty/error/pagination состояния
+
+#### Scenario: Создание и изменение кода
+- **WHEN** пользователь с horse write scope открывает create/edit modal, вводит до 31 символа и сохраняет
+- **THEN** CMS передаёт code в соответствующем POST/PATCH, защищает от double submit и после успеха обновляет таблицу точным значением
+
+#### Scenario: Очистка кода
+- **WHEN** пользователь очищает существующий code в edit modal и сохраняет
+- **THEN** CMS передаёт согласованный `null`, а после invalidation таблица показывает пустое значение
+
+#### Scenario: Ошибка длины и backend denial
+- **WHEN** введено более 31 символа либо backend отвечает validation/generic/`401`/`403`
+- **THEN** CMS не показывает ложный успех, сохраняет modal/form state для исправления или retry и отображает понятное error состояние
+
+#### Scenario: Недостаточный scope для изменения кода
+- **WHEN** authenticated пользователь без horse write scope просматривает таблицу
+- **THEN** create/edit action скрыт или disabled, mutation guard не отправляет запрос, а backend authorization остаётся обязательной независимой границей
+
+#### Scenario: Изоляция consumer-контура для кода лошади
+- **WHEN** reviewer проверяет frontend diff для horse code
+- **THEN** изменения ограничены `services/frontend`, отсутствуют импорты `site-*`/Public Read consumer modules и `services/site-ad` не изменён
 
 ### Requirement: Scope-aware UX для действий с лошадьми и родословной
 CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree hook MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.

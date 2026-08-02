@@ -1,0 +1,138 @@
+## Чеклист
+
+### Backend
+
+- [x] 1.1 Прочитать apply `contextFiles`, подтвердить approval и закрепить ownership только за `services/backend/**` и своими checkbox; `services/frontend/**`, specs и `site-*` не менять.
+- [x] 1.2 Повторить поиск PostgreSQL по labels `com.docker.compose.project=eqsitecms` + `com.docker.compose.service=db`, fallback `eqsitecms-db`/image postgres, получить env/host port/image/labels/aliases через `docker inspect` и зафиксировать evidence без хардкода.
+- [x] 1.3 Добавить nullable `Column("code", String(31))` в `services/backend/src/models/horse.py` без default, unique/index или trim.
+- [x] 1.4 Создать отдельную Alembic migration в `services/backend/src/migration/versions/`: upgrade добавляет `horse.code VARCHAR(31) NULL`, downgrade удаляет только эту колонку; проверить текущий head и upgrade/downgrade на обнаруженной PostgreSQL.
+- [x] 1.5 Добавить `code: str | None` с `max_length=31` в `services/backend/src/core/entities/horse.py`, сохранив пустую строку и исходные символы.
+- [x] 1.6 Добавить code в `HorseCreateInDto`, `HorseUpdateInDto`, `HorseOutDto` в `services/backend/src/core/schemas/horses.py`, обеспечив omitted-vs-null PATCH semantics.
+- [x] 1.7 Обновить `services/backend/src/core/services/horse.py`: create/update и `_get_horse_dto` проводят code без потери/нормализации.
+- [x] 1.8 Обновить `services/backend/src/repositories/horse_repository.py` и только необходимые row mappings/selects так, чтобы list/detail/pedigree/foal/candidate/photos horse responses возвращали собственный code.
+- [x] 1.9 Сверить Access matrix: GET/LIST Public Read; POST/PATCH Protected Write; roles `SUPERUSER|ADMIN|DEVELOPER`; исключений нет; не менять auth dependencies/status contract.
+- [x] 1.10 Запустить backend format/lint/type checks по Makefile/pyproject и устранить только ошибки своей зоны.
+- [x] 1.11 Unit: horse code — entity принимает `code=None`.
+- [x] 1.12 Unit: horse code — entity принимает пустую строку.
+- [x] 1.13 Unit: horse code — entity сохраняет пробелы без trim.
+- [x] 1.14 Unit: horse code — entity принимает Unicode/кириллицу и спецсимволы.
+- [x] 1.15 Unit: horse code — entity принимает ровно 31 символ.
+- [x] 1.16 Unit: horse code — entity отклоняет 32 символа.
+- [x] 1.17 Unit: horse code — create DTO без поля даёт `None`.
+- [x] 1.18 Unit: horse code — create DTO принимает пустую строку.
+- [x] 1.19 Unit: horse code — create DTO принимает ровно 31 символ.
+- [x] 1.20 Unit: horse code — create DTO отклоняет 32 символа.
+- [x] 1.21 Unit: horse code — update DTO различает omitted и explicit `None` через fields-set.
+- [x] 1.22 Unit: horse code — update DTO отклоняет 32 символа до repository mutation.
+- [x] 1.23 Unit: horse code — service create передаёт code в entity/repository.
+- [x] 1.24 Unit: horse code — service create без code сохраняет NULL.
+- [x] 1.25 Unit: horse code — service create сохраняет пустую строку.
+- [x] 1.26 Unit: horse code — service create не пишет при невалидном code.
+- [x] 1.27 Unit: horse code — service update только code сохраняет остальные поля.
+- [x] 1.28 Unit: horse code — service update с `code=None` очищает значение.
+- [x] 1.29 Unit: horse code — service update без code сохраняет прежнее значение.
+- [x] 1.30 Unit: horse code — repository insert statement содержит code.
+- [x] 1.31 Unit: horse code — repository update меняет code только при явной передаче.
+- [x] 1.32 Unit: horse code — full-info list row мапится в HorseOutDto с code.
+- [x] 1.33 Unit: horse code — detail по UUID возвращает code.
+- [x] 1.34 Unit: horse code — detail по slug возвращает code.
+- [x] 1.35 Unit: horse code — HorseWithPedigreeOutDto сериализует root code.
+- [x] 1.36 Unit: horse code — pedigree sire/dam сериализуют собственные code/NULL.
+- [x] 1.37 Unit: horse code — foal/candidate full horse DTO не теряет code.
+- [x] 1.38 Unit: horse code — anonymous create отклоняется `401`, repository не вызван.
+- [x] 1.39 Unit: horse code — authenticated user без scope получает `403`, repository не вызван.
+- [x] 1.40 Unit: horse code — PATCH чужого tenant ID возвращает `400`, запись не меняется.
+- [x] 1.41 Unit: horse code — list pagination `limit/offset` сохраняется после row mapping.
+- [x] 1.42 Unit: horse code — nullable code сериализуется в JSON как `null`.
+- [x] 1.43 Запустить весь backend unit suite и подтвердить минимум 32 разнообразных horse-code unit сценария без пропусков.
+- [x] 1.44 Поднять API с применённой migration на найденной реальной PostgreSQL и выполнить smoke только через skill `.claude/skills/api-smoke-test`, не создавая `tests/smoke`/pytest smoke файлов.
+- [x] 1.45 Smoke: horse code (real PostgreSQL) — anonymous list с валидным key возвращает `200` и поле code у items.
+- [x] 1.46 Smoke: horse code (real PostgreSQL) — list запись с SQL NULL сериализуется `null`.
+- [x] 1.47 Smoke: horse code (real PostgreSQL) — list запись с пустым code сериализуется `""`.
+- [x] 1.48 Smoke: horse code (real PostgreSQL) — list сохраняет Unicode code точно.
+- [x] 1.49 Smoke: horse code (real PostgreSQL) — list `limit=1&offset=0` сохраняет code и pagination.
+- [x] 1.50 Smoke: horse code (real PostgreSQL) — list `offset=1` сохраняет code.
+- [x] 1.51 Smoke: horse code (real PostgreSQL) — anonymous list без key/cookie возвращает `400`.
+- [x] 1.52 Smoke: horse code (real PostgreSQL) — anonymous list с неизвестным key возвращает `404`.
+- [x] 1.53 Smoke: horse code (real PostgreSQL) — anonymous detail по UUID с key возвращает code.
+- [x] 1.54 Smoke: horse code (real PostgreSQL) — anonymous detail по slug с key возвращает code.
+- [x] 1.55 Smoke: horse code (real PostgreSQL) — detail SQL NULL сериализуется `null`.
+- [x] 1.56 Smoke: horse code (real PostgreSQL) — detail чужого tenant не раскрывается (`400/404` по contract).
+- [x] 1.57 Smoke: horse code (real PostgreSQL) — detail без tenant selector возвращает `400`.
+- [x] 1.58 Smoke: horse code (real PostgreSQL) — authenticated detail возвращает code tenant пользователя.
+- [x] 1.59 Smoke: horse code (real PostgreSQL) — detail `pedigree=1` содержит root code.
+- [x] 1.60 Smoke: horse code (real PostgreSQL) — pedigree sire/dam содержат собственные code.
+- [x] 1.61 Smoke: horse code (real PostgreSQL) — pedigree foal full DTO содержит code.
+- [x] 1.62 Smoke: horse code (real PostgreSQL) — pedigree candidate GET item содержит code.
+- [x] 1.63 Smoke: horse code (real PostgreSQL) — authenticated POST без code создаёт SQL NULL.
+- [x] 1.64 Smoke: horse code (real PostgreSQL) — POST с пустой строкой сохраняет пустую строку.
+- [x] 1.65 Smoke: horse code (real PostgreSQL) — POST с ASCII code проходит exact round-trip.
+- [x] 1.66 Smoke: horse code (real PostgreSQL) — POST с Unicode/спецсимволами проходит exact round-trip.
+- [x] 1.67 Smoke: horse code (real PostgreSQL) — POST с ровно 31 символом возвращает `200`.
+- [x] 1.68 Smoke: horse code (real PostgreSQL) — POST с 32 символами возвращает существующий validation status `400`, запись отсутствует.
+- [x] 1.69 Smoke: horse code (real PostgreSQL) — anonymous POST возвращает `401`.
+- [x] 1.70 Smoke: horse code (real PostgreSQL) — authenticated POST без scope возвращает `403`.
+- [x] 1.71 Smoke: horse code (real PostgreSQL) — PATCH только code возвращает `200`, прочие поля неизменны.
+- [x] 1.72 Smoke: horse code (real PostgreSQL) — PATCH code на пустую строку сохраняет её.
+- [x] 1.73 Smoke: horse code (real PostgreSQL) — PATCH `code:null` сохраняет SQL NULL.
+- [x] 1.74 Smoke: horse code (real PostgreSQL) — PATCH без code сохраняет прежний code.
+- [x] 1.75 Smoke: horse code (real PostgreSQL) — PATCH ровно 31 символ проходит.
+- [x] 1.76 Smoke: horse code (real PostgreSQL) — PATCH 32 символа возвращает существующий validation status `400`, прежний code сохранён.
+- [x] 1.77 Smoke: horse code (real PostgreSQL) — anonymous PATCH возвращает `401`.
+- [x] 1.78 Smoke: horse code (real PostgreSQL) — authenticated PATCH без scope возвращает `403`.
+- [x] 1.79 Smoke: horse code (real PostgreSQL) — PATCH чужого tenant ID возвращает `400`, чужая запись неизменна.
+- [x] 1.80 Smoke: horse code (real PostgreSQL) — create response и последующие list/detail согласованы по code.
+- [x] 1.81 Smoke: horse code (real PostgreSQL) — update response и последующие list/detail согласованы по code.
+- [x] 1.82 Smoke: horse code (real PostgreSQL) — photos update HorseOutDto сохраняет code.
+- [x] 1.83 Smoke: horse code (real PostgreSQL) — после перезапуска API сохранённый code остаётся в PostgreSQL.
+- [x] 1.84 Smoke: horse code (real PostgreSQL) — cleanup созданных fixtures через protected DELETE возвращает `204` и не затрагивает baseline.
+- [x] 1.85 Сохранить smoke evidence: все 40 IDs, method/path/status/timing/assertion, docker inspect признаки и cleanup; секреты не публиковать; сразу отметить только фактически пройденные пункты.
+
+### Frontend
+
+- [x] 2.1 После стабилизации backend-контракта прочитать apply `contextFiles`, подтвердить ownership только `services/frontend/**`; `services/backend/**`, specs и `site-*` не менять.
+- [x] 2.2 Добавить `code: string | null` в `HorseOutDto` и optional nullable code в create/update payload `services/frontend/src/types/api/horses.ts`.
+- [x] 2.3 Обновить `services/frontend/src/features/horses/validators/horses.ts`: code nullable/optional, максимум 31, без trim; create/update и clear semantics.
+- [x] 2.4 Проверить/обновить `services/frontend/src/features/horses/services/horseService.ts`, `src/api/horses.ts` и API-boundary types, чтобы POST/PATCH body и responses проводили code без прямого fetch из UI.
+- [x] 2.5 Добавить колонку «Код» в `HorsesTable.tsx` с устойчивым null/empty render, шириной/scroll без overlap и без неподдерживаемого server sort/filter.
+- [x] 2.6 Добавить поле «Код» в `HorseCreateUpdateModal.tsx`: initial edit value, `maxLength=31`, create/update payload, clear→null, error preservation и double-submit guard.
+- [x] 2.7 Обновить `useHorses.ts` только при необходимости, чтобы code сохранялся при list/create/update refresh/invalidation и существующие `limit/offset` semantics не изменились.
+- [x] 2.8 API-boundary test: mocked GET success/null/empty и POST/PATCH request/response проводят code; никакого live backend call.
+- [x] 2.9 API-boundary test: mocked validation/generic/`401`/`403` surface для Protected Write с code.
+- [x] 2.10 Validator tests: absent/null/empty/Unicode/ровно 31 принимаются, 32 отклоняется, исходные пробелы не trim.
+- [x] 2.11 HorsesTable component tests: data code, null code, loading, empty, error и interaction callback.
+- [x] 2.12 HorsesTable permission test: scope present/missing и hidden/disabled create/edit UX остаются корректными.
+- [x] 2.13 HorseCreateUpdateModal tests: open/close и исходный code при edit.
+- [x] 2.14 HorseCreateUpdateModal tests: valid create/update submit, ровно 31, clear→null и double-submit guard.
+- [x] 2.15 HorseCreateUpdateModal tests: 32-char client validation, backend validation/generic/`401`/`403`, state preserved после ошибки.
+- [x] 2.16 Horse flow/hook tests: success refresh/invalidation, empty/error и exact code после mutation; mocks/MSW без live calls.
+- [x] 2.17 Pagination tests: initial `{limit,offset}`, page change, page size change, filter/search/sort reset `offset=0`; code не теряется.
+- [x] 2.18 Route/access tests или существующее evidence: anonymous redirect/block, authenticated render, scopes present/missing, mutation guard и backend denial surfaced.
+- [x] 2.19 Выполнить no `site-*` mixing self-check: `rg -n "fetch\\(|axios" services/frontend/src -g '*.{ts,tsx}'` и классифицировать только свой diff.
+- [x] 2.20 Выполнить `rg -n "from ['\"]@/api" services/frontend/src/app services/frontend/src/features -g '*.{ts,tsx}'` и исключить новые прямые API imports из page/component.
+- [x] 2.21 Выполнить `rg -n "\\bpage\\b|pageSize|page_size" services/frontend/src/features services/frontend/src/api services/frontend/src/types -g '*.{ts,tsx}'` и подтвердить `limit/offset`.
+- [x] 2.22 Выполнить `rg -n "site-ad|site-\\*|Public Read|public read" services/frontend/src -g '*.{ts,tsx}'` и `find services/frontend/src -maxdepth 2 -type d \( -name shared -o -name widgets -o -name entities \)`; новых mixing/legacy layers нет.
+- [x] 2.23 Из `services/frontend` выполнить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`, устранить ошибки своей зоны и сохранить результаты.
+- [x] 2.24 Выполнить все 17 Manual QA steps из `design.md` в browser для auth/scopes/errors/success/pagination и desktop/tablet/mobile; сохранить passed/failed, screenshots failures и Network status/body без секретов.
+
+### Quality Gate
+
+- [x] 3.1 После завершения Backend и Frontend провести один общий review совокупного diff; не менять runtime-код, findings вернуть соответствующим владельцам.
+- [x] 3.2 Подтвердить path ownership: Backend не менял frontend/specs/site, Frontend не менял backend/specs/site, `services/site-ad` отсутствует в diff.
+- [x] 3.3 Проверить migration upgrade/downgrade, nullable `VARCHAR(31)`, отсутствие default/unique/backfill и rollback/data-loss note.
+- [x] 3.4 Сопоставить entity/DTO/service/repository/все full horse response schemas с delta spec; отдельно root, list/detail, pedigree/foal/candidate/photos response.
+- [x] 3.5 Сверить Access matrix: anonymous valid-key GET, missing/unknown key, authenticated GET, anonymous POST/PATCH `401`, no-scope `403`, allowed roles success, чужой tenant `400`; исключений нет.
+- [x] 3.6 Проверить минимум 32 (не менее 30) явных разнообразных unit tests и их качество относительно behavior diff, а не только количество.
+- [x] 3.7 Проверить минимум 40 (не менее 30) live-API smoke через smoke skill, реальные timings/status/assertions и отсутствие pytest smoke файлов.
+- [x] 3.8 Проверить docker discovery/inspect evidence и фактическое использование реальной PostgreSQL, не SQLite/mock/in-memory; credentials не утекли в report.
+- [x] 3.9 Повторить применимые backend format, unit suite и lint/type checks; зафиксировать команды и результаты.
+- [x] 3.10 Из `services/frontend` выполнить `npm test` и review тестов: success/empty/validation/generic/`401`/`403`, MSW/mocks и отсутствие live backend calls.
+- [x] 3.11 Из `services/frontend` выполнить `npm run lint`.
+- [x] 3.12 Из `services/frontend` выполнить `npx tsc --noEmit`.
+- [x] 3.13 Из `services/frontend` выполнить `npm run build`.
+- [x] 3.14 Проверить frontend access/scopes: anonymous/authenticated, scope present/missing, hidden/disabled UX, mutation/double-submit guard, denial surfaced.
+- [x] 3.15 Проверить table/modal tests относительно behavior diff и pagination `limit/offset`: initial, page, page-size, reset offset; no direct fetch/API imports и no `site-*` mixing по обязательным `rg`.
+- [x] 3.16 Проверить Manual QA report: 17 steps, desktop/tablet/mobile no-overlap, errors/permissions, screenshots и Network evidence для failures.
+- [x] 3.17 Выполнить `openspec validate horse-codes --type change --strict`; findings вернуть владельцам, дождаться исправлений и повторить единый review/checks.
+- [x] 3.18 После успешного повторного gate сохранить итоговый evidence report в `docs/reports/025_horse_codes.md` с командами, результатами, gaps и approval verdict.
+- [x] 3.19 После положительного Quality Gate поручить Router синхронизировать delta specs в main specs, повторить strict validation и только затем архивировать change; до этого не отмечать lifecycle завершённым.
