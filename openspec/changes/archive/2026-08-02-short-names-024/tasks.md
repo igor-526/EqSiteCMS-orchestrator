@@ -1,0 +1,101 @@
+## 1. Реализация и проверки
+
+### Backend
+
+- [x] 1.1 Расширить breed route/service/repository filter и sort allowlist полем `short_name`.
+- [x] 1.2 Расширить coat-color route/service/repository filter и sort allowlist полем `short_name`.
+- [x] 1.3 Сверить Access matrix: Public Read GET, Protected Write, tenant/scope guards не изменены.
+- [x] 1.4 Перед SMOKE повторно найти PostgreSQL по labels/fallback и получить env/port через `docker inspect` без hardcode.
+- [x] 1.5 Unit: breeds API передаёт filter `short_name` service.
+- [x] 1.6 Unit: breeds API принимает sort `short_name`.
+- [x] 1.7 Unit: breeds API принимает sort `-short_name`.
+- [x] 1.8 Unit: breeds API отклоняет unknown sort.
+- [x] 1.9 Unit: breeds service передаёт filter repository.
+- [x] 1.10 Unit: breeds repository ищет case-insensitive substring.
+- [x] 1.11 Unit: breeds filter экранирует regex metacharacters.
+- [x] 1.12 Unit: breeds empty filter не добавляет condition.
+- [x] 1.13 Unit: breeds filter сохраняет текущую OR-семантику text filters.
+- [x] 1.14 Unit: breeds filter сохраняет tenant predicate.
+- [x] 1.15 Unit: breeds ascending sort строит ожидаемый ORDER BY.
+- [x] 1.16 Unit: breeds descending sort строит ожидаемый ORDER BY.
+- [x] 1.17 Unit: breeds sort совместим с `limit/offset`.
+- [x] 1.18 Unit: breeds total учитывает filter без pagination.
+- [x] 1.19 Unit: breeds response DTO содержит `short_name`.
+- [x] 1.20 Unit: breeds create сохраняет явное значение.
+- [x] 1.21 Unit: breeds create пустого значения автогенерирует его.
+- [x] 1.22 Unit: breeds update сохраняет явное значение.
+- [x] 1.23 Unit: breeds update пустого значения использует актуальное name.
+- [x] 1.24 Unit: coat colors API передаёт filter service.
+- [x] 1.25 Unit: coat colors API принимает ascending/descending sort.
+- [x] 1.26 Unit: coat colors API отклоняет unknown sort.
+- [x] 1.27 Unit: coat colors service передаёт filter repository.
+- [x] 1.28 Unit: coat colors repository ищет case-insensitive substring.
+- [x] 1.29 Unit: coat colors empty filter не добавляет condition.
+- [x] 1.30 Unit: coat colors filter сохраняет tenant predicate.
+- [x] 1.31 Unit: coat colors ascending/descending ORDER BY корректен.
+- [x] 1.32 Unit: coat colors sort/filter совместимы с pagination и total.
+- [x] 1.33 Unit: coat colors response DTO содержит `short_name`.
+- [x] 1.34 Unit: coat colors create/update сохраняет явное значение.
+- [x] 1.35 Unit: coat colors empty create/update выводится из актуального name.
+- [x] 1.36 Smoke: реальная PostgreSQL — migrations применены, обе колонки NOT NULL.
+- [x] 1.37 Smoke: breeds GET без CMS cookie с tenant key возвращает `200`.
+- [x] 1.38 Smoke: breeds GET без tenant context возвращает `400`.
+- [x] 1.39 Smoke: breeds exact filter возвращает совпадение.
+- [x] 1.40 Smoke: breeds substring filter возвращает совпадение.
+- [x] 1.41 Smoke: breeds filter регистронезависим.
+- [x] 1.42 Smoke: breeds filter изолирует чужой tenant.
+- [x] 1.43 Smoke: breeds ascending sort корректен.
+- [x] 1.44 Smoke: breeds descending sort корректен.
+- [x] 1.45 Smoke: breeds invalid sort возвращает `422`.
+- [x] 1.46 Smoke: breeds no-match возвращает empty/total 0.
+- [x] 1.47 Smoke: breeds filter с `limit/offset` корректен.
+- [x] 1.48 Smoke: breeds POST anonymous возвращает `401` без записи.
+- [x] 1.49 Smoke: breeds POST auth/scope сохраняет `short_name`.
+- [x] 1.50 Smoke: breeds POST без scope возвращает `403` без записи.
+- [x] 1.51 Smoke: breeds PATCH auth/scope меняет целевую строку.
+- [x] 1.52 Smoke: breeds PATCH foreign tenant не меняет чужую строку.
+- [x] 1.53 Smoke: breeds empty short name автогенерируется.
+- [x] 1.54 Smoke: coat colors GET без CMS cookie с tenant key возвращает `200`.
+- [x] 1.55 Smoke: coat colors GET без tenant context возвращает `400`.
+- [x] 1.56 Smoke: coat colors substring filter регистронезависим.
+- [x] 1.57 Smoke: coat colors filter изолирует чужой tenant.
+- [x] 1.58 Smoke: coat colors ascending sort корректен.
+- [x] 1.59 Smoke: coat colors descending sort корректен.
+- [x] 1.60 Smoke: coat colors invalid sort возвращает `422`.
+- [x] 1.61 Smoke: coat colors no-match возвращает empty/total 0.
+- [x] 1.62 Smoke: coat colors filter с `limit/offset` и total корректен.
+- [x] 1.63 Smoke: coat colors POST anonymous возвращает `401` без записи.
+- [x] 1.64 Smoke: coat colors POST auth сохраняет `short_name`.
+- [x] 1.65 Smoke: coat colors PATCH auth меняет `short_name`.
+- [x] 1.66 Smoke: coat colors PATCH foreign tenant не меняет чужую строку.
+- [x] 1.67 Smoke: coat colors empty short name автогенерируется.
+- [x] 1.68 Smoke: malformed query даёт client error без DB mutation.
+- [x] 1.69 Smoke: повторный Public Read идемпотентен.
+- [x] 1.70 Smoke: cleanup удаляет все созданные PostgreSQL rows.
+
+### Frontend
+
+- [x] 1.71 Добавить `short_name` и sort/filter contract в breed/coat-color DTO.
+- [x] 1.72 Добавить «Кор. наим.», search/sort и reset `offset=0` в обе таблицы.
+- [x] 1.73 Добавить поле, Zod/client validation, field error и payload в обе модалки.
+- [x] 1.74 Обновить hooks/services только для нужных refresh/error/permission guards без API imports в UI.
+- [x] 1.75 API-boundary tests: query/body, success/empty/validation/error/`401`/`403` через MSW.
+- [x] 1.76 Table tests: data/loading/empty/error/action и новая колонка для обоих справочников.
+- [x] 1.77 Search/sort tests: apply, clear/normalize, debounce, asc/desc/clear и reset offset.
+- [x] 1.78 Pagination tests: initial `limit/offset`, page/page-size change и reset после search/sort.
+- [x] 1.79 Modal tests: open/close, create/update, empty/63/64 chars, errors и success refresh.
+- [x] 1.80 Access tests: anonymous/authenticated, scope present/missing, guarded actions и `401`/`403`.
+- [x] 1.81 Выполнить Manual QA из design на desktop/tablet/mobile и оформить evidence.
+- [x] 1.82 Выполнить обязательные `rg`/`find` self-check и no `site-*` mixing.
+- [x] 1.83 Из frontend выполнить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+
+### Quality Gate
+
+- [x] 1.84 Проверить совокупный diff, Clean Architecture/frontend boundaries и ownership.
+- [x] 1.85 Проверить Access matrix, anonymous/authenticated, scopes, `401/403`, foreign tenant.
+- [x] 1.86 Проверить минимум 30 разных Unit и 30 SMOKE backend scenarios; SMOKE только skill/live API/PostgreSQL.
+- [x] 1.87 Проверить актуальный `docker inspect` evidence и отсутствие DB hardcode.
+- [x] 1.88 Проверить frontend matrix: MSW/no live calls, `limit/offset`, search/sort, modal/scopes и no mixing.
+- [x] 1.89 Повторить backend checks и frontend test/lint/typecheck/build; evidence сохранить в `docs/reports`.
+- [x] 1.90 Вернуть findings владельцам и повторять единый review до успешного verdict.
+- [x] 1.91 После QG синхронизировать specs, strict validate и архивировать Router workflow.
