@@ -1,0 +1,23 @@
+schema: spec-driven
+context: |
+  EqSiteCMS — монорепозиторий с Router-first мультиагентным workflow.
+  Содержательные части OpenSpec-артефактов пишутся на русском языке.
+  docs/tasks — входные запросы; docs/plans — legacy/read-only; OpenSpec change — единственный изменяемый план.
+  API policy: GET по умолчанию Public Read; POST/PATCH/DELETE по умолчанию Protected Write.
+  Runtime changes выполняют профильные субагенты по непересекающемуся ownership; после всех исполнителей проводится один общий Quality Gate.
+rules:
+  proposal:
+    - Писать содержательные разделы на русском языке.
+    - Для endpoint changes перечислять затронутые методы/пути и явно указывать наличие access matrix в specs.
+    - Не выдавать docs/plans за изменяемый источник реализации.
+  design:
+    - Фиксировать границы ownership, профильных исполнителей, порядок общего Quality Gate, sync и archive.
+    - Для исторических требований отличать evidence из кода/tests/reports от намерений task/legacy plan и регистрировать gaps.
+  specs:
+    - Писать требования и scenarios на русском, сохраняя нормативный синтаксис OpenSpec.
+    - Для каждого endpoint change включать matrix method, path, access class, roles, expected without auth, expected with auth и связанные тесты.
+    - Каждое исключение из Public Read/Protected Write объяснять и покрывать anonymous/authenticated scenarios.
+  tasks:
+    - Делить работу на ограниченные непересекающиеся deliverables с одним владельцем файла или spec.
+    - Требовать evidence, применимые проверки и немедленную отметку checkbox после фактического выполнения.
+    - Завершать реализацию единым Quality Gate, устранением findings, sync specs, повторной validation и archive.

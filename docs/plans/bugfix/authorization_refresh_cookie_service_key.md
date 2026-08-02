@@ -12,7 +12,7 @@
 CMS frontend работает в Protected Admin UI и отправляет cookies через `credentials: "include"`.
 Текущий `services/frontend/src/api/client.ts` запускает refresh/retry только если исходный CMS API-запрос получил `401`.
 
-По `docs/tasks/authorization_bug.md` при истекшем или отсутствующем `access_token` браузер отправляет только `refresh_token`, а backend отвечает `400 {"detail":"Отсутствует X-Equestrian-Service-Key"}`. Вероятный источник найден в `services/backend/src/depends/services.py`:
+По `docs/tasks/012_authorization_bug.md` при истекшем или отсутствующем `access_token` браузер отправляет только `refresh_token`, а backend отвечает `400 {"detail":"Отсутствует X-Equestrian-Service-Key"}`. Вероятный источник найден в `services/backend/src/depends/services.py`:
 
 - `get_read_equestrian_context` сначала пытается получить optional user через `access_token`;
 - если `access_token` отсутствует, `get_optional_current_user` возвращает `None`;

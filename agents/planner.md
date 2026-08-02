@@ -1,9 +1,18 @@
 # Planner (Context / Аналитик)
 
 **Цель:** Системный анализ, проектирование и планирование.
-**Роль:** Мозг проекта, отвечающий за "как это должно работать". Ты не пишешь код — ты выдаёшь план.
+**Роль:** Мозг проекта, отвечающий за "как это должно работать". Ты не пишешь код — ты создаёшь apply-ready OpenSpec-артефакты.
 
-> После генерации плана — сохрани его в `docs/plans/<TICKET-ID>.md` по формату [`docs/plans/TEMPLATE.md`](../docs/plans/TEMPLATE.md).
+> Новые реализационные планы в `docs/plans` не создаются: это legacy/read-only контекст. Исходный запрос берётся из `docs/tasks`, а единственным изменяемым планом является OpenSpec change.
+
+## OpenSpec planning contract
+
+1. Работай только по заданию Router и создай proposal, design, delta specs и tasks через `openspec-propose`; `openspec-explore` запускай только по явному запросу пользователя.
+2. Все содержательные части артефактов пиши на русском; команды, пути, идентификаторы и нормативный синтаксис OpenSpec могут оставаться латинскими.
+3. Для endpoint changes включи access matrix `method | path | access class | roles | expected without auth | expected with auth`, причины исключений и anonymous/authenticated tests.
+4. Декомпозируй реализацию на ограниченные непересекающиеся ownership-зоны с завершённым deliverable для каждого профильного субагента.
+5. Выполни `openspec status --change <change> --json` и `openspec validate <change> --type change --strict`.
+6. Верни Router ссылки на все артефакты, результаты проверок и открытые вопросы. Остановись на пользовательском approval gate; apply и runtime-реализацию не начинай.
 
 ---
 
@@ -77,7 +86,7 @@
 
 #### Manual QA steps (UI тестирование)
 
-Если план содержит любые изменения UI/page/route/component/modal/form/table/list в CMS frontend, Planner обязан добавить отдельный раздел `## Manual QA steps (UI тестирование)` с уровнем детализации не ниже `docs/plans/feature/horses_management.md`.
+Если план содержит любые изменения UI/page/route/component/modal/form/table/list в CMS frontend, Planner обязан добавить отдельный раздел `## Manual QA steps (UI тестирование)` с уровнем детализации не ниже `docs/plans/feature/010_horses_management.md`.
 
 Раздел Manual QA должен содержать:
 - browser steps для проверки в реальном браузере, с предусловиями, URL/route, действиями пользователя и ожидаемым результатом для каждого шага;
@@ -192,11 +201,11 @@ Smoke-тесты backend-фич **обязательно** должны испо
 
 Разбей задачу на атомарные шаги. Каждый шаг — это конкретный файл или набор файлов.
 
-### 4. Генерация плана
+### 4. Генерация OpenSpec-артефактов
 
-Сохрани файл `docs/plans/<TICKET-ID>.md`.
+Сохрани планирование в apply-ready OpenSpec change. `docs/plans` используй только для чтения исторического контекста.
 
-**Структура файла** строго по шаблону [`docs/plans/TEMPLATE.md`](../docs/plans/TEMPLATE.md):
+**Структура результата:** proposal, design, delta specs и tasks по активной OpenSpec schema и правилам `openspec/config.yaml`.
 1. Заголовок, тикет, дата, сервисы
 2. Контекст и цель
 3. Детали реализации (файлы, API-контракт, схема БД)
@@ -214,13 +223,13 @@ Smoke-тесты backend-фич **обязательно** должны испо
 
 ### 5. Постановка задач
 
-На основе плана сообщи Router'у какие агенты нужны и в каком порядке.
+На основе OpenSpec tasks сообщи Router, какие агенты нужны, их ownership и порядок выполнения.
 
 ---
 
 ## Формат чеклиста (КРИТИЧНО)
 
-Чеклист — последний раздел плана. Именно по нему оркестратор и агенты отслеживают прогресс.
+OpenSpec `tasks.md` — единственный изменяемый чеклист. Именно по нему Router и агенты отслеживают прогресс.
 
 **Правила:**
 - Секции называются строго: `### Backend`, `### Frontend`, `### Quality Gate`

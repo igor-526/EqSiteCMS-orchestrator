@@ -10,7 +10,7 @@
 
 ## Контекст
 
-`docs/plans/feature/refactoring/refactoring_and_testing_audit.md` не является отдельным планом реализации. Это parent index до декомпозиции: общий архитектурный контракт, каталог UC01-UC30 и список модульных планов. Для проверки покрытия рефакторинга его нельзя считать незакрытым планом без отдельного отчета.
+`docs/plans/feature/refactoring/002_refactoring_and_testing_audit.md` не является отдельным планом реализации. Это parent index до декомпозиции: общий архитектурный контракт, каталог UC01-UC30 и список модульных планов. Для проверки покрытия рефакторинга его нельзя считать незакрытым планом без отдельного отчета.
 
 По итогам аудита остаются документальные и quality-gap проблемы:
 
@@ -39,7 +39,7 @@
 
 | Что | Путь | Действие |
 |---|---|---|
-| Parent index | `docs/plans/feature/refactoring/refactoring_and_testing_audit.md` | Не требовать отдельный report; оставить как индекс декомпозиции |
+| Parent index | `docs/plans/feature/refactoring/002_refactoring_and_testing_audit.md` | Не требовать отдельный report; оставить как индекс декомпозиции |
 | Horse service plan | `docs/plans/feature/refactoring/refactoring_horse_service.md` | Сверить статус с новым финальным report |
 | Horse service report | `docs/reports/<REFACTORING-HORSE-SERVICE-*.md>` | Найти добавленный report, проверить verdict, unit, smoke, mypy |
 | Summary report | `docs/reports/REFACTORING-SUMMARY-FINAL-2026-05-06.md` или новый dated summary | Перенести `refactoring_horse_service.md` из незакрытых в закрытые при наличии `APPROVED/PASS` |

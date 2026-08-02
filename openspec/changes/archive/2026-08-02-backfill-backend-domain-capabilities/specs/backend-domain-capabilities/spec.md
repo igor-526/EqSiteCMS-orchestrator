@@ -1,0 +1,139 @@
+## ADDED Requirements
+
+### Requirement: Упорядочивание цен внутри групп
+Backend SHALL хранить nullable `display_order` связи цены с группой, возвращать стабильный порядок и выполнять переупорядочивание группы двухфазным обновлением, исключающим конфликт уникальности. Требование трассируется к задаче `004`.
+
+#### Scenario: Авторизованное переупорядочивание
+- **WHEN** пользователь с требуемым scope отправляет полный порядок в `POST /api/prices/groups/{id}/reorder`
+- **THEN** backend атомарно назначает позиции и возвращает `204`
+
+#### Scenario: Чтение упорядоченных цен
+- **WHEN** consumer с tenant service key читает `GET /api/prices` или `GET /api/prices/groups*`
+- **THEN** backend возвращает Public Read представление с подтверждённым порядком элементов
+
+### Requirement: Безопасный HTML page data
+Backend SHALL поддерживать `page_data` для breeds, coat colors, horse services и prices, SHALL возвращать поле в detail GET только при `page_data=true` и MUST отклонять HTML с `script`, event-handler или `javascript:` содержимым с `400`. Требование трассируется к задаче `006`.
+
+#### Scenario: Публичное чтение page data
+- **WHEN** consumer с tenant service key вызывает detail GET одной из четырёх сущностей с `page_data=true` без CMS cookie
+- **THEN** backend возвращает `200` и включает сохранённый безопасный HTML
+
+#### Scenario: Запрещённый JavaScript
+- **WHEN** авторизованный пользователь передаёт JavaScript-содержащий `page_data` в PATCH одной из четырёх сущностей
+- **THEN** backend отклоняет изменение с `400` и не сохраняет опасное содержимое
+
+### Requirement: Публикация и CMS-управление новостями
+Backend SHALL хранить статус публикации и soft-delete новости, SHALL отдавать через публичные endpoints только опубликованные, не удалённые и уже наступившие публикации, и SHALL предоставлять полный CMS-набор только через защищённую поверхность. Требование трассируется к задаче `007`.
+
+#### Scenario: Публичный список новостей
+- **WHEN** consumer с tenant service key вызывает `GET /api/news` без CMS cookie
+- **THEN** backend возвращает `200` и не включает future/deleted записи и служебные поля
+
+#### Scenario: Защищённый CMS GET
+- **WHEN** anonymous клиент вызывает `GET /api/news-cms`
+- **THEN** backend возвращает `401`, поскольку endpoint раскрывает future/deleted записи
+
+#### Scenario: CMS GET без scope
+- **WHEN** authenticated пользователь без news scope вызывает `GET /api/news-cms`
+- **THEN** backend возвращает `403`
+
+#### Scenario: Soft delete новости
+- **WHEN** admin удаляет новость через `DELETE /api/news/{news_id}`
+- **THEN** backend возвращает `204`, скрывает запись из Public Read и сохраняет её для CMS deleted-фильтра
+
+### Requirement: S3 media storage и согласованные фотооперации
+Backend SHALL подключать S3-compatible media storage через Protocol/DI, SHALL строить публичные URL объектов и SHALL выполнять компенсирующий cleanup/restore между S3-объектом и записью photo repository при ошибках create, update или delete. Полная замена horse photo relations SHALL сначала проверять существование всех tenant-scoped photo ID и только затем заменять связи. Требование трассируется к задачам `009` и `013`.
+
+#### Scenario: Получение S3 URL лошади
+- **WHEN** consumer читает Public Read DTO лошади с фотографиями
+- **THEN** backend возвращает URL фотографий из настроенного S3 media storage
+
+#### Scenario: Ошибка между media storage и photo repository
+- **WHEN** create, update или delete фотографии завершается ошибкой после изменения одной из границ S3/repository
+- **THEN** backend выполняет подтверждённую тестами компенсирующую операцию и пробрасывает исходную ошибку
+
+#### Scenario: Полная замена фотографий лошади
+- **WHEN** авторизованный пользователь с требуемым scope вызывает `POST /api/horses/{id}/photos`
+- **THEN** backend проверяет все photo ID в tenant, заменяет список связей, возвращает обновлённый horse DTO и не предоставляет неподдерживаемое действие main-photo
+
+### Requirement: Управление лошадьми в tenant-контексте
+Backend SHALL предоставлять tenant-scoped CRUD лошадей, фильтрацию, сортировку и пагинацию; mutations MUST требовать CMS-аутентификацию и требуемый scope. Требование трассируется к задаче `010`.
+
+#### Scenario: Публичное чтение лошадей
+- **WHEN** consumer с tenant service key вызывает `GET /api/horses` или `GET /api/horses/{slug_or_id}` без CMS cookie
+- **THEN** backend возвращает `200` только для данных соответствующего tenant
+
+#### Scenario: Анонимное изменение лошади
+- **WHEN** anonymous клиент вызывает POST, PATCH, DELETE либо photo/pedigree mutation семейства `/api/horses*`
+- **THEN** backend возвращает `401`
+
+#### Scenario: Изменение чужого tenant-ресурса
+- **WHEN** authenticated пользователь пытается изменить лошадь вне разрешённого tenant context
+- **THEN** repository lookup ограничен tenant пользователя, backend не изменяет чужой ресурс и текущий service-layer contract возвращает `400` как «ресурс не найден»; отдельное live mutation evidence остаётся gap
+
+### Requirement: Управление родословной
+Backend SHALL позволять читать кандидатов sire/dam/children публично в tenant context и SHALL позволять устанавливать, заменять и очищать pedigree relations только через Protected Write. Требование трассируется к задаче `011`.
+
+#### Scenario: Чтение кандидатов родословной
+- **WHEN** consumer с tenant service key вызывает `GET /api/horses/{id}/pedigree/{mode}` для `sire`, `dam` или `children`
+- **THEN** backend возвращает `200` с отфильтрованным списком кандидатов
+
+#### Scenario: Изменение родословной
+- **WHEN** пользователь с требуемым scope вызывает `POST /api/horses/{id}/pedigree`
+- **THEN** backend устанавливает или очищает соответствующие связи и возвращает `204`
+
+#### Scenario: Пользователь без pedigree scope
+- **WHEN** authenticated пользователь без требуемого scope вызывает `POST /api/horses/{id}/pedigree`
+- **THEN** текущий модуль возвращает фактически подтверждённый `400`, а access-review MUST зарегистрировать отклонение от общего `403` контракта
+
+### Requirement: Классификация kind через breed
+Backend SHALL хранить классификацию `kind` на породе вместо лошади, SHALL фильтровать и сортировать лошадей через связанную breed kind и SHALL возвращать новый контракт в horse/breed DTO. Требование трассируется к задаче `014`.
+
+#### Scenario: Фильтрация лошадей по kind
+- **WHEN** consumer вызывает Public Read список лошадей с фильтром `kind`
+- **THEN** backend фильтрует записи по `kind` связанной породы
+
+#### Scenario: Изменение без требуемого scope
+- **WHEN** authenticated пользователь без требуемого scope изменяет breed или horse
+- **THEN** backend возвращает `403` и не изменяет данные
+
+### Requirement: Нерекурсивное обогащение родителей жеребёнка
+Backend SHALL при `pedigree>0` включать в каждого foal нерекурсивный объект `parents` с краткими DTO sire и dam либо `null` для отсутствующего известного родителя. Требование трассируется к задаче `019`.
+
+#### Scenario: Оба родителя доступны
+- **WHEN** consumer вызывает `GET /api/horses*?pedigree=1` для данных жеребёнка с sire и dam
+- **THEN** backend возвращает оба кратких parent DTO без рекурсивного pedigree
+
+#### Scenario: Один родитель отсутствует
+- **WHEN** у жеребёнка отсутствует известный dam или sire
+- **THEN** backend возвращает `null` для отсутствующей стороны и корректный краткий DTO для известной стороны
+
+### Requirement: Access matrix backend domain endpoints
+Backend capability SHALL сохранять следующую evidence-based access matrix. `Tenant key` означает `X-Equestrian-Service-Key` без CMS cookie; `gap` означает отсутствие назначенного live evidence и MUST NOT трактоваться как иной access class.
+
+| method | path | access class | roles | expected without auth | expected with auth |
+|---|---|---|---|---|---|
+| GET | `/api/prices*` | Public Read | tenant key | `200` с tenant key; live evidence reorder-задачи отсутствует | `200` |
+| POST | `/api/prices/groups/{id}/reorder` | Protected Write | `SUPERUSER`, `ADMIN` или `DEVELOPER` | `401` по auth dependency; отдельное live evidence задачи 004 отсутствует | `204` с scope, `403` без scope по code/unit evidence; live HTTP evidence gap |
+| GET | `/api/horses/{breeds|coat_colors|services}/{slug}?page_data=true`, `/api/prices/{slug}?page_data=true` | Public Read | tenant key | `200` с tenant key | `200` |
+| PATCH | `/api/horses/breeds/{slug}` | Protected Write | `SUPERUSER`, `ADMIN` или `DEVELOPER` | `401` | `200` со scope; `403` без scope; опасный HTML `400` после успешной permission-проверки |
+| PATCH | `/api/horses/{coat_colors|services}/{slug}`, `/api/prices/{slug}` | Protected Write | любой authenticated tenant user; отдельного scope gate в текущих services нет | `401` | `200`; опасный HTML `400` |
+| GET | `/api/news`, `/api/news/{id}` | Public Read | tenant key | `400` без tenant key; `200` с tenant key | `200` |
+| GET | `/api/news-cms` | Protected Read — исключение: future/deleted данные | admin/news scope | `401` | `200` с scope; `403` без scope |
+| POST/PATCH/DELETE | `/api/news*` mutations | Protected Write | `SUPERUSER`, `ADMIN` или `DEVELOPER`; исключение: photo-relation route проверяет только auth | `401` | `201/200/204` по операции; create/update/delete возвращают `403` без scope; для `POST /api/news/{id}/photos` отдельный scope gate отсутствует |
+| GET | `/api/horses`, `/api/horses/{slug_or_id}`, `/api/horses/{id}/pedigree/{mode}` | Public Read | tenant key | `200` с tenant key | `200` |
+| POST/PATCH/DELETE | horse entity routes: `/api/horses`, `/api/horses/{horse_id}`, `/api/horses/{horse_id}/photos`, `/api/horses/{horse_id}/pedigree`; breed mutations детализированы выше | Protected Write | `SUPERUSER`, `ADMIN` или `DEVELOPER` | `401` | success по операции; `403` без scope для horse/breed/photo, но pedigree POST фактически `400`; foreign-tenant mutation даёт code-evidenced `400`, live gap |
+| GET | `/api/photos`, `/api/photos/{id}` | Public Read | tenant key | `200` с tenant key; без key `400`; отдельное live evidence задачи 009 — gap | `200` в tenant пользователя |
+| POST/PATCH/DELETE | `/api/photos*` mutations, включая `POST /api/photos/batch-delete` | Protected Write | любой authenticated tenant user; отдельного scope gate в текущем route/service нет | `401` | success согласно операции; no-scope live evidence задачи 009 — gap |
+| POST | `/api/prices/{slug_or_id}/photos` | Protected Write | любой authenticated tenant user; отдельного scope gate в текущем route/service нет | `401`; отдельное live evidence задачи 009 — gap | `204`; no-scope live evidence gap |
+
+#### Scenario: Проверка access matrix
+- **WHEN** backend/access reviewer проверяет пакет перед sync
+- **THEN** reviewer сопоставляет каждую строку с назначенным code/report evidence, отдельно проверяет anonymous, authenticated, no-scope и foreign-resource поведение и блокирует необоснованный claim
+
+### Requirement: Явный gap полного backend-аудита
+Capability MUST фиксировать `G-002`: наличие unit-наборов API, services и repositories подтверждено, но полный inventory всех сервисов/репозиториев, матрица use/edge cases и полное anonymous/authenticated покрытие API не подтверждены.
+
+#### Scenario: Использование unit-каталогов как evidence
+- **WHEN** reviewer обнаруживает unit-тесты в `services/backend/tests/unit`
+- **THEN** reviewer признаёт только покрытые ими сценарии и MUST NOT объявлять полный аудит или полное access-покрытие завершённым без отдельного inventory и QG evidence

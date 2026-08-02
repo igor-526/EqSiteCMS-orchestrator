@@ -7,19 +7,21 @@
 
 ---
 
-## Пайплайн
+## Единый OpenSpec Quality Gate
 
-1. Получить diff (от Backend или Frontend агента, или через `git diff`)
-2. Пройтись по чеклистам ниже
-3. Запустить unit/integration тесты; минимум unit-тесты обязательны для approve
-4. Прочитать `.claude/skills/api-smoke-test/SKILL.md`
-5. Запустить обязательные SMOKE-тесты по инструкциям из `.claude/skills/api-smoke-test/SKILL.md`
-6. Сохранить отчёт в `docs/reports/`
+1. Начинай только после завершения всех профильных исполнителей подтверждённого OpenSpec change; отдельные промежуточные формальные reviews не создавай.
+2. Прочитай все OpenSpec `contextFiles`, совокупный path-scoped diff и deliverables исполнителей; сверь выполненные tasks и ownership.
+3. Пройди применимые чеклисты, OpenSpec scenarios, access matrix и проверки ниже.
+4. Запусти применимые unit/integration тесты; для runtime backend diff минимум unit-тесты обязательны для approve.
+5. Для runtime API diff прочитай `.claude/skills/api-smoke-test/SKILL.md` и выполни SMOKE-проверки по его инструкции. Для documentation-only diff явно зафиксируй неприменимость.
+6. Сохрани один отчёт в `docs/reports/`. При findings поставь `REWORK`, верни их Router для профильных владельцев и обязательно полностью повтори Quality Gate после исправлений в том же отчёте.
+7. `APPROVED` допускается только когда OpenSpec validation успешна, все blocking findings устранены, access policy подтверждена и diff соответствует утверждённым specs/tasks.
 
-SMOKE-тесты обязательны для каждого Quality Gate. Перед запуском всегда прочитай
+SMOKE-тесты обязательны для каждого Quality Gate с runtime API diff. Перед запуском всегда прочитай
 `.claude/skills/api-smoke-test/SKILL.md` и следуй описанному там процессу авторизации,
 поиска SMOKE-сценариев и формирования результата. В отчёте обязательно фиксируй время
-работы каждого проверенного эндпоинта.
+работы каждого проверенного эндпоинта. Для documentation-only diff зафиксируй `неприменимо`
+и evidence отсутствия runtime-изменений.
 
 ---
 
@@ -35,7 +37,7 @@ SMOKE-тесты обязательны для каждого Quality Gate. Пе
 
 ## Чеклист: Access Policy (Backend/API)
 
-- [ ] Для каждого нового/измененного endpoint заполнен access-класс (`public`/`protected`) и он совпадает с планом
+- [ ] Для каждого нового/измененного endpoint заполнен access-класс (`public`/`protected`) и он совпадает с OpenSpec access matrix
 - [ ] Публичные `GET` проверены без cookie и не требуют авторизации (если не зафиксировано исключение)
 - [ ] `POST/PATCH/DELETE` без cookie возвращают контрактный `401`/`403`
 - [ ] `POST/PATCH/DELETE` с валидной авторизацией проходят по контракту роли/прав
@@ -182,7 +184,7 @@ AsyncAPI-спека должна соответствовать реальном
 `docs/reports/TEMPLATE.md`.
 
 Отчёт должен содержать:
-- ссылку на план;
+- ссылку на OpenSpec change, proposal/specs/tasks и approval;
 - ссылку на задачу, если она была передана как md-файл;
 - краткое описание выполненных изменений для контекста следующего агента;
 - список изменённых файлов;
@@ -252,7 +254,7 @@ Diff соответствует плану. Тесты прошли. Архит�
 ```
 
 > **Важно:** секции `### Backend` / `### Frontend` / `### Quality Gate` в rework-файле совместимы с оркестратором —
-> его можно передать агенту напрямую как новый план.
+> findings передаются Router, который маршрутизирует их владельцам; они не становятся отдельным планом.
 
 ---
 

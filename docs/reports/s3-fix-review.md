@@ -110,7 +110,7 @@ Not applicable.
 ## Remaining Unchecked
 
 - MinIO/minikube с `S3_PUBLIC_INCLUDE_BUCKET=true` — не перепроверялся в этом smoke-прогоне (local secret зафиксирован).
-- Полная матрица SM-01..SM-32 из `docs/plans/feature/s3-storage.md` не запускалась.
+- Полная матрица SM-01..SM-32 из `docs/plans/feature/009_s3-storage.md` не запускалась.
 - CORS на `cloud.eqcms.ru` для cross-origin с CMS — не тестировался (прямой `GET url` → 200).
 
 ## Verdict

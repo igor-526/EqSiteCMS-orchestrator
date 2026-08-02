@@ -10,7 +10,7 @@
 
 ## Контекст
 
-После перехода на S3 (`docs/plans/feature/s3-storage.md`) загрузка через `POST /api/photos` падает на этапе `S3MediaStorage.save` → `put_object`:
+После перехода на S3 (`docs/plans/feature/009_s3-storage.md`) загрузка через `POST /api/photos` падает на этапе `S3MediaStorage.save` → `put_object`:
 
 ```
 botocore.exceptions.ClientError: An error occurred (XAmzContentSHA256Mismatch) when calling the PutObject operation
@@ -301,7 +301,7 @@ curl -s -b /tmp/eqsitecms-smoke-cookies.txt \
 | `.kube/secrets/production/backend-secret.yml` | **Справочник** значений S3 (не apply в k8s) |
 | `.claude/skills/api-smoke-test/credentials.json` | `base_url`, роли для smoke |
 | `.docker-compose/docker-compose.be.yml` | Сервис `app` → `eqsitecms-app` |
-| `docs/plans/feature/s3-storage.md` | Исходная S3-миграция |
+| `docs/plans/feature/009_s3-storage.md` | Исходная S3-миграция |
 
 ---
 
