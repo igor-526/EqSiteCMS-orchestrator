@@ -1,0 +1,18 @@
+{
+  "$schema": "https://mimo.xiaomi.com/mimocode/config.json",
+  "skills": {
+    "paths": [
+      ".codex/skills"
+    ]
+  },
+  "permission": {
+    "external_directory": {
+      "/**": "allow"
+    },
+    "edit": "allow",
+    "bash": "allow",
+    "read": "allow",
+    "write": "allow",
+    "question": "allow"
+  }
+}

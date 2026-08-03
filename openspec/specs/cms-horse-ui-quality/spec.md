@@ -41,7 +41,7 @@ CMS SHALL предоставлять маршрут `/horses` только в au
 - **THEN** изменения ограничены `services/frontend`, отсутствуют импорты `site-*`/Public Read consumer modules и `services/site-ad` не изменён
 
 ### Requirement: Scope-aware UX для действий с лошадьми и родословной
-CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree hook MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
+CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. CMS SHALL предоставлять кнопку управления услугами в колонке «Действия» таблицы лошадей с badge количества связанных услуг. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree hook MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
 
 #### Scenario: Пользователь без scope видит read-only pedigree
 - **WHEN** scopes пользователя не разрешают `UPDATE_HORSE_PEDIGREE`
@@ -54,6 +54,34 @@ CMS SHALL связывать действия создания, изменени
 #### Scenario: Backend отклоняет mutation
 - **WHEN** существующий backend возвращает `401` или `403` на horse, breed или pedigree mutation
 - **THEN** CMS client/hook сохраняет отказ как ошибку сценария и не трактует скрытие кнопки как успешную авторизацию
+
+#### Scenario: Кнопка управления услугами в таблице лошадей
+- **WHEN** authenticated CMS-пользователь открывает вкладку «Лошади»
+- **THEN** в колонке «Действия» отображается третья кнопка (иконка финансов) с badge количества привязанных услуг
+
+#### Scenario: Drawer с таблицей связанных услуг
+- **WHEN** пользователь нажимает на кнопку «Услуги» лошади
+- **THEN** открывается Drawer справа на полэкрана с таблицей (колонки: «Наименование», «Цена») или NoData-заглушкой
+
+#### Scenario: Модальное окно добавления связи
+- **WHEN** пользователь нажимает «Добавить» в Drawer
+- **THEN** открывается модальное окно с Select (доступные услуги), полями override (description, price, price_formatter) и кнопками «Добавить»/«Закрыть»
+
+#### Scenario: Модальное окно редактирования связи
+- **WHEN** пользователь нажимает на строку таблицы связанных услуг
+- **THEN** открывается модальное окно с readonly Select (выбранная услуга), заполненными override-полями и кнопками «Изменить»/«Удалить»/«Закрыть»
+
+#### Scenario: Управление услугами без horse write scope
+- **WHEN** authenticated пользователь без horse write scope открывает Drawer
+- **THEN** кнопка «Добавить» скрыта или disabled, строки таблицы не открывают модальное окно редактирования
+
+#### Scenario: Управление услугами с horse write scope
+- **WHEN** authenticated пользователь с horse write scope открывает Drawer
+- **THEN** кнопка «Добавить» активна, клик по строке открывает модальное окно редактирования
+
+#### Scenario: Изоляция consumer-контура для услуг лошади
+- **WHEN** reviewer проверяет frontend diff для horse service relations UI
+- **THEN** изменения ограничены `services/frontend`, отсутствуют импорты `site-*`/Public Read consumer modules и `services/site-ad` не изменён
 
 ### Requirement: Tenant-aware horse и breed представление
 CMS horse UI SHALL использовать существующий tenant context authenticated session, SHALL отображать horse CRUD и справочники из CMS API и SHALL представлять классификацию вида лошади через `breed.kind`, не отправляя устаревшее поле `kind` в create/update body лошади.
