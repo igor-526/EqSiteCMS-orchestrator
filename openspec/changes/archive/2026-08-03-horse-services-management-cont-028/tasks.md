@@ -1,0 +1,108 @@
+## Чеклист
+
+### Backend
+
+- [x] 1.1 Backend A: удалить известные unused imports в `src/core/schemas/horse_service_relations.py` и `tests/unit/repositories/test_horse_repository_override.py`, не меняя runtime behavior
+- [x] 1.2 Backend A: повторно найти PostgreSQL по compose labels/fallback и получить DB env, image, aliases и host port через `docker inspect`
+- [x] 1.3 Backend A: создать одну Alembic revision для `horse_service_relations.created_at` с nullable add, `now()` backfill, `NOT NULL`/server default и data-preserving downgrade
+- [x] 1.4 Backend A: согласовать model/entity/schema relation с `created_at`, не затрагивая horse list filter paths
+- [x] 1.5 Backend A: изменить relation repository default order на `created_at DESC, id DESC`
+- [x] 1.6 Backend B: добавить `services: list[UUID] | None` в `GET /api/horses` и передать параметр через service/protocol chain
+- [x] 1.7 Backend B: реализовать tenant-safe OR `EXISTS` filter в `horse_repository.py` одинаково для items/count без дублей
+- [x] 1.8 Backend B: обновить API/backend documentation для repeated `services` и Public Read access matrix
+- [x] 1.9 Backend owners: выполнить `PYTHONPATH=src uv run pytest -s -vv tests/unit`, `uv run mypy src`, lint/isort/black check и приложить evidence
+- [x] 1.10 Unit: continuation — UT-01 migration upgrade сохраняет количество существующих relation rows
+- [x] 1.11 Unit: continuation — UT-02 migration backfill устраняет все `created_at IS NULL`
+- [x] 1.12 Unit: continuation — UT-03 migration создаёт `NOT NULL`/server default contract
+- [x] 1.13 Unit: continuation — UT-04 migration downgrade удаляет только `created_at`
+- [x] 1.14 Unit: continuation — UT-05 новая relation entity/schema сериализует timezone-aware `created_at`
+- [x] 1.15 Unit: continuation — UT-06 relation list передаёт default `created_at DESC`
+- [x] 1.16 Unit: continuation — UT-07 одинаковые timestamps получают tie-break `id DESC`
+- [x] 1.17 Unit: continuation — UT-08 пустой relation list остаётся корректным
+- [x] 1.18 Unit: continuation — UT-09 pagination relation list сохраняет newest-first
+- [x] 1.19 Unit: continuation — UT-10 известные F401 не возвращаются при lint
+- [x] 1.20 Unit: continuation — UT-11 API принимает один валидный UUID `services`
+- [x] 1.21 Unit: continuation — UT-12 API принимает repeated UUID `services`
+- [x] 1.22 Unit: continuation — UT-13 malformed service UUID маппится в 422 до repository
+- [x] 1.23 Unit: continuation — UT-14 отсутствие services не добавляет predicate
+- [x] 1.24 Unit: continuation — UT-15 пустой normalized services не добавляет predicate
+- [x] 1.25 Unit: continuation — UT-16 один UUID строит tenant-safe EXISTS
+- [x] 1.26 Unit: continuation — UT-17 два UUID строят OR/IN semantics, не AND
+- [x] 1.27 Unit: continuation — UT-18 duplicate UUID не дублирует items
+- [x] 1.28 Unit: continuation — UT-19 service filter применяется к items query
+- [x] 1.29 Unit: continuation — UT-20 service filter применяется к count query
+- [x] 1.30 Unit: continuation — UT-21 count использует distinct horse semantics
+- [x] 1.31 Unit: continuation — UT-22 foreign-tenant service не проходит tenant predicate
+- [x] 1.32 Unit: continuation — UT-23 mixed own/foreign IDs возвращает только own matches
+- [x] 1.33 Unit: continuation — UT-24 service filter сочетается с name filter
+- [x] 1.34 Unit: continuation — UT-25 service filter сочетается с breed/kind filters
+- [x] 1.35 Unit: continuation — UT-26 service filter сочетается с sort
+- [x] 1.36 Unit: continuation — UT-27 service filter сохраняет limit/offset
+- [x] 1.37 Unit: continuation — UT-28 Public Read dependency остаётся `get_read_equestrian_context`
+- [x] 1.38 Unit: continuation — UT-29 relation write dependencies остаются authenticated/scope-protected
+- [x] 1.39 Unit: continuation — UT-30 repository/database error не оставляет partial state и пробрасывается по контракту
+- [x] 1.40 Smoke: continuation — SM-01 повторить docker inspect и подключиться к найденной реальной PostgreSQL
+- [x] 1.41 Smoke: continuation — SM-02 применить все migrations к реальной PostgreSQL
+- [x] 1.42 Smoke: continuation — SM-03 upgrade сохраняет существующие relation rows
+- [x] 1.43 Smoke: continuation — SM-04 все backfilled rows имеют `created_at`
+- [x] 1.44 Smoke: continuation — SM-05 новая связь получает server-generated `created_at`
+- [x] 1.45 Smoke: continuation — SM-06 две последовательно созданные связи читаются newest-first
+- [x] 1.46 Smoke: continuation — SM-07 одинаковые timestamps читаются стабильно по id
+- [x] 1.47 Smoke: continuation — SM-08 relation list pagination не меняет порядок между запросами
+- [x] 1.48 Smoke: continuation — SM-09 downgrade/upgrade rehearsal не теряет relation rows
+- [x] 1.49 Smoke: continuation — SM-10 CI lint проходит без трёх известных F401
+- [x] 1.50 Smoke: continuation — SM-11 anonymous GET horses с tenant key и одной service возвращает 200
+- [x] 1.51 Smoke: continuation — SM-12 anonymous GET horses без tenant key возвращает 400
+- [x] 1.52 Smoke: continuation — SM-13 authenticated GET horses с одной service возвращает 200
+- [x] 1.53 Smoke: continuation — SM-14 repeated services применяет OR semantics
+- [x] 1.54 Smoke: continuation — SM-15 лошадь с обеими услугами возвращается один раз
+- [x] 1.55 Smoke: continuation — SM-16 unmatched service возвращает count 0/items []
+- [x] 1.56 Smoke: continuation — SM-17 foreign-tenant service UUID не раскрывает данные
+- [x] 1.57 Smoke: continuation — SM-18 mixed own/foreign UUID возвращает только own matches
+- [x] 1.58 Smoke: continuation — SM-19 malformed UUID возвращает 422
+- [x] 1.59 Smoke: continuation — SM-20 отсутствие services сохраняет прежний список
+- [x] 1.60 Smoke: continuation — SM-21 count совпадает с уникальным filtered set
+- [x] 1.61 Smoke: continuation — SM-22 limit/offset возвращают корректные filtered pages
+- [x] 1.62 Smoke: continuation — SM-23 sort сохраняется при services filter
+- [x] 1.63 Smoke: continuation — SM-24 name + services пересекаются корректно
+- [x] 1.64 Smoke: continuation — SM-25 breed/kind + services пересекаются корректно
+- [x] 1.65 Smoke: continuation — SM-26 anonymous relation GET с tenant key остаётся 200
+- [x] 1.66 Smoke: continuation — SM-27 anonymous relation POST/PATCH/DELETE остаются 401 без записей
+- [x] 1.67 Smoke: continuation — SM-28 authenticated без scope relation writes остаются 403 без изменений
+- [x] 1.68 Smoke: continuation — SM-29 authenticated со scope создаёт override из inherited form values и читает их обратно
+- [x] 1.69 Smoke: continuation — SM-30 cleanup удаляет только созданные fixtures и подтверждает отсутствие остаточных PostgreSQL rows
+
+### Frontend
+
+- [x] 2.1 Frontend: расширить `HorseListQueryParams` полем `services?: UUID[] | null` и API-boundary тестом repeated-key/empty omission
+- [x] 2.2 Frontend: передать options справочника услуг в horse table через существующий feature hook/container без API imports в `page.tsx`
+- [x] 2.3 Frontend: добавить service `ListFilter` в `HorsesTable`, apply/clear которого сбрасывают `offset=0`
+- [x] 2.4 Frontend: покрыть initial limit/offset, page change, page size change и reset offset при service filter/search/sort
+- [x] 2.5 Frontend: создать локальный единый gray count badge contract для photo/pedigree/service actions без нового устаревшего слоя
+- [x] 2.6 Frontend: применить единый badge к трём actions и сохранить stopPropagation/независимые handlers
+- [x] 2.7 Frontend: изменить create relation modal — выбор услуги заполняет description/price/formatter controlled state реальными defaults
+- [x] 2.8 Frontend: реализовать смену услуги, изменение и явную очистку inherited overrides с согласованными null body values
+- [x] 2.9 Frontend: сохранить scope guard, `401/403` error state, form persistence и double-submit protection для Protected Write
+- [x] 2.10 Frontend: добавить API-boundary MSW tests success/empty/validation/generic/401/403 с `onUnhandledRequest: "error"`
+- [x] 2.11 Frontend: добавить component tests таблицы data/loading/empty/error/service filter/three badges/action callbacks/scope missing
+- [x] 2.12 Frontend: добавить modal tests open/close/select defaults/change service/edit/clear/validation/backend error/success refresh/double submit
+- [x] 2.13 Frontend: выполнить no `site-*` mixing self-check и `rg` checks из `agents/planner.md`
+- [x] 2.14 Frontend: выполнить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` и вернуть evidence Router
+- [x] 2.15 Frontend: выполнить Manual QA steps из design на desktop/tablet/mobile, auth/scopes/errors/pagination и оформить screenshots/network evidence для failures
+
+### Quality Gate
+
+- [x] 3.1 Quality Gate: проверить path ownership, Clean Architecture backend и frontend chain `page -> feature -> service -> api`
+- [x] 3.2 Quality Gate: проверить migration upgrade/backfill/not-null/default/downgrade на реальной PostgreSQL без потери rows
+- [x] 3.3 Quality Gate: проверить Access matrix — Public Read GET anonymous/authenticated/foreign tenant и Protected Write anonymous/no-scope/allowed scope
+- [x] 3.4 Quality Gate: проверить качество и неповторяемость минимум 30 Unit и 30 live Smoke scenarios; smoke не является pytest и использует inspect-параметры
+- [x] 3.5 Quality Gate: повторить backend unit, lint/F401, mypy, isort/black check и применимые migration checks
+- [x] 3.6 Quality Gate: повторить все SM-01..SM-30 через smoke skill на живом API/реальной PostgreSQL и подтвердить cleanup
+- [x] 3.7 Quality Gate: повторить frontend `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`
+- [x] 3.8 Quality Gate: проверить MSW/no-live calls, repeated services, pagination reset, scopes, 401/403, modal inheritance и badge regressions
+- [x] 3.9 Quality Gate: проверить browser QA report, responsive layout, auth states, permission states, error persistence и success invalidation
+- [x] 3.10 Quality Gate: проверить отсутствие изменений/imports `services/site-ad`, случайной приватизации GET и открытия writes
+- [x] 3.11 Quality Gate: записать единый evidence report в `docs/reports`; при findings вернуть их владельцам и после fixes повторить пункты 3.1–3.10 полностью
+- [x] 3.12 После успешного общего Gate синхронизировать четыре delta specs в main specs через `openspec-sync-specs`
+- [x] 3.13 Повторить `openspec validate horse-services-management-cont-028 --type change --strict` после sync и подтвердить main spec validation
+- [x] 3.14 Архивировать change через `openspec-archive-change` только после успешных Gate, sync и validation

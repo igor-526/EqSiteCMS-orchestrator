@@ -41,7 +41,7 @@ CMS SHALL предоставлять маршрут `/horses` только в au
 - **THEN** изменения ограничены `services/frontend`, отсутствуют импорты `site-*`/Public Read consumer modules и `services/site-ad` не изменён
 
 ### Requirement: Scope-aware UX для действий с лошадьми и родословной
-CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. CMS SHALL предоставлять кнопку управления услугами в колонке «Действия» таблицы лошадей с badge количества связанных услуг. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree hook MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
+CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. В колонке «Действия» кнопки фотографий, родословной и услуг SHALL использовать единый компактный серый count badge по стилю существующего service indicator; каждая кнопка SHALL вызывать только собственный handler. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree и relation hooks MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
 
 #### Scenario: Пользователь без scope видит read-only pedigree
 - **WHEN** scopes пользователя не разрешают `UPDATE_HORSE_PEDIGREE`
@@ -58,6 +58,14 @@ CMS SHALL связывать действия создания, изменени
 #### Scenario: Кнопка управления услугами в таблице лошадей
 - **WHEN** authenticated CMS-пользователь открывает вкладку «Лошади»
 - **THEN** в колонке «Действия» отображается третья кнопка (иконка финансов) с badge количества привязанных услуг
+
+#### Scenario: Единые indicators
+- **WHEN** authenticated пользователь видит строку лошади
+- **THEN** photo, pedigree и service actions показывают визуально одинаковые серые count badges без overlap
+
+#### Scenario: Независимые actions
+- **WHEN** пользователь нажимает любой из трёх action controls
+- **THEN** выполняется только соответствующий handler и row click не срабатывает
 
 #### Scenario: Drawer с таблицей связанных услуг
 - **WHEN** пользователь нажимает на кнопку «Услуги» лошади
@@ -99,7 +107,7 @@ CMS horse UI SHALL использовать существующий tenant cont
 - **THEN** request body содержит ссылку на породу и не содержит устаревшее поле `kind`
 
 ### Requirement: Непротиворечивые фильтры и offset pagination
-Horse UI SHALL сериализовать списки и pedigree candidates через `limit` и `offset`, MUST NOT отправлять page-based параметры, SHALL сбрасывать offset в `0` при изменении фильтра, размера страницы или candidate search и SHALL исключать одновременное применение `breed_ids` и `kind`.
+Horse UI SHALL сериализовать списки и pedigree candidates через `limit` и `offset`, MUST NOT отправлять page-based параметры, SHALL сбрасывать offset в `0` при изменении/очистке filter, search, sort, размера страницы или candidate search, SHALL исключать одновременное применение `breed_ids` и `kind` и SHALL использовать service multi-select с повторяемым query key `services`. Несколько услуг SHALL отображать OR-результат backend без frontend post-filtering.
 
 #### Scenario: Пользователь меняет фильтр списка
 - **WHEN** пользователь изменяет фильтр, включая breed IDs или horse kind
@@ -112,6 +120,30 @@ Horse UI SHALL сериализовать списки и pedigree candidates ч
 #### Scenario: Пользователь листает pedigree candidates
 - **WHEN** пользователь меняет страницу или поиск кандидатов родословной
 - **THEN** API получает `limit` и вычисленный `offset`, поиск сбрасывает offset в `0`, а `page`, `pageSize` и `page_size` отсутствуют
+
+#### Scenario: Выбор одной услуги
+- **WHEN** пользователь выбирает одну услугу в фильтре таблицы
+- **THEN** `HorseListQueryParams.services` содержит её UUID, API сериализует один key и offset равен 0
+
+#### Scenario: Выбор нескольких услуг
+- **WHEN** пользователь выбирает две услуги
+- **THEN** API отправляет два `services` key, а UI показывает уникальный OR-result backend
+
+#### Scenario: Очистка service filter
+- **WHEN** пользователь очищает selector
+- **THEN** `services` отсутствует в query и offset сбрасывается в 0
+
+#### Scenario: Pagination с фильтром
+- **WHEN** пользователь меняет страницу или page size при активном service filter
+- **THEN** query сохраняет services, использует вычисленный limit/offset, а page size change сбрасывает offset
+
+#### Scenario: Loading empty error
+- **WHEN** filtered request pending, возвращает пусто либо ошибку
+- **THEN** UI показывает соответствующее состояние и сохраняет выбранный filter для retry
+
+#### Scenario: API denial в CMS
+- **WHEN** CMS read получает `401` или `403`
+- **THEN** auth/error flow обрабатывает отказ без live backend calls в unit/component tests
 
 ### Requirement: Управление родословной с явными состояниями
 CMS SHALL поддерживать выбор, добавление, замену и удаление sire, dam и children, SHALL показывать loading, empty и error состояния списка кандидатов и SHALL требовать явного выбора кандидата перед сохранением.
@@ -140,7 +172,7 @@ Horse page actions SHALL разрешать выбранный ID через т�
 - **THEN** UI сообщает, что лошадь не найдена, и не открывает сценарий с сырым UUID вместо сущности
 
 ### Requirement: Изолированная frontend test boundary
-Frontend API и horse UI tests SHALL выполняться в jsdom с MSW server, SHALL считать любой необработанный сетевой запрос ошибкой и SHALL проверять API serialization, `401/403`, scopes и UI states без live backend.
+Frontend API и horse UI tests SHALL выполняться в jsdom с MSW server, SHALL считать любой необработанный сетевой запрос ошибкой и SHALL проверять repeated query serialization, filters, badges, modal inheritance, scopes, `401/403`, loading/empty/error и double submit без live backend.
 
 #### Scenario: Тест вызывает описанный API flow
 - **WHEN** тест обращается к CMS API boundary с зарегистрированным MSW handler
