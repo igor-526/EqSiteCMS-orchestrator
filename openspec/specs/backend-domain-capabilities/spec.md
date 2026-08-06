@@ -1,5 +1,3 @@
-# backend-domain-capabilities Specification
-
 ## Purpose
 Зафиксировать подтверждённые доменные возможности backend для цен, HTML-данных страниц, новостей, медиахранилища, профиля пользователя и связанных конных сущностей. Спецификация описывает наблюдаемое API-поведение, права доступа и границы имеющегося evidence, сохраняя открытые пробелы для отдельных последующих changes.
 ## Requirements
@@ -19,6 +17,8 @@ Backend SHALL поддерживать `page_data` для breeds, coat colors, h
 
 Backend SHALL автоматически генерировать slug из name при создании или обновлении horse service, если slug не передан или передана пустая строка. Backend SHALL принимать пустое описание услуги (`description=null` или `description=""`) без возврата ошибки валидации.
 
+Backend SHALL реализовать permission checks для horse services: только пользователи с `SUPERUSER` или `DEVELOPER` scope могут создавать и удалять услуги. Пользователи с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) могут обновлять услуги (кроме наименования) и читать их.
+
 #### Scenario: Публичное чтение page data
 - **WHEN** consumer с tenant service key вызывает detail GET одной из четырёх сущностей с `page_data=true` без CMS cookie
 - **THEN** backend возвращает `200` и включает сохранённый безопасный HTML
@@ -28,20 +28,56 @@ Backend SHALL автоматически генерировать slug из name
 - **THEN** backend отклоняет изменение с `400` и не сохраняет опасное содержимое
 
 #### Scenario: Автогенерация slug при создании услуги
-- **WHEN** авторизованный пользователь отправляет `POST /api/horses/services` с `name="Разведение"` и `slug=null` или `slug=""`
+- **WHEN** авторизованный пользователь с `DEVELOPER` или `SUPERUSER` scope отправляет `POST /api/horses/services` с `name="Разведение"` и `slug=null` или `slug=""`
 - **THEN** backend генерирует slug из name, возвращает `200` с заполненным slug
 
 #### Scenario: Автогенерация slug при обновлении услуги
-- **WHEN** авторизованный пользователь отправляет `PATCH /api/horses/services/{slug_or_id}` с `slug=""`
+- **WHEN** авторизованный пользователь с `DEVELOPER` или `SUPERUSER` scope отправляет `PATCH /api/horses/services/{slug_or_id}` с `slug=""`
 - **THEN** backend генерирует slug из name, возвращает `200` с заполненным slug
 
 #### Scenario: Необязательное описание услуги при создании
-- **WHEN** авторизованный пользователь отправляет `POST /api/horses/services` с `description=null` или `description=""`
+- **WHEN** авторизованный пользователь с `DEVELOPER` или `SUPERUSER` scope отправляет `POST /api/horses/services` с `description=null` или `description=""`
 - **THEN** backend создаёт услугу, возвращает `200` с `description=null`
 
 #### Scenario: Необязательное описание услуги при обновлении
-- **WHEN** авторизованный пользователь отправляет `PATCH /api/horses/services/{slug_or_id}` с `description=""`
+- **WHEN** авторизованный пользователь с `DEVELOPER` или `SUPERUSER` scope отправляет `PATCH /api/horses/services/{slug_or_id}` с `description=""`
 - **THEN** backend обновляет услугу, возвращает `200` с `description=null`
+
+#### Scenario: Отказ в создании услуги для ADMIN без DEVELOPER scope
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `POST /api/horses/services`
+- **THEN** backend возвращает `403` с сообщением «Недостаточно прав для выполнения операции»
+
+#### Scenario: Разрешение на обновление услуги для ADMIN (кроме наименования)
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `PATCH /api/horses/services/{slug_or_id}` с обновлением описания, URL или цены
+- **THEN** backend обновляет услугу и возвращает `200` с `HorseServiceOutDto`
+
+#### Scenario: Отказ в изменении наименования услуги для ADMIN
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `PATCH /api/horses/services/{slug_or_id}` с изменением наименования
+- **THEN** backend возвращает `403` с сообщением «Недостаточно прав для изменения наименования»
+
+#### Scenario: Отказ в удалении услуги для ADMIN без DEVELOPER scope
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `DELETE /api/horses/services/{slug_or_id}`
+- **THEN** backend возвращает `403` с сообщением «Недостаточно прав для выполнения операции»
+
+#### Scenario: Чтение услуг для ADMIN без DEVELOPER scope
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `GET /horses/services` или `GET /horses/services/{slug_or_id}`
+- **THEN** backend возвращает `200` с данными услуг
+
+#### Scenario: Фильтрация по полному наименованию (не подстрока)
+- **WHEN** consumer отправляет `GET /horses?service_names=продажа`
+- **THEN** backend возвращает только лошадей с услугой «продажа», но НЕ лошадей с услугой «продажа и аренда»
+
+#### Scenario: Регистронезависимая фильтрация
+- **WHEN** consumer отправляет `GET /horses?service_names=РАЗВЕДЕНИЕ`
+- **THEN** backend возвращает лошадей с услугой «разведение» (регистр не важен)
+
+#### Scenario: Отказ в изменении наименования услуги для ADMIN (при фактическом изменении)
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `PATCH /horses/services/{slug_or_id}` с новым наименованием, отличным от текущего
+- **THEN** backend возвращает `403` с сообщением «Недостаточно прав для изменения наименования»
+
+#### Scenario: Разрешение на обновление услуги для ADMIN с тем же наименованием
+- **WHEN** авторизованный пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) отправляет `PATCH /horses/services/{slug_or_id}` с тем же наименованием и другими полями
+- **THEN** backend обновляет услугу и возвращает `200` с `HorseServiceOutDto`
 
 ### Requirement: Override-подстановка услуг в HorseOutDto
 Backend SHALL подставлять override-значения из `horse_service_relations` при формировании `HorseOutDto.services`. Если `description_override` не null, использовать его вместо `description` услуги. Аналогично для `price_override` и `price_formatter_override`. Требование трассируется к задаче `027`.
@@ -275,6 +311,7 @@ Backend SHALL принимать в create/update пород и мастей о�
 #### Scenario: Изоляция tenant
 - **WHEN** authenticated пользователь пытается изменить породу или масть чужого equestrian tenant
 - **THEN** backend возвращает контрактный отказ или отсутствие ресурса и не изменяет чужую запись
+
 ### Requirement: Фильтрация лошадей по оказываемым услугам
 Backend SHALL принимать в `GET /api/horses` optional повторяемый query-параметр `services: list[UUID]`. Несколько UUID SHALL иметь OR-семантику; data и count SHALL использовать одинаковый tenant-scoped predicate, не дублировать лошадей и сохранять `limit`/`offset`/sort.
 
@@ -319,3 +356,34 @@ Backend SHALL принимать в `GET /api/horses` optional повторяе�
 #### Scenario: Невалидный UUID
 - **WHEN** `services` содержит malformed UUID
 - **THEN** FastAPI возвращает `422`, не выполняя repository query
+
+### Requirement: Permission checks для horse services
+Backend SHALL реализовать permission checks для horse services endpoints аналогично паттерну `PriceGroupService`. Метод `_check_admin_permission` SHALL проверять наличие scope `SUPERUSER` или `DEVELOPER` у пользователя. Пользователи с scope `ADMIN` (без `DEVELOPER`/`SUPERUSER`) SHALL получать отказ при попытке создания, обновления или удаления услуг.
+
+#### Scenario: Проверка прав при создании услуги
+- **WHEN** авторизованный пользователь отправляет `POST /horses/services`
+- **THEN** backend вызывает `_check_admin_permission` и проверяет наличие `SUPERUSER` или `DEVELOPER` scope
+
+#### Scenario: Проверка прав при обновлении услуги
+- **WHEN** авторизованный пользователь отправляет `PATCH /horses/services/{slug_or_id}`
+- **THEN** backend вызывает `_check_admin_permission` и проверяет наличие `SUPERUSER` или `DEVELOPER` scope
+
+#### Scenario: Проверка прав при удалении услуги
+- **WHEN** авторизованный пользователь отправляет `DELETE /horses/services/{slug_or_id}`
+- **THEN** backend вызывает `_check_admin_permission` и проверяет наличие `SUPERUSER` или `DEVELOPER` scope
+
+#### Scenario: Отсутствие проверки прав при чтении услуг
+- **WHEN** авторизованный или анонимный пользователь отправляет `GET /horses/services` или `GET /horses/services/{slug_or_id}`
+- **THEN** backend НЕ вызывает `_check_admin_permission` и возвращает данные без проверки scope
+
+### Requirement: Фильтрация лошадей по наименованиям услуг для site consumer
+Backend SHALL предоставлять query parameter `service_names` (list[str]) на эндпоинте `GET /horses` для фильтрации лошадей по наименованиям услуг. Фильтрация SHALL выполняться по наименованиям услуг (не UUID) для публичного API site consumer.
+
+#### Scenario: Фильтрация по наименованиям услуг
+- **WHEN** consumer отправляет `GET /horses?service_names=Разведение&service_names=Тренировка`
+- **THEN** backend возвращает лошадей, у которых есть хотя бы одна из указанных услуг
+
+#### Scenario: Пустой список наименований
+- **WHEN** consumer отправляет `GET /horses?service_names=`
+- **THEN** backend возвращает все лошади без фильтрации по услугам
+
