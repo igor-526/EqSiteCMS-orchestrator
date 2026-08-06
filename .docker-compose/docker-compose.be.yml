@@ -3,6 +3,7 @@ services:
     build:
       context: ../services/backend
       dockerfile: Dockerfile
+    image: eqsitecms-backend:latest
     container_name: eqsitecms-app
     restart: always
     extra_hosts:
@@ -32,6 +33,7 @@ services:
   #   build:
   #     context: ../services/backend
   #     dockerfile: Dockerfile
+  #   image: eqsitecms-backend-migration:latest
   #   restart: "no"
   #   env_file:
   #     - path: ../services/backend/.env

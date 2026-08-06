@@ -265,6 +265,7 @@ Backend/API contract для CMS frontend — только `limit/offset`.
 |---|---|
 | `StringFilter` | Не ломать ввод aggressive normalization; trim/normalization применять в agreed boundary, debounce для server search |
 | `ListFilter` | Multi/single values сериализуются явно в query filter type |
+| Расположение фильтров | Фильтр размещается в `filterDropdown` колонки таблицы, если для фильтра есть колонка. Если колонки нет — отдельный Select в блоке с пагинацией. Дублирование фильтра в обоих местах запрещено. |
 | Date/range | Хранить nullable range явно; serialize в API query только валидные границы |
 | Empty values | `""`, пустой массив, invalid date и cleared select нормализовать в `undefined`/отсутствие query param по принятому contract |
 | Debounce | Server-side text search/filter должен иметь debounce или явное объяснение, почему debounce не нужен |

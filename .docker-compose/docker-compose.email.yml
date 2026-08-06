@@ -1,0 +1,51 @@
+services:
+  app:
+    build:
+      context: ../services/email-service
+      dockerfile: Dockerfile
+    image: eqsitecms-email:latest
+    container_name: eqsitecms-email-service
+    restart: always
+    env_file:
+      - path: ../services/email-service/.env
+        required: true
+    ports:
+      - "${EXPOSE_EMAIL_SERVICE_PORT:-8003}:8000"
+    volumes:
+      - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - eqsitecms_network
+
+  migration:
+    build:
+      context: ../services/email-service
+      dockerfile: Dockerfile
+    image: eqsitecms-email-migration:latest
+    container_name: eqsitecmsemail-service-migration
+    restart: "no"
+    env_file:
+      - path: ../services/email-service/.env
+        required: true
+    volumes:
+      - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    command: >
+      sh -c 'if [ "$$SKIP_MIGRATIONS" = "true" ]; then
+        echo "Миграции пропущены (SKIP_MIGRATIONS=true)";
+        exit 0;
+      else
+        uv run alembic -c alembic.ini upgrade head;
+      fi'
+    networks:
+      - eqsitecms_network
+
+networks:
+  eqsitecms_network:
+    external: true

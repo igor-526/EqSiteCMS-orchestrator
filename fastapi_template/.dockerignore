@@ -1,15 +1,12 @@
-# In .dockerignore
-# Exclude everything:
-*
-
-# Exclude Python cache (even inside included dirs)
-__pycache__/
-**/__pycache__/
-
-# Include files:
-!app
-!migrations
-!pyproject.toml
-!uv.lock
-!alembic.ini
-!README.md
+.git
+.gitignore
+.env
+.venv
+.pytest_cache
+.ruff_cache
+__pycache__
+*.py[cod]
+tests
+.vscode
+.idea
+postgres_data

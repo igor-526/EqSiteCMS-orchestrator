@@ -1,33 +1,27 @@
 # =====VARIABLES=====
-# Docker compose directory
 COMPOSE_DIR = .docker-compose
+SERVICES_DIR = services
 
-# Backend
+# Docker compose files
 COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
-
-# Frontend
+COMPOSE_NOTIFICATION = $(COMPOSE_DIR)/docker-compose.notification.yml
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
-
-# Infrastructure
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 
-# Backend commands
-DC_BE         := docker compose -f $(COMPOSE_BE)
-
-# Frontend commands (--env-file подхватывает NEXT_PUBLIC_* для build args в docker-compose.fe.yml)
-DC_FE := docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
-
-# Infrastructure commands
-DC_INFRA := docker compose -f $(COMPOSE_INFRA)
-
-
-
+# Docker compose commands (base, без -p — добавляется в таргетах)
+DC_BE = docker compose -f $(COMPOSE_BE)
+DC_NOTIFICATION = docker compose -f $(COMPOSE_NOTIFICATION)
+DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
+DC_INFRA = docker compose -f $(COMPOSE_INFRA)
 
 SERVICES_MANIFEST ?= services.manifest
 
-.PHONY: up be fe fe-build infra setup sync build test run lint asyncapi-validate up-full 
+.PHONY: sync update services-branches \
+        build be-build be-build-nc notification-build notification-build-nc fe-build fe-build-nc \
+        be be-attach notification notification-attach fe fe-attach infra \
+        test lint format be-makemigrations be-migrate
 
-#=====ORCHESTRATOR COMMANDS=====
+# =====ORCHESTRATOR COMMANDS=====
 
 sync:
 	@echo "Syncing all services..."
@@ -74,57 +68,76 @@ services-branches:
 %:
 	@:
 
-#=====BUILD COMMANDS=====
+# =====BUILD COMMANDS=====
 
-build:
-	@echo "Building all docker-compose services..."
-	@docker compose -f $(COMPOSE_BE) build
-	@$(DC_FE) build
+build: be-build notification-build fe-build
 
 be-build:
 	@echo "Building backend image..."
-	@docker compose -f $(COMPOSE_BE) build
+	$(DC_BE) -p eqsitecms-be build
 
-# Сборка только фронта. Дефолты API: localhost:8000/api (см. docker-compose.fe.yml).
-# Переопределение: положи в services/fe/.env строки NEXT_PUBLIC_API_BASE_URL=... и NEXT_PUBLIC_API_PORT=...
-# или один раз: NEXT_PUBLIC_API_BASE_URL=https://api.dev.example/api make fe-build
+be-build-nc:
+	@echo "Building backend image without build cache..."
+	$(DC_BE) -p eqsitecms-be build --no-cache
+
+notification-build:
+	@echo "Building notification service image..."
+	$(DC_NOTIFICATION) -p eqsitecms-notification build
+
+notification-build-nc:
+	@echo "Building notification service image without build cache..."
+	$(DC_NOTIFICATION) -p eqsitecms-notification build --no-cache
+
 fe-build:
 	@echo "Building frontend image..."
-	@$(DC_FE) build
+	$(DC_FE) -p eqsitecms-fe build
 
-#=====RUN COMMANDS=====
+fe-build-nc:
+	@echo "Building frontend image without build cache..."
+	$(DC_FE) -p eqsitecms-fe build --no-cache
+
+# =====RUN COMMANDS=====
+
 # Infrastructure
-
 infra:
-	$(DC_INFRA) -p eqsitecms --env-file $(COMPOSE_DIR)/.env up -d
+	$(DC_INFRA) -p eqsitecms-infra --env-file $(COMPOSE_DIR)/.env up -d
 
 # Backend
 be:
-	$(DC_BE) -p eqsitecms --env-file $(COMPOSE_DIR)/.env up -d
+	$(DC_BE) -p eqsitecms-be --env-file $(COMPOSE_DIR)/.env up -d
+
+be-attach:
+	$(DC_BE) -p eqsitecms-be --env-file $(COMPOSE_DIR)/.env up
+
+# Notification Service
+notification:
+	$(DC_NOTIFICATION) -p eqsitecms-notification --env-file $(SERVICES_DIR)/notification-service/.env up -d
+
+notification-attach:
+	$(DC_NOTIFICATION) -p eqsitecms-notification --env-file $(SERVICES_DIR)/notification-service/.env up
 
 # Frontend
 fe:
-	$(DC_FE) -p eqsitecms up -d
+	$(DC_FE) -p eqsitecms-fe up -d
 
-#=====TESTING|LINTING|FORMATTING=====
+fe-attach:
+	$(DC_FE) -p eqsitecms-fe up
+
+# =====TESTING | LINTING | FORMATTING=====
 
 test:
-	@echo "Tests execution. Assuming local test running via docker-compose is not yet globally configured."
-	@echo "To run tests in a specific service, navigate to services/<service_name> and run its test command."
 	cd services/backend && uv run pytest
 
 lint:
-	@echo "Linting conceptually requires per-service configuration. You might want to run this inside individual service directories."
 	cd services/backend && uv run mypy src && uv run flake8 && uv run ruff check --fix src
 
 format:
 	cd services/backend && uv run isort src && uv run black src && uv run isort tests && uv run black tests
 
-#=====BACKEND MANAGEMENT=====
+# =====BACKEND MANAGEMENT=====
+
 be-makemigrations:
 	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic revision --autogenerate -m '$(msg)'"
 
 be-migrate:
 	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic upgrade head"
-
-
