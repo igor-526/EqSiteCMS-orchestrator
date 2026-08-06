@@ -1,10 +1,6 @@
-# CMS Horse UI Quality
-
 ## Purpose
 Зафиксировать подтверждённые требования к защищённому CMS-интерфейсу управления лошадьми и его quality boundaries.
-
 ## Requirements
-
 ### Requirement: Защищённый CMS-контур управления лошадьми
 CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. Вкладка «Лошади» SHALL отображать nullable `code` отдельной колонкой «Код», а create/edit modal SHALL предоставлять строковое поле «Код» длиной не более 31 символа, сохраняющее допустимые значения без trim и позволяющее очистить существующий code. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
 
@@ -269,3 +265,121 @@ CMS horse UI SHALL отображать ошибки каждого поля п�
 #### Scenario: Изоляция consumer-контура
 - **WHEN** reviewer проверяет frontend diff
 - **THEN** `services/site-ad` не изменён, CMS не импортирует `site-*`/Public Read consumer runtime и существующая `limit/offset` pagination не регрессирует
+
+### Requirement: Единое расположение фильтров таблицы лошадей
+
+CMS horse UI SHALL размещать фильтры в `filterDropdown` колонки таблицы, если для фильтра существует соответствующая колонка. Если подходящей колонки нет, фильтр SHALL размещаться как отдельный Select в блоке с пагинацией. Дублирование фильтра одновременно в блоке пагинации и в шапке колонки MUST NOT допускаться.
+
+#### Scenario: Фильтр с колонкой размещён в шапке колонки
+- **WHEN** для фильтра существует колонка в таблице (База, Порода, Масть, Пол, Владелец)
+- **THEN** фильтр доступен только через `filterDropdown` в шапке этой колонки, а отдельный Select в блоке пагинации отсутствует
+
+#### Scenario: Фильтр без колонки размещён в блоке пагинации
+- **WHEN** для фильтра нет подходящей колонки в таблице (Услуги)
+- **THEN** фильтр доступен как отдельный Select в блоке с пагинацией, а колонка в таблице отсутствует
+
+#### Scenario: Дублирование фильтра запрещено
+- **WHEN** reviewer проверяет frontend diff для horse filters
+- **THEN** ни один фильтр не продублирован одновременно в блоке пагинации и в шапке колонки
+
+#### Scenario: Фильтр «База» в шапке колонки
+- **WHEN** authenticated CMS-пользователь открывает вкладку «Лошади»
+- **THEN** колонка «База» содержит `filterDropdown` с ListFilter (опции: Все/Наши/Чужие), а отдельный Select «База» в блоке пагинации отсутствует
+
+#### Scenario: Фильтр «Владельцы» в шапке колонки
+- **WHEN** authenticated CMS-пользователь открывает вкладку «Лошади»
+- **THEN** колонка «Владелец» содержит `filterDropdown` с multi-ListFilter (опции из `ownerFilterOptions`), а отдельный Select «Владельцы» в блоке пагинации отсутствует
+
+#### Scenario: Фильтр «Услуги» в блоке пагинации
+- **WHEN** authenticated CMS-пользователь открывает вкладку «Лошади»
+- **THEN** в блоке с пагинацией присутствует Select для фильтрации по услугам, а колонка «Услуги» в таблице отсутствует
+
+#### Scenario: Дубли «Породы», «Масти», «Пол» удалены
+- **WHEN** authenticated CMS-пользователь открывает вкладку «Лошади»
+- **THEN** отдельные Select для «Породы», «Масти» и «Пол» в блоке пагинации отсутствуют; фильтры доступны только через `filterDropdown` соответствующих колонок
+
+#### Scenario: Сброс offset при изменении фильтра
+- **WHEN** пользователь изменяет любой фильтр (в колонке или в блоке пагинации)
+- **THEN** `offset` сбрасывается в `0`, а query serialization сохраняет выбранные значения
+
+#### Scenario: Loading/empty/error для фильтрованных данных
+- **WHEN** filtered request pending, возвращает пусто либо ошибку
+- **THEN** UI показывает соответствующее состояние и сохраняет выбранные фильтры для retry
+
+#### Scenario: Изоляция consumer-контура
+- **WHEN** reviewer проверяет frontend diff для horse filters
+- **THEN** изменения ограничены `services/frontend`, `services/site-ad` не изменён и CMS runtime не импортирует `site-*` Public Read consumer code
+
+### Requirement: Frontend scope restrictions для horse services
+CMS Frontend SHALL реализовать ограничение прав для horse services аналогично паттерну `price_groups`. Пользователи с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) НЕ должны иметь возможности создавать и удалять услуги, а также изменять наименование услуги. Однако они МОГУТ изменять описание, URL и цену услуги. Пользователи с `DEVELOPER` или `SUPERUSER` scope получают полный доступ.
+
+#### Scenario: Скрытие кнопки создания услуги для ADMIN
+- **WHEN** пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) открывает страницу horse services
+- **THEN** кнопка «Создать услугу» скрыта или disabled
+
+#### Scenario: Скрытие кнопки удаления услуги для ADMIN
+- **WHEN** пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) открывает страницу horse services
+- **THEN** кнопки удаления услуг скрыты или disabled
+
+#### Scenario: Блокировка изменения наименования услуги для ADMIN
+- **WHEN** пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) открывает форму редактирования услуги
+- **THEN** поле «Наименование» заблокировано для редактирования (readonly или disabled)
+
+#### Scenario: Доступность кнопки создания услуги для DEVELOPER
+- **WHEN** пользователь с `DEVELOPER` scope открывает страницу horse services
+- **THEN** кнопка «Создать услугу» доступна для нажатия
+
+#### Scenario: Доступность кнопки удаления услуги для DEVELOPER
+- **WHEN** пользователь с `DEVELOPER` scope открывает страницу horse services
+- **THEN** кнопки удаления услуг доступны для нажатия
+
+#### Scenario: Доступность изменения наименования услуги для DEVELOPER
+- **WHEN** пользователь с `DEVELOPER` scope открывает форму редактирования услуги
+- **THEN** поле «Наименование» доступно для редактирования
+
+#### Scenario: Доступность всех действий для SUPERUSER
+- **WHEN** пользователь с `SUPERUSER` scope открывает страницу horse services
+- **THEN** все кнопки и поля доступны для взаимодействия
+
+### Requirement: Horse service scopes registry
+CMS Frontend SHALL реализовать `horseServicePageScopesRegistry` аналогично `pricePageScopesRegistry`. Регистр SHALL определять доступные действия для каждого scope: `DEVELOPER` и `SUPERUSER` получают полный доступ, `ADMIN` — только чтение.
+
+#### Scenario: Определение прав для CREATE_HORSE_SERVICE
+- **WHEN** система проверяет доступность действия `CREATE_HORSE_SERVICE`
+- **THEN** действие доступно только для `DEVELOPER` и `SUPERUSER`
+
+#### Scenario: Определение прав для UPDATE_HORSE_SERVICE_NAME
+- **WHEN** система проверяет доступность действия `UPDATE_HORSE_SERVICE_NAME`
+- **THEN** действие доступно только для `DEVELOPER` и `SUPERUSER`
+
+#### Scenario: Определение прав для DELETE_HORSE_SERVICE
+- **WHEN** система проверяет доступность действия `DELETE_HORSE_SERVICE`
+- **THEN** действие доступно только для `DEVELOPER` и `SUPERUSER`
+
+#### Scenario: Определение прав для RETRIEVE_HORSE_SERVICE
+- **WHEN** система проверяет доступность действия `RETRIEVE_HORSE_SERVICE`
+- **THEN** действие доступно для `ADMIN`, `DEVELOPER` и `SUPERUSER`
+
+### Requirement: Horse page scopes
+CMS Frontend SHALL использовать `useHorsePageActionScopes` hook для проверки прав доступа на странице лошадей. Hook SHALL включать проверку прав для horse services: `CREATE_HORSE_SERVICE`, `UPDATE_HORSE_SERVICE`, `DELETE_HORSE_SERVICE`, `RETRIEVE_HORSE_SERVICE`.
+
+#### Scenario: Проверка прав для создания услуги
+- **WHEN** компонент вызывает `hasPermission(HORSES_PAGE_SCOPES_ACTIONS.CREATE_HORSE_SERVICE)`
+- **THEN** возвращает `true` для `DEVELOPER` и `SUPERUSER`, `false` для `ADMIN`
+
+#### Scenario: Проверка прав для обновления услуги
+- **WHEN** компонент вызывает `hasPermission(HORSES_PAGE_SCOPES_ACTIONS.UPDATE_HORSE_SERVICE)`
+- **THEN** возвращает `true` для `DEVELOPER` и `SUPERUSER`, `false` для `ADMIN`
+
+#### Scenario: Проверка прав для удаления услуги
+- **WHEN** компонент вызывает `hasPermission(HORSES_PAGE_SCOPES_ACTIONS.DELETE_HORSE_SERVICE)`
+- **THEN** возвращает `true` для `DEVELOPER` и `SUPERUSER`, `false` для `ADMIN`
+
+#### Scenario: Проверка прав для чтения услуги
+- **WHEN** компонент вызывает `hasPermission(HORSES_PAGE_SCOPES_ACTIONS.RETRIEVE_HORSE_SERVICE)`
+- **THEN** возвращает `true` для `ADMIN`, `DEVELOPER` и `SUPERUSER`
+
+#### Scenario: Доступность изменения описания, URL и цены для ADMIN
+- **WHEN** пользователь с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) открывает форму редактирования услуги
+- **THEN** поля «Описание», «Путь в URL» и «Цена» доступны для редактирования, а кнопка «Изменить» доступна
+
