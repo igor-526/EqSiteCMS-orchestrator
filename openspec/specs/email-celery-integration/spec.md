@@ -1,7 +1,8 @@
 # email-celery-integration Specification
 
 ## Purpose
-TBD - created by archiving change celery-redis-architecture. Update Purpose after archive.
+Расширение Celery task для использования core-сервиса вместо заглушки.
+
 ## Requirements
 ### Requirement: Настройки Celery в .env.example email-service
 Файл `services/email-service/.env.example` MUST СОДЕРЖАТЬ секцию `# CELERY SETTINGS` с переменными: `CELERY_APP_MAIN`, `CELERY_APP_BROKER`, `CELERY_APP_BACKEND`, `REDIS_PASSWORD`. Значения по умолчанию SHALL указывать на Redis с БД 1 (broker) и БД 2 (backend).
@@ -29,11 +30,19 @@ TBD - created by archiving change celery-redis-architecture. Update Purpose afte
 - **THEN** `task_acks_late=True` ОЗНАЧАЕТ, что ack отправляется после выполнения, а не при получении
 
 ### Requirement: Задача отправки email
-Файл `services/email-service/src/workers/tasks/email.py` MUST СОДЕРЖАТЬ задачу `send_email_task` с декоратором `@shared_task`. Задача MUST принимать `recipient`, `subject`, `body` и вызывать email-отправку. Задача SHALL использовать `autoretry_for` с `max_retries=3` и `retry_backoff=True`.
+Файл `services/email-service/src/workers/tasks/email.py` MUST СОДЕРЖАТЬ задачу `send_email_task` с декоратором `@shared_task`. Задача MUST принимать `email_log_id` (UUID) и вызывать `EmailProcessingService.complete_sending()`. Задача SHALL использовать `autoretry_for` с `max_retries=3` и `retry_backoff=True`.
 
-#### Scenario: Задача отправляет email
-- **WHEN** задача `send_email_task` вызвана с валидными параметрами
-- **THEN** email ОТПРАВЛЯЕТСЯ на указанный `recipient`
+#### Scenario: Задача вызывает core-сервис
+- **WHEN** задача `send_email_task` вызвана с `email_log_id`
+- **THEN** MUST вызвать `EmailProcessingService.complete_sending()` с указанным ID
+
+#### Scenario: Успешная отправка через core-сервис
+- **WHEN** `EmailProcessingService.complete_sending()` завершается успешно
+- **THEN** задача MUST завершиться без ошибок
+
+#### Scenario: Ошибка отправки
+- **WHEN** `EmailProcessingService.complete_sending()` выбрасывает исключение
+- **THEN** задача MUST перехватить исключение и пробросить дальше для retry
 
 #### Scenario: Задача ретраится при ошибке SMTP
 - **WHEN** SMTP-сервер недоступен
@@ -59,4 +68,3 @@ README.md email-service MUST СОДЕРЖАТЬ секцию "Celery" с опи�
 #### Scenario: README содержит команды запуска worker
 - **WHEN** разработчик читает README
 - **THEN** README СОДЕРЖИТ команду `celery -A workers.celery_app worker -Q email -l info`
-
