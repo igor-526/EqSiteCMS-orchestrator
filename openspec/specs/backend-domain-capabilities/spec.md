@@ -357,33 +357,21 @@ Backend SHALL принимать в `GET /api/horses` optional повторяе�
 - **WHEN** `services` содержит malformed UUID
 - **THEN** FastAPI возвращает `422`, не выполняя repository query
 
-### Requirement: Permission checks для horse services
-Backend SHALL реализовать permission checks для horse services endpoints аналогично паттерну `PriceGroupService`. Метод `_check_admin_permission` SHALL проверять наличие scope `SUPERUSER` или `DEVELOPER` у пользователя. Пользователи с scope `ADMIN` (без `DEVELOPER`/`SUPERUSER`) SHALL получать отказ при попытке создания, обновления или удаления услуг.
+### Requirement: NATS Jetstream инфраструктура
 
-#### Scenario: Проверка прав при создании услуги
-- **WHEN** авторизованный пользователь отправляет `POST /horses/services`
-- **THEN** backend вызывает `_check_admin_permission` и проверяет наличие `SUPERUSER` или `DEVELOPER` scope
+Backend ДОЛЖЕН использовать NATS Jetstream для асинхронного взаимодействия между сервисами с использованием Dependency Injection.
 
-#### Scenario: Проверка прав при обновлении услуги
-- **WHEN** авторизованный пользователь отправляет `PATCH /horses/services/{slug_or_id}`
-- **THEN** backend вызывает `_check_admin_permission` и проверяет наличие `SUPERUSER` или `DEVELOPER` scope
+#### Scenario: NATS клиент через DI контейнер
+- **WHEN** backend запускается
+- **THEN** NATS Jetstream клиент создается через Dependency Injector контейнер
+- **AND** клиент доступен через DI, а не через `app.state`
 
-#### Scenario: Проверка прав при удалении услуги
-- **WHEN** авторизованный пользователь отправляет `DELETE /horses/services/{slug_or_id}`
-- **THEN** backend вызывает `_check_admin_permission` и проверяет наличие `SUPERUSER` или `DEVELOPER` scope
+#### Scenario: Публикация событий в NATS
+- **WHEN** backend получает запрос на создание callback заявки через `POST /api/callback_requests`
+- **THEN** backend публикует событие в stream "SITE_EVENTS"
+- **AND** событие содержит информацию о заявке
 
-#### Scenario: Отсутствие проверки прав при чтении услуг
-- **WHEN** авторизованный или анонимный пользователь отправляет `GET /horses/services` или `GET /horses/services/{slug_or_id}`
-- **THEN** backend НЕ вызывает `_check_admin_permission` и возвращает данные без проверки scope
-
-### Requirement: Фильтрация лошадей по наименованиям услуг для site consumer
-Backend SHALL предоставлять query parameter `service_names` (list[str]) на эндпоинте `GET /horses` для фильтрации лошадей по наименованиям услуг. Фильтрация SHALL выполняться по наименованиям услуг (не UUID) для публичного API site consumer.
-
-#### Scenario: Фильтрация по наименованиям услуг
-- **WHEN** consumer отправляет `GET /horses?service_names=Разведение&service_names=Тренировка`
-- **THEN** backend возвращает лошадей, у которых есть хотя бы одна из указанных услуг
-
-#### Scenario: Пустой список наименований
-- **WHEN** consumer отправляет `GET /horses?service_names=`
-- **THEN** backend возвращает все лошади без фильтрации по услугам
-
+#### Scenario: Настройки NATS в отдельном классе
+- **WHEN** backend загружает конфигурацию
+- **THEN** все настройки NATS Jetstream находятся в отдельном классе `NatsSettings`
+- **AND** все переменные окружения NATS начинаются с префикса `NATS_`

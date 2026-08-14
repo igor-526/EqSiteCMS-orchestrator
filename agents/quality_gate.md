@@ -70,6 +70,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] `make asyncapi-validate` проходит без ошибок
 - [ ] `channels[].address` соответствует `NATSSettings.subject` / `subject_response`
 - [ ] Поля `components/schemas` соответствуют реальному payload в handler
+- [ ] При изменении NATS-контракта проверить соответствие `agents/howto/nats-jetstream-protocols.md`
 
 ## Чеклист: Frontend
 

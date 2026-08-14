@@ -457,3 +457,156 @@ make test:   X passed, 0 failed / <ошибки>
 make lint:   чисто / <ошибки>
 Quality Gate: diff готов / есть блокеры
 ```
+
+---
+
+
+---
+
+## 14. NATS Jetstream
+
+### Общие правила
+
+1. **Всегда используй Dependency Injection** для NATS компонентов. **НЕ храните контейнер в `app.state`!**
+2. **Настройки NATS** должны быть в отдельном классе `NatsSettings` с префиксом `NATS_`.
+3. **Контейнер DI** должен быть в `src/containers/application.py`.
+4. **Контейнер создаётся как модульный singleton** в `containers/__init__.py`.
+
+### Структура NATS компонентов
+
+```
+src/
+├── clients/
+│   └── nats/
+│       ├── __init__.py
+│       ├── client.py          # NatsJetstreamClient
+│       └── publisher.py       # NatsEventPublisher, CallbackRequestEventPublisher
+├── containers/
+│   ├── __init__.py            # container = ApplicationContainer()
+│   └── application.py         # ApplicationContainer
+├── core/
+│   └── schemas/
+│       └── messaging/
+│           ├── __init__.py
+│           ├── base_event_data.py
+│           ├── callback_requested.py
+│           └── event.py
+└── depends/
+    ├── utils.py               # get_nats_client (импортирует container)
+    └── publishers.py          # get_callback_request_event_publisher (импортирует container)
+```
+
+### Dependency Injection
+
+```python
+# containers/application.py
+from dependency_injector import containers, providers
+
+from clients.nats import NatsJetstreamClient
+from clients.nats.publisher import CallbackRequestEventPublisher
+from settings import nats_settings as nats_settings_instance
+
+
+class ApplicationContainer(containers.DeclarativeContainer):
+    nats_settings = providers.Object(nats_settings_instance)
+
+    nats_client = providers.Singleton(
+        NatsJetstreamClient,
+        settings=nats_settings,
+    )
+
+    callback_request_event_publisher = providers.Singleton(
+        CallbackRequestEventPublisher,
+        client=nats_client,
+        settings=nats_settings,
+    )
+```
+
+```python
+# containers/__init__.py
+from .application import ApplicationContainer
+
+# Создаём модульный singleton
+container = ApplicationContainer()
+```
+
+### Использование в main.py
+
+```python
+# main.py
+from containers import container  # Импортируем готовый экземпляр
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    nats_client = container.nats_client()
+    
+    await nats_client.connect()
+    await nats_client.setup()
+    
+    try:
+        yield
+    finally:
+        await nats_client.close()
+
+
+app = FastAPI(lifespan=lifespan)
+```
+
+### Получение зависимостей
+
+```python
+# depends/utils.py
+from containers import container  # Импортируем модульный singleton
+
+async def get_nats_client() -> NatsJetstreamClient:
+    return container.nats_client()
+
+
+# depends/publishers.py
+from containers import container
+
+def get_callback_request_event_publisher() -> CallbackRequestEventPublisher:
+    return container.callback_request_event_publisher()
+```
+
+### Publishing событий
+
+```python
+# clients/nats/publisher.py
+class CallbackRequestEventPublisher(NatsEventPublisher):
+    async def publish(self, *, payload: CallbackRequestedData, equestrian_id: UUID) -> UUID:
+        event = MessagingEvent(
+            event_subject=self._settings.nats_subject_callback_requested,
+        )
+        await self._publish_event(
+            event=event,
+            payload=payload,
+            headers={"X-Equestrian-Id": str(equestrian_id)},
+        )
+        return event.event_id
+```
+
+### Конфигурация NATS
+
+```python
+# settings.py
+class NatsSettings(BaseSettings):
+    nats_servers_raw: str = Field(default="nats://localhost:4222", alias="NATS_SERVERS")
+    nats_stream_site_events: str = Field(default="SITE_EVENTS", alias="NATS_STREAM_SITE_EVENTS")
+    nats_subject_callback_requested: str = Field(
+        default="events.site.callback.requested",
+        alias="NATS_SUBJECT_CALLBACK_REQUESTED",
+    )
+    # ... другие настройки с префиксом NATS_
+```
+
+### Запреты
+
+- **НЕ** храните контейнер в `app.state`.
+- **НЕ** создавайте новый экземпляр контейнера в каждом Depends.
+- **НЕ** используйте настройки NATS без префикса `NATS_`.
+- **НЕ** храните настройки NATS в общем классе `Settings`.
+
+### Документация
+
+Подробная документация по протоколам NATS Jetstream: `agents/howto/nats-jetstream-protocols.md`
