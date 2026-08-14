@@ -87,6 +87,20 @@ services:
     networks:
       - eqsitecms_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: eqsitecms-redis
+    restart: always
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    expose:
+      - 6379
+    ports:
+      - "${EXPOSE_REDIS_PORT:-6379}:6379"
+    volumes:
+      - eqsitecms_redis_data:/data
+    networks:
+      - eqsitecms_network
+
 networks:
   eqsitecms_network:
     external: true
@@ -97,3 +111,4 @@ volumes:
   eqsitecms_email_db_data:
   eqsitecms_minio_data:
   eqsitecms_nats_data:
+  eqsitecms_redis_data:

@@ -680,6 +680,35 @@ services/email-service/src/
 3. `NotificationCommandsSendEmailHandler` обрабатывает сообщение
 4. Отправляет email через `NotificationCommandSendEmailService`
 
+## Документирование в README.md
+
+Каждый сервис, использующий NATS JetStream, **обязан** содержать в своём `README.md` секцию **«NATS JetStream»**.
+
+### Требования к секции
+
+1. **Таблица streams/subjects/consumers** — перечисляет все streams и subjects, с которыми работает сервис.
+2. **Описание назначения** — кратко поясняет, зачем сервис использует данный stream/subject.
+3. **Роль сервиса** — Publisher, Consumer или Pub/Sub.
+
+### Формат таблицы
+
+| Колонка | Описание |
+|---------|----------|
+| **Stream** | Имя JetStream-потока (например, `SITE_EVENTS`) |
+| **Subject** | Топик сообщений (например, `events.site.callback.requested`) |
+| **Назначение** | Краткое описание бизнес-смысла сообщений |
+| **Роль** | `входящий` (сервис потребляет) / `исходящий` (сервис публикует) |
+
+### Пример
+
+```markdown
+## NATS JetStream
+
+| Stream | Subject | Назначение | Роль |
+|--------|---------|------------|------|
+| SITE_EVENTS | events.site.callback.requested | Публикация события запроса обратного звонка | исходящий |
+| NOTIFICATION_COMMANDS | commands.notification.email.send | Команда на отправку email | входящий |
+```
 ## Лучшие практики
 
 ### 1. Используйте Dependency Injection

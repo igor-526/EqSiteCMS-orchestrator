@@ -610,3 +610,34 @@ class NatsSettings(BaseSettings):
 ### Документация
 
 Подробная документация по протоколам NATS Jetstream: `agents/howto/nats-jetstream-protocols.md`
+
+---
+
+## 15. Celery и Redis
+
+### Общие правила
+
+1. **Используй Dependency Injection** для Celery app. **НЕ создавайте глобальный celery_app вне DI!**
+2. **Настройки Celery** должны быть в отдельном классе `CelerySettings` с префиксом `CELERY_`.
+3. **DI-контейнер** регистрирует `celery_app` как `providers.Singleton`.
+4. **Задачи Celery** определяются в `src/workers/tasks/` с отдельным файлом на домен.
+5. **Нумерация БД Redis** — сверяйся с `agents/redis-databases.yaml` при добавлении нового сервиса.
+
+### Добавление нового сервиса с Celery/Redis
+
+При добавлении нового сервиса, использующего Celery:
+
+1. Обнови `agents/redis-databases.yaml` — добавь 2 записи (broker + backend) с новыми номерами БД.
+2. Обнови `agents/howto/celery-protocols.md` — добавь сервис в таблицу «Сервисы и их очереди».
+3. Создай `CelerySettings` в `settings.py` сервиса по шаблону из протокола.
+4. Добавь переменные в `.env.example` сервиса.
+5. Зарегистрируй celery_app в DI-контейнере.
+6. Добавь celery-worker в docker-compose.
+
+### Протокол
+
+Подробная документация по протоколам Celery: `agents/howto/celery-protocols.md`
+
+### Учёт БД Redis
+
+Актуальный реестр номеров БД Redis: `agents/redis-databases.yaml`

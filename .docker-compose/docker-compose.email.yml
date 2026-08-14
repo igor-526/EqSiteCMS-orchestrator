@@ -46,6 +46,26 @@ services:
     networks:
       - eqsitecms_network
 
+  celery-worker:
+    build:
+      context: ../services/email-service
+      dockerfile: Dockerfile
+    image: eqsitecms-email-celery:latest
+    container_name: eqsitecms-email-celery-worker
+    restart: always
+    env_file:
+      - path: ../services/email-service/.env
+        required: true
+    volumes:
+      - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    command: celery -A workers.celery_app worker -Q email -l info
+    depends_on:
+      redis:
+        condition: service_started
+    networks:
+      - eqsitecms_network
+
 networks:
   eqsitecms_network:
     external: true

@@ -1,0 +1,31 @@
+# Redis Databases Registry
+# ========================
+# Единый учёт номеров БД Redis для всех сервисов EqSiteCMS.
+# Каждый сервис, использующий Celery, получает 2 БД: broker (очередь) + backend (результаты).
+# Обновляйте этот файл при добавлении нового сервиса с Celery/Redis.
+
+databases:
+  - db_number: 0
+    service: reserved
+    purpose: "Кэш backend (зарезервировано, пока не используется)"
+    status: reserved
+
+  - db_number: 1
+    service: email-service
+    purpose: "Broker — очередь задач Celery"
+    status: active
+    config_alias: CELERY_APP_BROKER
+    default_value: "redis://:<password>@redis:6379/1"
+
+  - db_number: 2
+    service: email-service
+    purpose: "Backend — результаты задач Celery"
+    status: active
+    config_alias: CELERY_APP_BACKEND
+    default_value: "redis://:<password>@redis:6379/2"
+
+# Правила нумерации:
+# - БД 0 зарезервирована
+# - Нумерация с 1
+# - Каждый сервис получает 2 последовательных номера (broker, backend)
+# - Следующий свободный номер: 3

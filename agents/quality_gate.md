@@ -178,6 +178,17 @@ AsyncAPI-спека должна соответствовать реальном
 
 ---
 
+
+## Чеклист: Celery и Redis
+
+- [ ] Номера БД Redis в коде соответствуют `agents/redis-databases.yaml`
+- [ ] `CelerySettings` вынесен в отдельный класс с префиксом `CELERY_` (по аналогии с `NatsSettings`)
+- [ ] `.env.example` содержит все переменные Celery/Redis
+- [ ] Протокол `agents/howto/celery-protocols.md` содержит все обязательные секции
+- [ ] Задачи определены в `src/workers/tasks/` с `@shared_task` и `autoretry_for`
+- [ ] Celery app зарегистрирован в DI-контейнере как `providers.Singleton`
+- [ ] docker-compose корректно запускает celery-worker с depends_on redis
+- [ ] Dockerfile включает `workers/` в сборку
 ## Формат отчёта
 
 Сохрани результат в `docs/reports/<TICKET-ID>-review.md` или
