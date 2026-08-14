@@ -20,6 +20,7 @@
 - [ ] 3.2 Создать `EmailConfirmationService` в `src/core/services/email_confirmation.py` (генерация кода, подтверждение)
 - [ ] 3.3 Добавить ENV `EMAIL_CONFIRMATION_TTL_HOURS` и `FRONTEND_URL` в `src/settings.py`
 - [ ] 3.4 Добавить ENV `BACKEND_SERVICE_KEY` в `src/settings.py`
+- [ ] 3.5 Добавить метод логирования в `EmailConfirmationService` для записи в `email_logs` (event_uuid, action="email_confirmation", status, user_email_id, code, timestamp)
 
 ## 4. Celery Tasks (email-service)
 
@@ -35,7 +36,7 @@
 - [ ] 5.3 Реализовать `POST /emails` (Protected Write) в `src/api/endpoints/emails.py`
 - [ ] 5.4 Реализовать `PATCH /emails` (Protected Write, идемпотентный) в `src/api/endpoints/emails.py`
 - [ ] 5.5 Реализовать `DELETE /emails/{user_id}` (Protected Write, идемпотентный, 204) в `src/api/endpoints/emails.py`
-- [ ] 5.6 Реализовать `PATCH /emails/confirm` (Protected Write) в `src/api/endpoints/emails.py`
+- [ ] 5.6 Реализовать `PATCH /emails/confirm` (Protected Write) в `src/api/endpoints/emails.py` с логированием в `email_logs`
 - [ ] 5.7 Реализовать `POST /emails/send-confirmation` (Protected Write, 202) в `src/api/endpoints/emails.py`
 - [ ] 5.8 Добавить middleware для проверки `BACKEND_SERVICE_KEY` на Protected Write эндпоинтах
 - [ ] 5.9 Зарегистрировать роутер в `src/main.py`
@@ -144,3 +145,5 @@
 - [ ] 11.11 Убедиться что `make test` проходит
 - [ ] 11.12 Проверить наличие всех 30+ unit-тестов
 - [ ] 11.13 Проверить наличие всех 30+ smoke-тестов
+- [ ] 11.14 Проверить логирование всех попыток подтверждения в email_logs (success, expired, used, not_found)
+- [ ] 11.15 Проверить наличие полей лога: event_uuid, action, status, user_email_id, code, timestamp

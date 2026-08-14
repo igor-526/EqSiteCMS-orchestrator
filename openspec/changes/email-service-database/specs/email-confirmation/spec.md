@@ -68,6 +68,25 @@ MUST искать запись в `email_confirmations` по `code`, прове�
 - **WHEN** `code` не найден в БД
 - **THEN** MUST вернуть 404 Not Found
 
+### Requirement: Логирование попыток подтверждения
+MUST логировать каждый запрос на подтверждение в существующую таблицу `email_logs` email-service. Логирование MUST происходить независимо от результата запроса (успешный, неуспешный, несуществующий код).
+
+#### Scenario: Логирование успешного подтверждения
+- **WHEN** предоставлен валидный `code`, `expires_at > now()`, `used_at IS NULL`
+- **THEN** MUST создать запись в `email_logs` с полями: `event_uuid` (UUID v4), `action`="email_confirmation", `status`="success", `user_email_id`, `code`, `timestamp`
+
+#### Scenario: Логирование истёкшего кода
+- **WHEN** `expires_at <= now()`
+- **THEN** MUST создать запись в `email_logs` с `status`="expired", `user_email_id` из найденной записи, `code`
+
+#### Scenario: Логирование использованного кода
+- **WHEN** `used_at IS NOT NULL`
+- **THEN** MUST создать запись в `email_logs` с `status`="used", `user_email_id` из найденной записи, `code`
+
+#### Scenario: Логирование несуществующего кода
+- **WHEN** `code` не найден в БД
+- **THEN** MUST создать запись в `email_logs` с `status`="not_found", `user_email_id`=NULL, `code`
+
 ### Requirement: Инвалидация предыдущих кодов
 При запросе нового подтверждения MUST помечать все предыдущие non-used коды этого email как использованные (установить `used_at = now()`).
 

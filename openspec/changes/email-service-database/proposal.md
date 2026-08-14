@@ -16,11 +16,21 @@
   - `POST /emails` — запись email пользователя (Protected Write)
   - `PATCH /emails` — смена email (идемпотентный, Protected Write)
   - `DELETE /emails/{user_id}` — мягкое удаление (идемпотентный, 204, Protected Write)
-  - `PATCH /emails/confirm` — подтверждение по контрольной строке (Protected Write)
+  - `PATCH /emails/confirm` — подтверждение по контрольной строке (Protected Write, логирует в email_logs)
   - `POST /emails/send-confirmation` — запрос отправки письма подтверждения (Protected Write)
 - **Проксирование через backend** — 5 эндпоинтов (все кроме GET массового получения) проксируются через основной backend; schemas в clients-пакете
 - **Frontend страница `/callback/email`** — доступна без авторизации, считывает параметр `code` из URL, делает запрос к backend на подтверждение
 - **ENV-переменные** — сервисный ключ backend в email-service, адрес email-service в backend и notification-service, параметризация TTL ссылки и адреса frontend
+
+
+## Non-Goals
+
+- Валидация email перед отправкой письма (responsibility notification-service)
+- Массовая рассылка подтверждений (каждый email по отдельности)
+- Миграция существующих email из других источников
+- Интеграция notification-service с GET `/emails` (отдельная задача)
+- **Rate limiting для отправки писем** — отдельная задача, не в scope данного change
+- **Очистка истёкших кодов подтверждения** — отдельная задача, не в scope данного change
 
 ## Capabilities
 

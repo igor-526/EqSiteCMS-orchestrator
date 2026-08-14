@@ -98,7 +98,7 @@ MUST реализовать DELETE эндпоинт `/emails/{user_id}`. Иде�
 - **THEN** MUST вернуть 401/403
 
 ### Requirement: PATCH /emails/confirm — подтверждение по контрольной строке
-MUST реализовать PATCH эндпоинт `/emails/confirm` принимающий `{code}`.
+MUST реализовать PATCH эндпоинт `/emails/confirm` принимающий `{code}`. MUST логировать каждый запрос в `email_logs` (подробности в spec `email-confirmation`).
 
 #### Scenario: Успешное подтверждение
 - **WHEN** запрос `PATCH /emails/confirm` с валидным `code`

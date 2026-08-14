@@ -1,6 +1,6 @@
 -- SQL script to update horse pedigree codes
 -- Generated from horse_with_codes.json
--- Total horses to update: 117
+-- Total horses to update: 131
 
 BEGIN;
 
@@ -23,10 +23,15 @@ UPDATE horse SET code = 'А519 H' WHERE id = '7d11c6b9-b923-4768-9e43-80fbec3b26
 UPDATE horse SET code = 'А17' WHERE id = 'f0aef203-ff0c-5af1-a1dd-07433972a1ce'::uuid;
 UPDATE horse SET code = 'А17' WHERE id = '82969eb6-68c9-59e4-9d92-f5f276107c09'::uuid;
 UPDATE horse SET code = '564' WHERE id = '9909204f-adb4-5e38-a86c-47f5706e7e6f'::uuid;
+UPDATE horse SET code = 'iiiв' WHERE id = '48d4f120-8475-5e21-b414-badd00273dec'::uuid;
+UPDATE horse SET code = 'iс' WHERE id = '4d9cb7d6-472d-5669-96dc-c8ca74becbce'::uuid;
 UPDATE horse SET code = '6' WHERE id = 'f432ba16-be36-5c27-aa50-a950ad997e4e'::uuid;
 UPDATE horse SET code = 'А128' WHERE id = 'ffa3d17e-1d23-4419-86aa-22882d8a65c4'::uuid;
 UPDATE horse SET code = 'А135' WHERE id = '6f6aed30-fcfa-4ab1-b5a3-fecddd4a9cb7'::uuid;
 UPDATE horse SET code = 'S21419' WHERE id = 'ada4a185-3f63-4f7e-a925-40481d651ee0'::uuid;
+UPDATE horse SET code = 'iв' WHERE id = '46cb4b1a-54f4-5199-9f7f-8f0584e7713b'::uuid;
+UPDATE horse SET code = 'в' WHERE id = 'c23bf373-e0bc-5bd4-9411-ea88cf842a98'::uuid;
+UPDATE horse SET code = 'iii в' WHERE id = '39eb75ce-055f-5f2a-bd22-7c1551867939'::uuid;
 UPDATE horse SET code = '8' WHERE id = '798a20be-81eb-4a2f-acd9-e61580fd2cdb'::uuid;
 UPDATE horse SET code = '52' WHERE id = '285252a8-9a61-4c13-8655-f7cc19ee0e14'::uuid;
 UPDATE horse SET code = '10' WHERE id = 'c8eed635-2b18-4d36-9651-68fd37f0a5bc'::uuid;
@@ -65,12 +70,14 @@ UPDATE horse SET code = 'А67' WHERE id = 'cd3a10c4-52f5-4b1a-a268-5b78a479c513'
 UPDATE horse SET code = '81' WHERE id = '14db9a5a-fd6d-5f92-84b1-e6bc1ef2fc3d'::uuid;
 UPDATE horse SET code = '78' WHERE id = '783abe00-09cb-5148-a446-1c2cab56f03b'::uuid;
 UPDATE horse SET code = '259' WHERE id = 'fbf143c0-de52-481c-837d-14af0f7d9716'::uuid;
+UPDATE horse SET code = 'iii' WHERE id = '2eeeb016-e657-5041-be40-d563ac98f6a1'::uuid;
 UPDATE horse SET code = '544' WHERE id = '65a26d0f-0665-5ddd-ad9d-0d80de96827d'::uuid;
 UPDATE horse SET code = '82' WHERE id = '982e85de-dea6-5b20-ab36-18e2b12ee793'::uuid;
 UPDATE horse SET code = '83' WHERE id = '2d88947e-417d-57a6-ab97-9435f895a709'::uuid;
 UPDATE horse SET code = '502' WHERE id = '0ebbeeee-f182-550a-baa7-07737ace8153'::uuid;
 UPDATE horse SET code = '91' WHERE id = '9b900c7f-5c6d-5bd2-8c5d-b1e99e96c3d8'::uuid;
 UPDATE horse SET code = '97' WHERE id = 'ce1ac1d7-f011-5728-b4df-7bc96e266b1f'::uuid;
+UPDATE horse SET code = 'с' WHERE id = '212e59bd-f603-5ace-a5c0-53e769132c03'::uuid;
 UPDATE horse SET code = 'А113 H' WHERE id = '9103f4e3-9719-4486-84a2-5088c05f27d0'::uuid;
 UPDATE horse SET code = '26' WHERE id = '083078ee-b917-5ba7-81c1-4e9794276f9e'::uuid;
 UPDATE horse SET code = 'А27' WHERE id = '2053f12e-39aa-4ec8-8dea-75905abdeae0'::uuid;
@@ -90,7 +97,11 @@ UPDATE horse SET code = 'А72 H' WHERE id = 'eec237ce-49d7-4f37-b946-86d88248beb
 UPDATE horse SET code = '305' WHERE id = '18f27b20-3b80-4ef1-ba1e-593ec3c20ce3'::uuid;
 UPDATE horse SET code = '33' WHERE id = '5fdec16d-0e5c-5f09-9b22-a8c697bb77d3'::uuid;
 UPDATE horse SET code = 'А110' WHERE id = 'fd7f3978-9b42-4872-906c-c32f488af0f7'::uuid;
+UPDATE horse SET code = 'ii' WHERE id = 'cdfc05b0-d12c-5ce1-96ce-6746508b87bf'::uuid;
+UPDATE horse SET code = 'iiс' WHERE id = '95e98ad1-a54e-56b0-81df-1c2ffd4d1188'::uuid;
+UPDATE horse SET code = 'iiс' WHERE id = '5811229c-620b-5ede-94a4-e236901b35d6'::uuid;
 UPDATE horse SET code = 'А 278 H' WHERE id = 'f039f131-6bc4-4e0e-b0d0-3c17305d0e0a'::uuid;
+UPDATE horse SET code = 'с' WHERE id = '97f678bf-8306-54f5-b32b-474bf6a6fcc5'::uuid;
 UPDATE horse SET code = '408' WHERE id = '54d9cc9e-e358-5c55-b411-606dd2d8ae01'::uuid;
 UPDATE horse SET code = '116' WHERE id = 'cb0ce3c4-9d48-5824-9654-ddc0a6d4a9ff'::uuid;
 UPDATE horse SET code = '138' WHERE id = '7c17239a-7be3-5f77-8092-d1e6c7732414'::uuid;
@@ -111,8 +122,11 @@ UPDATE horse SET code = '156' WHERE id = 'b1e917c4-2e56-503b-a9a3-a59f68bc197b':
 UPDATE horse SET code = 'А18' WHERE id = 'd964bdf8-50a2-41fd-8c8a-b743f6067139'::uuid;
 UPDATE horse SET code = 'А21' WHERE id = 'a1936b21-9975-4686-9f70-13f5cc36bbff'::uuid;
 UPDATE horse SET code = '40' WHERE id = 'f9774cce-0eff-4c96-a089-bf1aa19b9c7e'::uuid;
+UPDATE horse SET code = 'fs' WHERE id = 'e24befdf-5d0c-5317-a8b6-e5d2076d42b3'::uuid;
+UPDATE horse SET code = 'i' WHERE id = 'ac07b0a2-2865-50f1-bc2d-c4da9d032d25'::uuid;
 UPDATE horse SET code = 'А118' WHERE id = '9f20840f-17d9-4386-b849-4cc28ab85e15'::uuid;
 UPDATE horse SET code = '172' WHERE id = '35cc1656-372a-4aa7-96b5-08e7844cd869'::uuid;
+UPDATE horse SET code = 'iв' WHERE id = 'ae5315d3-e849-5e86-80c3-c65c8bbf2663'::uuid;
 UPDATE horse SET code = '283' WHERE id = 'd9a50851-baa6-53a4-9eac-209dc23fed89'::uuid;
 UPDATE horse SET code = '177' WHERE id = 'f0ff7042-996c-49c8-8508-634fbbbe6377'::uuid;
 UPDATE horse SET code = '657' WHERE id = 'cb44b58c-587b-5092-9d3d-f14487e692c4'::uuid;

@@ -28,6 +28,8 @@
 - Массовая рассылка подтверждений (каждый email по отдельности)
 - Миграция существующих email из других источников
 - Интеграция notification-service с GET `/emails` (отдельная задача)
+- Rate limiting для отправки писем (отдельная задача)
+- Очистка истёкших кодов подтверждения (отдельная задача)
 
 ## Decisions
 
@@ -102,12 +104,32 @@
 - SSR для SEO не нужен (callback page), но SSR упрощает обработку ошибок
 - `getServerSideProps` позволяет сразу сделать запрос к backend и вернуть результат
 
+### 7. Логирование попыток подтверждения в существующую таблицу `email_logs`
+
+**Решение:** Каждый запрос на подтверждение (успешный и неуспешный) логируется в существующую таблицу `email_logs` email-service.
+
+**Поля лога:**
+- `event_uuid` — генерируется автоматически (UUID v4)
+- `action` — "email_confirmation"
+- `status` — "success" | "expired" | "used" | "not_found"
+- `user_email_id` — ID записи из user_emails (nullable для "not_found")
+- `code` — переданный код подтверждения
+- `timestamp` — время запроса (created_at)
+
+**Обоснование:**
+- Переиспользуем существующую инфраструктуру логирования
+- Единый формат логов для всех email-операций
+- Легко расширять для других действий (отправка, смена email)
+
+**Альтернативы:**
+- Отдельная таблица `email_confirmation_logs` — избыточно, дублирование структуры
+
 ## Risks / Trade-offs
 
 | Риск | Митигация |
 |------|-----------|
 | Race condition при одновременном POST email для одного user_id | Unique constraint + обработка IntegrityError |
-| Спам-запросы на отправку подтверждений | Rate limiting на уровне backend (отдельная задача) |
+| Спам-запросы на отправку подтверждений | Rate limiting — Non-Goals, отдельная задача |
 | Утечка email через GET `/emails` (Public Read) | Фильтрация только по approved=true в notification-service |
 | Дубликаты email в разных Equestrian ID | Partial unique constraint `WHERE deleted_at IS NULL` — email уникален глобально |
 | TTL контрольной строки истёк | Возврат 410 Gone с сообщением "запросите новое подтверждение" |
@@ -127,8 +149,8 @@
 
 5. **Rollback:** Drop таблиц (данных пока нет), revert код
 
-## Open Questions
+## Open Questions (Closed)
 
-1. **Rate limiting для отправки писем** — реализуем в этом change или отдельно?
-2. **Логирование попыток подтверждения** — писать в отдельную таблицу или в email_logs?
-3. **Очистка истёкших кодов** — background job или lazy cleanup при запросе?
+1. **Rate limiting для отправки писем** — НЕ реализуем в этом change. Добавлено в Non-Goals.
+2. **Логирование попыток подтверждения** — В существующую таблицу `email_logs`. Добавлено логирование каждого запроса на подтверждение (успешного и неуспешного) с полями: event_uuid, action="email_confirmation", status="success"/"expired"/"used"/"not_found", user_email_id, code, timestamp.
+3. **Очистка истёкших кодов** — НЕ в этом change. Добавлено в Non-Goals.
