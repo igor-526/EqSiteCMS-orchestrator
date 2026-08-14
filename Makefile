@@ -5,21 +5,26 @@ SERVICES_DIR = services
 # Docker compose files
 COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
 COMPOSE_NOTIFICATION = $(COMPOSE_DIR)/docker-compose.notification.yml
+COMPOSE_EMAIL = $(COMPOSE_DIR)/docker-compose.email.yml
+
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 
 # Docker compose commands (base, без -p — добавляется в таргетах)
 DC_BE = docker compose -f $(COMPOSE_BE)
 DC_NOTIFICATION = docker compose -f $(COMPOSE_NOTIFICATION)
+DC_EMAIL = docker compose -f $(COMPOSE_EMAIL)
+
 DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
 DC_INFRA = docker compose -f $(COMPOSE_INFRA)
 
 SERVICES_MANIFEST ?= services.manifest
 
-.PHONY: sync update services-branches \
-        build be-build be-build-nc notification-build notification-build-nc fe-build fe-build-nc \
-        be be-attach notification notification-attach fe fe-attach infra \
-        test lint format be-makemigrations be-migrate
+.PHONY: sync update services-branches build test lint format \
+		be-build be-build-nc be be-attach be-makemigrations be-migrate \
+		notification-build notification-build-nc notification notification-attach \
+		fe-build fe-build-nc fe fe-attach \
+		infra
 
 # =====ORCHESTRATOR COMMANDS=====
 
@@ -88,6 +93,14 @@ notification-build-nc:
 	@echo "Building notification service image without build cache..."
 	$(DC_NOTIFICATION) -p eqsitecms-notification build --no-cache
 
+email-build:
+	@echo "Building email service image..."
+	$(DC_EMAIL) -p eqsitecms-email build
+
+email-build-nc:
+	@echo "Building email service image without build cache..."
+	$(DC_EMAIL) -p eqsitecms-email build --no-cache
+
 fe-build:
 	@echo "Building frontend image..."
 	$(DC_FE) -p eqsitecms-fe build
@@ -115,6 +128,13 @@ notification:
 
 notification-attach:
 	$(DC_NOTIFICATION) -p eqsitecms-notification --env-file $(SERVICES_DIR)/notification-service/.env up
+
+# Email Service
+email:
+	$(DC_EMAIL) -p eqsitecms-email --env-file $(SERVICES_DIR)/email-service/.env up -d
+
+email-attach:
+	$(DC_EMAIL) -p eqsitecms-email --env-file $(SERVICES_DIR)/email-service/.env up
 
 # Frontend
 fe:
