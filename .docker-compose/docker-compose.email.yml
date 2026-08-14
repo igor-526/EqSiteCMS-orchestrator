@@ -1,5 +1,5 @@
 services:
-  app:
+  email-service:
     build:
       context: ../services/email-service
       dockerfile: Dockerfile
@@ -59,7 +59,7 @@ services:
     volumes:
       - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
     working_dir: /app/
-    command: celery -A workers.celery_app worker -Q email -l info
+    command: uv run --no-sync celery -A workers.celery_app worker -Q email -l info
     depends_on:
       redis:
         condition: service_started

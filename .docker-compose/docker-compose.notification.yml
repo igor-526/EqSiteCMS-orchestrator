@@ -1,5 +1,5 @@
 services:
-  app:
+  notification-service:
     build:
       context: ../services/notification-service
       dockerfile: Dockerfile
