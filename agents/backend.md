@@ -641,3 +641,253 @@ class NatsSettings(BaseSettings):
 ### Учёт БД Redis
 
 Актуальный реестр номеров БД Redis: `agents/redis-databases.yaml`
+
+---
+
+## 16. Сервисные эндпоинты
+
+### Концепция
+
+Сервисные эндпоинты — это API для межсервисного взаимейства внутри экосистемы EqSiteCMS. Они изолированы от пользовательских endpoint'ов (cookie/equestrian key) и используют отдельный механизм авторизации.
+
+### Авторизация: X-Service-Key
+
+Все сервисные эндпоинты требуют валидный `X-Service-Key` header:
+
+```python
+# depends/services.py
+async def get_service_context(
+    x_service_key: str = Header(..., alias="X-Service-Key"),
+    settings: Settings = Depends(get_settings),
+) -> ServiceContext:
+    if not hmac.compare_digest(x_service_key, settings.service_key):
+        raise InvalidServiceKey()
+    return ServiceContext()
+```
+
+### Префикс и изоляция
+
+Сервисные эндпоинты регистрируются на отдельном `APIRouter` с префиксом `/api/service`:
+
+```python
+# main.py
+service_router = APIRouter(prefix="/api/service", tags=["service"])
+service_router.include_router(service_users_router)
+
+app.include_router(service_router)
+```
+
+- Префикс `/api/service/` гарантирует изоляцию от пользовательских endpoint'ов (`/api/v1/...`).
+- Cookie-сессии и equestrian key **не влияют** на сервисные эндпоинты.
+- X-Service-Key — единственный способ авторизации для сервисных endpoint'ов.
+
+### Пример использования
+
+```python
+# GET /api/service/users — получение пользователей для межсервисного взаимодействия
+@router.get("/users", response_model=PaginatedEntities[UserOutDto])
+async def get_service_users(
+    filters: ServiceUserFilters = Depends(get_service_user_filters),
+    pagination: PaginationParams = Depends(get_service_pagination_params),
+    _: ServiceContext = Depends(get_service_context),
+    user_service: UserService = Depends(get_user_service),
+) -> PaginatedEntities[UserOutDto]:
+    return await user_service.get_users_paginated(
+        equestrian_ids=filters.equestrian_ids,
+        equestrian_service_keys=filters.equestrian_service_keys,
+        roles=filters.roles,
+        limit=pagination.limit,
+        offset=pagination.offset,
+    )
+```
+
+---
+
+## 17. Пагинация сервисных эндпоинтов
+
+### Параметры
+
+Сервисные эндпоинты поддерживают пагинацию через `limit` и `offset`:
+
+| Параметр | Тип  | Default | Ограничения |
+| -------- | ---- | ------- | ----------- |
+| `limit`  | int  | 100     | 1–5000      |
+| `offset` | int  | 0       | ≥ 0         |
+
+### Dependency
+
+```python
+# depends/services.py
+async def get_service_pagination_params(
+    limit: int = Query(100, ge=1, le=5000),
+    offset: int = Query(0, ge=0),
+) -> PaginationParams:
+    return PaginationParams(limit=limit, offset=offset)
+```
+
+### Формат ответа PaginatedEntities[T]
+
+Все пагинированные сервисные ответы возвращают единообразную структуру:
+
+```python
+from pydantic import BaseModel, Generic, TypeVar
+
+T = TypeVar("T")
+
+class PaginatedEntities(BaseModel, Generic[T]):
+    items: list[T]
+    total: int
+    limit: int
+    offset: int
+```
+
+Пример JSON-ответа:
+
+```json
+{
+  "items": [
+    {"id": "...", "username": "...", "email": "..."}
+  ],
+  "total": 42,
+  "limit": 100,
+  "offset": 0
+}
+```
+
+---
+
+## 18. HTTP-клиенты в микросервисах
+
+### Структура папки `clients/`
+
+Каждый микросервис, обращающийся к другим сервисам, хранит HTTP-клиенты в директории `clients/`:
+
+```
+services/<microservice>/
+├── clients/
+│   ├── __init__.py
+│   ├── main_backend.py      # Клиент к backend-сервису
+│   └── exceptions.py        # Кастомные исключения клиентов
+├── ...
+```
+
+### Паттерн клиента на aiohttp
+
+```python
+# clients/main_backend.py
+import aiohttp
+from clients.exceptions import MainBackendConnectionError, MainBackendResponseError
+
+class MainBackendClient:
+    def __init__(self, base_url: str, service_key: str, timeout: float = 10.0):
+        self._base_url = base_url.rstrip("/")
+        self._service_key = service_key
+        self._timeout = aiohttp.ClientTimeout(total=timeout)
+
+    async def get_users(
+        self,
+        *,
+        equestrian_ids: list[str] | None = None,
+        equestrian_service_keys: list[str] | None = None,
+        roles: list[str] | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> dict:
+        params = {"limit": limit, "offset": offset}
+        if equestrian_ids:
+            params["equestrian_ids"] = ",".join(equestrian_ids)
+        if equestrian_service_keys:
+            params["equestrian_service_keys"] = ",".join(equestrian_service_keys)
+        if roles:
+            params["role"] = ",".join(roles)
+
+        try:
+            async with aiohttp.ClientSession(timeout=self._timeout) as session:
+                async with session.get(
+                    f"{self._base_url}/api/service/users",
+                    params=params,
+                    headers={"X-Service-Key": self._service_key},
+                ) as resp:
+                    if resp.status != 200:
+                        raise MainBackendResponseError(
+                            status=resp.status, body=await resp.text()
+                        )
+                    return await resp.json()
+        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            raise MainBackendConnectionError(str(e)) from e
+```
+
+### Обработка ошибок
+
+| Исходная ошибка                                  | Маппинг                     | HTTP-код ответа |
+| ------------------------------------------------ | --------------------------- | --------------- |
+| `aiohttp.ClientError` (сеть, DNS, соединение)    | `MainBackendConnectionError` | **500**         |
+| `asyncio.TimeoutError`                           | `MainBackendConnectionError` | **500**         |
+| HTTP 4xx/5xx от backend                          | `MainBackendResponseError`  | **500**         |
+
+> **Важно:** Микросервис не проксирует статусы backend потребителю. Все ошибки межсервисного взаимодействия возвращаются клиенту как **500 Internal Server Error**. Детали ошибки логируются, но не раскрываются внешним вызывающим.
+
+### Кастомные исключения
+
+```python
+# clients/exceptions.py
+class MainBackendConnectionError(Exception):
+    """Ошибка соединения с backend-сервисом."""
+
+class MainBackendResponseError(Exception):
+    def __init__(self, status: int, body: str):
+        self.status = status
+        self.body = body
+        super().__init__(f"Backend returned {status}: {body}")
+```
+
+---
+
+## 19. ENV-переменные для межсервисного взаимодействия
+
+### Backend-сервис
+
+| Переменная     | Описание                                      | Пример                              |
+| -------------- | --------------------------------------------- | ----------------------------------- |
+| `SERVICE_KEY`  | Ключ для валидации X-Service-Key в запросах   | `sk_live_random_generated_value`    |
+
+```bash
+# services/backend/.env.example
+SERVICE_KEY=           # Required: сгенерировать случайный ключ ≥ 32 символа
+```
+
+### Микросервисы (notification-service, email-service и др.)
+
+| Переменная                | Описание                                  | Пример                      |
+| ------------------------- | ----------------------------------------- | --------------------------- |
+| `MAIN_BACKEND_URL`        | Base URL backend-сервиса                  | `http://backend:8000`       |
+| `MAIN_BACKEND_SERVICE_KEY`| Service key для авторизации к backend     | `sk_live_same_as_backend`   |
+
+```bash
+# services/notification-service/.env.example
+MAIN_BACKEND_URL=          # Required: URL backend-сервиса
+MAIN_BACKEND_SERVICE_KEY=  # Required: SERVICE_KEY из backend
+
+# services/email-service/.env.example
+MAIN_BACKEND_URL=          # Required: URL backend-сервиса
+MAIN_BACKEND_SERVICE_KEY=  # Required: SERVICE_KEY из backend
+```
+
+### Правила именования ENV-переменных
+
+Для каждого нового микросервиса, обращающегося к другим сервисам:
+
+```
+<SERVICE_NAME>_URL           — base URL целевого сервиса
+<SERVICE_NAME>_SERVICE_KEY   — service key для авторизации
+```
+
+Примеры:
+
+| Микросервис            | Переменные                                         |
+| ---------------------- | -------------------------------------------------- |
+| `notification-service` | `NOTIFICATION_SERVICE_URL`, `NOTIFICATION_SERVICE_KEY` |
+| `email-service`        | `EMAIL_SERVICE_URL`, `EMAIL_SERVICE_KEY`           |
+| `payment-service`      | `PAYMENT_SERVICE_URL`, `PAYMENT_SERVICE_KEY`       |
+
+> **Примечание:** `MAIN_BACKEND_URL` и `MAIN_BACKEND_SERVICE_KEY` — особый случай для подключения к главному backend-сервису. Для peer-to-peer взаимодействия между микросервисами используй общее правило `<SERVICE>_URL` / `<SERVICE>_KEY`.

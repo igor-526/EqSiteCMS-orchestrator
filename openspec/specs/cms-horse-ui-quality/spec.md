@@ -39,6 +39,7 @@ CMS SHALL предоставлять маршрут `/horses` только в au
 ### Requirement: Scope-aware UX для действий с лошадьми и родословной
 CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. В колонке «Действия» кнопки фотографий, родословной и услуг SHALL использовать единый компактный серый count badge по стилю существующего service indicator; каждая кнопка SHALL вызывать только собственный handler. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree и relation hooks MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
 
+Create/edit modal SHALL гарантировать отображение имени выбранной масти, породы и владельца в селекторах, используя данные из DTO лошади (`selectedHorse.coat_color`, `selectedHorse.breed`, `selectedHorse.horse_owner`) для формирования options, даже если эти сущности не загружены на текущей странице соответствующих вкладок.
 #### Scenario: Пользователь без scope видит read-only pedigree
 - **WHEN** scopes пользователя не разрешают `UPDATE_HORSE_PEDIGREE`
 - **THEN** pedigree mutation controls disabled, hook не отправляет mutation и показывает сообщение о недостатке прав
@@ -86,7 +87,17 @@ CMS SHALL связывать действия создания, изменени
 #### Scenario: Изоляция consumer-контура для услуг лошади
 - **WHEN** reviewer проверяет frontend diff для horse service relations UI
 - **THEN** изменения ограничены `services/frontend`, отсутствуют импорты `site-*`/Public Read consumer modules и `services/site-ad` не изменён
+#### Scenario: Отображение масти из DTO при редактировании
+- **WHEN** пользователь открывает модальное окно редактирования лошади, у которой `coat_color` существует, но не загружен на текущей странице вкладки «Масти»
+- **THEN** селектор масти SHALL отображать имя масти из `selectedHorse.coat_color.name`, а не UUID
 
+#### Scenario: Отображение породы из DTO при редактировании
+- **WHEN** пользователь открывает модальное окно редактирования лошади, у которой `breed` существует, но не загружен на текущей странице вкладки «Породы»
+- **THEN** селектор породы SHALL отображать имя породы из `selectedHorse.breed.name`, а не UUID
+
+#### Scenario: Отображение владельца из DTO при редактировании
+- **WHEN** пользователь открывает модальное окно редактирования лошади, у которой `horse_owner` существует, но не загружен на текущей странице вкладки «Владельцы»
+- **THEN** селектор владельца SHALL отображать имя владельца из `selectedHorse.horse_owner.name`, а не UUID
 ### Requirement: Tenant-aware horse и breed представление
 CMS horse UI SHALL использовать существующий tenant context authenticated session, SHALL отображать horse CRUD и справочники из CMS API и SHALL представлять классификацию вида лошади через `breed.kind`, не отправляя устаревшее поле `kind` в create/update body лошади.
 
