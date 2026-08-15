@@ -60,9 +60,6 @@ services:
       - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
     working_dir: /app/
     command: uv run --no-sync celery -A workers.celery_app worker -Q email -l info
-    depends_on:
-      redis:
-        condition: service_started
     networks:
       - eqsitecms_network
 
