@@ -27,7 +27,7 @@ Hotspots `HorsesDeveloperDocumentationView`, `PriceEditModal`, `PricesDeveloperD
 - **THEN** tests покрывают loading/data/empty/error, interactions, validation, success invalidation, pagination `limit/offset`, scopes и `401/403`
 
 ### Requirement: Защищённый CMS-контур управления лошадьми
-CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. Вкладка «Лошади» SHALL отображать nullable `code` отдельной колонкой «Код», а create/edit modal SHALL предоставлять строковое поле «Код» длиной не более 31 символа, сохраняющее допустимые значения без trim и позволяющее очистить существующий code. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
+CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. Вкладка «Лошади» SHALL отображать raw nullable `pedigree_name` отдельной колонкой «Кличка в родословной», причём `null` MUST отображаться как явное пустое состояние без fallback к `name`. Create/edit modal SHALL предоставлять одноимённое строковое поле длиной не более 63 символов, сохраняющее допустимые значения и позволяющее очистить существующее значение. Типы, validators, hooks и документация MUST удалить horse `code`. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
 
 #### Scenario: Неавторизованный пользователь открывает CMS
 - **WHEN** загрузка текущего пользователя для защищённого CMS-маршрута не возвращает успешную сессию
@@ -35,32 +35,31 @@ CMS SHALL предоставлять маршрут `/horses` только в au
 
 #### Scenario: Авторизованный пользователь открывает лошадей
 - **WHEN** authenticated CMS-пользователь открывает `/horses`
-- **THEN** интерфейс получает его scopes из `UserContext` и отображает доступные horse UI-сценарии в tenant пользователя без consumer service key
+- **THEN** интерфейс получает scopes из `UserContext`, использует cookie projection и не добавляет consumer service key
 
-#### Scenario: Авторизованный просмотр таблицы
-- **WHEN** authenticated CMS пользователь открывает `/horses` и вкладку «Лошади»
-- **THEN** таблица отображает колонку «Код» со строкой либо устойчивым пустым представлением для `null`, не нарушая loading/empty/error/pagination состояния
+#### Scenario: Таблица отображает кличку родословной
+- **WHEN** horse list возвращает строку либо `null` в `pedigree_name`
+- **THEN** колонка «Кличка в родословной» показывает точное значение либо устойчивое пустое представление во всех loading/data/empty/error/pagination состояниях
 
-#### Scenario: Создание и изменение кода
-- **WHEN** пользователь с horse write scope открывает create/edit modal, вводит до 31 символа и сохраняет
-- **THEN** CMS передаёт code в соответствующем POST/PATCH, защищает от double submit и после успеха обновляет таблицу точным значением
+#### Scenario: Создание и изменение
+- **WHEN** пользователь с horse write scope сохраняет до 63 символов в create/edit modal
+- **THEN** CMS отправляет `pedigree_name` в POST/PATCH, блокирует double submit и после успеха invalidates список
 
-#### Scenario: Очистка кода
-- **WHEN** пользователь очищает существующий code в edit modal и сохраняет
-- **THEN** CMS передаёт согласованный `null`, а после invalidation таблица показывает пустое значение
+#### Scenario: Очистка и omitted semantics
+- **WHEN** пользователь очищает поле либо изменяет только другое поле
+- **THEN** CMS отправляет соответственно `pedigree_name: null` либо не включает поле, а refresh показывает подтверждённое backend-состояние
 
-#### Scenario: Ошибка длины и backend denial
-- **WHEN** введено более 31 символа либо backend отвечает validation/generic/`401`/`403`
-- **THEN** CMS не показывает ложный успех, сохраняет modal/form state для исправления или retry и отображает понятное error состояние
+#### Scenario: Validation и backend errors
+- **WHEN** введено 64 символа либо backend отвечает validation/generic/`401`/`403`
+- **THEN** CMS не показывает ложный успех, сохраняет форму для исправления/retry и показывает понятную ошибку
 
-#### Scenario: Недостаточный scope для изменения кода
-- **WHEN** authenticated пользователь без horse write scope просматривает таблицу
-- **THEN** create/edit action скрыт или disabled, mutation guard не отправляет запрос, а backend authorization остаётся обязательной независимой границей
+#### Scenario: Недостаточный scope
+- **WHEN** authenticated пользователь без horse write scope просматривает horse UI
+- **THEN** create/edit скрыт или disabled, mutation guard не отправляет запрос, а backend denial остаётся независимой границей
 
-#### Scenario: Изоляция consumer-контура для кода лошади
-- **WHEN** reviewer проверяет frontend diff для horse code
-- **THEN** изменения ограничены `services/frontend`, отсутствуют импорты `site-*`/Public Read consumer modules и `services/site-ad` не изменён
-
+#### Scenario: Consumer isolation
+- **WHEN** reviewer проверяет change
+- **THEN** изменения horse UI ограничены `services/frontend`, отсутствуют `site-*` imports/service key и `services/site-ad` не изменён
 ### Requirement: Scope-aware UX для действий с лошадьми и родословной
 CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. В колонке «Действия» кнопки фотографий, родословной и услуг SHALL использовать единый компактный серый count badge по стилю существующего service indicator; каждая кнопка SHALL вызывать только собственный handler. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree и relation hooks MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
 

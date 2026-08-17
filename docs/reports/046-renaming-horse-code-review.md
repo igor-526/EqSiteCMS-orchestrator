@@ -34,14 +34,26 @@ OpenSpec: `openspec/changes/renaming-horse-code-046/` (`proposal.md`, `design.md
 
 ## Frontend test gate
 
-- Повторный `npm test -- --run`: 41 files, 385 passed, 0 failed.
+- Последний полный `npm test -- --run` после horse-table regression fix: 46 files, 424 passed, 0 failed.
 - Повторный `npm run lint`: 0 errors, 397 pre-existing/baseline warnings.
 - Повторный `npx tsc --noEmit`: успешно.
 - Повторный `npm run build`: успешно; `/horses` собран.
 - MSW/API-boundary: success, raw null, omitted, validation/generic/401/403; live backend calls не требуются.
 - UI/component: data/loading/empty/error, create/edit/clear, double submit, scopes и pagination покрыты.
 - Self-checks `fetch|axios`, `@/api` imports, pagination, public/site mixing и legacy FSD dirs просмотрены; новых boundary violations в change diff нет.
-- Manual QA: blocked, см. finding 2.
+- Manual QA: blocked, см. finding 1.
+
+### Horse table regression review
+
+Повторный scoped review `HorsesTable.tsx` / `HorsesTable.test.tsx` выполнен отдельно от параллельного change 048; findings не обнаружены.
+
+- default `this_stable: true` отображается как «Наши» без пустого active tag;
+- выбор «Чужие» сохраняет boolean `false`, API serializer формирует `this_stable=false`, `offset` сбрасывается в `0`;
+- populated row содержит соседние заполненные колонки «База»/«Кличка» и не получает `ant-table-placeholder`;
+- placeholder row и multi-column `colspan` присутствуют только при пустом `horses=[]`;
+- targeted `npx vitest run src/features/horses/ui/Horses/HorsesTable.test.tsx`: 21 passed;
+- scoped ESLint: 0 errors, 19 существующих warnings;
+- `npx tsc --noEmit` и `npm run build`: успешно.
 
 ## SMOKE-тесты
 
