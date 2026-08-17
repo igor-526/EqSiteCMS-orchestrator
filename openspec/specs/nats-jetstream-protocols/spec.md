@@ -7,7 +7,7 @@
 
 ### Requirement: NATS Jetstream конфигурация должна использовать отдельный класс настроек
 
-Система ДОЛЖНА использовать отдельный класс `NatsSettings` для всех настроек NATS Jetstream с префиксом `NATS_`.
+Система SHALL использовать отдельный класс `NatsSettings` для всех настроек NATS Jetstream с префиксом `NATS_`.
 
 #### Scenario: Настройки NATS вынесены в отдельный класс
 - **WHEN** приложение запускается
@@ -20,7 +20,7 @@
 
 ### Requirement: NATS Jetstream клиент должен использовать Dependency Injection
 
-Система ДОЛЖНА использовать Dependency Injector для управления жизненным циклом NATS Jetstream клиента.
+Система SHALL использовать Dependency Injector для управления жизненным циклом NATS Jetstream клиента.
 
 #### Scenario: NATS клиент создается через DI контейнер
 - **WHEN** приложение запускается
@@ -33,7 +33,7 @@
 
 ### Requirement: NATS Jetstream streams должны настраиваться автоматически
 
-Система ДОЛЖНА автоматически настраивать NATS Jetstream streams при запуске.
+Система SHALL автоматически настраивать NATS Jetstream streams при запуске.
 
 #### Scenario: Streams создаются при запуске
 - **WHEN** сервис запускается
@@ -47,7 +47,7 @@
 
 ### Requirement: NATS Jetstream consumers должны настраиваться автоматически
 
-Система ДОЛЖНА автоматически настраивать NATS Jetstream consumers при запуске.
+Система SHALL автоматически настраивать NATS Jetstream consumers при запуске.
 
 #### Scenario: Consumers создаются при запуске
 - **WHEN** сервис запускается
@@ -61,7 +61,7 @@
 
 ### Requirement: NATS Jetstream publishing должен использовать DI
 
-Система ДОЛЖНА использовать Dependency Injection для публикации сообщений в NATS Jetstream.
+Система SHALL использовать Dependency Injection для публикации сообщений в NATS Jetstream.
 
 #### Scenario: Publisher создается через DI
 - **WHEN** нужно опубликовать сообщение
@@ -75,7 +75,7 @@
 
 ### Requirement: NATS Jetstream consuming должен использовать DI
 
-Система ДОЛЖНА использовать Dependency Injection для потребления сообщений из NATS Jetstream.
+Система SHALL использовать Dependency Injection для потребления сообщений из NATS Jetstream.
 
 #### Scenario: Consumer создается через DI
 - **WHEN** нужно потреблять сообщения
@@ -118,3 +118,32 @@
 #### Scenario: README.md email-service содержит NATS секцию
 - **WHEN** разработчик открывает `services/email-service/README.md`
 - **THEN** он находит секцию «NATS JetStream» с ролью «Consumer», stream «NOTIFICATION_COMMANDS», subject «commands.notification.email.send» и описанием «Приём команды на отправку email».
+
+### Requirement: Канонический AsyncAPI core messaging
+Backend, notification-service и email-service MUST содержать `docs/asyncapi.yaml`, описывающий фактические streams, subjects, headers, payload schemas и producer/consumer ownership без расхождения с runtime settings/handlers.
+
+#### Scenario: Контракт валидируется
+- **WHEN** выполняется `make asyncapi-validate`
+- **THEN** все три AsyncAPI проходят validation, а subjects/payload/header fields совпадают с кодом
+
+### Requirement: Real JetStream acceptance matrix
+Messaging gate MUST выполняться на реальном NATS JetStream и покрывать stream provisioning, durable/filter, успешный ack, временный nak/redelivery, poison message до max-deliver, duplicate-event idempotency и сквозную совместимость backend producer → notification consumer/producer → email consumer. Skip, отсутствие tests или mocked broker MUST NOT считаться PASS.
+
+#### Scenario: Успешная доставка
+- **WHEN** валидное callback event публикуется backend
+- **THEN** notification обрабатывает его один раз, публикует совместимую email command, email consumer ack-ает command после успешной передачи в Celery
+
+#### Scenario: Временная ошибка и poison message
+- **WHEN** handler временно падает либо payload постоянно невалиден
+- **THEN** broker evidence подтверждает nak/redelivery и достижение max-deliver без ложного ack
+
+#### Scenario: Дубликат event
+- **WHEN** одно logical event приходит повторно с тем же message identity
+- **THEN** обработка не создаёт повторную пользовательскую отправку
+
+### Requirement: Разделение contract ownership и adapters
+Один последовательный владелец SHALL сначала изменить AsyncAPI/howto, после чего adapters каждого сервиса SHALL обновляться по непересекающимся path ownership. Объединение трёх NATS client implementations MUST NOT быть обязательным для acceptance.
+
+#### Scenario: Требуется topology change
+- **WHEN** implementation обнаруживает необходимость менять subject, stream, durable или payload
+- **THEN** работа останавливается до обновления delta spec и повторного approval

@@ -1,14 +1,17 @@
 services:
   frontend:
+    # Keep split frontend builds and the canonical core recreate on one image.
+    # Without an explicit name Compose derives different tags from -p.
+    image: eqsitecms-core-frontend:latest
     build:
       context: ../services/frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
-        PORT: ${EXPOSE_APP_PORT}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8001/api}
+        PORT: ${EXPOSE_FRONTEND_PORT:-3001}
     container_name: eqsitecms-frontend
     ports:
-      - "${EXPOSE_APP_PORT}:${EXPOSE_APP_PORT}"
+      - "${EXPOSE_FRONTEND_PORT:-3001}:${EXPOSE_FRONTEND_PORT:-3001}"
     restart: always
     env_file:
       - path: ../services/frontend/.env

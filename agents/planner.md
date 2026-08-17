@@ -350,6 +350,10 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 - ❌ Планировать smoke-тесты как pytest-скрипты или файлы в `tests/smoke/`. Smoke — только через скилл `.claude/skills/api-smoke-test` на реальном API.
 - ❌ Планировать smoke-тесты backend-фич без реальной PostgreSQL
 - ❌ Хардкодить параметры PostgreSQL для smoke-тестов вместо получения через `docker inspect`
+
+## Tenant selector и email boundary
+
+Если change затрагивает эти контракты, access matrix фиксирует: selector не является секретом и missing/invalid → `401`; email create/update/delete — owner-only (`401` anonymous, `403` foreign, включая privileged, до lookup/downstream, `404` owner missing); malformed/invalid запрос → `400`; same normalized email → идемпотентный `201` с одной записью и сохранением confirmed/approved, different email → `409`; send-confirmation/confirm — public POST exceptions.
 - ❌ Планировать однотипные happy-path тесты вместо разнообразной матрицы edge cases
 - ❌ Не описывать Access matrix для новых/измененных endpoint'ов
 - ❌ Оставлять исключения из policy без явной причины и контрактных статусов

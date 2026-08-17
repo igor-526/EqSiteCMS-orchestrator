@@ -9,8 +9,8 @@ services:
     env_file:
       - path: ../services/notification-service/.env
         required: true
-    ports:
-      - "${EXPOSE_NOTIFICATION_SERVICE_PORT:-8002}:8000"
+    expose:
+      - "8000"
     volumes:
       - ../services/notification-service/src:/app/src:${DEV_MOUNT:-ro}
     working_dir: /app/
@@ -23,7 +23,7 @@ services:
     networks:
       - eqsitecms_network
 
-  migration:
+  notification-migration:
     build:
       context: ../services/notification-service
       dockerfile: Dockerfile

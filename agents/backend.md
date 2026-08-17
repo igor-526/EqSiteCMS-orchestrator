@@ -890,4 +890,11 @@ MAIN_BACKEND_SERVICE_KEY=  # Required: SERVICE_KEY из backend
 | `email-service`        | `EMAIL_SERVICE_URL`, `EMAIL_SERVICE_KEY`           |
 | `payment-service`      | `PAYMENT_SERVICE_URL`, `PAYMENT_SERVICE_KEY`       |
 
-> **Примечание:** `MAIN_BACKEND_URL` и `MAIN_BACKEND_SERVICE_KEY` — особый случай для подключения к главному backend-сервису. Для peer-to-peer взаимодействия между микросервисами используй общее правило `<SERVICE>_URL` / `<SERVICE>_KEY`.
+> **Примечание:** `MAIN_BACKEND_URL` и `MAIN_BACKEND_SERVICE_KEY` используются микросервисом только для вызова service API главного backend. Private peer-to-peer вызовы не получают симметричный `<SERVICE>_KEY` по умолчанию.
+
+## Email owner boundary и private peers
+
+- Email create/update/delete доступны только владельцу; ADMIN/SUPERUSER не обходят owner check. Foreign denial выполняется до lookup и downstream-вызова.
+- Anonymous → `401`, foreign → `403`, owner missing → `404`; malformed UUID/body, invalid email и ожидаемая доменная валидация → `400`.
+- Create того же normalized email идемпотентен (`201`, одна запись, confirmed/approved сохраняются); другой email существующего owner → `409`. Send-confirmation/confirm публичны.
+- Private backend→peer вызовы внутри выделенной Docker network не передают peer credential. `X-Service-Key` применяется только в направлении microservice→backend для `/api/service/*`; это направление нельзя удалять или разворачивать.

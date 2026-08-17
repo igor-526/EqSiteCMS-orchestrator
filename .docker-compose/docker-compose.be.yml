@@ -13,6 +13,10 @@ services:
         required: true
     environment:
       LOGS_DIR: /eqsitecms/logs
+      # Canonical CMS is published on 3001; keep 3000 for the documented
+      # standalone development server.
+      CMS_PANEL_DOMAIN: ${CMS_PANEL_DOMAIN:-localhost:3001}
+      CMS_CORS_ORIGINS: ${CMS_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
     ports:
       - "${EXPOSE_APP_PORT}:8000"
     volumes:

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Определить мягкое удаление пользователей и исключение удалённых записей из обычных запросов.
+
+## Requirements
 
 ### Requirement: Soft-delete модель для пользователей
 Таблица `users` MUST содержать поля `is_deleted` (boolean, default=false) и `deleted_at` (datetime, nullable) для реализации мягкого удаления. Удалённые пользователи MUST помечаться как `is_deleted=true` с установкой `deleted_at` на момент удаления.

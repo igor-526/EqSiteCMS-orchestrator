@@ -359,7 +359,7 @@ Backend SHALL принимать в `GET /api/horses` optional повторяе�
 
 ### Requirement: NATS Jetstream инфраструктура
 
-Backend ДОЛЖЕН использовать NATS Jetstream для асинхронного взаимодействия между сервисами с использованием Dependency Injection.
+Backend SHALL использовать NATS Jetstream для асинхронного взаимодействия между сервисами с использованием Dependency Injection.
 
 #### Scenario: NATS клиент через DI контейнер
 - **WHEN** backend запускается

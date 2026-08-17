@@ -125,6 +125,8 @@ OpenSpec change — единственный изменяемый план ре�
 
 Для каждого нового или изменённого endpoint proposal/specs обязаны содержать матрицу `method | path | access class | roles | expected without auth | expected with auth` и связанные anonymous/authenticated тесты. Planner задаёт контракт, профильный исполнитель реализует его, Quality Gate сверяет матрицу, права на чужие ресурсы и все исключения.
 
+Tenant selector является non-secret identity hint: missing/invalid selector возвращает `401`. Для email create/update/delete действует owner-only без role override; send-confirmation/confirm остаются явными public POST exceptions. Эти outcomes раскрываются отдельными строками access matrix.
+
 ### Обязательная проверка во всех этапах
 
 - Planner: формирует access matrix по endpoint'ам.

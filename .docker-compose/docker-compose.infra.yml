@@ -98,6 +98,14 @@ services:
       - "${EXPOSE_REDIS_PORT:-6379}:6379"
     volumes:
       - eqsitecms_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -qx PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - eqsitecms_network
 
@@ -107,8 +115,14 @@ networks:
 
 volumes:
   eqsitecms_db_data:
+    name: ${EQSITECMS_DB_VOLUME:-docker-compose_eqsitecms_db_data}
   eqsitecms_notifications_db_data:
+    name: ${EQSITECMS_NOTIFICATIONS_DB_VOLUME:-docker-compose_eqsitecms_notifications_db_data}
   eqsitecms_email_db_data:
+    name: ${EQSITECMS_EMAIL_DB_VOLUME:-docker-compose_eqsitecms_email_db_data}
   eqsitecms_minio_data:
+    name: ${EQSITECMS_MINIO_VOLUME:-docker-compose_eqsitecms_minio_data}
   eqsitecms_nats_data:
+    name: ${EQSITECMS_NATS_VOLUME:-docker-compose_eqsitecms_nats_data}
   eqsitecms_redis_data:
+    name: ${EQSITECMS_REDIS_VOLUME:-docker-compose_eqsitecms_redis_data}

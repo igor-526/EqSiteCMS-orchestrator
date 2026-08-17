@@ -4,42 +4,42 @@
 Зафиксировать подтверждённые платформенные контракты backend: выбор tenant для публичного и CMS-чтения, различение anonymous и refresh-only запросов, правила CORS, аутентификации и разграничения доступа. Спецификация также определяет проверяемую access matrix и сохраняет явно зарегистрированные пробелы evidence без изменения runtime-поведения.
 ## Requirements
 ### Requirement: Tenant context для чтения и записи
-Backend SHALL разрешать Public Read tenant context по непустому заголовку `X-Equestrian-Service-Key`, Protected Write context по аутентифицированному пользователю и dual-mode GET context по cookie пользователя либо service key. Данные другого tenant MUST NOT раскрываться.
+Backend SHALL разрешать Public Read tenant context по непустому заголовку `X-Equestrian-Service-Key`, Protected Write context по аутентифицированному пользователю и dual-mode GET context по cookie пользователя либо selector. `X-Equestrian-Service-Key` MUST быть несекретным tenant selector, а не user auth. Данные другого tenant MUST NOT раскрываться.
 
-#### Scenario: Публичное чтение с валидным service key
+#### Scenario: Публичное чтение с валидным selector
 - **WHEN** анонимный клиент вызывает Public Read GET с известным `X-Equestrian-Service-Key`
-- **THEN** backend выбирает связанный tenant и возвращает контрактный успешный ответ
+- **THEN** backend выбирает связанный tenant и возвращает контрактный успешный ответ без user authentication
 
-#### Scenario: Публичное чтение без service key
-- **WHEN** полностью анонимный клиент вызывает tenant-aware Public Read GET без service key
-- **THEN** backend возвращает `400` с ошибкой отсутствующего `X-Equestrian-Service-Key`
+#### Scenario: Публичное чтение без selector
+- **WHEN** полностью анонимный клиент вызывает tenant-aware Public Read GET без `X-Equestrian-Service-Key`
+- **THEN** backend возвращает `401`
 
-#### Scenario: Публичное чтение с неизвестным service key
-- **WHEN** анонимный клиент вызывает Public Read GET с неизвестным service key
-- **THEN** backend возвращает `404` и не раскрывает данные существующего tenant
+#### Scenario: Публичное чтение с неизвестным selector
+- **WHEN** анонимный клиент вызывает tenant-aware Public Read GET с неизвестным `X-Equestrian-Service-Key`
+- **THEN** backend возвращает `401` и не раскрывает существование tenant
 
 #### Scenario: Аутентифицированный dual-mode GET
 - **WHEN** пользователь с валидным access cookie вызывает dual-mode GET
-- **THEN** backend использует `equestrian_id` пользователя и не обращается к service key для выбора tenant
+- **THEN** backend использует `equestrian_id` пользователя и не требует selector
 
 #### Scenario: Чужой tenant detail
 - **WHEN** выбранный tenant запрашивает detail-ресурс другого tenant
-- **THEN** backend не раскрывает ресурс и согласно подтверждённому report возвращает `400`
+- **THEN** backend не раскрывает ресурс и возвращает доменный контрактный denial/not-found status
 
 ### Requirement: Refresh-aware различение CMS и anonymous read
-Dual-mode GET SHALL отличать полностью анонимный Public Read от CMS-запроса с непустым refresh cookie, но без валидного access cookie. Refresh-only запрос без service key MUST возвращать `401`, чтобы CMS могла выполнить refresh flow, а отсутствие любых cookie и service key MUST сохранять public tenant error `400`.
+Dual-mode GET SHALL отличать Public Read с tenant selector от CMS-запроса с непустым refresh cookie без валидного access cookie. Refresh-only запрос MUST возвращать `401`; anonymous запрос без валидного selector MUST также возвращать `401`, но эти outcomes относятся к разным механизмам.
 
 #### Scenario: Истёк access cookie при наличии refresh cookie
-- **WHEN** dual-mode GET получает непустой refresh cookie без access cookie и без service key
-- **THEN** backend возвращает `401`, а не ошибку отсутствующего service key `400`
+- **WHEN** dual-mode GET получает непустой refresh cookie без access cookie
+- **THEN** backend возвращает `401`, позволяя CMS запустить refresh flow
 
-#### Scenario: Полностью анонимный запрос
-- **WHEN** dual-mode GET не получает access cookie, непустой refresh cookie или service key
-- **THEN** backend возвращает `400` об отсутствующем `X-Equestrian-Service-Key`
+#### Scenario: Полностью анонимный запрос без selector
+- **WHEN** dual-mode GET не получает auth cookies или `X-Equestrian-Service-Key`
+- **THEN** backend возвращает `401` отсутствующего tenant selector
 
-#### Scenario: Refresh cookie вместе с service key
-- **WHEN** dual-mode GET получает refresh cookie без access cookie и валидный service key
-- **THEN** backend обслуживает запрос как Public Read в tenant из service key
+#### Scenario: Refresh cookie вместе с валидным selector
+- **WHEN** dual-mode GET получает refresh cookie без access cookie и валидный selector
+- **THEN** backend обслуживает запрос как Public Read выбранного tenant
 
 ### Requirement: Cookie-контракт auth flow
 Успешные login и refresh SHALL устанавливать HTTP-only `access_token` и `refresh_token` с path `/`; refresh SHALL ротировать пару токенов, а logout SHALL удалять cookie текущего path и legacy refresh path `/api/auth/refresh`.
@@ -118,3 +118,10 @@ Backfill SHALL трассироваться к задачам `003`, `012` и `0
 #### Scenario: Reviewer обнаруживает claim без evidence
 - **WHEN** требование выходит за code/tests/reports evidence назначенных строк или присваивает BE-1 доменный CRUD/DTO
 - **THEN** reviewer блокирует sync до удаления claim либо регистрации отдельного gap/change у соответствующего владельца
+
+### Requirement: Полная inventory matrix backend routes
+Backend SHALL генерировать и поддерживать reviewable inventory всех routes с колонками `method`, `path`, `access class`, `roles`, `tenant selector`, `owner rule`, `without auth`, `with auth`, `foreign resource`, `validation status`, `tests`. Inventory MUST включать email routes и все существующие public/protected/service исключения.
+
+#### Scenario: Quality Gate проверяет route inventory
+- **WHEN** выполняется единый Quality Gate
+- **THEN** каждая зарегистрированная backend route сопоставлена ровно одной строке inventory и подтверждена anonymous/authenticated/foreign/selector tests по применимости

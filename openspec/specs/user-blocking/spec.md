@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Определить хранение и применение статуса блокировки пользователей.
+
+## Requirements
 
 ### Requirement: Механизм блокировки пользователей
 Таблица `users` MUST содержать поле `is_blocked` (boolean, default=false, not null) для реализации блокировки пользователей.

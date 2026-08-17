@@ -38,6 +38,7 @@ EqSiteCMS поддерживает два контура доступа к API:
 | Backend Core  | `services/backend`  | API и бизнес-логика CMS + public read API для сайтов |
 | Frontend CMS  | `services/frontend` | Админский интерфейс CMS (авторизованный контур)      |
 | Email Service | `services/email-service` | Отправка email через NATS-команды и Celery-очередь |
+| Notification Service | `services/notification-service` | Маршрутизация notification-команд между backend и каналами доставки |
 | Site: site-ad | `services/site-ad`  | Публичный сайт-потребитель read API                  |
 
 
@@ -74,7 +75,12 @@ EqSiteCMS поддерживает два контура доступа к API:
 - DI-контейнер с NATS consumer и Celery app.
 - Параллельные независимые системы: NATS для событий, Celery для задач в очереди.
 
-### 4. Public Site `site-ad` (`services/site-ad`)
+### 4. Notification Service (`services/notification-service`)
+
+**Технологии:** Python, FastAPI, PostgreSQL, NATS JetStream.
+**Роль:** принимает события backend и публикует команды каналам доставки по каноническому AsyncAPI-контракту. Входит в core release scope.
+
+### 5. Public Site `site-ad` (`services/site-ad`)
 
 **Технологии:** отдельный фронтенд-проект сайта.  
 **Роль:** Внешний сайт-потребитель API EqSiteCMS.  

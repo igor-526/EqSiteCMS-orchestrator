@@ -1,0 +1,161 @@
+## Чеклист
+
+### Backend
+
+- [x] 1.1 P-A: убрать default host exposure email-service из `.docker-compose/docker-compose.email.yml`, разрешая только private network/explicit loopback dev profile.
+- [x] 1.2 P-A: убрать default host exposure notification-service из `.docker-compose/docker-compose.notification.yml`, разрешая только private network/explicit loopback dev profile.
+- [x] 1.3 P-A: добавить network-boundary test/evidence external-denied и backend-to-peer-allowed.
+- [x] 1.4 P-B1: создать узкий EmailServiceClient Protocol и экспорт в backend `core/protocols`.
+- [x] 1.5 P-B1: собрать email client через backend `depends`/DI и удалить global concrete client из router.
+- [x] 1.6 P-B1: реализовать owner-only create/update/delete без privileged override и foreign `403` до downstream lookup.
+- [x] 1.7 P-B1: реализовать owner missing `404` и email-only normalization всех malformed/invalid request в `400`.
+- [x] 1.8 P-B1: реализовать same-email idempotent `201` без второй записи и без сброса confirmed/approved; different-email `409`.
+- [x] 1.9 P-B1: сохранить public send-confirmation/confirm по контрольной строке без CMS session.
+- [x] 1.10 P-B1: удалить backend→email peer credential/config только после выполнения P-A и проверить отсутствие secret leakage.
+- [x] 1.11 P-B2: исправить user repository Protocol flags и `UserService` source typing.
+- [x] 1.12 P-B2: добавить `get_by_username` в user-management Protocol и согласовать implementation.
+- [x] 1.13 P-B2: исправить SQLAlchemy conditions typing без suppressions и добиться `mypy src` = 0.
+- [x] 1.14 P-B3: обновить user/user-management fake repositories/fixtures под актуальные Protocol и tenant context.
+- [x] 1.15 P-B3: обновить catalog typed tests под актуальные DTO/tenant context.
+- [x] 1.16 P-B3: обновить content/prices/news/settings/photos typed tests.
+- [x] 1.17 P-B3: обновить horses/owners/relations/API typed tests и добиться `mypy src tests` = 0.
+- [x] 1.18 P-B3: исправить 3 Ruff/flake8 findings и 11 format-check files после typing packages.
+- [x] 1.19 P-E: исправить 3 basedpyright errors email-service, не удаляя basedpyright из gate.
+- [x] 1.20 P-N: исправить 5 basedpyright errors notification-service, не удаляя basedpyright из gate.
+- [x] 1.21 P-M1: создать/актуализировать backend `docs/asyncapi.yaml` по фактическим producer contracts.
+- [x] 1.22 P-M1: создать/актуализировать notification `docs/asyncapi.yaml` по consumer/producer contracts.
+- [x] 1.23 P-M1: создать/актуализировать email `docs/asyncapi.yaml` по consumer contract и добавить aggregate validation.
+- [x] 1.24 P-M1: добавить payload/header/subject contract tests для каждого adapter без topology changes.
+- [x] 1.25 P-M2: добавить real JetStream tests stream/durable/filter/ack/nak/redelivery/max-deliver/duplicate idempotency.
+- [x] 1.26 P-M2: добавить real backend→notification→email compatibility integration test без mocked broker.
+- [x] 1.27 P-M2: добавить healthy Redis dependency и stable Celery worker nodename в email compose.
+- [x] 1.28 P-M2: реализовать адресный `celery inspect ping` readiness с timeout/log evidence; не использовать queue/canary.
+- [x] 1.29 P-M2: добавить отдельные real Redis/Celery integration tests delivery/retry/acks-late/idempotency/restart.
+- [x] 1.30 P-M2: проверить и исправить EmailProcessingService repository/session lifecycle конкурентным integration test.
+- [x] 1.31 P-O: добавить production fail-fast secrets, безопасные `.env.example` placeholders, secret scan и rotation checklist.
+- [x] 1.32 P-O: сделать root fix/check targets раздельными и non-mutating aggregate gate для четырёх core services.
+- [x] 1.33 P-O: включить email в deterministic aggregate build, compose validation, migrations/recreate/health/log/rollback workflow.
+- [x] 1.34 P-O: синхронизировать `SERVICES.md`, README и manifest, добавив notification и актуальные paths/commands.
+- [x] 1.35 P-D: последовательно обновить `AGENTS.md` и `agents/planner.md` tenant-selector/email matrix contract.
+- [x] 1.36 P-D: затем обновить `agents/backend.md` owner-only/400/private-peer/service-key direction contract.
+- [x] 1.37 P-D: затем обновить `agents/quality_gate.md` access/network/basedpyright/Celery readiness checks.
+- [x] 1.38 P-D: затем обновить Celery howto inspect-ping readiness и отдельную integration matrix.
+- [x] 1.39 P-D: затем обновить NATS howto real-broker acceptance matrix и skip-is-not-pass rule.
+- [x] 1.40 Каждый Backend owner сохраняет targeted evidence, меняет только exclusive paths и сразу отмечает свои фактически выполненные tasks.
+
+- [x] 2.01 Unit: email owner boundary — anonymous create возвращает 401 до client call.
+- [x] 2.02 Unit: email owner boundary — owner first create возвращает 201 EmailResponse.
+- [x] 2.03 Unit: email owner boundary — foreign create возвращает 403 до lookup.
+- [x] 2.04 Unit: email owner boundary — SUPERUSER foreign create не обходит 403.
+- [x] 2.05 Unit: email owner boundary — ADMIN foreign create не обходит 403.
+- [x] 2.06 Unit: email owner boundary — malformed create UUID возвращает 400.
+- [x] 2.07 Unit: email owner boundary — malformed create body возвращает 400.
+- [x] 2.08 Unit: email owner boundary — invalid email возвращает 400.
+- [x] 2.09 Unit: email owner boundary — same normalized email возвращает 201 того же ресурса.
+- [x] 2.10 Unit: email owner boundary — same email не создаёт вторую запись.
+- [x] 2.11 Unit: email owner boundary — same email сохраняет approved=true.
+- [x] 2.12 Unit: email owner boundary — same email сохраняет confirmed=true.
+- [x] 2.13 Unit: email owner boundary — different email существующего owner возвращает 409.
+- [x] 2.14 Unit: email owner boundary — concurrent same-email create идемпотентен.
+- [x] 2.15 Unit: email owner boundary — anonymous update возвращает 401.
+- [x] 2.16 Unit: email owner boundary — owner update успешен.
+- [x] 2.17 Unit: email owner boundary — foreign update возвращает 403 до lookup.
+- [x] 2.18 Unit: email owner boundary — privileged foreign update также 403.
+- [x] 2.19 Unit: email owner boundary — owner missing update возвращает 404.
+- [x] 2.20 Unit: email owner boundary — invalid update body возвращает 400.
+- [x] 2.21 Unit: email owner boundary — anonymous delete возвращает 401.
+- [x] 2.22 Unit: email owner boundary — owner delete возвращает 204.
+- [x] 2.23 Unit: email owner boundary — foreign delete возвращает 403 до lookup.
+- [x] 2.24 Unit: email owner boundary — privileged foreign delete также 403.
+- [x] 2.25 Unit: email owner boundary — owner missing delete возвращает 404.
+- [x] 2.26 Unit: email owner boundary — malformed path UUID возвращает 400.
+- [x] 2.27 Unit: email owner boundary — public send-confirmation valid возвращает 202.
+- [x] 2.28 Unit: email owner boundary — public confirm valid успешен.
+- [x] 2.29 Unit: email owner boundary — invalid confirmation requests возвращают 400.
+- [x] 2.30 Unit: email owner boundary — downstream timeout/non-JSON error контролируем.
+- [x] 2.31 Unit: email owner boundary — DI выдаёт Protocol client без global concrete instance.
+- [x] 2.32 Unit: email owner boundary — downstream request не содержит peer credential.
+
+- [x] 3.01 Перед SMOKE найти main PostgreSQL container по labels/fallback и получить DB env/host port через актуальный `docker inspect`, без hardcode.
+- [x] 3.02 Smoke: email owner boundary — health/migrations/main PostgreSQL готовы.
+- [x] 3.03 Smoke: email owner boundary — anonymous create 401 и DB unchanged.
+- [x] 3.04 Smoke: email owner boundary — owner first create 201 и DB row.
+- [x] 3.05 Smoke: email owner boundary — foreign create 403 без existence leak.
+- [x] 3.06 Smoke: email owner boundary — privileged foreign create 403.
+- [x] 3.07 Smoke: email owner boundary — malformed UUID/body 400.
+- [x] 3.08 Smoke: email owner boundary — invalid email 400.
+- [x] 3.09 Smoke: email owner boundary — same email 201 с тем же body shape.
+- [x] 3.10 Smoke: email owner boundary — same email оставляет одну PostgreSQL row.
+- [x] 3.11 Smoke: email owner boundary — same email сохраняет confirmed/approved.
+- [x] 3.12 Smoke: email owner boundary — different email 409 и original unchanged.
+- [x] 3.13 Smoke: email owner boundary — concurrent same create оставляет одну row.
+- [x] 3.14 Smoke: email owner boundary — anonymous update 401.
+- [x] 3.15 Smoke: email owner boundary — owner update success и DB changed.
+- [x] 3.16 Smoke: email owner boundary — foreign update 403 до lookup.
+- [x] 3.17 Smoke: email owner boundary — privileged foreign update 403.
+- [x] 3.18 Smoke: email owner boundary — owner missing update 404.
+- [x] 3.19 Smoke: email owner boundary — invalid update 400.
+- [x] 3.20 Smoke: email owner boundary — anonymous delete 401.
+- [x] 3.21 Smoke: email owner boundary — owner delete 204 и DB state.
+- [x] 3.22 Smoke: email owner boundary — foreign delete 403 до lookup.
+- [x] 3.23 Smoke: email owner boundary — privileged foreign delete 403.
+- [x] 3.24 Smoke: email owner boundary — owner missing delete 404.
+- [x] 3.25 Smoke: email owner boundary — malformed delete UUID 400.
+- [x] 3.26 Smoke: email owner boundary — public send-confirmation без cookie 202.
+- [x] 3.27 Smoke: email owner boundary — public confirm без cookie успешен.
+- [x] 3.28 Smoke: email owner boundary — invalid public confirmation request 400.
+- [x] 3.29 Smoke: email owner boundary — expired/reused code сохраняет доменный контракт.
+- [x] 3.30 Smoke: email owner boundary — downstream unavailable controlled, backend healthy.
+- [x] 3.31 Smoke: email owner boundary — peer request/log не содержит service credential.
+- [x] 3.32 Smoke: tenant selector — missing selector GET возвращает 401.
+- [x] 3.33 Smoke: tenant selector — invalid selector GET возвращает 401.
+- [x] 3.34 Smoke: tenant selector — valid selector GET успешен без cookie.
+- [x] 3.35 Smoke: через skill `api-smoke-test` записать timings всех endpoint и cleanup real PostgreSQL; pytest smoke files не создавать.
+
+### Frontend
+
+- [x] 4.1 P-F1: создать deterministic isolated Next type-generation/typecheck command без общей `.next` race.
+- [x] 4.2 P-F1: добавить regression tests clean/cache-missing/concurrent typecheck orchestration.
+- [x] 4.3 P-F1: классифицировать 401 warnings, исправить semantic pilot auth/API+horses и повысить pilot rules warn→error.
+- [x] 4.4 P-F1: мигрировать pilot status branches на `API_STATUS`, `isApiSuccess`, `isApiError`.
+- [x] 4.5 P-F1: покрыть API/auth success/empty/validation/generic/401/403 через MSW без live backend.
+- [x] 4.6 P-F2: декомпозировать `useHorsesPage` и Horses developer docs по responsibilities с behavior tests.
+- [x] 4.7 P-F2: покрыть horses data/loading/empty/error/interactions/scopes/401/403.
+- [x] 4.8 P-F2: покрыть pagination initial limit/offset, page, page-size и reset offset на filter/search/sort.
+- [x] 4.9 P-F3: декомпозировать `PriceEditModal` и Prices developer docs без mechanical-only move.
+- [x] 4.10 P-F3: покрыть modal open/close/valid/validation/backend error/double-submit/success invalidation и scope/401/403.
+- [x] 4.11 P-F4: выполнить отдельный ESLint/API-status rollout prices после зелёного P-F3.
+- [x] 4.12 P-F4: затем выполнить отдельный rollout gallery с tests.
+- [x] 4.13 P-F4: затем выполнить отдельный rollout news с tests.
+- [x] 4.14 P-F4: затем выполнить отдельный rollout siteSettings с tests.
+- [x] 4.15 Frontend: добиться blocking `npm run lint`, deterministic `npx tsc --noEmit`, `npm test`, `npm run build` без ignore flags.
+- [x] 4.16 Frontend: выполнить CMS API boundary/direct fetch, `limit/offset` и legacy FSD self-checks только внутри `services/frontend`.
+- [x] 4.17 Frontend: выполнить Manual QA design steps на 1440/768/360, auth/scopes/errors/modals/keyboard/deep-link и сохранить failure evidence.
+- [x] 4.18 Frontend owner сохраняет targeted evidence, меняет только CMS paths и сразу отмечает фактически выполненные tasks.
+
+### Quality Gate
+
+- [x] 5.1 Прочитать все OpenSpec contextFiles, проверить approval, ownership и clean worktrees включённых core-сервисов.
+- [x] 5.2 Проверить полную generated backend route inventory matrix и exact tenant-selector/email outcomes.
+- [x] 5.3 Проверить минимум 30 разнообразных Unit и 30 live Smoke email scenarios, foreign-before-lookup и связь с access matrix.
+- [x] 5.4 Проверить актуальный PostgreSQL docker inspect discovery и отсутствие pytest smoke files/hardcoded DB params.
+- [x] 5.5 Запустить backend mypy `src tests`, Ruff, format-check, flake8, pytest и подтвердить 0 failures/drift.
+- [x] 5.6 Запустить email mypy, basedpyright, Ruff, format-check, pytest и blocking real infrastructure tests.
+- [x] 5.7 Запустить notification mypy, basedpyright, Ruff, format-check, pytest и blocking real infrastructure tests.
+- [x] 5.8 Валидировать три AsyncAPI и real JetStream stream/durable/filter/ack/nak/redelivery/max-deliver/idempotency/E2E evidence; skip не PASS.
+- [x] 5.9 Проверить private network boundary и отсутствие backend→email peer credential; `/api/service/*` сохраняет `X-Service-Key` direction.
+- [x] 5.10 Проверить healthy Redis prerequisite и targeted Celery inspect-ping address/timeout/log evidence; queue/canary не считать readiness.
+- [x] 5.11 Проверить отдельный real Celery delivery/retry/acks-late/idempotency/restart/session-concurrency suite.
+- [x] 5.12 Из `services/frontend` выполнить `npm test`, blocking `npm run lint`, deterministic `npx tsc --noEmit`, `npm run build`.
+- [x] 5.13 Review CMS tests относительно behavior diff, MSW/no-live-backend, auth/scopes/Protected Write/401/403 и pagination limit/offset.
+- [x] 5.14 Проверить CMS self-checks и Manual QA evidence только в `services/frontend`.
+- [x] 5.15 Запустить root non-mutating aggregate checks и подтвердить clean diff после них.
+- [x] 5.16 Выполнить deterministic no-cache builds всех четырёх core services, compose validation, controlled recreate, migrations, readiness/status/logs.
+- [x] 5.17 Прочитать skill `api-smoke-test`, выполнить live API SMOKE с automatic auth и endpoint timings на real PostgreSQL.
+- [x] 5.18 Выполнить CMS e2e critical auth/permission/mutation/logout flows только в `services/frontend`.
+- [x] 5.19 Проверить production fail-fast config, placeholders, secret scan и rotation checklist.
+- [x] 5.20 Проверить последовательные AGENTS/Planner/Backend/QG/Celery/NATS policy edits против утверждённых specs.
+- [x] 5.21 Сохранить единый `docs/reports/045-core-service-architecture-review.md` с commands/versions/counts/timings/network/images/logs/access/messaging/CMS evidence.
+- [x] 5.22 При finding поставить REWORK, вернуть path owner и после исправления полностью повторить 5.1–5.21.
+- [x] 5.23 После APPROVED Router синхронизирует все delta specs в main specs и повторяет strict validation.
+- [x] 5.24 Только после успешной sync validation Router архивирует `harden-core-service-architecture`.

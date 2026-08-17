@@ -708,6 +708,12 @@ services/email-service/src/
 |--------|---------|------------|------|
 | SITE_EVENTS | events.site.callback.requested | Публикация события запроса обратного звонка | исходящий |
 | NOTIFICATION_COMMANDS | commands.notification.email.send | Команда на отправку email | входящий |
+
+## Real-broker acceptance gate
+
+Canonical AsyncAPI и runtime config должны совпадать по stream, subject, durable, filter и payload/header contract. Blocking integration gate использует реальный NATS JetStream без mocked broker и проверяет создание/lookup stream, durable/filter, explicit ack, nak/redelivery, max-deliver, duplicate idempotency и backend→notification→email compatibility. Ресурсы имеют уникальные имена, bounded timeout и обязательный cleanup.
+
+Default unit suite может исключать marker `infrastructure`. Однако canonical real-broker command обязан завершаться ошибкой при отсутствии env, NATS или JetStream; skip/absence не является PASS и не может использоваться как release evidence. Любая требуемая смена topology (subject/stream/durable/filter/payload) требует обновления OpenSpec/AsyncAPI и повторного approval до runtime-изменений.
 ```
 ## Лучшие практики
 

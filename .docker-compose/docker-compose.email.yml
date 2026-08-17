@@ -9,8 +9,8 @@ services:
     env_file:
       - path: ../services/email-service/.env
         required: true
-    ports:
-      - "${EXPOSE_EMAIL_SERVICE_PORT:-8003}:8000"
+    expose:
+      - "8000"
     volumes:
       - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
     working_dir: /app/
@@ -23,7 +23,7 @@ services:
     networks:
       - eqsitecms_network
 
-  migration:
+  email-migration:
     build:
       context: ../services/email-service
       dockerfile: Dockerfile
@@ -59,7 +59,24 @@ services:
     volumes:
       - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
     working_dir: /app/
-    command: uv run --no-sync celery -A workers.celery_app worker -Q email -l info
+    hostname: email-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >-
+      uv run --no-sync celery -A workers.celery_app worker -Q email -l info
+      --hostname email-worker@%h
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          timeout 10s uv run --no-sync celery -A workers.celery_app inspect ping
+          --destination email-worker@email-worker --timeout 5
+          | tee /tmp/celery-readiness.log | grep -q pong
+      interval: 15s
+      timeout: 12s
+      retries: 5
+      start_period: 20s
     networks:
       - eqsitecms_network
 

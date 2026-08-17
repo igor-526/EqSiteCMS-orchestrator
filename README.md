@@ -25,8 +25,8 @@ make sync
 ### Запуск проекта
 
 ```bash
-# Запуск всей инфраструктуры (NATS, Redis) и основных сервисов (DB, Backend, Frontend)
-make up
+# Запустите инфраструктуру, затем четыре core-сервиса
+make infra notification email be fe
 ```
 
 ### Документация (user stories, MD)
@@ -40,15 +40,20 @@ make docs   # http://localhost:3333 — Docsify, каталог docs/, без с
 ```bash
 make infra         # PostgreSQL
 make be            # Main Backend
+make notification  # Notification Service
+make email         # Email Service + Celery
 make fe            # Frontend (Next.js)
 ```
 
 ## Дополнительные Make команды
 
-- `make build` — сборка всех docker-compose сервисов.
+- `make check` — non-mutating gate четырёх core-сервисов; `site-*` исключены.
+- `make fix` — отдельный mutating autofix/format gate.
+- `make build` / `make build-nc` — сборка backend, notification, email и CMS frontend.
+- `make compose-check` / `make secret-scan` — статические release-проверки.
+- Release/recreate/migration/readiness/rollback workflow: `docs/operations/core-release.md`.
 - `make update` — алиас для `make sync`, обновляет код во всех репозиториях (`git pull`).
-- `make run` — алиас для `make up`.
-- `make test` / `make lint` — зарезервированы для запуска проверок (пока выводят информационное сообщение).
+- `make test` / `make lint` — совместимые алиасы non-mutating `make check`.
 
 ## Разработка
 
@@ -57,12 +62,12 @@ make fe            # Frontend (Next.js)
 Фронтенд по умолчанию запускается в режиме разработки (**development target**) с использованием Turbopack.
 
 - **Порт:** `http://localhost:3000`
-- **Hot Reload:** Включен (код монтируется из `services/fe` в контейнер).
+- **Hot Reload:** Включен (код монтируется из `services/frontend` в контейнер).
 - **Env:** Используются `.env`, `.env.local`, `.env.prod` (по приоритету).
 
 ### Переменные окружения (.env)
 
-Каждый сервис (be, fe и др.) хранит свои настройки в папке `services/<service-name>/`.
+Каждый сервис (`backend`, `frontend`, `notification-service`, `email-service`) хранит настройки в `services/<service-name>/`.
 
 **Приоритет загрузки для Docker Compose:**
 
@@ -75,6 +80,5 @@ make fe            # Frontend (Next.js)
 ## Структура проекта
 
 - `.docker-compose/` — файлы конфигурации Docker Compose.
-- `services/` — исходный код сервисов (be, fe, vectorizing, structure-service, graphics-engine-service, statistics-service и др.).
+- `services/` — исходный код; authoritative список ведётся в `SERVICES.md` и `services.manifest`.
 - `scripts/` — вспомогательные скрипты.
-

@@ -271,5 +271,11 @@ celery-worker:
 4. **task_expires** — устанавливайте TTL на задачи, чтобы не допускать накопления устаревших задач.
 5. **Изоляция БД Redis** — каждому сервису выделяются 2 БД (broker + backend), см. `agents/redis-databases.yaml`.
 6. **Не смешивайте NATS и Celery** — NATS для событий между сервисами, Celery для фоновых задач в очереди.
+
+## Readiness и real integration acceptance
+
+Readiness worker проверяется только адресным `celery inspect ping --destination <stable-node>` с ограниченным внешним и Celery timeout. Stable nodename задаётся явно; stdout/stderr сохраняются как evidence. Queue inspection, отправка canary-задачи или наличие процесса не заменяют readiness.
+
+Отдельный blocking real Redis/Celery gate проверяет delivery, retry, `acks_late`, duplicate idempotency, worker restart/redelivery и concurrent repository/session lifecycle. Он использует реальные Redis и worker, уникальные ресурсы, bounded waits и cleanup. Default unit suite может исключать marker `infrastructure`, но canonical integration command обязан FAIL, а не skip, при отсутствии обязательного env/infra.
 7. **Structured logging** — логируйте task_id, имя задачи, статус, длительность.
 8. **DI-контейнер** — регистрируйте celery_app через dependency-injector для тестируемости.

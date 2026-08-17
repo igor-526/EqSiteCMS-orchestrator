@@ -284,6 +284,13 @@ Diff соответствует плану. Тесты прошли. Архит�
 - ❌ Одобрять CMS frontend behavior diff без успешных `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` из `services/frontend`
 - ❌ Одобрять CMS frontend behavior diff без релевантных tests или подтвержденного diff'ом non-behavior обоснования
 - ❌ Одобрять CMS frontend permissioned action без проверки anonymous/authenticated, scope present/missing, Protected Write UX и `401/403`
+
+## Core boundary release checks
+
+- Tenant selector: missing/invalid non-secret hint → `401`; email owner-only matrix проверяется для anonymous/owner/foreign/privileged и foreign-before-lookup.
+- Private backend→peer traffic не содержит peer credential; `X-Service-Key` разрешён только microservice→backend `/api/service/*`.
+- Python gate не удаляет basedpyright и не добавляет blanket suppressions; declared mypy/basedpyright должны вернуть 0 errors.
+- Celery readiness — только targeted `inspect ping --destination <stable-node>` с bounded timeout и log evidence. Queue/canary не считается readiness; delivery/retry/acks-late/idempotency/restart проверяются отдельной real Redis/Celery suite.
 - ❌ Одобрять CMS frontend pagination diff без проверки `limit/offset`
 - ❌ Одобрять CMS frontend diff со смешением `site-*` consumer контура
 - ❌ Запускать smoke-тесты через `uv run pytest tests/smoke` — только через скилл `.claude/skills/api-smoke-test`
