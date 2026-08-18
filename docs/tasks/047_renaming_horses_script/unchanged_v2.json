@@ -1,0 +1,3292 @@
+[
+  {
+    "id": "b15570a3-e91e-5043-b07c-71e22232ecb3",
+    "name": "Dyfed Playwrite",
+    "pedigree_name": null
+  },
+  {
+    "id": "675686c7-afec-5dd5-bff4-b060dced5b97",
+    "name": "Maestir Odyssey",
+    "pedigree_name": null
+  },
+  {
+    "id": "03abaf05-024c-58e5-830b-ac1aa29804f8",
+    "name": "Maestir Odette",
+    "pedigree_name": null
+  },
+  {
+    "id": "c67f2700-9c7c-5d72-86be-f91f16bada46",
+    "name": "Bayerns melina",
+    "pedigree_name": null
+  },
+  {
+    "id": "e66cb13c-a33f-5ecb-9768-89d528b63f5d",
+    "name": "Bayerns raki",
+    "pedigree_name": null
+  },
+  {
+    "id": "37dade5f-98b1-56e1-ae15-084961dc74fd",
+    "name": "Bianca",
+    "pedigree_name": null
+  },
+  {
+    "id": "abed8b9d-b5de-52aa-8d4a-b175164123b2",
+    "name": "Casperhof's freddy",
+    "pedigree_name": null
+  },
+  {
+    "id": "305301ed-edfa-5b72-a2c4-5110a9b568a2",
+    "name": "Cottrell artiste",
+    "pedigree_name": null
+  },
+  {
+    "id": "a5e40192-c15b-586a-b05c-5a58053e34c6",
+    "name": "Bronycoed Lace",
+    "pedigree_name": null
+  },
+  {
+    "id": "36b6251b-78a8-5e30-b3f4-c9102e13b3ba",
+    "name": "Gydros Lace",
+    "pedigree_name": null
+  },
+  {
+    "id": "98daa941-fd1c-589b-91ec-90379afb3ec4",
+    "name": "Griashall Nijinski",
+    "pedigree_name": null
+  },
+  {
+    "id": "246f12c6-0d3b-5e34-bf20-0c1512010065",
+    "name": "Downland arcady",
+    "pedigree_name": null
+  },
+  {
+    "id": "ff8595a0-6fd2-55ca-89d7-dbf4dbc5cf00",
+    "name": "Downland joyous",
+    "pedigree_name": null
+  },
+  {
+    "id": "48941497-5566-5856-a2b0-ff8264da6deb",
+    "name": "Downland jubilate",
+    "pedigree_name": null
+  },
+  {
+    "id": "ad7fed48-bd9c-528c-b1c4-50ecfc1fa6d6",
+    "name": "Feitse",
+    "pedigree_name": null
+  },
+  {
+    "id": "3e58e0b9-80f2-530c-90ca-3eb980cfd5b6",
+    "name": "Grafenstein",
+    "pedigree_name": null
+  },
+  {
+    "id": "d24d01d5-a7a1-55a5-84f6-fe6244e73714",
+    "name": "Henshof rafael",
+    "pedigree_name": null
+  },
+  {
+    "id": "4c27bacc-a7c0-59fb-bfee-62494347dd8c",
+    "name": "Hornmoors whitney",
+    "pedigree_name": null
+  },
+  {
+    "id": "0e20dcaf-f31c-5c4d-990a-de5547a8baed",
+    "name": "Kastanjehof hurricane",
+    "pedigree_name": null
+  },
+  {
+    "id": "d32b2284-71a9-53cf-9904-63bdf8bc71d9",
+    "name": "Laithehill pirouette",
+    "pedigree_name": null
+  },
+  {
+    "id": "d2002207-d7f5-5d3d-b6b5-c9bbf4f25747",
+    "name": "Lemonshill lapwing",
+    "pedigree_name": null
+  },
+  {
+    "id": "67198fa7-79c9-55a7-b4f5-9dc41d960be6",
+    "name": "Olivia of roinja",
+    "pedigree_name": null
+  },
+  {
+    "id": "df4d0c90-2e0b-5847-84d4-0a80602c2f2e",
+    "name": "Pipelientje",
+    "pedigree_name": null
+  },
+  {
+    "id": "40507c36-bc37-5a6b-8ec9-4f4b93ea5aa5",
+    "name": "Quentin's heart",
+    "pedigree_name": null
+  },
+  {
+    "id": "90fe3fad-2a74-57f7-9f9b-d30b5bcbfe25",
+    "name": "Rios randy",
+    "pedigree_name": null
+  },
+  {
+    "id": "a8ea01a7-9859-533b-8e6d-71fd3d492e21",
+    "name": "Rocky van de hoeve",
+    "pedigree_name": null
+  },
+  {
+    "id": "c73c8128-00b6-54aa-bf2e-42ecee59ffd0",
+    "name": "S.n",
+    "pedigree_name": null
+  },
+  {
+    "id": "99df12b2-d092-5d1d-9efb-ec2e20482f3b",
+    "name": "Cuppers Rockefeller",
+    "pedigree_name": null
+  },
+  {
+    "id": "8fe538f4-a79b-507b-aca5-6004952301ac",
+    "name": "Cuppers My Lady",
+    "pedigree_name": null
+  },
+  {
+    "id": "9c1c1eef-0ce7-5cdb-a712-dcee4785e573",
+    "name": "Flevozicht's Tiny",
+    "pedigree_name": null
+  },
+  {
+    "id": "efb6ff2f-bb16-50c0-ab9c-daf82d547864",
+    "name": "Fronbach Hello Campers",
+    "pedigree_name": null
+  },
+  {
+    "id": "cd1bb0d2-604c-560c-8da9-caa046b2e42e",
+    "name": "Kienbergs Doro",
+    "pedigree_name": null
+  },
+  {
+    "id": "d8af2995-8ba3-596e-a2d7-aa12a47f0dc3",
+    "name": "Breeton Bric",
+    "pedigree_name": null
+  },
+  {
+    "id": "1ae15226-6b43-58ff-8ef0-6e7f4f5d74cd",
+    "name": "Den Bramel's Rio",
+    "pedigree_name": null
+  },
+  {
+    "id": "a81d72d5-72ac-59df-bd05-64e3ed2f980e",
+    "name": "Fresia",
+    "pedigree_name": null
+  },
+  {
+    "id": "798ea576-72c5-555a-8701-ff43aee221f7",
+    "name": "Paltshoeve's Kelly",
+    "pedigree_name": null
+  },
+  {
+    "id": "6ebc71e9-9040-5db3-b59d-c2c70c7e863b",
+    "name": "Ribbon's Mister Rodin",
+    "pedigree_name": null
+  },
+  {
+    "id": "f7fb55c5-1fd8-5f92-a86c-bfeec25e07c4",
+    "name": "Bartolin",
+    "pedigree_name": null
+  },
+  {
+    "id": "e96bc85f-d560-53fa-9a6f-a6f2a473dffd",
+    "name": "Bree Patricia",
+    "pedigree_name": null
+  },
+  {
+    "id": "1f4ef030-1bd3-565f-923e-a8f8d4ad56ef",
+    "name": "Amandas Elvera",
+    "pedigree_name": null
+  },
+  {
+    "id": "e50289d5-1e2b-518a-8670-94ad62e840cf",
+    "name": "Corbyon",
+    "pedigree_name": null
+  },
+  {
+    "id": "da3d2ad0-72b7-50f9-bd19-e6f0a22ec62b",
+    "name": "Wildhill Noggin",
+    "pedigree_name": null
+  },
+  {
+    "id": "67b33599-7af6-53e6-909c-7f29c683702c",
+    "name": "Sjaard",
+    "pedigree_name": null
+  },
+  {
+    "id": "4d0bafcb-144c-5d7a-bf78-7c341a950d23",
+    "name": "Tanlan Rhodri",
+    "pedigree_name": null
+  },
+  {
+    "id": "ada7c335-9630-55a9-b409-a451cacb874c",
+    "name": "Willow Tree Trevor",
+    "pedigree_name": null
+  },
+  {
+    "id": "fed3055d-f9b7-5ee2-81eb-68884e5c0d89",
+    "name": "Tetsje z",
+    "pedigree_name": null
+  },
+  {
+    "id": "6fbfda71-6f33-5a84-83e0-21d5a89a568a",
+    "name": "Tsjerk",
+    "pedigree_name": null
+  },
+  {
+    "id": "bbfe3d47-3652-5817-9db6-5a1fc83b4d4f",
+    "name": "Wilcrick Natasha",
+    "pedigree_name": null
+  },
+  {
+    "id": "94ab7463-216c-5573-bb8b-d9fe59ef085c",
+    "name": "Wijkje",
+    "pedigree_name": null
+  },
+  {
+    "id": "390a5784-65f3-533d-855d-ef654d71df7d",
+    "name": "Windhoek's oilily",
+    "pedigree_name": null
+  },
+  {
+    "id": "5dc8e235-b7d8-5524-a6c8-6b9ce6ce5315",
+    "name": "Willow Tree Amigo",
+    "pedigree_name": null
+  },
+  {
+    "id": "3ccf9600-9690-512d-a9c2-8ef22a32c754",
+    "name": "Zerwiena",
+    "pedigree_name": null
+  },
+  {
+    "id": "17ae0fea-29f8-5f4d-b9cb-d6b8f303ed0e",
+    "name": "Zonnetje vd mussenberg",
+    "pedigree_name": null
+  },
+  {
+    "id": "7844894f-ce67-5fb7-b060-3f8ed9dbbe62",
+    "name": "Zuudwieks kimmy",
+    "pedigree_name": null
+  },
+  {
+    "id": "898343f5-8e5d-573e-9546-30fa321180c4",
+    "name": "Зевс",
+    "pedigree_name": null
+  },
+  {
+    "id": "8036ce5a-653b-54e9-89a4-6e88f1835874",
+    "name": "Азалин",
+    "pedigree_name": null
+  },
+  {
+    "id": "44b283ba-bb96-580d-8abd-6ca4f2f03cf4",
+    "name": "Айлу",
+    "pedigree_name": null
+  },
+  {
+    "id": "17414a53-18c7-5e4b-9163-0c55927e7fad",
+    "name": "Александр",
+    "pedigree_name": null
+  },
+  {
+    "id": "42402b87-dab6-5e9a-b578-ddfc5f5a7f67",
+    "name": "Алия",
+    "pedigree_name": null
+  },
+  {
+    "id": "5245cff0-4dde-53f2-b666-0f61d7e8c071",
+    "name": "Алтай",
+    "pedigree_name": null
+  },
+  {
+    "id": "6f21e76f-29aa-4721-8143-57ad824a815c",
+    "name": "Leybucht's Elma",
+    "pedigree_name": null
+  },
+  {
+    "id": "597236a7-2822-5ca1-964d-c60b931482de",
+    "name": "Аннет",
+    "pedigree_name": null
+  },
+  {
+    "id": "5f9bcc19-8b5b-5fe1-91a3-e97a96cf5077",
+    "name": "Анчар",
+    "pedigree_name": null
+  },
+  {
+    "id": "f1adf637-f315-5b6d-98f0-bb0d14984655",
+    "name": "Waxwing Hillbilly",
+    "pedigree_name": null
+  },
+  {
+    "id": "cb1c7fbb-b712-5dcb-a9f0-2f76e2a750d4",
+    "name": "Wollings Dante",
+    "pedigree_name": null
+  },
+  {
+    "id": "014e723e-42e6-5a7d-beca-e98b8e061659",
+    "name": "Wollings Dauphine",
+    "pedigree_name": null
+  },
+  {
+    "id": "46ba29ae-ab13-472c-8a1b-1a3b3306b64e",
+    "name": "Eyarth Rio",
+    "pedigree_name": null
+  },
+  {
+    "id": "f3388984-7075-486e-81bd-17fcfc09a192",
+    "name": "Glansvin Fire Crest",
+    "pedigree_name": null
+  },
+  {
+    "id": "ff06fe7e-99c6-493a-bbe0-83545c20dff1",
+    "name": "Tanlan Glyndwr",
+    "pedigree_name": null
+  },
+  {
+    "id": "fb6a314d-23fa-533b-bc58-430be813003e",
+    "name": "Арабеска",
+    "pedigree_name": null
+  },
+  {
+    "id": "fc6dfd50-7ff9-4de2-a1bd-4c8bfc2e3827",
+    "name": "Polars Victor",
+    "pedigree_name": null
+  },
+  {
+    "id": "e60afc88-dae7-5cac-853d-c6479987d6a8",
+    "name": "Cuppers Maikel",
+    "pedigree_name": null
+  },
+  {
+    "id": "c27d58b2-1442-57e5-8d7b-5b49159ca48e",
+    "name": "Аристей",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba970683-9e9e-577e-85d9-be2fde5ce2e7",
+    "name": "Арса",
+    "pedigree_name": null
+  },
+  {
+    "id": "e77ad9e1-ccad-46ed-8190-86ae22e8b576",
+    "name": "Pendock Plato",
+    "pedigree_name": null
+  },
+  {
+    "id": "a86d63db-de49-40f0-8485-77da3bcd8f70",
+    "name": "Bree Charlotte",
+    "pedigree_name": null
+  },
+  {
+    "id": "3d24192f-c9f9-5969-89e2-eb4bd96b4f10",
+    "name": "Аршин",
+    "pedigree_name": null
+  },
+  {
+    "id": "11382231-aade-5a07-8f3a-73954e8b3b46",
+    "name": "Ацетон",
+    "pedigree_name": null
+  },
+  {
+    "id": "1dae3c19-7c34-505f-927a-f13e1f7beca2",
+    "name": "Бахвалка",
+    "pedigree_name": null
+  },
+  {
+    "id": "03af0f75-8a33-5f89-a4b2-515a93239688",
+    "name": "Белка",
+    "pedigree_name": null
+  },
+  {
+    "id": "1bc4992c-a053-5f55-bb69-8ef0adce7bad",
+    "name": "Гранитная",
+    "pedigree_name": null
+  },
+  {
+    "id": "8b992f8d-a750-521d-8f46-828f320cb776",
+    "name": "Гранка",
+    "pedigree_name": null
+  },
+  {
+    "id": "aa49c645-8f7c-4a02-9e83-e8ae1ae2b399",
+    "name": "Tanlan Ffansi",
+    "pedigree_name": null
+  },
+  {
+    "id": "76767e69-4d4e-5dbc-8694-2ee310df4c03",
+    "name": "Бокал",
+    "pedigree_name": null
+  },
+  {
+    "id": "7857e28b-d0da-5bb9-b5d4-7c1958b298b0",
+    "name": "Бристоль",
+    "pedigree_name": null
+  },
+  {
+    "id": "d277fcf7-6f63-5234-abf1-784085391268",
+    "name": "Булат",
+    "pedigree_name": null
+  },
+  {
+    "id": "9a7bd48b-c209-5874-9122-41186609f50d",
+    "name": "Бухта",
+    "pedigree_name": null
+  },
+  {
+    "id": "05127a69-df9d-5c98-b6a7-e31e5d640b2b",
+    "name": "Бэтта",
+    "pedigree_name": null
+  },
+  {
+    "id": "7d7e4f34-5f0a-53e0-aa14-06cd7b58b6c5",
+    "name": "Валюта",
+    "pedigree_name": null
+  },
+  {
+    "id": "1a48a1a2-6dc0-5f26-959d-f94035981837",
+    "name": "Вандал",
+    "pedigree_name": null
+  },
+  {
+    "id": "69227d44-272b-5e27-a015-f94815508942",
+    "name": "Верфь",
+    "pedigree_name": null
+  },
+  {
+    "id": "0adf5478-8bd4-59b5-a4b5-77550d6b9506",
+    "name": "Ветка",
+    "pedigree_name": null
+  },
+  {
+    "id": "64da43e7-c26c-5f8d-b547-c8c1ffea5f48",
+    "name": "Вспышка",
+    "pedigree_name": null
+  },
+  {
+    "id": "456833b3-3679-54a9-ba90-0c7d938eef6a",
+    "name": "Гадалка",
+    "pedigree_name": null
+  },
+  {
+    "id": "e54dd289-6611-5eba-ba1e-8c6ecce47dd6",
+    "name": "Гаер",
+    "pedigree_name": null
+  },
+  {
+    "id": "5057e3a0-0758-57ef-aeea-299ffcacec6e",
+    "name": "Газель",
+    "pedigree_name": null
+  },
+  {
+    "id": "15f1986c-8400-52d0-bb6e-c155d735d46d",
+    "name": "Гепард",
+    "pedigree_name": null
+  },
+  {
+    "id": "5471a069-5481-5ac3-8ad6-367de0bcd9c6",
+    "name": "Гербера",
+    "pedigree_name": null
+  },
+  {
+    "id": "cdfe9602-928a-5736-ae81-76482a0acecf",
+    "name": "Герда",
+    "pedigree_name": null
+  },
+  {
+    "id": "4bc39dde-78e6-55b1-b55f-818a86cbfb7b",
+    "name": "Гидра",
+    "pedigree_name": null
+  },
+  {
+    "id": "e8e6709d-ea66-48be-b256-bf691acffe28",
+    "name": "Wolling's Digalon Merch",
+    "pedigree_name": null
+  },
+  {
+    "id": "09231916-0d7d-5842-9264-e91b68376a86",
+    "name": "Amandas Emmely",
+    "pedigree_name": null
+  },
+  {
+    "id": "77e42d1d-8825-5eaf-a28f-5cb69f681426",
+    "name": "Гисть",
+    "pedigree_name": null
+  },
+  {
+    "id": "24da4b95-e266-5c23-a544-754a60aee7a2",
+    "name": "Гобелен",
+    "pedigree_name": null
+  },
+  {
+    "id": "a6e0ab40-9a32-566f-bbd8-d507f106f95d",
+    "name": "Голубая мечта",
+    "pedigree_name": null
+  },
+  {
+    "id": "d3297e37-c4d2-5698-bbc2-d81316be5490",
+    "name": "Грандвилли",
+    "pedigree_name": null
+  },
+  {
+    "id": "f55fbfba-61ad-584e-a768-23a3a9001c70",
+    "name": "Наган",
+    "pedigree_name": null
+  },
+  {
+    "id": "2dde85d6-0b75-41b0-9053-c16567ca15f8",
+    "name": "Revel South Drift",
+    "pedigree_name": null
+  },
+  {
+    "id": "873394e9-3b43-4005-b79b-076fca536356",
+    "name": "Pendock Lilac Time",
+    "pedigree_name": null
+  },
+  {
+    "id": "5335f1c3-6745-5111-8ab1-7891a9138dba",
+    "name": "Гусарка",
+    "pedigree_name": null
+  },
+  {
+    "id": "85e5cb9b-b9d9-5d34-b426-db643e67dc15",
+    "name": "Декадент",
+    "pedigree_name": null
+  },
+  {
+    "id": "852d35b4-e82c-5117-b9ac-dde08c01366b",
+    "name": "Диатеза",
+    "pedigree_name": null
+  },
+  {
+    "id": "5ed664db-b204-586e-aa6a-a9ef736d350a",
+    "name": "Добрыня",
+    "pedigree_name": null
+  },
+  {
+    "id": "5c83768e-1814-5d8c-b7d5-ca26d6c52e25",
+    "name": "Допрос",
+    "pedigree_name": null
+  },
+  {
+    "id": "cc218a7d-382e-576d-89c9-6c7b32b034ca",
+    "name": "Доризо",
+    "pedigree_name": null
+  },
+  {
+    "id": "a83bfa21-1a38-5c6c-b5f1-f11982d5c65b",
+    "name": "Досада",
+    "pedigree_name": null
+  },
+  {
+    "id": "9036b02a-145f-5dbb-9b90-b78bc3f5c720",
+    "name": "Душка",
+    "pedigree_name": null
+  },
+  {
+    "id": "2286da47-ec2c-4690-a8ad-f5fb7255be1f",
+    "name": "Eyarth Harlequin",
+    "pedigree_name": null
+  },
+  {
+    "id": "db111e31-82e5-496e-9962-99e864da44e5",
+    "name": "Tjennik",
+    "pedigree_name": null
+  },
+  {
+    "id": "172a640a-c4fc-5229-925b-58734bc83ef6",
+    "name": "Елабуга",
+    "pedigree_name": null
+  },
+  {
+    "id": "5b346c7c-aab2-4b82-a86d-35ab7a2998d5",
+    "name": "Baledon Crackerjack",
+    "pedigree_name": null
+  },
+  {
+    "id": "4aa27af4-f8b4-4ee8-b63b-c1606510810e",
+    "name": "Brierdene Naomi",
+    "pedigree_name": null
+  },
+  {
+    "id": "7421d51a-ebaa-5d6e-920b-09e60438a70c",
+    "name": "Ель",
+    "pedigree_name": null
+  },
+  {
+    "id": "beda05a2-767b-557f-ae28-17d228359433",
+    "name": "Еми",
+    "pedigree_name": null
+  },
+  {
+    "id": "2a6fced0-73bd-40bc-ad8b-89a5c74e6e57",
+    "name": "Welsh Hoev's Cristel",
+    "pedigree_name": null
+  },
+  {
+    "id": "2a09d8cb-2830-468b-8887-5473b55868e2",
+    "name": "Carolinas Leprechaun",
+    "pedigree_name": null
+  },
+  {
+    "id": "57b19ae8-d394-5098-90ea-d0e7756ae0b8",
+    "name": "Есон",
+    "pedigree_name": null
+  },
+  {
+    "id": "d77f2168-50e6-5e8e-9eca-f4e6546acb04",
+    "name": "Жасминовый",
+    "pedigree_name": null
+  },
+  {
+    "id": "a7fb963e-6a69-58c0-a801-dcb5a4511088",
+    "name": "Заборная",
+    "pedigree_name": null
+  },
+  {
+    "id": "cf8d963c-9dda-5045-9c5d-57a49175b30d",
+    "name": "Задонск",
+    "pedigree_name": null
+  },
+  {
+    "id": "c5eb7873-bde8-5e90-843e-eae91018555f",
+    "name": "Замашка",
+    "pedigree_name": null
+  },
+  {
+    "id": "25eabea2-c2e3-51e0-afed-2488c2120c10",
+    "name": "Златка",
+    "pedigree_name": null
+  },
+  {
+    "id": "647d73fd-be4e-5bd5-826a-f57e0902ddcc",
+    "name": "Заряд",
+    "pedigree_name": null
+  },
+  {
+    "id": "18f950d7-5aa4-5dbb-b4ba-6d72ea88d56c",
+    "name": "Землемер",
+    "pedigree_name": null
+  },
+  {
+    "id": "edee5250-43a5-5ad1-8819-d956b11cd23a",
+    "name": "Земляника",
+    "pedigree_name": null
+  },
+  {
+    "id": "2c060b75-dd7e-4a01-9387-eb172528dcda",
+    "name": "Karli",
+    "pedigree_name": null
+  },
+  {
+    "id": "7fd887aa-435e-5291-be3b-449399713205",
+    "name": "Злаковая",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba33a158-ed74-58f9-a88f-6bac83dc2e60",
+    "name": "Justin",
+    "pedigree_name": null
+  },
+  {
+    "id": "f16e5475-b9d5-458f-86e5-9db36ace9363",
+    "name": "Dyfed Geraint",
+    "pedigree_name": null
+  },
+  {
+    "id": "c908dbf0-a521-5e86-9ad8-6658606d75de",
+    "name": "Ива",
+    "pedigree_name": null
+  },
+  {
+    "id": "97456298-77f2-4d25-98e1-d53ec2ef6ba4",
+    "name": "Baledon Victoria",
+    "pedigree_name": null
+  },
+  {
+    "id": "caf75036-ef3d-5887-b411-80f0e2a4cd6b",
+    "name": "Каймак",
+    "pedigree_name": null
+  },
+  {
+    "id": "ce2c4057-2333-5d24-9634-e64455c871eb",
+    "name": "Канарейка",
+    "pedigree_name": null
+  },
+  {
+    "id": "4c2684b6-7dc2-45cd-9cff-dec585c3aa04",
+    "name": "Ricko",
+    "pedigree_name": null
+  },
+  {
+    "id": "cdc2d869-9cfd-506a-a0b4-489a1b466e2e",
+    "name": "Капрал",
+    "pedigree_name": null
+  },
+  {
+    "id": "bda448d5-1545-57eb-b0e4-2e622ea779c7",
+    "name": "Караван",
+    "pedigree_name": null
+  },
+  {
+    "id": "4294e2f2-f41f-409d-ba31-3d1496e6617f",
+    "name": "Home \"T\"Ranch Esmeralda",
+    "pedigree_name": null
+  },
+  {
+    "id": "00638f0f-1041-5a50-9397-6dcc69a7279d",
+    "name": "Карболка",
+    "pedigree_name": null
+  },
+  {
+    "id": "3869410e-6f03-590a-ba62-2c534fd6c230",
+    "name": "Кармен",
+    "pedigree_name": null
+  },
+  {
+    "id": "bd0948f0-feb5-5c07-8e0a-899887e136a9",
+    "name": "Каспер",
+    "pedigree_name": null
+  },
+  {
+    "id": "b761ffc7-c0da-568d-8aec-9a5547672e91",
+    "name": "Кефалон",
+    "pedigree_name": null
+  },
+  {
+    "id": "1882de08-bf26-54d6-8a24-af5f35cd6407",
+    "name": "Кнехт",
+    "pedigree_name": null
+  },
+  {
+    "id": "e9b3a7ac-2541-4d54-8c0b-09a7be8b3635",
+    "name": "Maggy",
+    "pedigree_name": null
+  },
+  {
+    "id": "a69fb8bf-7ae4-47e7-9734-3e2923d8496b",
+    "name": "Blanche Glisten",
+    "pedigree_name": null
+  },
+  {
+    "id": "892eac09-06dd-51f9-968b-f7552372ae67",
+    "name": "Копчик",
+    "pedigree_name": null
+  },
+  {
+    "id": "b9af987e-90c2-5ae5-b83b-4fb2693962df",
+    "name": "Lacy Sable",
+    "pedigree_name": null
+  },
+  {
+    "id": "452eafa3-a483-55cf-afb8-4f3bdebf2de5",
+    "name": "Красавчик",
+    "pedigree_name": null
+  },
+  {
+    "id": "2a10cfea-26ae-56eb-be11-fcc161f8e0c1",
+    "name": "Краска",
+    "pedigree_name": null
+  },
+  {
+    "id": "aae091e6-0d04-55a5-bb8f-65beec075854",
+    "name": "Критика",
+    "pedigree_name": null
+  },
+  {
+    "id": "5dcd61f7-4f84-4976-9851-0d7349df472a",
+    "name": "Tongelre's Wyatt",
+    "pedigree_name": null
+  },
+  {
+    "id": "61ae591c-81a6-59ab-9b30-0130a82aba28",
+    "name": "Кубышка",
+    "pedigree_name": null
+  },
+  {
+    "id": "dacb3480-d076-5aa4-9108-818c1a4d600a",
+    "name": "Кузнецк",
+    "pedigree_name": null
+  },
+  {
+    "id": "9eb33127-b51d-5924-a5df-6f4c5fef06bc",
+    "name": "Кукла",
+    "pedigree_name": null
+  },
+  {
+    "id": "3c460eff-d279-55f3-bc92-bf8d1abc8a1b",
+    "name": "Купон",
+    "pedigree_name": null
+  },
+  {
+    "id": "e7b4673c-7733-4a34-9154-a26db6ab729a",
+    "name": "Nachtegaal's Captain",
+    "pedigree_name": null
+  },
+  {
+    "id": "0f910744-5358-4a8c-9dee-21e240b7e671",
+    "name": "Hella",
+    "pedigree_name": null
+  },
+  {
+    "id": "059345a7-30e7-5c50-a859-b121f59d4c49",
+    "name": "Лайка",
+    "pedigree_name": null
+  },
+  {
+    "id": "4f08a37c-8825-5482-8c5d-04bd3caca1f2",
+    "name": "Лайма",
+    "pedigree_name": null
+  },
+  {
+    "id": "084df0c5-d8ca-50e4-981d-a8c1395cac24",
+    "name": "Аделия",
+    "pedigree_name": null
+  },
+  {
+    "id": "e23a76fa-1bc0-41d4-ae33-ea43da5e236b",
+    "name": "Dyfed Playfull ",
+    "pedigree_name": null
+  },
+  {
+    "id": "4ce411fa-72cd-54b6-9c8b-66a4c435a0f7",
+    "name": "Ласка",
+    "pedigree_name": null
+  },
+  {
+    "id": "690683ab-607b-4147-8575-f43384d0db9d",
+    "name": "Cantref Glory",
+    "pedigree_name": null
+  },
+  {
+    "id": "178403a2-fb4e-5f11-8474-e9dd562157d9",
+    "name": "Летиция",
+    "pedigree_name": null
+  },
+  {
+    "id": "1b0b4ccd-8feb-5281-83e0-67b2a662f62a",
+    "name": "Либава",
+    "pedigree_name": null
+  },
+  {
+    "id": "ce4b5d09-89bf-59a9-8dfb-e0a03d4182cc",
+    "name": "Лиза",
+    "pedigree_name": null
+  },
+  {
+    "id": "802a3f0d-23d1-5597-8f59-8f635669b309",
+    "name": "Лилия",
+    "pedigree_name": null
+  },
+  {
+    "id": "552b0269-0b43-44a3-a804-dd72815fae04",
+    "name": "Monnow Victor",
+    "pedigree_name": null
+  },
+  {
+    "id": "478b1645-b572-441e-834f-7c70d9389cca",
+    "name": "Hengelhoef's Rosita",
+    "pedigree_name": null
+  },
+  {
+    "id": "ec075f25-b4db-5fc0-ba61-bfc412fc1cfe",
+    "name": "Литер",
+    "pedigree_name": null
+  },
+  {
+    "id": "c32dac94-e325-4c5a-aee4-b86c23f0b1ba",
+    "name": "Crossways Jungle Queen",
+    "pedigree_name": null
+  },
+  {
+    "id": "d7f35a3f-63fb-5794-9e22-19ff48c7f23c",
+    "name": "Лоренсия",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba78ec85-3e58-5744-9c65-68fcdbe73d99",
+    "name": "Kienbergs Daisy",
+    "pedigree_name": null
+  },
+  {
+    "id": "63629fb8-8a8b-5443-9df1-180296864a6f",
+    "name": "Лунария",
+    "pedigree_name": null
+  },
+  {
+    "id": "d4930514-ed21-5231-9208-4c7bfb787afd",
+    "name": "Мандарин",
+    "pedigree_name": null
+  },
+  {
+    "id": "74f6a7c2-ced1-5d06-90d4-c2c85811a1ad",
+    "name": "Манди",
+    "pedigree_name": null
+  },
+  {
+    "id": "ded08121-109a-4188-b5fd-213a9e0fc0d1",
+    "name": "Revel Hetty",
+    "pedigree_name": null
+  },
+  {
+    "id": "664b055e-2f15-5275-ad94-3eb8abeda57d",
+    "name": "Марго",
+    "pedigree_name": null
+  },
+  {
+    "id": "1fb82634-17af-5e57-938d-c6ef1e8c27fd",
+    "name": "Маркиз",
+    "pedigree_name": null
+  },
+  {
+    "id": "3b1defcf-a920-5c7a-8871-ade9a0e68581",
+    "name": "Маскат",
+    "pedigree_name": null
+  },
+  {
+    "id": "a9759a54-2cf6-44b7-8514-17e4d7739c81",
+    "name": "Dyfed Finesse",
+    "pedigree_name": null
+  },
+  {
+    "id": "36d140da-a486-55df-84e3-43ae5c86dac3",
+    "name": "Медея",
+    "pedigree_name": null
+  },
+  {
+    "id": "0b356d68-b572-4545-a12a-468240d6b921",
+    "name": "Hengelhoef's Zizo",
+    "pedigree_name": null
+  },
+  {
+    "id": "36ab9603-2039-423a-a0c0-975ae31a2138",
+    "name": "Windhoek's Mirella",
+    "pedigree_name": null
+  },
+  {
+    "id": "4df38f6a-901d-54c1-a4dc-7d7c871eef23",
+    "name": "Мэлоди",
+    "pedigree_name": null
+  },
+  {
+    "id": "d282917d-5cf8-4621-a3ba-a2070347beac",
+    "name": "Casperhof's Freddy",
+    "pedigree_name": null
+  },
+  {
+    "id": "a355f913-d0ce-564b-9dfc-c502df4212f6",
+    "name": "Мики",
+    "pedigree_name": null
+  },
+  {
+    "id": "6fe6a840-ed8f-5044-8b99-70096bb47590",
+    "name": "Млада",
+    "pedigree_name": null
+  },
+  {
+    "id": "f5387aa6-bd85-576f-88b8-6bd6416c6594",
+    "name": "Момент",
+    "pedigree_name": null
+  },
+  {
+    "id": "df909cdf-2091-44e2-a3ac-5b990123f448",
+    "name": "Gredington Andreas",
+    "pedigree_name": null
+  },
+  {
+    "id": "9bde4e9e-868f-5886-97f1-2ebdeca45fe7",
+    "name": "Мудрец",
+    "pedigree_name": null
+  },
+  {
+    "id": "08c93845-e1d6-5ec3-902e-ecf45e78d871",
+    "name": "Мэгги",
+    "pedigree_name": null
+  },
+  {
+    "id": "33b05e67-e609-5ffb-8ef9-dd4d1977fe5b",
+    "name": "Намаз",
+    "pedigree_name": null
+  },
+  {
+    "id": "9e6b7d7d-1f34-5bfe-b1b5-e862b7f4738d",
+    "name": "Наркиз",
+    "pedigree_name": null
+  },
+  {
+    "id": "5091c040-4ae8-516a-9a08-b7a740aaff38",
+    "name": "Нармат",
+    "pedigree_name": null
+  },
+  {
+    "id": "a90e13fe-a9cf-509c-be21-ce8468e1946b",
+    "name": "Невод",
+    "pedigree_name": null
+  },
+  {
+    "id": "b5cc88be-4cbe-5b6f-8b12-deda0df2e693",
+    "name": "Негус",
+    "pedigree_name": null
+  },
+  {
+    "id": "74ec65fb-25d9-5f09-ae99-d0b61b9dbc27",
+    "name": "Нимроз",
+    "pedigree_name": null
+  },
+  {
+    "id": "a5159995-1649-5eed-8d5e-4caa15c734bb",
+    "name": "Ничья",
+    "pedigree_name": null
+  },
+  {
+    "id": "41e799cc-0c61-5c81-a5e0-ae8e725388c6",
+    "name": "Нутрия",
+    "pedigree_name": null
+  },
+  {
+    "id": "b04ac10e-1595-55a3-b2b7-67c9f8f5da00",
+    "name": "Редакция",
+    "pedigree_name": null
+  },
+  {
+    "id": "d2a8b8f8-e6dc-5c0c-951a-12f7cd32b1d0",
+    "name": "Обряд",
+    "pedigree_name": null
+  },
+  {
+    "id": "4f6fcecc-cea3-52f8-ad2b-9a867b167dcf",
+    "name": "Овидий",
+    "pedigree_name": null
+  },
+  {
+    "id": "f3f2f936-6f9a-5db2-bf85-b9afd90d0c0d",
+    "name": "Одарка",
+    "pedigree_name": null
+  },
+  {
+    "id": "870c7fe1-4a0b-5737-8e0a-dfe1ccc23ee4",
+    "name": "Одемира",
+    "pedigree_name": null
+  },
+  {
+    "id": "857120c4-addf-5a82-85fa-e1c3468999f9",
+    "name": "Pendock Legend",
+    "pedigree_name": null
+  },
+  {
+    "id": "aabb5f73-5c94-5353-ae4a-924de58c88c6",
+    "name": "Озалия",
+    "pedigree_name": null
+  },
+  {
+    "id": "a027b8cb-8a57-5078-a35f-421dde4495f3",
+    "name": "Афалина",
+    "pedigree_name": null
+  },
+  {
+    "id": "6ed8856f-2167-4e28-b936-3f1c0802b9c7",
+    "name": "Coed Coch Hiwmor",
+    "pedigree_name": null
+  },
+  {
+    "id": "3e946152-4f69-5f2c-9b19-313e2c0043a6",
+    "name": "Малефисента",
+    "pedigree_name": null
+  },
+  {
+    "id": "8b6f1a2e-6bcb-5b12-9119-b3d8dacab478",
+    "name": "Олимп",
+    "pedigree_name": null
+  },
+  {
+    "id": "a6a6c8d9-b186-5360-94cc-1c5b60bd2b07",
+    "name": "Оперетта",
+    "pedigree_name": null
+  },
+  {
+    "id": "71957e84-d033-411f-8538-b0ea5c42a468",
+    "name": "Jessica",
+    "pedigree_name": null
+  },
+  {
+    "id": "a70f1480-031c-53ab-a63e-5060eb9b3454",
+    "name": "Орбита",
+    "pedigree_name": null
+  },
+  {
+    "id": "49f131aa-19dd-5000-b11f-fa31344db98f",
+    "name": "Орфей",
+    "pedigree_name": null
+  },
+  {
+    "id": "78f67f53-4886-5645-a383-22ac20cc00ed",
+    "name": "Палех",
+    "pedigree_name": null
+  },
+  {
+    "id": "7603124a-c9cf-5398-b4bd-fdcb7b49be24",
+    "name": "Паприка",
+    "pedigree_name": null
+  },
+  {
+    "id": "88e32c5a-0213-5cc9-9388-7561582ec14a",
+    "name": "Пахом",
+    "pedigree_name": null
+  },
+  {
+    "id": "d6cba927-84e7-57a4-b189-19d2f2a1d72e",
+    "name": "Паштет",
+    "pedigree_name": null
+  },
+  {
+    "id": "bfe2c948-8ed8-56a4-a1f6-1db5dc9c3f4b",
+    "name": "Тэффи",
+    "pedigree_name": null
+  },
+  {
+    "id": "6027d019-bc0d-5507-a4e8-3e07747b6721",
+    "name": "Пастель",
+    "pedigree_name": null
+  },
+  {
+    "id": "67a43c1c-6854-5e28-889a-df3283703d28",
+    "name": "Осси",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba9edea9-c19e-5907-8888-13be37cac688",
+    "name": "Отважный",
+    "pedigree_name": null
+  },
+  {
+    "id": "7cd02328-4c7d-5ee9-ae80-7b142ba26e9a",
+    "name": "Очаровашка",
+    "pedigree_name": null
+  },
+  {
+    "id": "cf6f911e-2ccb-5def-a1d0-c002557cac4b",
+    "name": "Партнер",
+    "pedigree_name": null
+  },
+  {
+    "id": "1676c4c6-4022-5f3d-b543-ead3ef486f76",
+    "name": "Пасифея",
+    "pedigree_name": null
+  },
+  {
+    "id": "f0dabef8-7f3c-5add-b2ba-cacc59a65080",
+    "name": "Пастила",
+    "pedigree_name": null
+  },
+  {
+    "id": "2ca01dac-56de-4fb1-b7bf-da2112cdd42b",
+    "name": "Dryfe Selina",
+    "pedigree_name": null
+  },
+  {
+    "id": "240a3e93-66a4-4c13-a64c-b46517458ea6",
+    "name": "Synod Hello",
+    "pedigree_name": null
+  },
+  {
+    "id": "fccb68d7-af40-50ef-b37a-68ef5e86a6e7",
+    "name": "Пепси",
+    "pedigree_name": null
+  },
+  {
+    "id": "4f2c1d6a-916c-55dc-b527-3e8b077c4f6d",
+    "name": "Перемет",
+    "pedigree_name": null
+  },
+  {
+    "id": "095d8a67-e144-58f2-9062-f49eb023cf49",
+    "name": "Перестук",
+    "pedigree_name": null
+  },
+  {
+    "id": "a492a034-e7e1-5933-acd1-90ad2cec8014",
+    "name": "Перигюм",
+    "pedigree_name": null
+  },
+  {
+    "id": "d3c86195-7042-5cc9-b153-e76539aeeda9",
+    "name": "Альфавиль",
+    "pedigree_name": null
+  },
+  {
+    "id": "5226dc91-faef-5c03-8349-34d87ecc3c67",
+    "name": "Плата",
+    "pedigree_name": null
+  },
+  {
+    "id": "e85f1408-0e57-5d46-9b33-f9c746748a8b",
+    "name": "Пленительная",
+    "pedigree_name": null
+  },
+  {
+    "id": "e46ce688-01e2-599f-8224-4328de1e8cab",
+    "name": "Пломбир",
+    "pedigree_name": null
+  },
+  {
+    "id": "20636526-0e5b-5aa5-ac0f-b067eaca41be",
+    "name": "Победитель",
+    "pedigree_name": null
+  },
+  {
+    "id": "cb161d9d-9a35-5b4f-9ba7-e518673f8f75",
+    "name": "Повилика",
+    "pedigree_name": null
+  },
+  {
+    "id": "f76b0fc9-9a84-5027-9af4-06077f204895",
+    "name": "Погремок",
+    "pedigree_name": null
+  },
+  {
+    "id": "7242a519-9317-582b-b19c-154370b72c06",
+    "name": "Подсказка",
+    "pedigree_name": null
+  },
+  {
+    "id": "382b49de-bf60-5702-9eb8-42756bfa6133",
+    "name": "Позиция",
+    "pedigree_name": null
+  },
+  {
+    "id": "f5ed858f-ed42-516f-a8cb-d99fa8ce88ff",
+    "name": "Помпа",
+    "pedigree_name": null
+  },
+  {
+    "id": "4ed8761f-faf7-5294-85b4-69c9c2f780d0",
+    "name": "Вольта",
+    "pedigree_name": null
+  },
+  {
+    "id": "e5456259-1755-5523-bf56-9982c1419aa6",
+    "name": "Cuppers Mirella",
+    "pedigree_name": null
+  },
+  {
+    "id": "b2261324-1b43-510d-a687-13110dd333b6",
+    "name": "Премьера",
+    "pedigree_name": null
+  },
+  {
+    "id": "46fdce43-0ef8-5bfd-aa82-b148d6d0230e",
+    "name": "Призма",
+    "pedigree_name": null
+  },
+  {
+    "id": "22610385-6acd-5d87-992d-19c41a8e7a83",
+    "name": "Принципас",
+    "pedigree_name": null
+  },
+  {
+    "id": "9054d799-47ba-5d22-8857-c517a16da8c5",
+    "name": "Припять",
+    "pedigree_name": null
+  },
+  {
+    "id": "34113b5c-8f34-482f-9a7c-fb528fd88e98",
+    "name": "Paltshoeve's Kitty",
+    "pedigree_name": null
+  },
+  {
+    "id": "1875fc43-826d-5a85-8211-d8881718ec97",
+    "name": "Птичка пеночка",
+    "pedigree_name": null
+  },
+  {
+    "id": "483d6268-6f7f-50b8-9cfc-616f2f7afe8f",
+    "name": "Пула",
+    "pedigree_name": null
+  },
+  {
+    "id": "738ee4fa-5cc2-5867-be77-47cc8231deee",
+    "name": "Пьеса",
+    "pedigree_name": null
+  },
+  {
+    "id": "b4669d1b-3f2d-590f-aa6b-e29b86667700",
+    "name": "Разморозка",
+    "pedigree_name": null
+  },
+  {
+    "id": "bf710a84-2c89-5fd2-bad5-3dc4d15fab98",
+    "name": "Ранжир",
+    "pedigree_name": null
+  },
+  {
+    "id": "9d0aaa4e-ff1a-5558-ad63-d64a5d4ffe2e",
+    "name": "Рв нахимовец",
+    "pedigree_name": null
+  },
+  {
+    "id": "bc970c74-c707-4fd8-bed5-43dc4f568a69",
+    "name": "Merry",
+    "pedigree_name": null
+  },
+  {
+    "id": "1d825a3b-e8dd-5714-b02c-5eb5bb0255a7",
+    "name": "Рейнджерс",
+    "pedigree_name": null
+  },
+  {
+    "id": "d4d9d377-a38d-5dce-b90f-29f5adfef4b1",
+    "name": "Реконда",
+    "pedigree_name": null
+  },
+  {
+    "id": "1f7a049a-ca85-5ce9-8c0b-ca87a2c4f063",
+    "name": "Ренчина",
+    "pedigree_name": null
+  },
+  {
+    "id": "241cd41b-f708-4d09-a305-a241edf1e8f7",
+    "name": "Wilcrick Ceinwen",
+    "pedigree_name": null
+  },
+  {
+    "id": "d8509247-5253-5cd0-a440-4d29f4ce70fe",
+    "name": "Рибоза",
+    "pedigree_name": null
+  },
+  {
+    "id": "ec7c1c3a-1749-5f2d-9c64-2f17e9a3c678",
+    "name": "Рикша",
+    "pedigree_name": null
+  },
+  {
+    "id": "fefee6b7-7c6d-5a2c-b51e-f19cba2ff87d",
+    "name": "Римберг",
+    "pedigree_name": null
+  },
+  {
+    "id": "e7332703-365e-5ba8-8fb7-74ee47ac5439",
+    "name": "Родина",
+    "pedigree_name": null
+  },
+  {
+    "id": "494eca2d-5dcb-5fb0-b95e-c5fc8d83bc3f",
+    "name": "Флориан",
+    "pedigree_name": null
+  },
+  {
+    "id": "70a25342-395b-5c0d-8183-095a37d363e6",
+    "name": "Рубидий",
+    "pedigree_name": null
+  },
+  {
+    "id": "e97df987-77d0-523d-a900-2150b5455605",
+    "name": "Ружена",
+    "pedigree_name": null
+  },
+  {
+    "id": "7514d2d5-da0f-5b76-9073-f2a6c2e6bebf",
+    "name": "Рукопись",
+    "pedigree_name": null
+  },
+  {
+    "id": "6778b22d-f57e-5098-b363-af5c2522fc3c",
+    "name": "Румба",
+    "pedigree_name": null
+  },
+  {
+    "id": "57a84f26-7c23-5244-91c6-04cabd4adb41",
+    "name": "Русалка",
+    "pedigree_name": null
+  },
+  {
+    "id": "69aed538-ef6a-5dc5-8eac-3da0eed6c3a1",
+    "name": "Рывок",
+    "pedigree_name": null
+  },
+  {
+    "id": "b7f55b7e-ead0-5239-aa2f-3f5ca8251187",
+    "name": "Рыцарь",
+    "pedigree_name": null
+  },
+  {
+    "id": "a711f78b-7913-5456-a630-96f6793b6504",
+    "name": "Ассасин",
+    "pedigree_name": null
+  },
+  {
+    "id": "e2425edc-5e33-5440-894b-adda2d29bc4a",
+    "name": "Осинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "06d902a8-7c3d-5a52-8623-2928e302cb38",
+    "name": "Мерпл",
+    "pedigree_name": null
+  },
+  {
+    "id": "7e23115b-2dd4-5c08-9412-c1662cf44f37",
+    "name": "Рэтив",
+    "pedigree_name": null
+  },
+  {
+    "id": "a0479219-43c4-49dd-a0a7-d2b6da1833c0",
+    "name": "Paltshoeve's Dusty",
+    "pedigree_name": null
+  },
+  {
+    "id": "9440f48b-8948-5c0d-9b28-45130f6ef974",
+    "name": "Саян",
+    "pedigree_name": null
+  },
+  {
+    "id": "65e6fe5c-78a4-5a29-85ba-45456015fbe4",
+    "name": "Сбоистая",
+    "pedigree_name": null
+  },
+  {
+    "id": "9b16dd12-b606-5cb6-9007-2abf0058de34",
+    "name": "Свобода",
+    "pedigree_name": null
+  },
+  {
+    "id": "838769f6-1690-557b-9f4d-b2fc84c95b26",
+    "name": "Симона",
+    "pedigree_name": null
+  },
+  {
+    "id": "c4a7a7e8-5a47-56ca-b50e-d85eebdc2d43",
+    "name": "Слива",
+    "pedigree_name": null
+  },
+  {
+    "id": "29db3e7d-e16c-53b4-9e41-98bf2526ae0f",
+    "name": "Смолли",
+    "pedigree_name": null
+  },
+  {
+    "id": "4923440e-a91b-505e-907c-9e0c77cef546",
+    "name": "Солянум",
+    "pedigree_name": null
+  },
+  {
+    "id": "c0e585cc-a616-5624-b651-628f62892e82",
+    "name": "Стелла",
+    "pedigree_name": null
+  },
+  {
+    "id": "5758c924-7bf4-55a8-b555-a5fa5cac58e8",
+    "name": "Ступень",
+    "pedigree_name": null
+  },
+  {
+    "id": "7ea84674-2a0c-5ea0-9b06-3394a9445eb3",
+    "name": "Flevozicht's Henny",
+    "pedigree_name": null
+  },
+  {
+    "id": "fd05eb8a-e4f0-4282-83a6-a15372917c2b",
+    "name": "Breeton Day",
+    "pedigree_name": null
+  },
+  {
+    "id": "b070a902-ffd1-5ced-a677-db59d68b34bc",
+    "name": "Талисман",
+    "pedigree_name": null
+  },
+  {
+    "id": "73ff9f5c-d40b-5184-b2ef-1ded1cd13f3e",
+    "name": "Тарино",
+    "pedigree_name": null
+  },
+  {
+    "id": "bbfd44e6-cdc2-5761-bf5e-bd922313d0c2",
+    "name": "Тирли",
+    "pedigree_name": null
+  },
+  {
+    "id": "6d570830-d1d1-5553-8fc5-de66f2db4225",
+    "name": "Трипл бак",
+    "pedigree_name": null
+  },
+  {
+    "id": "ac4d4402-1eaa-5efb-834a-669fa20061f0",
+    "name": "Тропка",
+    "pedigree_name": null
+  },
+  {
+    "id": "3212e0a2-1d17-406f-bb91-bcc66966aa86",
+    "name": "Мадонна",
+    "pedigree_name": null
+  },
+  {
+    "id": "2ee77a9a-d7b8-4596-b14a-987383767beb",
+    "name": "Nantdywyll Barcud Ap Bargen",
+    "pedigree_name": null
+  },
+  {
+    "id": "ca6ef8d9-75ff-4edb-8ea3-050eb160e604",
+    "name": "Бьорк",
+    "pedigree_name": null
+  },
+  {
+    "id": "b70985d0-a48f-5480-babc-5a5768503652",
+    "name": "Услада",
+    "pedigree_name": null
+  },
+  {
+    "id": "8eed0a5e-5e6a-56c1-af18-a89c5bc318f4",
+    "name": "Утопия",
+    "pedigree_name": null
+  },
+  {
+    "id": "7427bae1-01ab-5339-af8c-99fb0869ad7b",
+    "name": "Фаворит",
+    "pedigree_name": null
+  },
+  {
+    "id": "ece95bf3-5659-52d0-80aa-32b16c8e3267",
+    "name": "Фаворитка",
+    "pedigree_name": null
+  },
+  {
+    "id": "ced2ef9e-8c58-59d9-aeb1-556eacc7113d",
+    "name": "Фагерста",
+    "pedigree_name": null
+  },
+  {
+    "id": "73385c4c-cb39-5103-9419-cef5490fe66b",
+    "name": "Фанфаристка",
+    "pedigree_name": null
+  },
+  {
+    "id": "88974d56-50fb-5eee-ac57-9f9d82527071",
+    "name": "Фара",
+    "pedigree_name": null
+  },
+  {
+    "id": "47279a2e-8770-5542-bff8-98b5ebe8549c",
+    "name": "Фарафра",
+    "pedigree_name": null
+  },
+  {
+    "id": "1778e6f1-04a2-5dd0-92f0-cdf7dfdcdf93",
+    "name": "Фах",
+    "pedigree_name": null
+  },
+  {
+    "id": "4fabecb2-bbb1-4f0c-907a-4b76b2c6a122",
+    "name": "Rondeels Gardenia",
+    "pedigree_name": null
+  },
+  {
+    "id": "7edcd675-236d-4411-9375-7eb57564c7da",
+    "name": "Cuppers Mandy",
+    "pedigree_name": null
+  },
+  {
+    "id": "2ae27404-a953-553c-a22f-165f065b24f1",
+    "name": "Фокус",
+    "pedigree_name": null
+  },
+  {
+    "id": "e24befdf-5d0c-5317-a8b6-e5d2076d42b3",
+    "name": "Фисташка fs",
+    "pedigree_name": null
+  },
+  {
+    "id": "53489552-1796-516b-bc52-aeb8254cabb3",
+    "name": "Фонограмма",
+    "pedigree_name": null
+  },
+  {
+    "id": "64db2756-baf2-50a8-ba1f-5a358650dc21",
+    "name": "Фонтанка",
+    "pedigree_name": null
+  },
+  {
+    "id": "707ae985-a92e-5bbf-bb79-6a11899f2d3f",
+    "name": "Форт пех",
+    "pedigree_name": null
+  },
+  {
+    "id": "8bdca968-c445-5557-9086-36b8279ec4f1",
+    "name": "Фосфор",
+    "pedigree_name": null
+  },
+  {
+    "id": "c8a8ee33-593a-5faa-a5fe-1611d57fcdd0",
+    "name": "Фраза",
+    "pedigree_name": null
+  },
+  {
+    "id": "1d8f289d-2805-534d-b6a9-6f19df9db5d8",
+    "name": "Хабанера",
+    "pedigree_name": null
+  },
+  {
+    "id": "b7d9e1ce-14cc-56f5-b66e-eb74b0bc2cfb",
+    "name": "Эпиграмма",
+    "pedigree_name": null
+  },
+  {
+    "id": "aa1af3db-4746-5911-81a4-c8f0a817b7ff",
+    "name": "Хеллеспонт",
+    "pedigree_name": null
+  },
+  {
+    "id": "cec8409d-46be-5109-9db0-8c709cdb18de",
+    "name": "Хеопсас",
+    "pedigree_name": null
+  },
+  {
+    "id": "12bdaccc-7dfd-5630-9ff9-30077d9a9767",
+    "name": "Холл",
+    "pedigree_name": null
+  },
+  {
+    "id": "4bb342a7-67ab-5dc5-aede-b9318d6106af",
+    "name": "Хореография",
+    "pedigree_name": null
+  },
+  {
+    "id": "4e1e4c3f-dbbe-5846-87b7-102df2940f92",
+    "name": "Хохлома",
+    "pedigree_name": null
+  },
+  {
+    "id": "5f19365d-6f90-58f6-b476-dc50b0d7ccb9",
+    "name": "Хризантема",
+    "pedigree_name": null
+  },
+  {
+    "id": "5907c7d2-73e8-51e1-bee4-f29033d0e711",
+    "name": "Хунта",
+    "pedigree_name": null
+  },
+  {
+    "id": "78bb50f8-3181-5ca8-a4f4-d912b0945f4d",
+    "name": "Цезарь",
+    "pedigree_name": null
+  },
+  {
+    "id": "6c0efa5d-1303-50f1-803a-dfef45a89642",
+    "name": "Чаинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "0b30c899-a324-53d4-9c99-2d33abb3b19b",
+    "name": "Челита",
+    "pedigree_name": null
+  },
+  {
+    "id": "2a25e292-c3e3-5205-b03e-5bbe7842b856",
+    "name": "Череда",
+    "pedigree_name": null
+  },
+  {
+    "id": "b1a29efe-abe4-5514-8521-77db5352d5e2",
+    "name": "Черномор",
+    "pedigree_name": null
+  },
+  {
+    "id": "73e630e3-bcf0-5b67-9bd9-8d14ca83edfe",
+    "name": "Чикой",
+    "pedigree_name": null
+  },
+  {
+    "id": "1f4b4e1c-91be-5d91-b6e5-00b2f09431b6",
+    "name": "Читинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "a9405f5f-9841-516e-b7a3-860673887924",
+    "name": "Чукотка",
+    "pedigree_name": null
+  },
+  {
+    "id": "6fa25c13-137b-549c-bd1e-2a11b935fd28",
+    "name": "Чулита",
+    "pedigree_name": null
+  },
+  {
+    "id": "262bf9d8-a9db-5509-84cf-8e8de0d0f743",
+    "name": "Шакира",
+    "pedigree_name": null
+  },
+  {
+    "id": "58375c12-0ed2-56e6-96e3-f8dfc6f8d399",
+    "name": "Шалфей",
+    "pedigree_name": null
+  },
+  {
+    "id": "5c8305cd-ffe4-5d38-a2d1-5ac928da998f",
+    "name": "Шельда",
+    "pedigree_name": null
+  },
+  {
+    "id": "8a213dc1-86c5-5b08-9c27-927ede2c3be2",
+    "name": "Шкода",
+    "pedigree_name": null
+  },
+  {
+    "id": "bd14b149-6c18-5e0b-adbf-3f87e4167ab9",
+    "name": "Шорох",
+    "pedigree_name": null
+  },
+  {
+    "id": "4c995608-df2b-5bbf-b32b-2120ffd2b437",
+    "name": "Шурф",
+    "pedigree_name": null
+  },
+  {
+    "id": "4a58fc84-c893-5ef5-95ea-7f84564daba9",
+    "name": "Эгоист",
+    "pedigree_name": null
+  },
+  {
+    "id": "3c810e04-5b54-58ef-a558-3b23e0820c71",
+    "name": "Эйха",
+    "pedigree_name": null
+  },
+  {
+    "id": "ff0d7300-773c-5eec-8493-420ed05a0f32",
+    "name": "Экспертиза",
+    "pedigree_name": null
+  },
+  {
+    "id": "3003de38-32a8-5d37-bb99-fd647e844fbd",
+    "name": "Anapon Desert Boy",
+    "pedigree_name": null
+  },
+  {
+    "id": "6954720b-8f3c-5aa1-8b02-7a8e203dc2e0",
+    "name": "Heidi",
+    "pedigree_name": null
+  },
+  {
+    "id": "c941f2cf-a28b-59ba-b42d-1a74eb487051",
+    "name": "Эола",
+    "pedigree_name": null
+  },
+  {
+    "id": "a993bad6-a2e2-5dbc-a81d-3642fa459ac2",
+    "name": "Марсельеза",
+    "pedigree_name": null
+  },
+  {
+    "id": "0b26b78a-eb99-44b9-930b-31c64a269c4e",
+    "name": "Weston Mr. Model",
+    "pedigree_name": null
+  },
+  {
+    "id": "03e891c0-bcee-5e57-8ed5-ae2bbb407cb1",
+    "name": "Эрнеста",
+    "pedigree_name": null
+  },
+  {
+    "id": "e123a567-8f48-551a-bd3a-75e4889f8ea1",
+    "name": "Эрот",
+    "pedigree_name": null
+  },
+  {
+    "id": "6a6722fc-c031-5cf1-8907-9e496ee1ec5e",
+    "name": "Эфиопка",
+    "pedigree_name": null
+  },
+  {
+    "id": "46d3f02f-89a6-50b0-bd2a-9c4f7c26b91f",
+    "name": "Мон праун",
+    "pedigree_name": null
+  },
+  {
+    "id": "48943b33-9cb1-5bd2-b52c-fa198ab79cf7",
+    "name": "Лучистый",
+    "pedigree_name": null
+  },
+  {
+    "id": "50953e9d-64a1-5bc7-b337-18889a6d80b5",
+    "name": "Мермерис",
+    "pedigree_name": null
+  },
+  {
+    "id": "5e7e64ad-b02c-5046-87a4-f23cd35a73aa",
+    "name": "Грация",
+    "pedigree_name": null
+  },
+  {
+    "id": "ab5c1f22-eb41-5887-9322-ad84ece296d3",
+    "name": "Иволга",
+    "pedigree_name": null
+  },
+  {
+    "id": "e54d12d2-881b-5a15-a2b9-bb8a20f7e827",
+    "name": "Ливерпуль",
+    "pedigree_name": null
+  },
+  {
+    "id": "04a67e3f-b3c1-5582-aa2f-48f5b9d35f7b",
+    "name": "Окинава",
+    "pedigree_name": null
+  },
+  {
+    "id": "37068d8a-55b4-5f4e-94f7-8848b08ed1eb",
+    "name": "Лейзи",
+    "pedigree_name": null
+  },
+  {
+    "id": "7b7166cc-fc5d-56c4-9b85-f396c0f4106d",
+    "name": "Меппи",
+    "pedigree_name": null
+  },
+  {
+    "id": "8185b7e0-d915-5d1f-9577-5c6c92aae9fd",
+    "name": "Мысль",
+    "pedigree_name": null
+  },
+  {
+    "id": "c0ebffa0-214d-5825-a6e8-df208e6a0719",
+    "name": "Бип-бип приятная",
+    "pedigree_name": null
+  },
+  {
+    "id": "1cf58ac0-4d1f-52ef-8e2e-a0ca0edc439b",
+    "name": "Антей",
+    "pedigree_name": null
+  },
+  {
+    "id": "d6fa3b74-44dd-5885-b1b4-6b60dfb971e7",
+    "name": "Майкоп",
+    "pedigree_name": null
+  },
+  {
+    "id": "2adade46-8064-576a-9499-7ef425d64e13",
+    "name": "Аэлита",
+    "pedigree_name": null
+  },
+  {
+    "id": "bc171ecd-8fb8-5a76-9f7a-cf1d3f1b3671",
+    "name": "Евпатория",
+    "pedigree_name": null
+  },
+  {
+    "id": "def2adee-5b2c-59c8-8ed8-ada14b8da1cd",
+    "name": "Ефлакс",
+    "pedigree_name": null
+  },
+  {
+    "id": "e364a16d-bd3f-553d-8eb5-2a2062ccf4f1",
+    "name": "Гнев",
+    "pedigree_name": null
+  },
+  {
+    "id": "ac20e39d-eec7-556b-9acf-0c69aa283dc9",
+    "name": "Опра",
+    "pedigree_name": null
+  },
+  {
+    "id": "bbb38b50-c471-5adf-8960-508d1bcaf755",
+    "name": "Капля",
+    "pedigree_name": null
+  },
+  {
+    "id": "a8137446-9d78-57bf-a34d-113cb40cea6c",
+    "name": "Маскарпоне",
+    "pedigree_name": null
+  },
+  {
+    "id": "6e8d882b-ddd9-5cfb-a0f6-1a1477262c05",
+    "name": "Елай",
+    "pedigree_name": null
+  },
+  {
+    "id": "a10769aa-fb9d-572e-8b40-43c04c4a880f",
+    "name": "Азиз",
+    "pedigree_name": null
+  },
+  {
+    "id": "ef35a8fa-5e23-5efe-b88d-b4ac4ed0eea3",
+    "name": "Mini Hoeve's Lyzet",
+    "pedigree_name": null
+  },
+  {
+    "id": "e222a4af-608d-56e3-bfc6-dcaa2a6a8d20",
+    "name": "Омега",
+    "pedigree_name": null
+  },
+  {
+    "id": "4dc7b646-ffcb-5932-9cac-a237d11926bb",
+    "name": "Юмор",
+    "pedigree_name": null
+  },
+  {
+    "id": "65dc01d9-52d3-5942-867c-864bf7f8fa55",
+    "name": "Ельсай",
+    "pedigree_name": null
+  },
+  {
+    "id": "33ce5bfc-0348-5395-9347-0ff36e3d2e34",
+    "name": "Мельпомена",
+    "pedigree_name": null
+  },
+  {
+    "id": "d6edc42d-4ce5-5294-9322-2d519a4b3c86",
+    "name": "Лакоста",
+    "pedigree_name": null
+  },
+  {
+    "id": "90447ede-69d6-5ae8-81c9-d1ba1c4b368e",
+    "name": "Ассоль",
+    "pedigree_name": null
+  },
+  {
+    "id": "9ad6a878-fe38-5975-b3ad-762d15b9833f",
+    "name": "Зорька",
+    "pedigree_name": null
+  },
+  {
+    "id": "df182216-4e9a-5655-9188-8865b7cf0968",
+    "name": "Играйка",
+    "pedigree_name": null
+  },
+  {
+    "id": "e66a780a-a085-5a2e-be53-b92687dc73c2",
+    "name": "Метка",
+    "pedigree_name": null
+  },
+  {
+    "id": "8173ec31-70ed-58ec-94c3-7c9e59f95309",
+    "name": "Лили-флауэр",
+    "pedigree_name": null
+  },
+  {
+    "id": "299f2c5d-7f95-5f0f-a0a6-700e49d43f23",
+    "name": "Артист",
+    "pedigree_name": null
+  },
+  {
+    "id": "03aa5380-8c50-54e5-a70c-658c74d8589c",
+    "name": "Магистр",
+    "pedigree_name": null
+  },
+  {
+    "id": "3838be9c-46b9-5a0f-a4bb-acb8b22c49ab",
+    "name": "Любопытный",
+    "pedigree_name": null
+  },
+  {
+    "id": "ed007d19-8915-522d-b853-b10aff84b6aa",
+    "name": "Зерновка",
+    "pedigree_name": null
+  },
+  {
+    "id": "ab6870fd-da86-5d0f-9dfd-c1c942b63a93",
+    "name": "Аристарх",
+    "pedigree_name": null
+  },
+  {
+    "id": "b5caee88-79b4-5af3-9b61-d0844fce0b4a",
+    "name": "Маэстро",
+    "pedigree_name": null
+  },
+  {
+    "id": "d867efc9-4c97-508a-8525-e8c7135b0590",
+    "name": "Мариуполь",
+    "pedigree_name": null
+  },
+  {
+    "id": "de36fdb5-d273-5ed0-a545-8cc9d3473868",
+    "name": "Ефимка",
+    "pedigree_name": null
+  },
+  {
+    "id": "f94755d9-cf51-515a-849a-36546c892fe5",
+    "name": "Криспир",
+    "pedigree_name": null
+  },
+  {
+    "id": "94674c04-af5a-5112-806b-3cc82379cd16",
+    "name": "Гуппи",
+    "pedigree_name": null
+  },
+  {
+    "id": "8eb8fb9b-c5fd-5dbd-8597-d0674bde84b4",
+    "name": "Артефакт",
+    "pedigree_name": null
+  },
+  {
+    "id": "1ba18398-70e2-509f-ad11-42323d0ec14e",
+    "name": "Зайка",
+    "pedigree_name": null
+  },
+  {
+    "id": "f8bb5a64-749a-5a6e-bd5f-6f4a358f7975",
+    "name": "Компашка",
+    "pedigree_name": null
+  },
+  {
+    "id": "d3ed2ca2-eb2a-5ab0-a715-5be34add19ed",
+    "name": "Ельхард",
+    "pedigree_name": null
+  },
+  {
+    "id": "b2936e20-c064-52b1-871e-3c24c1d6750a",
+    "name": "Лепший",
+    "pedigree_name": null
+  },
+  {
+    "id": "85d59f28-c498-5928-b964-332aa6a6fdd1",
+    "name": "Леди линн",
+    "pedigree_name": null
+  },
+  {
+    "id": "fbcbdd6a-fa06-52d6-9399-a419b1597dbf",
+    "name": "Кассиопея",
+    "pedigree_name": null
+  },
+  {
+    "id": "71ec373a-eb24-5816-9564-c03b9d686344",
+    "name": "Леди Винтер",
+    "pedigree_name": null
+  },
+  {
+    "id": "f484495a-286d-5b87-8ad3-3bb924683e2e",
+    "name": "Альфа",
+    "pedigree_name": null
+  },
+  {
+    "id": "4ca1c155-5e7a-56d8-9adc-3ea14c0f69b3",
+    "name": "Альпа",
+    "pedigree_name": null
+  },
+  {
+    "id": "de036b03-5d86-5eb4-aa48-a879060f18d4",
+    "name": "Мерседес",
+    "pedigree_name": null
+  },
+  {
+    "id": "71e925a3-9b3d-59a0-986d-6318d3a9d7c8",
+    "name": "Мери поппинс",
+    "pedigree_name": null
+  },
+  {
+    "id": "fce5da61-1084-5b36-9120-d24da491e3bf",
+    "name": "Ежик",
+    "pedigree_name": null
+  },
+  {
+    "id": "dde437de-6b6b-56aa-9ce6-55d21d258583",
+    "name": "Монпасье",
+    "pedigree_name": null
+  },
+  {
+    "id": "e693a881-9469-57a9-b50c-e35f3fcfdf72",
+    "name": "Маришка",
+    "pedigree_name": null
+  },
+  {
+    "id": "1a17562c-838b-5712-aaac-a9dba2423146",
+    "name": "Симпатяга",
+    "pedigree_name": null
+  },
+  {
+    "id": "cf7e56ab-ded1-5531-898d-a6d73bb1cd7b",
+    "name": "Абрикоска",
+    "pedigree_name": null
+  },
+  {
+    "id": "c8c4af8f-882e-5c89-a092-926ee9cb1040",
+    "name": "Маккартни",
+    "pedigree_name": null
+  },
+  {
+    "id": "070a6520-0380-5c5e-bf91-df3ee887c063",
+    "name": "Леди макбет",
+    "pedigree_name": null
+  },
+  {
+    "id": "f2d91fa3-856e-53cc-9d4c-51d2c781d148",
+    "name": "Драже",
+    "pedigree_name": null
+  },
+  {
+    "id": "0d74272d-8f9e-5078-9f80-e3405b07c7bd",
+    "name": "Ладный",
+    "pedigree_name": null
+  },
+  {
+    "id": "81362edb-f63e-5683-9798-44e4db235cba",
+    "name": "Макраме",
+    "pedigree_name": null
+  },
+  {
+    "id": "26c576f5-eb43-5f09-86e5-f3e624604908",
+    "name": "Осирис",
+    "pedigree_name": null
+  },
+  {
+    "id": "b336af15-9810-5d2c-a387-999be91b334a",
+    "name": "Золя",
+    "pedigree_name": null
+  },
+  {
+    "id": "1dde77fb-6635-5ef3-bea9-e829733fd536",
+    "name": "Гипрок",
+    "pedigree_name": null
+  },
+  {
+    "id": "7a54d1fe-6810-5ccb-9a73-0428cee9d4ca",
+    "name": "Оса",
+    "pedigree_name": null
+  },
+  {
+    "id": "21ff6eff-8473-5dbd-aac3-c7134d495128",
+    "name": "Елла",
+    "pedigree_name": null
+  },
+  {
+    "id": "5f98b866-136b-554a-9dcb-0edd60c8b4f0",
+    "name": "Оман",
+    "pedigree_name": null
+  },
+  {
+    "id": "ead18d0d-a54e-5b29-acfc-0c94bfb9ff73",
+    "name": "Лемпи",
+    "pedigree_name": null
+  },
+  {
+    "id": "06cc90de-cce8-5f9d-906a-cf954f30a6d1",
+    "name": "Ладан",
+    "pedigree_name": null
+  },
+  {
+    "id": "c4f5522c-b5ed-53f4-98dc-a4c0fd5ba217",
+    "name": "Архона",
+    "pedigree_name": null
+  },
+  {
+    "id": "b578cdb2-d847-5079-b149-3db339f892fe",
+    "name": "Липисина",
+    "pedigree_name": null
+  },
+  {
+    "id": "1154cdd0-e027-5b0d-85d5-25e849201a79",
+    "name": "Евлалия",
+    "pedigree_name": null
+  },
+  {
+    "id": "183eebe9-8fc0-5760-a721-cb0c39a98cfa",
+    "name": "Кипарис",
+    "pedigree_name": null
+  },
+  {
+    "id": "f310a47a-8790-542d-82ac-0c9d5b7db1d2",
+    "name": "Беспредельный",
+    "pedigree_name": null
+  },
+  {
+    "id": "3789873a-ed68-55a1-83c0-925410f1fba9",
+    "name": "Аргентум",
+    "pedigree_name": null
+  },
+  {
+    "id": "188f097b-82c4-5718-a274-011a8e76addc",
+    "name": "Леонайд",
+    "pedigree_name": null
+  },
+  {
+    "id": "449029a6-cb7a-5de6-bf84-77fe5ebb7875",
+    "name": "Балетмейстер",
+    "pedigree_name": null
+  },
+  {
+    "id": "576e56cb-23cd-5872-abc5-1062cef34454",
+    "name": "Арфа",
+    "pedigree_name": null
+  },
+  {
+    "id": "d13a1842-a60c-55e2-b1b0-e65ab092c888",
+    "name": "Европейка",
+    "pedigree_name": null
+  },
+  {
+    "id": "eb1f32fe-8346-58aa-b9aa-62c852055def",
+    "name": "Манюня",
+    "pedigree_name": null
+  },
+  {
+    "id": "aa5c5776-8e8c-589e-92ae-32743a738964",
+    "name": "Миссисипи",
+    "pedigree_name": null
+  },
+  {
+    "id": "9fe6dc16-54dc-5ffc-91da-f67f94737df5",
+    "name": "Особа",
+    "pedigree_name": null
+  },
+  {
+    "id": "ea7cf0a2-2723-57ec-ae9e-aafd462bc5c2",
+    "name": "Зупинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "a2f82fb8-4cf1-5b90-9454-8cfcff0adc71",
+    "name": "Велла",
+    "pedigree_name": null
+  },
+  {
+    "id": "c633fe19-c878-5599-b371-32404f57a907",
+    "name": "Гран-при",
+    "pedigree_name": null
+  },
+  {
+    "id": "878607ce-6d83-5e33-8802-0fd3281a1eb0",
+    "name": "Елизар",
+    "pedigree_name": null
+  },
+  {
+    "id": "5ee9aed4-ff72-5cd6-9b2b-1451cc98da0d",
+    "name": "Луидор",
+    "pedigree_name": null
+  },
+  {
+    "id": "a0b99ddb-7290-5de3-a67a-97a2547bdf1e",
+    "name": "Маленький принц",
+    "pedigree_name": null
+  },
+  {
+    "id": "f4d549fa-53d6-5231-bfa2-84a5e4e008a5",
+    "name": "Моя прелесть",
+    "pedigree_name": null
+  },
+  {
+    "id": "334121af-f676-5113-9586-de626fe58a71",
+    "name": "Зарисовка",
+    "pedigree_name": null
+  },
+  {
+    "id": "f20e1f50-dbd8-57b6-8ff3-48b97c522047",
+    "name": "Киприда",
+    "pedigree_name": null
+  },
+  {
+    "id": "37aaf27c-4dd5-50c0-abbf-6f02aecf43d4",
+    "name": "Лили-лупси",
+    "pedigree_name": null
+  },
+  {
+    "id": "1900dd4f-59e1-5c37-973a-f88dba70ed5f",
+    "name": "Госпожа",
+    "pedigree_name": null
+  },
+  {
+    "id": "1b797bf4-a765-53c2-884b-75dc222de8d5",
+    "name": "Ексель",
+    "pedigree_name": null
+  },
+  {
+    "id": "276402b4-d0ec-587f-b78e-7ed1e1b7d3ab",
+    "name": "Микаэла",
+    "pedigree_name": null
+  },
+  {
+    "id": "0782c432-b11d-5e75-80f8-f291f2e6cbb9",
+    "name": "Кнопка",
+    "pedigree_name": null
+  },
+  {
+    "id": "47446288-108f-5d10-9bc3-b0db20d970d0",
+    "name": "Ленточка",
+    "pedigree_name": null
+  },
+  {
+    "id": "caa6b5e0-37dd-58e9-aa20-1b5130c6ba3b",
+    "name": "Ампир",
+    "pedigree_name": null
+  },
+  {
+    "id": "a9a727ff-969b-580a-9025-f0972981cbca",
+    "name": "Елка",
+    "pedigree_name": null
+  },
+  {
+    "id": "6c9332c6-2058-59d9-9f43-b29cb5107b4f",
+    "name": "Гита",
+    "pedigree_name": null
+  },
+  {
+    "id": "8c6079ac-21d3-59d4-b09a-5f8d71ced773",
+    "name": "Миропия",
+    "pedigree_name": null
+  },
+  {
+    "id": "e5b223ed-2a5c-51e4-9670-cae054ff9fac",
+    "name": "Запир",
+    "pedigree_name": null
+  },
+  {
+    "id": "4997c94e-35f0-5ba2-9189-8940dc0505c6",
+    "name": "Гопак",
+    "pedigree_name": null
+  },
+  {
+    "id": "9c9dbcb9-71c2-57ae-ad10-76b3e940c728",
+    "name": "Оптима",
+    "pedigree_name": null
+  },
+  {
+    "id": "aec85e85-210b-57f8-85dd-31d09fba5da2",
+    "name": "Гиппомания",
+    "pedigree_name": null
+  },
+  {
+    "id": "8c6a0174-02aa-528f-a716-44a1c91d4eca",
+    "name": "Кросс",
+    "pedigree_name": null
+  },
+  {
+    "id": "dd691e61-79fa-5341-8cd2-92239bcded94",
+    "name": "Апониви",
+    "pedigree_name": null
+  },
+  {
+    "id": "9e994837-9a9e-57c9-98a3-48ea0035a493",
+    "name": "Еврик",
+    "pedigree_name": null
+  },
+  {
+    "id": "ae64e2bb-6225-5615-8070-536c45e65d50",
+    "name": "Крамер",
+    "pedigree_name": null
+  },
+  {
+    "id": "48838dc0-b057-574a-ad38-fc2677b803c8",
+    "name": "Клементина",
+    "pedigree_name": null
+  },
+  {
+    "id": "46996292-71ab-5bbe-9b21-043dce51a3c8",
+    "name": "Мафия",
+    "pedigree_name": null
+  },
+  {
+    "id": "369bda80-baf8-5db7-a6f7-74d31a5d9d84",
+    "name": "Гильгамеш",
+    "pedigree_name": null
+  },
+  {
+    "id": "71c47c5c-2fed-5a83-9683-ed30150888b2",
+    "name": "Афон",
+    "pedigree_name": null
+  },
+  {
+    "id": "a55d2145-79e0-53f0-815f-035a98705df0",
+    "name": "Балтика",
+    "pedigree_name": null
+  },
+  {
+    "id": "d71a5464-8e46-540d-b148-5f7b6e2fbe07",
+    "name": "Еллоу Ра",
+    "pedigree_name": null
+  },
+  {
+    "id": "c9d3f582-a5d6-59cf-8714-202b29e13f33",
+    "name": "Елань",
+    "pedigree_name": null
+  },
+  {
+    "id": "8e1027cf-17cf-53fb-a809-979a7bd9d9ff",
+    "name": "Оригами",
+    "pedigree_name": null
+  },
+  {
+    "id": "c9aed065-750a-5693-bee0-d52bcfb4bc0f",
+    "name": "Аракс",
+    "pedigree_name": null
+  },
+  {
+    "id": "7873aadb-c050-5ea0-b711-a6bd963b15e5",
+    "name": "Липучка",
+    "pedigree_name": null
+  },
+  {
+    "id": "15b4da60-b32c-577d-9a5d-b41f4ba9c108",
+    "name": "Зозуля",
+    "pedigree_name": null
+  },
+  {
+    "id": "fd9f6fc5-b5f4-597a-aee4-eb04feb5dc6f",
+    "name": "Алери",
+    "pedigree_name": null
+  },
+  {
+    "id": "f486c66a-167a-58be-a76e-c351728fb69e",
+    "name": "Кристина",
+    "pedigree_name": null
+  },
+  {
+    "id": "a7f0fde2-4258-5bb7-b37b-2d8dece3f60e",
+    "name": "Мах",
+    "pedigree_name": null
+  },
+  {
+    "id": "752b9ab4-1bd7-59de-9259-add6b7fb5d51",
+    "name": "Елик",
+    "pedigree_name": null
+  },
+  {
+    "id": "436e7d2d-da5e-57f7-a058-1b65f02129bc",
+    "name": "Асгард",
+    "pedigree_name": null
+  },
+  {
+    "id": "ce7dca48-9eb1-5e0e-ac4f-e2e9b9e322fd",
+    "name": "Гало",
+    "pedigree_name": null
+  },
+  {
+    "id": "fa031988-2364-5db3-8e2b-3ee497ccd3dc",
+    "name": "Лейна",
+    "pedigree_name": null
+  },
+  {
+    "id": "454825da-141c-5c02-8b31-e83c9d0f5c4a",
+    "name": "Лола",
+    "pedigree_name": null
+  },
+  {
+    "id": "bb0bcb4b-4bac-5de2-acee-4d72d44cf64e",
+    "name": "Листва",
+    "pedigree_name": null
+  },
+  {
+    "id": "ad3c6c34-9394-5a83-9d7a-77172628ba8a",
+    "name": "Макэрия",
+    "pedigree_name": null
+  },
+  {
+    "id": "9bc42b18-3c11-51a3-a367-97520c0d431c",
+    "name": "Запонька",
+    "pedigree_name": null
+  },
+  {
+    "id": "d5a13fb9-07e5-51bc-9080-66ef2c869411",
+    "name": "Ланка",
+    "pedigree_name": null
+  },
+  {
+    "id": "3c0dbab5-bab6-5999-bd5c-0f3589c3911e",
+    "name": "Игарка",
+    "pedigree_name": null
+  },
+  {
+    "id": "9a1aed36-084b-5460-8f53-07575d87685d",
+    "name": "Лимонад",
+    "pedigree_name": null
+  },
+  {
+    "id": "eeb606b1-2811-5e23-92e5-43fbbe6345f9",
+    "name": "Елейный",
+    "pedigree_name": null
+  },
+  {
+    "id": "1264c5e8-1dfa-54d0-9c89-6c93f1e9b1e5",
+    "name": "Метель",
+    "pedigree_name": null
+  },
+  {
+    "id": "f9c35feb-0e4d-5a4b-8e8d-b12483870856",
+    "name": "Макадами",
+    "pedigree_name": null
+  },
+  {
+    "id": "41721107-a670-58df-96ff-76ea77b77919",
+    "name": "Артистка",
+    "pedigree_name": null
+  },
+  {
+    "id": "2987f2cd-8f5d-52ea-a8d8-b714ff9a4cab",
+    "name": "Езер",
+    "pedigree_name": null
+  },
+  {
+    "id": "7ad16b26-4915-5c23-96f4-d67b34da9300",
+    "name": "Аквамарин",
+    "pedigree_name": null
+  },
+  {
+    "id": "837aaebe-940d-5b60-bf69-5fcabb56c567",
+    "name": "Оливка",
+    "pedigree_name": null
+  },
+  {
+    "id": "490a3895-49e6-52f3-9518-7a08c1a60b0f",
+    "name": "Аппатит",
+    "pedigree_name": null
+  },
+  {
+    "id": "7011b17f-cef0-570c-b843-29e72509c3aa",
+    "name": "Мексика",
+    "pedigree_name": null
+  },
+  {
+    "id": "90616c38-7d15-54a2-96e5-551d9f196c62",
+    "name": "Милиса",
+    "pedigree_name": null
+  },
+  {
+    "id": "b74a0d96-44bd-5ded-b759-a2f02f414fd7",
+    "name": "Мельба",
+    "pedigree_name": null
+  },
+  {
+    "id": "c8bf1537-d4b6-5aa3-9f5e-39262d31c28f",
+    "name": "Лагерфельд",
+    "pedigree_name": null
+  },
+  {
+    "id": "65da3897-d26e-5196-8fd9-5e6c76150843",
+    "name": "Линдор",
+    "pedigree_name": null
+  },
+  {
+    "id": "4af6050d-3c6c-59cd-8c8d-21131b10d16c",
+    "name": "Ленгер",
+    "pedigree_name": null
+  },
+  {
+    "id": "272952fc-9d5a-544e-b80f-f1b67147946b",
+    "name": "Афсалина",
+    "pedigree_name": null
+  },
+  {
+    "id": "1983291d-83db-571b-86b6-61f8463c0c08",
+    "name": "Гладыш приятный",
+    "pedigree_name": null
+  },
+  {
+    "id": "07d28ecf-cf56-554e-83f7-22d650423ca1",
+    "name": "Баунти",
+    "pedigree_name": null
+  },
+  {
+    "id": "cace05b3-89e5-5102-b1c4-402dbd636184",
+    "name": "Медалист",
+    "pedigree_name": null
+  },
+  {
+    "id": "d0bc169f-fc77-54ab-b3f9-bda5ace40dfc",
+    "name": "Оболенский",
+    "pedigree_name": null
+  },
+  {
+    "id": "df8c7aa3-a10c-5d43-9beb-9b9409cf6873",
+    "name": "Зилола",
+    "pedigree_name": null
+  },
+  {
+    "id": "b091a755-6b4f-5ec0-95dd-7267ad963ce0",
+    "name": "Мопассан",
+    "pedigree_name": null
+  },
+  {
+    "id": "6e93d65c-55b3-576c-bd8e-807a8b9e4120",
+    "name": "Марсик",
+    "pedigree_name": null
+  },
+  {
+    "id": "3a2e7ede-57d2-55a6-a67b-67e0318e8692",
+    "name": "Каракум",
+    "pedigree_name": null
+  },
+  {
+    "id": "48cef2e7-bb12-5870-8184-dc899bd4e5e2",
+    "name": "Василиса",
+    "pedigree_name": null
+  },
+  {
+    "id": "1bb38c6d-ecf0-58cf-bcd5-6026bb1ab358",
+    "name": "Орсей",
+    "pedigree_name": null
+  },
+  {
+    "id": "b4772fc6-f3e4-5a6c-a077-4653d96ec4e2",
+    "name": "Екатерина",
+    "pedigree_name": null
+  },
+  {
+    "id": "82c7a970-a349-5afe-98cb-e6e7cc16109b",
+    "name": "Аскольд",
+    "pedigree_name": null
+  },
+  {
+    "id": "9b71350c-6728-5dca-bc5c-b7a52e275c79",
+    "name": "Гитарист",
+    "pedigree_name": null
+  },
+  {
+    "id": "651c2807-1388-51cd-9898-1314438bc12a",
+    "name": "Апельсин",
+    "pedigree_name": null
+  },
+  {
+    "id": "1b52f843-576d-5c18-905f-ee0b270f7a24",
+    "name": "Карьерист",
+    "pedigree_name": null
+  },
+  {
+    "id": "1b2c2961-9b06-5229-b990-a4f127b97f65",
+    "name": "Мушка",
+    "pedigree_name": null
+  },
+  {
+    "id": "307f2c28-53f9-5fde-8790-852573b40570",
+    "name": "Маффин",
+    "pedigree_name": null
+  },
+  {
+    "id": "6f78030d-bebd-57b1-8803-4e97cabb9092",
+    "name": "Ламборджини",
+    "pedigree_name": null
+  },
+  {
+    "id": "cfb4ac7f-a1b2-593e-aec8-fb2a238bf048",
+    "name": "Млечный путь",
+    "pedigree_name": null
+  },
+  {
+    "id": "c095614d-6798-5f8c-9f38-8ddff14edab3",
+    "name": "Аппликация",
+    "pedigree_name": null
+  },
+  {
+    "id": "031fa323-a6af-5813-9608-c6e979450918",
+    "name": "Ажур",
+    "pedigree_name": null
+  },
+  {
+    "id": "d054dafd-293b-5236-8e1b-577227049df4",
+    "name": "Лакруэль",
+    "pedigree_name": null
+  },
+  {
+    "id": "323d685f-d38c-55c7-9a1d-f5eb46be33f9",
+    "name": "Лапако",
+    "pedigree_name": null
+  },
+  {
+    "id": "edfd7334-54eb-5e40-8a36-89068d5f5a97",
+    "name": "Епифань",
+    "pedigree_name": null
+  },
+  {
+    "id": "e73dc77d-4bf3-5dae-8df7-3d0a28ba080e",
+    "name": "Мальвина",
+    "pedigree_name": null
+  },
+  {
+    "id": "1893b841-35ae-58d5-a0fe-d492a119f70c",
+    "name": "Веня",
+    "pedigree_name": null
+  },
+  {
+    "id": "bbdc9e30-693e-504b-82df-58a062fff616",
+    "name": "Карлин",
+    "pedigree_name": null
+  },
+  {
+    "id": "56d5d33c-c6c0-5501-94b3-2c4fccb50dfa",
+    "name": "Мамука",
+    "pedigree_name": null
+  },
+  {
+    "id": "78856ae2-4c40-5332-9944-7b66d9b27772",
+    "name": "Мазурка",
+    "pedigree_name": null
+  },
+  {
+    "id": "18962392-57dc-53e9-a9ce-3eea18056941",
+    "name": "Гипербола",
+    "pedigree_name": null
+  },
+  {
+    "id": "b678cf4a-1ade-581a-8077-8075d2afb765",
+    "name": "Ланприз",
+    "pedigree_name": null
+  },
+  {
+    "id": "3b0f7481-6d73-5b5f-ac2f-3ef671f5f0e0",
+    "name": "Ландау",
+    "pedigree_name": null
+  },
+  {
+    "id": "d5a59f4a-689c-521a-bc01-6dfd7682a004",
+    "name": "Марселла",
+    "pedigree_name": null
+  },
+  {
+    "id": "f8bf222a-3921-515d-968b-40fdf1196fbb",
+    "name": "Легендарный",
+    "pedigree_name": null
+  },
+  {
+    "id": "bb59b8c3-bcc3-5290-9034-ff6fd3304db7",
+    "name": "Егерь",
+    "pedigree_name": null
+  },
+  {
+    "id": "2f575a37-bd8b-5a33-afa0-a7df12a1273d",
+    "name": "Молли",
+    "pedigree_name": null
+  },
+  {
+    "id": "b4bc3cf1-865a-54e6-a61d-7f1d3991437f",
+    "name": "Акапелла",
+    "pedigree_name": null
+  },
+  {
+    "id": "70c3a8f3-a56d-5434-a53d-e839f59bde50",
+    "name": "Афоня",
+    "pedigree_name": null
+  },
+  {
+    "id": "e2c7f0d3-3fad-5ae7-bba4-7f4f357a6070",
+    "name": "Аннемун",
+    "pedigree_name": null
+  },
+  {
+    "id": "bef17f9f-d7f5-57c1-97d5-229776195aea",
+    "name": "Бакарди",
+    "pedigree_name": null
+  },
+  {
+    "id": "c7809d5e-1495-5ae2-a084-f9452d2342d0",
+    "name": "Афродита",
+    "pedigree_name": null
+  },
+  {
+    "id": "fe4a4aa4-3b0e-5973-aa0c-3d720c0f7519",
+    "name": "Маргаритка",
+    "pedigree_name": null
+  },
+  {
+    "id": "035ba050-28aa-56cb-be7a-d3b225f16af5",
+    "name": "Елесия",
+    "pedigree_name": null
+  },
+  {
+    "id": "b8fb5afe-a115-5b62-a384-e10630b2aabc",
+    "name": "Золотинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "2e717192-a70f-523f-b61d-d6216ff2edad",
+    "name": "Маттиас",
+    "pedigree_name": null
+  },
+  {
+    "id": "7275ec39-c2a5-59f8-b095-e71f81738350",
+    "name": "Гринфильд",
+    "pedigree_name": null
+  },
+  {
+    "id": "0e298d3c-10a1-4888-8fc5-cd1a3810789b",
+    "name": "Dyfed Harlequin",
+    "pedigree_name": null
+  },
+  {
+    "id": "f0e53cab-fe36-5778-ba9a-e844f7ab035b",
+    "name": "Лаперузо",
+    "pedigree_name": null
+  },
+  {
+    "id": "c199475e-06f0-5d58-bb31-4a9ab0e92984",
+    "name": "Капелла",
+    "pedigree_name": null
+  },
+  {
+    "id": "6b686b59-f8da-5af0-81ee-894c82b2c49d",
+    "name": "Кокошник",
+    "pedigree_name": null
+  },
+  {
+    "id": "d8ee037f-a73f-5953-8830-ee36f5f9f43e",
+    "name": "Марципан",
+    "pedigree_name": null
+  },
+  {
+    "id": "b5fc1e36-c5ad-531b-8333-cc3b91470558",
+    "name": "Оригинал",
+    "pedigree_name": null
+  },
+  {
+    "id": "f272e4bf-feae-513d-9f44-7c31bbae995c",
+    "name": "Асса",
+    "pedigree_name": null
+  },
+  {
+    "id": "3a6b0455-8185-58f5-970a-0dbef5008015",
+    "name": "Вальтер",
+    "pedigree_name": null
+  },
+  {
+    "id": "08d11634-287d-5e6d-8ab4-b261c796a775",
+    "name": "Клиппер",
+    "pedigree_name": null
+  },
+  {
+    "id": "8ab3f74f-75ee-54d9-ab62-fd90c96ce427",
+    "name": "Аресибо",
+    "pedigree_name": null
+  },
+  {
+    "id": "62033e8f-6424-5580-b101-564db72548aa",
+    "name": "Оккервиль",
+    "pedigree_name": null
+  },
+  {
+    "id": "a838df1a-ffa9-58ca-8a66-22cfce299da7",
+    "name": "Мандаринка",
+    "pedigree_name": null
+  },
+  {
+    "id": "c7d0ad9f-8510-5fd7-b18e-e2f7224a98fa",
+    "name": "Кирса",
+    "pedigree_name": null
+  },
+  {
+    "id": "db9e841b-372c-547b-a5b5-fc77219a356b",
+    "name": "Ретро",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba9fde83-d3d2-5a15-a559-a00affd5a8d2",
+    "name": "Эльсона",
+    "pedigree_name": null
+  },
+  {
+    "id": "0ac9fcf1-94c9-59ae-bb8b-083f80e5dcbb",
+    "name": "Фейхоа",
+    "pedigree_name": null
+  },
+  {
+    "id": "27f7c39d-6787-5c95-999d-99911261f49f",
+    "name": "Элька",
+    "pedigree_name": null
+  },
+  {
+    "id": "064d7eb7-f2b8-5023-aab4-e5e2c7aafdde",
+    "name": "Турмалин",
+    "pedigree_name": null
+  },
+  {
+    "id": "53ff844f-6841-59df-9aba-27a1519fb812",
+    "name": "Шафран",
+    "pedigree_name": null
+  },
+  {
+    "id": "7e0930f9-4a3e-5cde-982d-f246a5430e01",
+    "name": "Тамплиер",
+    "pedigree_name": null
+  },
+  {
+    "id": "be67f013-3b3a-59b0-ae43-288fd0832388",
+    "name": "Тигода",
+    "pedigree_name": null
+  },
+  {
+    "id": "13b90134-d990-5085-9158-43d364d1da67",
+    "name": "Розарио",
+    "pedigree_name": null
+  },
+  {
+    "id": "9a104130-ff14-5e88-92e0-926bef2a757b",
+    "name": "Скриппи",
+    "pedigree_name": null
+  },
+  {
+    "id": "a016e964-e9c1-5fe7-83c3-4c819efd0bdf",
+    "name": "Труффальдино",
+    "pedigree_name": null
+  },
+  {
+    "id": "b55b4e71-93e5-4b90-8924-07165735e307",
+    "name": "Gregonne Nina",
+    "pedigree_name": null
+  },
+  {
+    "id": "ebaa59a1-90cc-465b-978c-95b49e120cd0",
+    "name": "Woldberg's Bart",
+    "pedigree_name": null
+  },
+  {
+    "id": "f21232bf-8ada-5a23-befe-bece0f1cb7d3",
+    "name": "Преамбула",
+    "pedigree_name": null
+  },
+  {
+    "id": "8bcdb716-5df7-5190-83ca-2d3cf818b154",
+    "name": "Тимберлейк",
+    "pedigree_name": null
+  },
+  {
+    "id": "0084efde-b822-5230-996f-668cf025f7d0",
+    "name": "Тифани",
+    "pedigree_name": null
+  },
+  {
+    "id": "b56b9f02-43f2-5eee-a8ca-0008abfae682",
+    "name": "Суприма",
+    "pedigree_name": null
+  },
+  {
+    "id": "fc00a9f6-982d-5306-8d28-919a17405a3d",
+    "name": "Фунтик-пунтик",
+    "pedigree_name": null
+  },
+  {
+    "id": "d26e5ff1-a4de-5fdc-a118-a4959fbc7aa2",
+    "name": "Пуфик",
+    "pedigree_name": null
+  },
+  {
+    "id": "8b25faa1-9cfe-5a79-90bf-b47a76194b02",
+    "name": "Темпико",
+    "pedigree_name": null
+  },
+  {
+    "id": "ac3868a1-35ad-5a2f-a7a2-2f4b71cebf0e",
+    "name": "Тамерлан",
+    "pedigree_name": null
+  },
+  {
+    "id": "5033befd-2b6a-57d5-a2d8-1e74f2895944",
+    "name": "Рэзак",
+    "pedigree_name": null
+  },
+  {
+    "id": "55f01faa-925d-5a55-98b8-b56b47c0cf4d",
+    "name": "Сиеста",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba36024f-0105-552c-a196-70000ec04f52",
+    "name": "Сокол",
+    "pedigree_name": null
+  },
+  {
+    "id": "4d307ad4-5a87-5db2-8a70-381f782aaa0e",
+    "name": "Фея",
+    "pedigree_name": null
+  },
+  {
+    "id": "dc563bdd-c499-5719-9d84-5cdc929e38f6",
+    "name": "Фальконет",
+    "pedigree_name": null
+  },
+  {
+    "id": "2910731b-9245-58dc-a688-70ab50cb89a2",
+    "name": "Челентано",
+    "pedigree_name": null
+  },
+  {
+    "id": "50061829-9124-5cbd-a095-3bbe5f08c5c6",
+    "name": "Шевалье",
+    "pedigree_name": null
+  },
+  {
+    "id": "c9ed52db-eabe-5b8e-983f-c866c0e4bdb6",
+    "name": "Формула",
+    "pedigree_name": null
+  },
+  {
+    "id": "ba31c1c2-7d69-5cdd-946b-7cd49a69133c",
+    "name": "Хвыля",
+    "pedigree_name": null
+  },
+  {
+    "id": "0c2903b9-d031-5a91-8128-9201edc3e8cd",
+    "name": "Флиппер",
+    "pedigree_name": null
+  },
+  {
+    "id": "8b404102-f450-598e-a345-f763498306e7",
+    "name": "Таги",
+    "pedigree_name": null
+  },
+  {
+    "id": "17f42481-2e22-5249-b74f-2b3d9d77bd0d",
+    "name": "Фор-де-франс",
+    "pedigree_name": null
+  },
+  {
+    "id": "3c22740a-b512-5bc0-bb3a-619a1247bb8c",
+    "name": "Престиж",
+    "pedigree_name": null
+  },
+  {
+    "id": "c67baecf-9c2b-53f6-8835-8605dbedeb44",
+    "name": "Порфея",
+    "pedigree_name": null
+  },
+  {
+    "id": "f127d564-6569-5b5b-bcb5-2b22a212c27e",
+    "name": "Рассвет",
+    "pedigree_name": null
+  },
+  {
+    "id": "46fc1ca4-7bf8-59ac-a475-f39fa7fc6b95",
+    "name": "Пристелла",
+    "pedigree_name": null
+  },
+  {
+    "id": "b83cf8e6-6961-5b0f-9b84-da599ed1b411",
+    "name": "Шаман",
+    "pedigree_name": null
+  },
+  {
+    "id": "31d2a9c7-3288-56d7-ba80-c7c3bc352b4b",
+    "name": "Шрайбикус",
+    "pedigree_name": null
+  },
+  {
+    "id": "38a011ea-5e32-53ed-bffc-016986a126da",
+    "name": "Сим-сим",
+    "pedigree_name": null
+  },
+  {
+    "id": "3cbae90c-01b6-5228-a16a-fbab78e0b260",
+    "name": "Пежо",
+    "pedigree_name": null
+  },
+  {
+    "id": "f0b12585-bba5-5e86-bea1-7b1fe8dc6518",
+    "name": "Сивилла",
+    "pedigree_name": null
+  },
+  {
+    "id": "426b1913-6230-5615-b91a-c4aad1914a70",
+    "name": "Тильда",
+    "pedigree_name": null
+  },
+  {
+    "id": "163c0ad6-cc15-53a6-b5aa-2b0da188aa01",
+    "name": "Пилада",
+    "pedigree_name": null
+  },
+  {
+    "id": "af89be8c-0dac-5517-a31f-b3485fe4d45e",
+    "name": "Тирамису",
+    "pedigree_name": null
+  },
+  {
+    "id": "77d1ffde-a711-5fd6-9108-2c02a099c26c",
+    "name": "Пушкин",
+    "pedigree_name": null
+  },
+  {
+    "id": "45bf2068-bea1-5d52-b29a-9aafcbd0edfd",
+    "name": "Сарпинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "75e01858-11a9-494b-8b2e-7f17c6e27e20",
+    "name": "Weston Little Model ",
+    "pedigree_name": null
+  },
+  {
+    "id": "f968a70f-9eb3-57d4-8a50-b056ff56254b",
+    "name": "Салют",
+    "pedigree_name": null
+  },
+  {
+    "id": "8accf399-f431-510e-8c99-1a67421a84cd",
+    "name": "Сказка",
+    "pedigree_name": null
+  },
+  {
+    "id": "482cac0b-ac50-55fb-a25d-f7a029f8a843",
+    "name": "Хогвард",
+    "pedigree_name": null
+  },
+  {
+    "id": "bea12ec0-5e6f-50c8-b4d0-9d3ded4dbfce",
+    "name": "Смайлик",
+    "pedigree_name": null
+  },
+  {
+    "id": "0b017e66-cf8b-56ae-9013-ccc50a04a260",
+    "name": "Спартанец",
+    "pedigree_name": null
+  },
+  {
+    "id": "fdfcb695-0536-589c-907d-9346e518dd41",
+    "name": "Чародей",
+    "pedigree_name": null
+  },
+  {
+    "id": "d05df696-4589-57aa-954f-26f35bd576da",
+    "name": "Триумф",
+    "pedigree_name": null
+  },
+  {
+    "id": "718ebbee-ac9e-573f-8a59-7092c73db54e",
+    "name": "Фольксваген",
+    "pedigree_name": null
+  },
+  {
+    "id": "e8792c8c-be25-5f69-b160-a5cbcde6dee1",
+    "name": "Феерия витта",
+    "pedigree_name": null
+  },
+  {
+    "id": "f29ea7e7-8cc3-530d-8f51-11a5d7194654",
+    "name": "Селестина",
+    "pedigree_name": null
+  },
+  {
+    "id": "7ac0bef7-9a6f-52bc-8b95-20ef60184c67",
+    "name": "Чигла",
+    "pedigree_name": null
+  },
+  {
+    "id": "03fbbb3d-e98e-5810-8a6b-401c6d219075",
+    "name": "Саргерас",
+    "pedigree_name": null
+  },
+  {
+    "id": "7bca7cec-2932-5f04-90b5-f0d22dbef203",
+    "name": "Роксолина",
+    "pedigree_name": null
+  },
+  {
+    "id": "66c9be0d-b014-5534-80f3-e115afcf0563",
+    "name": "Райхан",
+    "pedigree_name": null
+  },
+  {
+    "id": "1e608a58-dde6-5207-b0fc-cd6a7962c4de",
+    "name": "Факел",
+    "pedigree_name": null
+  },
+  {
+    "id": "662eb1df-dced-5628-87a2-5d318a47c298",
+    "name": "Феспия",
+    "pedigree_name": null
+  },
+  {
+    "id": "c66db453-d9c9-55cd-b25f-47ee4d67e6bc",
+    "name": "Солнышко",
+    "pedigree_name": null
+  },
+  {
+    "id": "681bb156-5bb3-5df2-be73-c1be11262c3a",
+    "name": "Фишка",
+    "pedigree_name": null
+  },
+  {
+    "id": "4095572a-cbb4-42ce-a17a-d43681025df9",
+    "name": "Hengelhoef's Blendy",
+    "pedigree_name": null
+  },
+  {
+    "id": "d2dbc95f-9699-49a2-9d1c-296fc8ec709d",
+    "name": "Rotherwood Honeysuckle",
+    "pedigree_name": null
+  },
+  {
+    "id": "f8d44dec-6ee0-5690-bc0d-648772a9639e",
+    "name": "Резол",
+    "pedigree_name": null
+  },
+  {
+    "id": "689707fc-6c55-5f27-8e80-2a5449ccc9ed",
+    "name": "Плавная",
+    "pedigree_name": null
+  },
+  {
+    "id": "95685734-1db2-5114-a462-3384ae5bdf18",
+    "name": "Флэк",
+    "pedigree_name": null
+  },
+  {
+    "id": "d748f8e4-a418-5257-afa0-fe91ffdfa7d3",
+    "name": "Сингапур",
+    "pedigree_name": null
+  },
+  {
+    "id": "fdb2ed6a-b400-5b27-8f9d-64abc93f31d0",
+    "name": "Тагир",
+    "pedigree_name": null
+  },
+  {
+    "id": "9444e133-9e03-5aef-a878-db66fe599e16",
+    "name": "Тиль",
+    "pedigree_name": null
+  },
+  {
+    "id": "a3e0d212-a86c-5c9a-9089-fae3a5ab1bf7",
+    "name": "Симпатика",
+    "pedigree_name": null
+  },
+  {
+    "id": "c411f381-0d99-530e-9266-1c479f38f466",
+    "name": "Смусси",
+    "pedigree_name": null
+  },
+  {
+    "id": "a58643c8-403f-564d-aa30-9cae064a4abb",
+    "name": "Скипирич",
+    "pedigree_name": null
+  },
+  {
+    "id": "bb48a2f8-82c3-5d63-80f5-e5640f95e786",
+    "name": "Философ",
+    "pedigree_name": null
+  },
+  {
+    "id": "89d9c4e1-c25f-5462-9ed9-7d27f773bf1b",
+    "name": "Тики мадиш",
+    "pedigree_name": null
+  },
+  {
+    "id": "4b1ccc02-e05b-59f0-9630-f9800946f722",
+    "name": "Сопрано",
+    "pedigree_name": null
+  },
+  {
+    "id": "5774ae1b-86d5-5551-bf83-b1d0bbf0f3f3",
+    "name": "Фихта",
+    "pedigree_name": null
+  },
+  {
+    "id": "83289fa6-2f04-5991-a2ba-f70b9e328425",
+    "name": "Филипинка",
+    "pedigree_name": null
+  },
+  {
+    "id": "6a633464-dcb1-5651-9ec3-2a119997e184",
+    "name": "Фатима",
+    "pedigree_name": null
+  },
+  {
+    "id": "a7e8e904-6ecd-572c-bd82-133a9b39bfea",
+    "name": "Фальконе",
+    "pedigree_name": null
+  },
+  {
+    "id": "3b9ef220-5ba2-5a85-bfea-8def5778b0f8",
+    "name": "Сапфира",
+    "pedigree_name": null
+  },
+  {
+    "id": "06675ddd-4d9f-59ec-a9e1-9e4d2c535a2c",
+    "name": "Реприза",
+    "pedigree_name": null
+  },
+  {
+    "id": "6aefca1e-d989-4391-959a-9b02df0414a7",
+    "name": "Leybucht's Elfe",
+    "pedigree_name": null
+  }
+]
