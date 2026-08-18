@@ -15,6 +15,20 @@
 4. Запусти применимые unit/integration тесты; для runtime backend diff минимум unit-тесты обязательны для approve.
 5. Для runtime API diff прочитай `.claude/skills/api-smoke-test/SKILL.md` и выполни SMOKE-проверки по его инструкции. Для documentation-only diff явно зафиксируй неприменимость.
 6. Сохрани один отчёт в `docs/reports/`. При findings поставь `REWORK`, верни их Router для профильных владельцев и обязательно полностью повтори Quality Gate после исправлений в том же отчёте.
+
+## Makefile-контракт core-сервисов
+
+Quality Gate обязан проверить `.PHONY` цели `test`, `lint`, `format` в Makefile
+каждого core-сервиса: `backend`, `notification-service`, `email-service`, `frontend`.
+Корневые `test`, `lint`, `format` должны содержать четыре отдельных, без shell-цикла,
+`$(MAKE) -C` вызова одноимённой сервисной цели в порядке backend → notification-service →
+email-service → frontend. `services/site-*` в эту агрегацию не входят.
+
+`make test` проверяется без PostgreSQL, NATS, Redis, Docker, external API и live backend:
+цели не должны запускать/устанавливать infrastructure или зависимости. `make lint`
+должен оставаться non-mutating. Корневой `make format` запускается только на
+clean/path-accounted worktree; после него Quality Gate обязан подтвердить отсутствие
+незапланированного diff. Расширенные `check`/`fix`/release gates остаются отдельными.
 7. `APPROVED` допускается только когда OpenSpec validation успешна, все blocking findings устранены, access policy подтверждена и diff соответствует утверждённым specs/tasks.
 
 SMOKE-тесты обязательны для каждого Quality Gate с runtime API diff. Перед запуском всегда прочитай

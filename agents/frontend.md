@@ -487,14 +487,20 @@ Access tests для Protected Admin UI обязательны, когда behavi
 
 ### 13.2. Обязательные команды
 
-Перед передачей CMS frontend behavior diff на Quality Gate выполни из `services/frontend`:
+В `services/frontend/Makefile` обязательны `.PHONY` цели `test`, `lint`, `format`.
+Перед передачей CMS frontend diff на Quality Gate выполни из `services/frontend`:
 
 ```bash
-npm test
-npm run lint
-npx tsc --noEmit
-npm run build
+make format
+make test
+make lint
 ```
+
+`make test` запускает unit/component suite с mocks/jsdom и не должен требовать
+live backend, Docker или установку зависимостей. `make lint` остаётся non-mutating
+полным ESLint/typecheck gate, `make format` делегирует существующему ESLint `--fix`.
+Для CMS frontend behavior diff также сохраняются обязательные `npm run build` и test-quality/access
+проверки этого раздела.
 
 Если diff documentation-only и не затрагивает runtime `services/frontend`, эти команды можно не запускать, но completion report должен явно указать, что runtime tests/checks не применимы.
 

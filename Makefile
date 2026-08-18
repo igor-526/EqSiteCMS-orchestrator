@@ -23,7 +23,7 @@ DC_CORE = docker compose --env-file $(COMPOSE_DIR)/.env -p eqsitecms-core \
 
 SERVICES_MANIFEST ?= services.manifest
 
-.PHONY: sync update services-branches build build-nc check check-backend check-email \
+.PHONY: sync update services-branches build build-nc test lint format check check-backend check-email \
 		check-notification check-frontend fix fix-backend fix-email fix-notification fix-frontend \
 		compose-check asyncapi-validate secret-scan migrate-core recreate-core health-core status-core logs-core \
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
@@ -231,13 +231,22 @@ logs-core:
 	docker logs --since 10m eqsitecms-email-celery-worker > .release-evidence/email-celery.log 2>&1
 
 test:
-	$(MAKE) check
+	$(MAKE) -C services/backend test
+	$(MAKE) -C services/notification-service test
+	$(MAKE) -C services/email-service test
+	$(MAKE) -C services/frontend test
 
 lint:
-	$(MAKE) check
+	$(MAKE) -C services/backend lint
+	$(MAKE) -C services/notification-service lint
+	$(MAKE) -C services/email-service lint
+	$(MAKE) -C services/frontend lint
 
 format:
-	cd services/backend && uv run isort src && uv run black src && uv run isort tests && uv run black tests
+	$(MAKE) -C services/backend format
+	$(MAKE) -C services/notification-service format
+	$(MAKE) -C services/email-service format
+	$(MAKE) -C services/frontend format
 
 # =====BACKEND MANAGEMENT=====
 

@@ -354,11 +354,20 @@ uv run black src
 Make-алиасы сервиса:
 
 ```bash
-make lint       # uv run mypy src
-make format     # uv run isort src && uv run black src
+make test       # автономные unit/component тесты без runtime infrastructure
+make lint       # полный non-mutating lint/typecheck/format-check scope сервиса
+make format     # mutating formatter/autofix всего поддерживаемого source/test scope
 make migrate    # alembic upgrade head внутри docker-контейнера
 make makemigrations msg="create_table"
 ```
+
+Каждый назначенный Python core-сервис (`services/backend`,
+`services/notification-service`, `services/email-service`) обязан иметь `.PHONY`
+цели `test`, `lint`, `format`. Исполнитель запускает все три цели из
+директории назначенного сервиса перед передачей diff. CI-facing `make test`
+не должен поднимать, устанавливать или вызывать PostgreSQL, NATS, Redis,
+Docker, external API или иную runtime infrastructure; infrastructure/integration suites
+остаются отдельными gates.
 
 Если папки `tests/unit` нет или окружение не поднято, не скрывай это: укажи в отчете, какая команда не смогла выполниться и почему.
 
@@ -432,12 +441,12 @@ if name_query:
 
 ## Обязательные проверки перед передачей на Quality Gate
 
-Выполни из корня проекта (`/home/igor/projects/eqSiteCMS`):
+Выполни из директории назначенного Python core-сервиса:
 
 ```bash
-make format   # isort + black
-make test     # pytest unit
-make lint     # mypy + flake8 + ruff
+make format
+make test
+make lint
 ```
 
 Все три команды должны завершиться без ошибок.
