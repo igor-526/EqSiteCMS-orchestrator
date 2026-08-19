@@ -1,8 +1,5 @@
-# notification-orchestrator Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
-## Requirements
 ### Requirement: NotificationOrchestratorService
 The system MUST provide an orchestrator service for processing notification events and MUST send a channel notification only to users who are currently role-eligible, have explicitly enabled the event/channel tuple, and have a confirmed destination.
 
@@ -31,6 +28,8 @@ The system MUST provide an orchestrator service for processing notification even
 - WHEN processing callback_request
 - THEN the failure is logged with correlation context and no broader fallback recipient list is used
 
+## ADDED Requirements
+
 ### Requirement: Canonical messaging compatibility
 Изменение recipient selection MUST сохранить существующие AsyncAPI subjects, headers и payload schemas backend, notification-service и email-service.
 
@@ -38,28 +37,3 @@ The system MUST provide an orchestrator service for processing notification even
 - **WHEN** contract tests сравнивают `events.site.callback.requested` и `commands.notification.email.send`
 - **THEN** producer/consumer schemas MUST оставаться совместимыми без новых subjects
 
-### Requirement: EventHandlerRegistry
-The system MUST provide a registry for mapping event codes to handlers.
-
-#### Scenario: Get handler for known event
-- GIVEN a handler registered for "callback_request"
-- WHEN calling get_handler with "callback_request"
-- THEN the handler instance is returned
-
-#### Scenario: Get handler for unknown event
-- GIVEN no handler for "unknown_event"
-- WHEN calling get_handler with "unknown_event"
-- THEN HandlerNotFoundError is raised
-
-### Requirement: CallbackEventHandler
-The system MUST provide a handler for formatting callback_request notifications.
-
-#### Scenario: Format email notification
-- GIVEN callback_request payload and channel_code="email"
-- WHEN calling format_notification
-- THEN EmailNotificationData with subject and HTML body is returned
-
-#### Scenario: Unsupported channel
-- GIVEN callback_request payload and channel_code="sms"
-- WHEN calling format_notification
-- THEN UnsupportedChannelError is raised

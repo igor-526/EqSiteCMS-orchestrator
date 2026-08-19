@@ -1,0 +1,148 @@
+## Чеклист
+
+### Backend
+
+- [x] B-01 [Notification owner] В `services/notification-service` определить единственный wired callback processing path и зафиксировать удаление/синхронизацию дублирующего path без изменения AsyncAPI.
+- [x] B-02 [Notification owner] Добавить DTO internal settings read/write и response для `callback/email`.
+- [x] B-03 [Notification owner] Расширить `UserNotificationSettingRepository` owner/event/channel lookup и идемпотентными enable/disable операциями.
+- [x] B-04 [Notification owner] Добавить application service настроек с active event/channel validation.
+- [x] B-05 [Notification owner] Добавить private router `GET /internal/notification-settings/{user_id}` и `PUT /internal/notification-settings/{user_id}/{event}/{channel}` и не публиковать его port наружу.
+- [x] B-06 [Notification owner] Встроить repository settings filter в callback recipient selection: eligible IDs ∩ enabled IDs ∩ confirmed emails.
+- [x] B-07 [Notification owner] Реализовать fail-closed downstream behavior и correlation logging без PII/secrets.
+- [x] B-08 [Notification owner] Подтвердить contract tests, что `services/notification-service/docs/asyncapi.yaml` и NATS config не требуют изменения.
+- [x] B-09 [Backend gateway owner; после B-02..B-08] Добавить email-service client read-by-owner и `GET /api/emails/me` с response validation.
+- [x] B-10 [Backend gateway owner] Добавить notification-service settings client/schemas/settings/DI boundary.
+- [x] B-11 [Backend gateway owner] Добавить eligibility mapping `callback/email → ADMIN|SUPERUSER` в одном backend policy module.
+- [x] B-12 [Backend gateway owner] Добавить `GET /api/notification-settings` с actor-derived owner и scope-filtered catalog.
+- [x] B-13 [Backend gateway owner] Добавить `PATCH /api/notification-settings/{event_code}/{channel_code}` с Protected Write guard.
+- [x] B-14 [Backend gateway owner] Обновить route inventory/access tests полной матрицей и причинами protected GET/public confirmation exceptions.
+- [x] B-15 [Backend gateway owner] Проверить owner-only email create/update/delete без role override и неизменность public send-confirmation/confirm.
+- [x] B-16 [Backend owners] Не создавать новую migration, если discovery подтверждает совместимость существующей `user_notification_settings`; иначе вернуть Router блокер до schema change.
+- [x] B-17 [Backend owners] Запустить formatter/lint/typecheck/unit commands каждого затронутого Python service и сохранить результаты.
+- [x] B-18 [Backend live owner] Перед smoke найти DB по labels, затем fallback `eqsitecms-db`/postgres, выполнить `docker inspect` и получить актуальные DB env/host port без коммита credential.
+
+- [x] Unit: notification UI backend — U-01 anonymous `GET /api/emails/me` возвращает 401 без downstream.
+- [x] Unit: notification UI backend — U-02 owner email найден и валидируется как 200 EmailResponse.
+- [x] Unit: notification UI backend — U-03 owner email отсутствует и мапится в 404.
+- [x] Unit: notification UI backend — U-04 malformed email-service response мапится в 502.
+- [x] Unit: notification UI backend — U-05 email-service timeout мапится в 502.
+- [x] Unit: notification UI backend — U-06 anonymous settings GET возвращает 401 без downstream.
+- [x] Unit: notification UI backend — U-07 ADMIN видит callback/email и disabled default.
+- [x] Unit: notification UI backend — U-08 SUPERUSER видит callback/email.
+- [x] Unit: notification UI backend — U-09 DEVELOPER без ADMIN/SUPERUSER получает пустой catalog.
+- [x] Unit: notification UI backend — U-10 USER_MANAGER получает пустой catalog.
+- [x] Unit: notification UI backend — U-11 несколько eligible scopes не дублируют event.
+- [x] Unit: notification UI backend — U-12 inactive event исключается.
+- [x] Unit: notification UI backend — U-13 inactive channel исключается.
+- [x] Unit: notification UI backend — U-14 unknown upstream event schema даёт fail-closed 502.
+- [x] Unit: notification UI backend — U-15 notification-service timeout даёт 502.
+- [x] Unit: notification UI backend — U-16 anonymous PATCH setting возвращает 401.
+- [x] Unit: notification UI backend — U-17 ADMIN enable создаёт setting и возвращает true.
+- [x] Unit: notification UI backend — U-18 SUPERUSER disable удаляет setting и возвращает false.
+- [x] Unit: notification UI backend — U-19 повторный enable идемпотентен.
+- [x] Unit: notification UI backend — U-20 повторный disable идемпотентен.
+- [x] Unit: notification UI backend — U-21 missing scope PATCH даёт 403 без internal write.
+- [x] Unit: notification UI backend — U-22 unknown event PATCH даёт 404.
+- [x] Unit: notification UI backend — U-23 unknown channel PATCH даёт 404.
+- [x] Unit: notification UI backend — U-24 invalid enabled body даёт 400 без downstream.
+- [x] Unit: notification UI backend — U-25 public schemas не позволяют выбрать foreign user_id.
+- [x] Unit: notification UI backend — U-26 concurrent enable не создаёт duplicate tuple.
+- [x] Unit: notification UI backend — U-27 disable удаляет только owner/event/channel tuple.
+- [x] Unit: notification UI backend — U-28 orchestrator пересекает eligible и enabled user IDs.
+- [x] Unit: notification UI backend — U-29 orchestrator отбрасывает неподтверждённый email.
+- [x] Unit: notification UI backend — U-30 downstream failure не публикует email command.
+- [x] Unit: notification UI backend — U-31 пустое пересечение не публикует command.
+- [x] Unit: notification UI backend — U-32 canonical callback payload/headers и email command contract не изменены.
+
+- [x] Smoke: notification UI backend — SM-01 на реальной PostgreSQL anonymous GET email/me возвращает 401.
+- [x] Smoke: notification UI backend — SM-02 на реальной PostgreSQL owner без email получает 404.
+- [x] Smoke: notification UI backend — SM-03 на реальной PostgreSQL owner создаёт email с 201.
+- [x] Smoke: notification UI backend — SM-04 на реальной PostgreSQL owner читает тот же email через email/me.
+- [x] Smoke: notification UI backend — SM-05 на реальной PostgreSQL foreign create получает 403.
+- [x] Smoke: notification UI backend — SM-06 на реальной PostgreSQL owner меняет email и approved становится false.
+- [x] Smoke: notification UI backend — SM-07 на реальной PostgreSQL foreign change получает 403.
+- [x] Smoke: notification UI backend — SM-08 live anonymous send-confirmation следует public exception contract.
+- [x] Smoke: notification UI backend — SM-09 live invalid confirmation code возвращает документированный 4xx.
+- [x] Smoke: notification UI backend — SM-10 получить valid confirmation строку/токен из разрешённой тестовой PostgreSQL либо service log, сохранить только во временном изолированном виде, сразу выполнить confirm и проверить approved=true; в отчёте маскировать, после flow очистить.
+- [x] Smoke: notification UI backend — SM-11 live reused confirmation link возвращает 409.
+- [x] Smoke: notification UI backend — SM-12 live expired confirmation link возвращает 410.
+- [x] Smoke: notification UI backend — SM-13 на реальной PostgreSQL anonymous settings GET возвращает 401.
+- [x] Smoke: notification UI backend — SM-14 на реальной PostgreSQL ADMIN видит callback/email.
+- [x] Smoke: notification UI backend — SM-15 на реальной PostgreSQL SUPERUSER видит callback/email.
+- [x] Smoke: notification UI backend — SM-16 на реальной PostgreSQL DEVELOPER получает пустой catalog.
+- [x] Smoke: notification UI backend — SM-17 на реальной PostgreSQL USER_MANAGER получает пустой catalog.
+- [x] Smoke: notification UI backend — SM-18 на реальной PostgreSQL ADMIN включает callback/email.
+- [x] Smoke: notification UI backend — SM-19 повторный enable оставляет одну DB row.
+- [x] Smoke: notification UI backend — SM-20 на реальной PostgreSQL ADMIN выключает callback/email.
+- [x] Smoke: notification UI backend — SM-21 повторный disable оставляет zero rows.
+- [x] Smoke: notification UI backend — SM-22 ineligible PATCH даёт 403 и DB unchanged.
+- [x] Smoke: notification UI backend — SM-23 unknown event PATCH даёт 404.
+- [x] Smoke: notification UI backend — SM-24 unknown channel PATCH даёт 404.
+- [x] Smoke: notification UI backend — SM-25 malformed body PATCH даёт 400.
+- [x] Smoke: notification UI backend — SM-26 enabled+confirmed callback проходит до единственной команды и acceptance email-service по correlation/log evidence; inbox не проверяется.
+- [x] Smoke: notification UI backend — SM-27 disabled callback не создаёт email command/acceptance.
+- [x] Smoke: notification UI backend — SM-28 enabled+unconfirmed email не создаёт email command/acceptance.
+- [x] Smoke: notification UI backend — SM-29 после revoke eligible role email command/acceptance прекращается.
+- [x] Smoke: notification UI backend — SM-30 для двух enabled eligible recipients email-service принимает ровно по одной команде; inbox не проверяется.
+- [x] Smoke: notification UI backend — SM-31 callback replay проверяет действующий idempotency contract без неожиданного дубля.
+- [x] Smoke: notification UI backend — SM-32 owner delete email даёт 204, затем email/me даёт 404 без PII leak.
+- [x] B-19 [Backend live owner] Выполнить SM-01..SM-32 только через smoke skill на live API, не создавать `tests/smoke`/pytest smoke scripts.
+- [x] B-20 [Backend live owner] Перед live email flow пересоздать/restart email-service container с актуальным `.env` и проверить readiness.
+- [x] B-21 [Backend live owner] На `igor-526@yandex.ru`, `iigorrr526@gmail.com`, `devil.on.the.wheel526@gmail.com` выполнить callback→NATS→notification→email-service acceptance без inbox-проверки; сохранить correlation/log evidence. Для confirmation безопасно получить строку/токен из тестовой DB/log, сразу выполнить confirm-запрос, маскировать секрет в отчёте и очистить временное значение/изолировать тестовые данные.
+
+### Frontend
+
+- [x] F-01 [Frontend owner] Добавить DTO в `src/types` и email/settings functions только в `src/api`, направленные на main backend.
+- [x] F-02 [Frontend owner] Добавить feature services для email lifecycle и notification settings без React/API leakage.
+- [x] F-03 [Frontend owner] Добавить hooks загрузки email/settings, modal state, mutation pending/error и refetch/invalidation.
+- [x] F-04 [Frontend owner] Добавить route shell `src/app/(protected)/notifications/page.tsx`, содержащий только feature composition.
+- [x] F-05 [Frontend owner] Добавить «Уведомления» в sidebar для всех authenticated scopes, active key, title и подходящую icon из существующей системы.
+- [x] F-06 [Frontend owner] Реализовать tabs «История»/«Настройки» и history placeholder без API истории.
+- [x] F-07 [Frontend owner] Реализовать email card для missing/unconfirmed(red)/confirmed states.
+- [x] F-08 [Frontend owner] Реализовать create/change email modal с validation, warning, mutation и double-submit guard.
+- [x] F-09 [Frontend owner] Реализовать delete confirmation modal с conditional confirmed-email warning и error-state preservation.
+- [x] F-10 [Frontend owner] Реализовать resend confirmation action через main backend и понятный success/error feedback.
+- [x] F-11 [Frontend owner] Реализовать role-filtered callback checkbox/description; checked state обновлять только после server success.
+- [x] F-12 [Frontend owner] Покрыть sidebar/route: anonymous blocked, authenticated с каждым scope видит пункт и страницу.
+- [x] F-13 [Frontend owner] Покрыть email API/service/hook минимум success, missing/empty, validation, generic, 401 и 403 mock cases.
+- [x] F-14 [Frontend owner] Покрыть email card data/loading/missing/unconfirmed/confirmed/error states.
+- [x] F-15 [Frontend owner] Покрыть create/change modal: open/close, valid submit, client validation, backend error, success refresh, permission denial, double submit.
+- [x] F-16 [Frontend owner] Покрыть delete modal: open/close, conditional warning, backend error state, success refresh, 401/403.
+- [x] F-17 [Frontend owner] Покрыть settings hook/API success, empty, generic error, 401, 403 и запрет live backend calls.
+- [x] F-18 [Frontend owner] Покрыть checkbox data/loading/empty/error/interaction, scope present/missing, pending guard, success commit и failure non-commit.
+- [x] F-19 [Frontend owner] Добавить минимум один page-flow happy smoke/e2e либо зафиксировать browser manual flow, если Playwright для route не настроен.
+- [x] F-20 [Frontend owner] Выполнить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` из `services/frontend`.
+- [x] F-21 [Frontend owner] Выполнить `rg -n "fetch\\(|axios" services/frontend/src -g '*.{ts,tsx}'` и подтвердить raw calls только в разрешённом API boundary.
+- [x] F-22 [Frontend owner] Выполнить `rg -n "from ['\\\"]@/api" services/frontend/src/app services/frontend/src/features -g '*.{ts,tsx}'` и подтвердить page→feature→service→API boundary.
+- [x] F-23 [Frontend owner] Выполнить `rg -n "\\bpage\\b|pageSize|page_size" services/frontend/src/features services/frontend/src/api services/frontend/src/types -g '*.{ts,tsx}'`; pagination неприменима к feature и не должна быть случайно добавлена.
+- [x] F-24 [Frontend owner] Выполнить `rg -n "site-ad|site-\\*|Public Read|public read" services/frontend/src -g '*.{ts,tsx}'` и подтвердить no `site-*` mixing/private-service URLs.
+- [x] F-25 [Frontend owner] Выполнить `find services/frontend/src -maxdepth 2 -type d \( -name shared -o -name widgets -o -name entities \)` и не создавать legacy FSD directories.
+- [x] F-26 [Manual QA] Предусловия: поднять core stack, создать ADMIN/SUPERUSER/ineligible users и открыть `/notifications` authenticated; проверить sidebar/title/tabs.
+- [x] F-27 [Manual QA] Anonymous открыть `/notifications`; ожидать login redirect/block и отсутствие protected content flash.
+- [x] F-28 [Manual QA] Проверить missing email: пояснение/create доступны, change/delete скрыты.
+- [x] F-29 [Manual QA] Создать email; проверить warning, pending/double-click guard, неподтверждённый красный state и refresh.
+- [x] F-30 [Manual QA] Изменить email; проверить повторное подтверждение, client/backend validation errors и сохранение modal state.
+- [x] F-31 [Manual QA] Удалить unconfirmed и confirmed email; проверить разные тексты, cancel, error и success refresh.
+- [x] F-32 [Manual QA] Запросить confirmation; для success безопасно получить тестовую строку/токен и сразу выполнить anonymous confirm, не раскрывая токен; отдельно проверить invalid/expired/reused states.
+- [x] F-33 [Manual QA] ADMIN/SUPERUSER видит callback checkbox; DEVELOPER/USER_MANAGER видит empty state и не может выполнить mutation.
+- [x] F-34 [Manual QA] При checkbox success состояние меняется после response; при 400/401/403/500/timeout прежнее состояние сохраняется и ошибка видна.
+- [x] F-35 [Manual QA] Проверить desktop 1440×900, tablet 768×1024, mobile 375×812: нет overlap/обрезки текста, кнопок, tabs, checkbox и modals.
+- [x] F-36 [Manual QA] Проверить отсутствие regressions/profile/sidebar и любых запросов браузера к notification/email-service напрямую.
+- [x] F-37 [Manual QA] Сохранить passed/failed report; для failed responsive/error/permission cases приложить screenshots, для API failures — network status/body.
+
+### Quality Gate
+
+- [x] Q-01 [Единый Quality Gate после Backend+Frontend] Проверить совокупный diff на соответствие proposal/design/specs и отсутствие runtime edits вне назначенных ownership.
+- [x] Q-02 Проверить access matrix: anonymous/authenticated, ADMIN/SUPERUSER/ineligible, owner/foreign, 401/403/404 и публичные confirmation exceptions.
+- [x] Q-03 Проверить, что protected GET обоснованы, email create/update/delete owner-only без override, owner settings выводится из session.
+- [x] Q-04 Проверить минимум 30 качественных backend unit scenarios (фактически 32), их разнообразие и трассировку к матрице.
+- [x] Q-05 Проверить минимум 30 live smoke scenarios (фактически 32), реальную PostgreSQL из свежего docker inspect и отсутствие pytest smoke scripts.
+- [x] Q-06 Проверить callback E2E до email-service acceptance на трёх тестовых адресах по коррелированному NATS/service evidence без проверки inbox и не по одному HTTP 202; проверить немедленный confirm по безопасно полученному токену, его маскирование и очистку.
+- [x] Q-07 Проверить AsyncAPI/config compatibility backend/notification/email и отсутствие незадокументированных subject/payload изменений.
+- [x] Q-08 Проверить notification fail-closed semantics, role revoke, enabled setting, confirmed email и отсутствие duplicate delivery.
+- [x] Q-09 Из `services/frontend` выполнить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+- [x] Q-10 Оценить frontend tests против behavior diff: MSW/mocks, no live backend calls, success/empty/validation/generic/401/403, permissions и double-submit.
+- [x] Q-11 Проверить no `site-*` mixing, no private-service browser calls, отсутствие legacy FSD dirs и соблюдение layer chain.
+- [x] Q-12 Проверить Manual QA report, responsive viewports, modal/error state preservation и server-confirmed checkbox.
+- [x] Q-13 Записать общий evidence/findings в `docs/reports`; findings вернуть соответствующим владельцам и повторить единый review после fixes.
+- [x] Q-14 После pass передать Router результат для `openspec sync`, повторного strict validate и archive; не архивировать до этих шагов.
