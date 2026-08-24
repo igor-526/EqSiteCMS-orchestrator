@@ -1,0 +1,614 @@
+{
+    "platform": "python",
+    "event_id": "23379e52c7554e71849b845a6618f9ca",
+    "timestamp": 1787585904.39826,
+    "datetime": "2026-08-24T15:38:24.398Z",
+    "breadcrumbs": {
+      "values": [
+        {
+          "data": {
+            "color_message": "Started server process [\u001B[36m%d\u001B[0m]"
+          },
+          "type": "log",
+          "message": "Started server process [11]",
+          "category": "uvicorn.error",
+          "timestamp": "2026-08-20T14:43:02.693052Z"
+        },
+        {
+          "data": {
+  
+          },
+          "type": "log",
+          "message": "Waiting for application startup.",
+          "category": "uvicorn.error",
+          "timestamp": "2026-08-20T14:43:02.694405Z"
+        },
+        {
+          "data": {
+  
+          },
+          "type": "log",
+          "message": "Application startup complete.",
+          "category": "uvicorn.error",
+          "timestamp": "2026-08-20T14:43:02.709256Z"
+        },
+        {
+          "data": {
+            "color_message": "Uvicorn running on \u001B[1m%s://%s:%d\u001B[0m (Press CTRL+C to quit)"
+          },
+          "type": "log",
+          "message": "Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)",
+          "category": "uvicorn.error",
+          "timestamp": "2026-08-20T14:43:02.710636Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-20 15:19:03,053"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-20T15:19:03.053036Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-20 15:31:54,106"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-20T15:31:54.106645Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-20 17:32:35,545"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-20T17:32:35.545640Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-20 19:07:36,864"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-20T19:07:36.864352Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-21 04:29:25,141"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-21T04:29:25.141630Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-21 14:55:43,434"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-21T14:55:43.434960Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-21 17:14:40,003"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-21T17:14:40.003826Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-21 22:20:02,104"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-21T22:20:02.104113Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 00:40:48,693"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T00:40:48.693384Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 07:30:16,696"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T07:30:16.696898Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 10:13:23,433"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T10:13:23.433244Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 11:17:04,755"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T11:17:04.755751Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 19:04:52,404"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T19:04:52.404519Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 20:48:23,876"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T20:48:23.876737Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-22 21:00:54,941"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-22T21:00:54.941616Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 05:06:32,786"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T05:06:32.786865Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 09:18:34,902"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T09:18:34.902612Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 15:29:47,303"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T15:29:47.303646Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 16:08:33,491"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T16:08:33.491810Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 16:54:54,720"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T16:54:54.720667Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 17:13:35,795"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T17:13:35.795614Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 20:03:52,477"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T20:03:52.477276Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 21:42:23,966"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T21:42:23.966646Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 22:04:15,105"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T22:04:15.105586Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-23 22:19:46,160"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-23T22:19:46.160302Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 01:05:22,797"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T01:05:22.797066Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 01:25:28,878"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T01:25:28.878815Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 02:12:55,087"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T02:12:55.087445Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 09:35:32,779"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T09:35:32.779332Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 11:46:24,373"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T11:46:24.373879Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 11:49:25,399"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T11:49:25.399919Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 14:12:51,957"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T14:12:51.957900Z"
+        },
+        {
+          "data": {
+            "asctime": "2026-08-24 14:40:33,109"
+          },
+          "type": "log",
+          "level": "error",
+          "message": "Failed to fetch NATS messages",
+          "category": "clients.nats.consumers.notification_commands_send_email",
+          "timestamp": "2026-08-24T14:40:33.109125Z"
+        }
+      ]
+    },
+    "project": 3,
+    "level": "error",
+    "exception": {
+      "values": [
+        {
+          "type": "TimeoutError",
+          "value": "",
+          "mechanism": {
+            "type": "logging",
+            "handled": true
+          },
+          "stacktrace": {
+            "frames": [
+              {
+                "vars": {
+                  "self": "\u003Cclients.nats.consumers.notification_commands_send_email.NotificationCommandsSendEmailConsumer object at 0x70409142e120\u003E",
+                  "messages": []
+                },
+                "in_app": true,
+                "lineno": 72,
+                "module": "clients.nats.consumers.notification_commands_send_email",
+                "abs_path": "/app/src/clients/nats/consumers/notification_commands_send_email.py",
+                "filename": "clients/nats/consumers/notification_commands_send_email.py",
+                "function": "_consume",
+                "pre_context": [
+                  "            logger.error(\"Consumer started without subscription\")",
+                  "            return",
+                  "",
+                  "        while True:",
+                  "            try:"
+                ],
+                "context_line": "                messages = await self._subscription.fetch(",
+                "post_context": [
+                  "                    batch=self._settings.nats_consumer_fetch_batch_size,",
+                  "                    timeout=self._settings.nats_consumer_fetch_timeout_seconds,",
+                  "                )",
+                  "            except TimeoutError:",
+                  "                continue"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cnats.js.client.JetStreamContext.PullSubscription object at 0x70409142f770\u003E",
+                  "batch": "10",
+                  "expires": "4999900000",
+                  "timeout": "5.0",
+                  "heartbeat": "None"
+                },
+                "in_app": false,
+                "lineno": 1100,
+                "module": "nats.js.client",
+                "abs_path": "/app/.venv/lib/python3.14/site-packages/nats/js/client.py",
+                "filename": "nats/js/client.py",
+                "function": "fetch",
+                "pre_context": [
+                  "",
+                  "            expires = int(timeout * 1_000_000_000) - 100_000 if timeout else None",
+                  "            if batch == 1:",
+                  "                msg = await self._fetch_one(expires, timeout, heartbeat)",
+                  "                return [msg]"
+                ],
+                "context_line": "            msgs = await self._fetch_n(batch, expires, timeout, heartbeat)",
+                "post_context": [
+                  "            return msgs",
+                  "",
+                  "        async def _fetch_one(",
+                  "            self,",
+                  "            expires: Optional[int],"
+                ]
+              },
+              {
+                "vars": {
+                  "msgs": [],
+                  "self": "\u003Cnats.js.client.JetStreamContext.PullSubscription object at 0x70409142f770\u003E",
+                  "batch": "10",
+                  "queue": "\u003CQueue at 0x7040914550f0 maxsize=524288 tasks=13903\u003E",
+                  "needed": "10",
+                  "expires": "4999900000",
+                  "timeout": "5.0",
+                  "heartbeat": "None",
+                  "start_time": "625215.834219591",
+                  "got_any_response": "False"
+                },
+                "in_app": false,
+                "lineno": 1289,
+                "module": "nats.js.client",
+                "abs_path": "/app/.venv/lib/python3.14/site-packages/nats/js/client.py",
+                "filename": "nats/js/client.py",
+                "function": "_fetch_n",
+                "pre_context": [
+                  "            # after the client has timed out, capturing the next published",
+                  "            # message and causing the subsequent fetch() to stall for the full",
+                  "            # timeout window.",
+                  "            deadline = JetStreamContext._time_until(timeout, start_time)",
+                  "            if deadline is not None and deadline \u003C= 0:"
+                ],
+                "context_line": "                raise asyncio.TimeoutError",
+                "post_context": [
+                  "",
+                  "            next_req = {}",
+                  "            next_req[\"batch\"] = needed",
+                  "            if deadline is not None:",
+                  "                remaining_expires = int(deadline * 1_000_000_000) - 100_000"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "modules": {
+      "h11": "0.16.0",
+      "six": "1.17.0",
+      "amqp": "5.3.1",
+      "idna": "3.18",
+      "mako": "1.4.1",
+      "vine": "5.1.0",
+      "yarl": "1.24.5",
+      "anyio": "4.14.2",
+      "attrs": "26.1.0",
+      "click": "8.4.2",
+      "kombu": "5.6.2",
+      "redis": "6.4.0",
+      "celery": "5.6.3",
+      "pyyaml": "6.0.3",
+      "tzdata": "2026.3",
+      "uvloop": "0.22.1",
+      "aiohttp": "3.14.3",
+      "alembic": "1.19.0",
+      "asyncpg": "0.31.0",
+      "certifi": "2026.7.22",
+      "fastapi": "0.141.1",
+      "nats-py": "2.15.0",
+      "tzlocal": "5.4.4",
+      "urllib3": "2.7.0",
+      "uvicorn": "0.52.1",
+      "wcwidth": "0.8.2",
+      "billiard": "4.2.4",
+      "greenlet": "3.5.4",
+      "pydantic": "2.13.4",
+      "aiosignal": "1.4.0",
+      "dnspython": "2.8.0",
+      "httptools": "0.8.0",
+      "multidict": "6.7.1",
+      "packaging": "26.3",
+      "propcache": "0.5.2",
+      "starlette": "1.4.1",
+      "aiosmtplib": "5.1.2",
+      "click-repl": "0.3.0",
+      "frozenlist": "1.8.0",
+      "markupsafe": "3.0.3",
+      "sentry-sdk": "2.66.1",
+      "sqlalchemy": "2.0.51",
+      "watchfiles": "1.2.0",
+      "websockets": "17.0.1",
+      "annotated-doc": "0.0.5",
+      "click-plugins": "1.1.1.2",
+      "pydantic_core": "2.46.4",
+      "python-dotenv": "1.2.2",
+      "prompt_toolkit": "3.0.53",
+      "annotated-types": "0.8.0",
+      "email-validator": "2.3.0",
+      "python-dateutil": "2.9.0.post0",
+      "aiohappyeyeballs": "2.7.1",
+      "click-didyoumean": "0.3.1",
+      "prometheus_client": "0.26.0",
+      "pydantic-settings": "2.14.2",
+      "typing-inspection": "0.4.2",
+      "typing_extensions": "4.16.0",
+      "dependency-injector": "4.49.1",
+      "prometheus-fastapi-instrumentator": "8.1.0"
+    },
+    "contexts": {
+      "trace": {
+        "type": "trace",
+        "span_id": "b3faaf848556ed6b",
+        "trace_id": "67866f210ddd4022ad1e2e0c52e87f76"
+      },
+      "runtime": {
+        "name": "CPython",
+        "type": "runtime",
+        "version": "3.14.6"
+      }
+    },
+    "sdk": {
+      "name": "sentry.python.fastapi",
+      "version": "2.66.1",
+      "packages": [
+        {
+          "name": "pypi:sentry-sdk",
+          "version": "2.66.1"
+        }
+      ],
+      "integrations": [
+        "aiohttp",
+        "argv",
+        "asyncpg",
+        "atexit",
+        "celery",
+        "dedupe",
+        "excepthook",
+        "fastapi",
+        "logging",
+        "modules",
+        "redis",
+        "sqlalchemy",
+        "starlette",
+        "stdlib",
+        "threading"
+      ]
+    },
+    "type": "error",
+    "environment": "production",
+    "extra": {
+      "asctime": "2026-08-24 15:38:24,395",
+      "sys.argv": [
+        "/app/.venv/bin/uvicorn",
+        "main:app",
+        "--app-dir",
+        "src",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ]
+    },
+    "user": {
+      "ip_address": "193.176.79.0"
+    },
+    "hashes": [
+      "67e4cf8d04a293eaaf8c462054220be3"
+    ],
+    "title": "TimeoutError",
+    "transaction": "clients.nats.consumers.notification_commands_send_email in _consume",
+    "tags": {
+      "environment": "production",
+      "server_name": "eqcms-email-service-deployment-5f858674c6-8lsgb"
+    }
+  }

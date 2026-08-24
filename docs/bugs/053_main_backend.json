@@ -1,0 +1,3063 @@
+{
+    "platform": "python",
+    "event_id": "5ce225fe291847d4a20161d10865893e",
+    "timestamp": 1787575201.38736,
+    "datetime": "2026-08-24T12:40:01.387Z",
+    "breadcrumbs": {
+      "values": [
+        {
+          "data": {
+            "db.name": "main_backend_db",
+            "db.user": "main_backend_user",
+            "db.system": "postgresql",
+            "thread.id": "137596068128640",
+            "server.port": 5435,
+            "thread.name": "MainThread",
+            "db.driver.name": "asyncpg",
+            "server.address": "10.16.0.6"
+          },
+          "message": "connect",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.226622Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT t.oid, t.typelem AS elemtype, t.typtype AS kind FROM pg_catalog.pg_type AS t WHERE t.oid = $1",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.256286Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT t.oid, t.typelem AS elemtype, t.typtype AS kind FROM pg_catalog.pg_type AS t WHERE t.oid = $1",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.259870Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT users.id, users.created_at, users.updated_at, users.equestrian_id, users.username, users.password, users.first_name, users.last_name, users.middle_name, users.is_deleted, users.deleted_at, users.is_blocked \nFROM users \nWHERE users.username = $1::VARCHAR",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.262235Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "BEGIN;",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.262401Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT users.id, users.created_at, users.updated_at, users.equestrian_id, users.username, users.password, users.first_name, users.last_name, users.middle_name, users.is_deleted, users.deleted_at, users.is_blocked FROM users WHERE users.username = $1::VARCHAR",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.263216Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT user_scopes.id, user_scopes.scope_name, user_scopes.scope_description \nFROM user_scopes JOIN user_scopes_relations ON user_scopes.id = user_scopes_relations.scope_id \nWHERE user_scopes_relations.user_id = $1::UUID",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.267033Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT user_scopes.id, user_scopes.scope_name, user_scopes.scope_description FROM user_scopes JOIN user_scopes_relations ON user_scopes.id = user_scopes_relations.scope_id WHERE user_scopes_relations.user_id = $1::UUID",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.267140Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT breeds.id, breeds.created_at, breeds.updated_at, breeds.equestrian_id, breeds.name, breeds.short_name, breeds.slug, breeds.description, breeds.page_data, breeds.kind, breeds.breed_group_id, breed_groups.id AS group_id, breed_groups.name AS group_name, breed_groups.slug AS group_slug \nFROM breeds LEFT OUTER JOIN breed_groups ON breeds.breed_group_id = breed_groups.id AND breed_groups.equestrian_id = $1::UUID \nWHERE breeds.id = $2::UUID AND breeds.equestrian_id = $3::UUID",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.271876Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "SELECT breeds.id, breeds.created_at, breeds.updated_at, breeds.equestrian_id, breeds.name, breeds.short_name, breeds.slug, breeds.description, breeds.page_data, breeds.kind, breeds.breed_group_id, breed_groups.id AS group_id, breed_groups.name AS group_name, breed_groups.slug AS group_slug FROM breeds LEFT OUTER JOIN breed_groups ON breeds.breed_group_id = breed_groups.id AND breed_groups.equestrian_id = $1::UUID WHERE breeds.id = $2::UUID AND breeds.equestrian_id = $3::UUID",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.272062Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.276228Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.276345Z"
+        },
+        {
+          "data": {
+  
+          },
+          "message": "ROLLBACK;",
+          "category": "query",
+          "timestamp": "2026-08-24T12:40:01.286925Z"
+        },
+        {
+          "data": {
+  
+          },
+          "type": "log",
+          "message": "10.244.0.37:39102 - \"POST /api/horses HTTP/1.1\" 500",
+          "category": "uvicorn.access",
+          "timestamp": "2026-08-24T12:40:01.302675Z"
+        }
+      ]
+    },
+    "project": 1,
+    "level": "error",
+    "exception": {
+      "values": [
+        {
+          "type": "UniqueViolationError",
+          "value": "duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"",
+          "module": "asyncpg.exceptions",
+          "mechanism": {
+            "type": "starlette",
+            "handled": false
+          },
+          "stacktrace": {
+            "frames": [
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "operation": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "attributes": [],
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ],
+                  "prepared_stmt": "\u003Casyncpg.prepared_stmt.PreparedStatement object at 0x7d2489b2ab10\u003E",
+                  "adapt_connection": "\u003CAdaptedConnection \u003Casyncpg.connection.Connection object at 0x7d2489d2f890\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 545,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_prepare_and_execute",
+                "pre_context": [
+                  "",
+                  "                if self.server_side:",
+                  "                    self._cursor = await prepared_stmt.cursor(*parameters)",
+                  "                    self.rowcount = -1",
+                  "                else:"
+                ],
+                "context_line": "                    self._rows = deque(await prepared_stmt.fetch(*parameters))",
+                "post_context": [
+                  "                    status = prepared_stmt.get_statusmsg()",
+                  "",
+                  "                    reg = re.match(",
+                  "                        r\"(?:SELECT|UPDATE|DELETE|INSERT \\d+) (\\d+)\",",
+                  "                        status or \"\","
+                ]
+              },
+              {
+                "vars": {
+                  "args": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ],
+                  "self": "\u003Casyncpg.prepared_stmt.PreparedStatement object at 0x7d2489b2ab10\u003E",
+                  "timeout": "None"
+                },
+                "in_app": false,
+                "lineno": 176,
+                "module": "asyncpg.prepared_stmt",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py",
+                "filename": "asyncpg/prepared_stmt.py",
+                "function": "fetch",
+                "pre_context": [
+                  "        :param args: Query arguments",
+                  "        :param float timeout: Optional timeout value in seconds.",
+                  "",
+                  "        :return: A list of :class:`Record` instances.",
+                  "        \"\"\""
+                ],
+                "context_line": "        data = await self.__bind_execute(args, 0, timeout)",
+                "post_context": [
+                  "        return data",
+                  "",
+                  "    @connresource.guarded",
+                  "    async def fetchval(self, *args, column=0, timeout=None):",
+                  "        \"\"\"Execute the statement and return a value in the first row."
+                ]
+              },
+              {
+                "vars": {
+                  "args": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ],
+                  "self": "\u003Casyncpg.prepared_stmt.PreparedStatement object at 0x7d2489b2ab10\u003E",
+                  "limit": "0",
+                  "timeout": "None"
+                },
+                "in_app": false,
+                "lineno": 267,
+                "module": "asyncpg.prepared_stmt",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py",
+                "filename": "asyncpg/prepared_stmt.py",
+                "function": "__bind_execute",
+                "pre_context": [
+                  "            # invalidate themselves (unfortunately, clearing caches again).",
+                  "            self._state.mark_closed()",
+                  "            raise",
+                  "",
+                  "    async def __bind_execute(self, args, limit, timeout):"
+                ],
+                "context_line": "        data, status, _ = await self.__do_execute(",
+                "post_context": [
+                  "            lambda protocol: protocol.bind_execute(",
+                  "                self._state, args, '', limit, True, timeout))",
+                  "        self._last_status = status",
+                  "        return data",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Casyncpg.prepared_stmt.PreparedStatement object at 0x7d2489b2ab10\u003E",
+                  "executor": "\u003Cfunction PreparedStatement.__bind_execute.\u003Clocals\u003E.\u003Clambda\u003E at 0x7d248a163420\u003E",
+                  "protocol": "\u003Casyncpg.protocol.protocol.Protocol object at 0x7d248cf5ec50\u003E"
+                },
+                "in_app": false,
+                "lineno": 256,
+                "module": "asyncpg.prepared_stmt",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py",
+                "filename": "asyncpg/prepared_stmt.py",
+                "function": "__do_execute",
+                "pre_context": [
+                  "            ))",
+                  "",
+                  "    async def __do_execute(self, executor):",
+                  "        protocol = self._connection._protocol",
+                  "        try:"
+                ],
+                "context_line": "            return await executor(protocol)",
+                "post_context": [
+                  "        except exceptions.OutdatedSchemaCacheError:",
+                  "            await self._connection.reload_schema_state()",
+                  "            # We can not find all manually created prepared statements, so just",
+                  "            # drop known cached ones in the `self._connection`.",
+                  "            # Other manually created prepared statements will fail and"
+                ]
+              },
+              {
+                "vars": {
+  
+                },
+                "in_app": true,
+                "lineno": 206,
+                "module": "asyncpg.protocol.protocol",
+                "abs_path": "/eqsitecms/asyncpg/protocol/protocol.pyx",
+                "filename": "asyncpg/protocol/protocol.pyx",
+                "function": "bind_execute"
+              }
+            ]
+          }
+        },
+        {
+          "type": "AsyncAdapt_asyncpg_dbapi.IntegrityError",
+          "value": "\u003Cclass 'asyncpg.exceptions.UniqueViolationError'\u003E: duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"\nDETAIL:  Key (equestrian_id, slug)=(5f6496aa-4fe9-42da-a763-29f9bab22d73, normann) already exists.",
+          "module": "sqlalchemy.dialects.postgresql.asyncpg",
+          "mechanism": {
+            "type": "starlette",
+            "handled": false
+          },
+          "stacktrace": {
+            "frames": [
+              {
+                "vars": {
+                  "fn": "\u003Cfunction ConnectionEvents._listen.\u003Clocals\u003E.wrap_before_cursor_execute at 0x7d248d757560\u003E",
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "cursor": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "context": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg object at 0x7d248c4f3130\u003E",
+                  "dialect": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "statement": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGCompiler_asyncpg object at 0x7d248c5007d0\u003E",
+                  "parameters": [
+                    [
+                      "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                      "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                      "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                      "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                      "'Норманн'",
+                      "'Норманн А68 (GER)'",
+                      "'normann'",
+                      "None",
+                      "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                      "None"
+                    ]
+                  ],
+                  "evt_handled": "False",
+                  "str_statement": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "effective_parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 1967,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "_exec_single_context",
+                "pre_context": [
+                  "                            context,",
+                  "                        ):",
+                  "                            evt_handled = True",
+                  "                            break",
+                  "                if not evt_handled:"
+                ],
+                "context_line": "                    self.dialect.do_execute(",
+                "post_context": [
+                  "                        cursor, str_statement, effective_parameters, context",
+                  "                    )",
+                  "",
+                  "            if self._has_events or self.engine._has_events:",
+                  "                self.dispatch.after_cursor_execute("
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "cursor": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "context": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg object at 0x7d248c4f3130\u003E",
+                  "statement": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 951,
+                "module": "sqlalchemy.engine.default",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py",
+                "filename": "sqlalchemy/engine/default.py",
+                "function": "do_execute",
+                "pre_context": [
+                  "",
+                  "    def do_executemany(self, cursor, statement, parameters, context=None):",
+                  "        cursor.executemany(statement, parameters)",
+                  "",
+                  "    def do_execute(self, cursor, statement, parameters, context=None):"
+                ],
+                "context_line": "        cursor.execute(statement, parameters)",
+                "post_context": [
+                  "",
+                  "    def do_execute_no_params(self, cursor, statement, context=None):",
+                  "        cursor.execute(statement)",
+                  "",
+                  "    def is_disconnect("
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "operation": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 580,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "execute",
+                "pre_context": [
+                  "                )",
+                  "            except Exception as error:",
+                  "                self._handle_exception(error)",
+                  "",
+                  "    def execute(self, operation, parameters=None):"
+                ],
+                "context_line": "        self._adapt_connection.await_(",
+                "post_context": [
+                  "            self._prepare_and_execute(operation, parameters)",
+                  "        )",
+                  "",
+                  "    def executemany(self, operation, seq_of_parameters):",
+                  "        return self._adapt_connection.await_("
+                ]
+              },
+              {
+                "vars": {
+                  "current": "\u003C_AsyncIoGreenlet object at 0x7d248d0273c0 (otid=0x7d2491b425e0) dead\u003E",
+                  "awaitable": "\u003Ccoroutine object AsyncAdapt_asyncpg_cursor._prepare_and_execute at 0x7d248dbe7a00\u003E"
+                },
+                "in_app": false,
+                "lineno": 132,
+                "module": "sqlalchemy.util._concurrency_py3k",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py",
+                "filename": "sqlalchemy/util/_concurrency_py3k.py",
+                "function": "await_only",
+                "pre_context": [
+                  "",
+                  "    # returns the control to the driver greenlet passing it",
+                  "    # a coroutine to run. Once the awaitable is done, the driver greenlet",
+                  "    # switches back to this greenlet with the result of awaitable that is",
+                  "    # then returned to the caller (or raised as error)"
+                ],
+                "context_line": "    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501",
+                "post_context": [
+                  "",
+                  "",
+                  "def await_fallback(awaitable: Awaitable[_T]) -\u003E _T:",
+                  "    \"\"\"Awaits an async function in a sync method.",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "fn": "\u003Cbound method Session.execute of \u003Csqlalchemy.orm.session.Session object at 0x7d248c4e9e50\u003E\u003E",
+                  "args": [
+                    "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E"
+                  ],
+                  "kwargs": {
+                    "params": "None",
+                    "bind_arguments": "None",
+                    "execution_options": {
+                      "prebuffer_rows": "True"
+                    }
+                  },
+                  "result": "\u003Ccoroutine object AsyncAdapt_asyncpg_cursor._prepare_and_execute at 0x7d248dbe7a00\u003E",
+                  "context": "\u003C_AsyncIoGreenlet object at 0x7d248d0273c0 (otid=0x7d2491b425e0) dead\u003E",
+                  "_require_await": "False",
+                  "switch_occurred": "True"
+                },
+                "in_app": false,
+                "lineno": 196,
+                "module": "sqlalchemy.util._concurrency_py3k",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py",
+                "filename": "sqlalchemy/util/_concurrency_py3k.py",
+                "function": "greenlet_spawn",
+                "pre_context": [
+                  "    while not context.dead:",
+                  "        switch_occurred = True",
+                  "        try:",
+                  "            # wait for a coroutine from await_only and then return its",
+                  "            # result back to it."
+                ],
+                "context_line": "            value = await result",
+                "post_context": [
+                  "        except BaseException:",
+                  "            # this allows an exception to be raised within",
+                  "            # the moderated greenlet so that it can continue",
+                  "            # its expected flow.",
+                  "            result = context.throw(*sys.exc_info())"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "operation": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "attributes": [],
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ],
+                  "prepared_stmt": "\u003Casyncpg.prepared_stmt.PreparedStatement object at 0x7d2489b2ab10\u003E",
+                  "adapt_connection": "\u003CAdaptedConnection \u003Casyncpg.connection.Connection object at 0x7d2489d2f890\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 558,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_prepare_and_execute",
+                "pre_context": [
+                  "                        self.rowcount = int(reg.group(1))",
+                  "                    else:",
+                  "                        self.rowcount = -1",
+                  "",
+                  "            except Exception as error:"
+                ],
+                "context_line": "                self._handle_exception(error)",
+                "post_context": [
+                  "",
+                  "    async def _executemany(self, operation, seq_of_parameters):",
+                  "        adapt_connection = self._adapt_connection",
+                  "",
+                  "        self.description = None"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "error": "UniqueViolationError('duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"')"
+                },
+                "in_app": false,
+                "lineno": 508,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_handle_exception",
+                "pre_context": [
+                  "",
+                  "    def close(self):",
+                  "        self._rows.clear()",
+                  "",
+                  "    def _handle_exception(self, error):"
+                ],
+                "context_line": "        self._adapt_connection._handle_exception(error)",
+                "post_context": [
+                  "",
+                  "    async def _prepare_and_execute(self, operation, parameters):",
+                  "        adapt_connection = self._adapt_connection",
+                  "",
+                  "        async with adapt_connection._execute_mutex:"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003CAdaptedConnection \u003Casyncpg.connection.Connection object at 0x7d2489d2f890\u003E\u003E",
+                  "error": "UniqueViolationError('duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"')",
+                  "super_": "\u003Cclass 'asyncpg.exceptions.IntegrityConstraintViolationError'\u003E",
+                  "translated_error": "IntegrityError('\u003Cclass \\'asyncpg.exceptions.UniqueViolationError\\'\u003E: duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"\\nDETAIL:  Key (equestrian_id, slug)=(5f6496aa-4fe9-42da-a763-29f9bab22d73, normann) already exists.')",
+                  "exception_mapping": {
+                    "\u003Cclass 'asyncpg.exceptions.InternalServerError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.InternalServerError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions.SyntaxOrAccessError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions._base.PostgresError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.Error'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions._base.InterfaceError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.InterfaceError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions.InvalidCachedStatementError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.InvalidCachedStatementError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions.IntegrityConstraintViolationError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError'\u003E"
+                  }
+                },
+                "in_app": false,
+                "lineno": 792,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_handle_exception",
+                "pre_context": [
+                  "                        \"%s: %s\" % (type(error), error)",
+                  "                    )",
+                  "                    translated_error.pgcode = translated_error.sqlstate = (",
+                  "                        getattr(error, \"sqlstate\", None)",
+                  "                    )"
+                ],
+                "context_line": "                    raise translated_error from error",
+                "post_context": [
+                  "            else:",
+                  "                raise error",
+                  "        else:",
+                  "            raise error",
+                  ""
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "IntegrityError",
+          "value": "(sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) \u003Cclass 'asyncpg.exceptions.UniqueViolationError'\u003E: duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"\nDETAIL:  Key (equestrian_id, slug)=(5f6496aa-4fe9-42da-a763-29f9bab22d73, normann) already exists.\n[SQL: INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)]\n[parameters: (UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf'), datetime.datetime(2026, 8, 24, 12, 40, 1, 275511), datetime.datetime(2026, 8, 24, 12, 40, 1, 275514), UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), 'Норманн', 'Норманн А68 (GER)', 'normann', None, UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), None, None, \u003CHorseSexEnum.MALE: 'male'\u003E, None, None, \u003CHorseDateModeEnum.HIDE: 'hide'\u003E, \u003CHorseDateModeEnum.HIDE: 'hide'\u003E, None, False)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)",
+          "module": "sqlalchemy.exc",
+          "mechanism": {
+            "type": "starlette",
+            "handled": false
+          },
+          "stacktrace": {
+            "frames": [
+              {
+                "vars": {
+                  "self": "\u003Cfastapi.applications.FastAPI object at 0x7d248cb20410\u003E",
+                  "send": "\u003Cfunction SentryAsgiMiddleware._run_app.\u003Clocals\u003E._sentry_wrapped_send at 0x7d248a2a0040\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 113,
+                "module": "starlette.applications",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/applications.py",
+                "filename": "starlette/applications.py",
+                "function": "__call__",
+                "pre_context": [
+                  "",
+                  "    async def __call__(self, scope: Scope, receive: Receive, send: Send) -\u003E None:",
+                  "        scope[\"app\"] = self",
+                  "        if self.middleware_stack is None:",
+                  "            self.middleware_stack = self.build_middleware_stack()"
+                ],
+                "context_line": "        await self.middleware_stack(scope, receive, send)",
+                "post_context": [
+                  "",
+                  "    def on_event(self, event_type: str) -\u003E Callable:  # type: ignore[type-arg]",
+                  "        return self.router.on_event(event_type)  # pragma: no cover",
+                  "",
+                  "    def mount(self, path: str, app: ASGIApp, name: str | None = None) -\u003E None:"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cstarlette.middleware.errors.ServerErrorMiddleware object at 0x7d248c46cad0\u003E",
+                  "send": "\u003Cfunction SentryAsgiMiddleware._run_app.\u003Clocals\u003E._sentry_wrapped_send at 0x7d248a2a0040\u003E",
+                  "_send": "\u003Cfunction ServerErrorMiddleware.__call__.\u003Clocals\u003E._send at 0x7d248a2a0b80\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "response": "\u003Cstarlette.responses.PlainTextResponse object at 0x7d248a3eadd0\u003E",
+                  "response_started": "False"
+                },
+                "in_app": false,
+                "lineno": 186,
+                "module": "starlette.middleware.errors",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py",
+                "filename": "starlette/middleware/errors.py",
+                "function": "__call__",
+                "pre_context": [
+                  "                await response(scope, receive, send)",
+                  "",
+                  "            # We always continue to raise the exception.",
+                  "            # This allows servers to log the error, or allows test clients",
+                  "            # to optionally raise the error within the test case."
+                ],
+                "context_line": "            raise exc",
+                "post_context": [
+                  "",
+                  "    def format_line(self, index: int, line: str, frame_lineno: int, frame_index: int) -\u003E str:",
+                  "        values = {",
+                  "            # HTML escape - line could contain \u003C or \u003E",
+                  "            \"line\": html.escape(line).replace(\" \", \"&nbsp\"),"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cstarlette.middleware.errors.ServerErrorMiddleware object at 0x7d248c46cad0\u003E",
+                  "send": "\u003Cfunction SentryAsgiMiddleware._run_app.\u003Clocals\u003E._sentry_wrapped_send at 0x7d248a2a0040\u003E",
+                  "_send": "\u003Cfunction ServerErrorMiddleware.__call__.\u003Clocals\u003E._send at 0x7d248a2a0b80\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "response": "\u003Cstarlette.responses.PlainTextResponse object at 0x7d248a3eadd0\u003E",
+                  "response_started": "False"
+                },
+                "in_app": false,
+                "lineno": 164,
+                "module": "starlette.middleware.errors",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py",
+                "filename": "starlette/middleware/errors.py",
+                "function": "__call__",
+                "pre_context": [
+                  "            if message[\"type\"] == \"http.response.start\":",
+                  "                response_started = True",
+                  "            await send(message)",
+                  "",
+                  "        try:"
+                ],
+                "context_line": "            await self.app(scope, receive, _send)",
+                "post_context": [
+                  "        except Exception as exc:",
+                  "            request = Request(scope)",
+                  "            if self.debug:",
+                  "                # In debug mode, return traceback responses.",
+                  "                response = self.debug_response(request, exc)"
+                ]
+              },
+              {
+                "vars": {
+                  "path": "'/api/horses'",
+                  "self": "\u003Ccore.middleware.cors.SplitCORSMiddleware object at 0x7d248c46c980\u003E",
+                  "send": "\u003Cfunction ServerErrorMiddleware.__call__.\u003Clocals\u003E._send at 0x7d248a2a0b80\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "method": "'POST'",
+                  "origin": "'https://admin.eqcms.ru'",
+                  "headers": {
+                    "host": "'api.eqcms.ru'",
+                    "x-scheme": "'https'",
+                    "x-real-ip": "'90.156.171.210'",
+                    "x-request-id": "'e639cbfabe3a74d934a290beeb8b4b68'",
+                    "content-length": "'294'",
+                    "x-forwarded-for": "'90.156.171.210'",
+                    "x-forwarded-host": "'api.eqcms.ru'",
+                    "x-forwarded-port": "'443'",
+                    "x-forwarded-proto": "'https'",
+                    "x-forwarded-scheme": "'https'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "protected": "True"
+                },
+                "in_app": true,
+                "lineno": 72,
+                "module": "core.middleware.cors",
+                "abs_path": "/eqsitecms/src/core/middleware/cors.py",
+                "filename": "core/middleware/cors.py",
+                "function": "__call__",
+                "pre_context": [
+                  "            response = self._preflight_response(origin, headers, protected=protected)",
+                  "            await response(scope, receive, send)",
+                  "            return",
+                  "",
+                  "        protected = _is_protected_request(method, path) or origin in self.cms_origins"
+                ],
+                "context_line": "        await self.app(",
+                "post_context": [
+                  "            scope,",
+                  "            receive,",
+                  "            functools.partial(",
+                  "                self._send_with_cors,",
+                  "                send=send,"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cprometheus_fastapi_instrumentator.middleware.PrometheusInstrumentatorMiddleware object at 0x7d248c46c2f0\u003E",
+                  "send": "functools.partial(\u003Cbound method SplitCORSMiddleware._send_with_cors of \u003Ccore.middleware.cors.SplitCORSMiddleware object at 0x7d248c46c980\u003E\u003E, send=\u003Cfunction ServerErrorMiddleware.__call__.\u003Clocals\u003E._send at 0x7d248a2a0b80\u003E, origin='https://admin.eqcms.ru', protected=True)",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "status": "'5xx'",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "start_time": "614517.664993316",
+                  "is_excluded": "False",
+                  "is_templated": "True",
+                  "send_wrapper": "\u003Cfunction PrometheusInstrumentatorMiddleware.__call__.\u003Clocals\u003E.send_wrapper at 0x7d248c4e0180\u003E"
+                },
+                "in_app": false,
+                "lineno": 177,
+                "module": "prometheus_fastapi_instrumentator.middleware",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/prometheus_fastapi_instrumentator/middleware.py",
+                "filename": "prometheus_fastapi_instrumentator/middleware.py",
+                "function": "__call__",
+                "pre_context": [
+                  "                await send(message)",
+                  "",
+                  "        try:",
+                  "            await self.app(scope, receive, send_wrapper)",
+                  "        except Exception as exc:"
+                ],
+                "context_line": "            raise exc",
+                "post_context": [
+                  "        finally:",
+                  "            status = (",
+                  "                str(status_code.value)",
+                  "                if isinstance(status_code, HTTPStatus)",
+                  "                else str(status_code)"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cprometheus_fastapi_instrumentator.middleware.PrometheusInstrumentatorMiddleware object at 0x7d248c46c2f0\u003E",
+                  "send": "functools.partial(\u003Cbound method SplitCORSMiddleware._send_with_cors of \u003Ccore.middleware.cors.SplitCORSMiddleware object at 0x7d248c46c980\u003E\u003E, send=\u003Cfunction ServerErrorMiddleware.__call__.\u003Clocals\u003E._send at 0x7d248a2a0b80\u003E, origin='https://admin.eqcms.ru', protected=True)",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "status": "'5xx'",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "start_time": "614517.664993316",
+                  "is_excluded": "False",
+                  "is_templated": "True",
+                  "send_wrapper": "\u003Cfunction PrometheusInstrumentatorMiddleware.__call__.\u003Clocals\u003E.send_wrapper at 0x7d248c4e0180\u003E"
+                },
+                "in_app": false,
+                "lineno": 175,
+                "module": "prometheus_fastapi_instrumentator.middleware",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/prometheus_fastapi_instrumentator/middleware.py",
+                "filename": "prometheus_fastapi_instrumentator/middleware.py",
+                "function": "__call__",
+                "pre_context": [
+                  "                    status_code = message[\"status\"]",
+                  "                    response_start_time = default_timer()",
+                  "                await send(message)",
+                  "",
+                  "        try:"
+                ],
+                "context_line": "            await self.app(scope, receive, send_wrapper)",
+                "post_context": [
+                  "        except Exception as exc:",
+                  "            raise exc",
+                  "        finally:",
+                  "            status = (",
+                  "                str(status_code.value)"
+                ]
+              },
+              {
+                "vars": {
+                  "conn": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "self": "\u003Cstarlette.middleware.exceptions.ExceptionMiddleware object at 0x7d248c46c1a0\u003E",
+                  "send": "\u003Cfunction PrometheusInstrumentatorMiddleware.__call__.\u003Clocals\u003E.send_wrapper at 0x7d248c4e0180\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 63,
+                "module": "starlette.middleware.exceptions",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py",
+                "filename": "starlette/middleware/exceptions.py",
+                "function": "__call__",
+                "pre_context": [
+                  "        if scope[\"type\"] == \"http\":",
+                  "            conn = Request(scope, receive, send)",
+                  "        else:",
+                  "            conn = WebSocket(scope, receive, send)",
+                  ""
+                ],
+                "context_line": "        await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)",
+                "post_context": [
+                  "",
+                  "    async def http_exception(self, request: Request, exc: Exception) -\u003E Response:",
+                  "        assert isinstance(exc, HTTPException)",
+                  "        if exc.status_code in {204, 304}:",
+                  "            return Response(status_code=exc.status_code, headers=exc.headers)"
+                ]
+              },
+              {
+                "vars": {
+                  "app": "\u003Cfastapi.routing.APIRouter object at 0x7d248caf3a70\u003E",
+                  "conn": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "send": "\u003Cfunction PrometheusInstrumentatorMiddleware.__call__.\u003Clocals\u003E.send_wrapper at 0x7d248c4e0180\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "sender": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "handler": "None",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "status_handlers": {
+  
+                  },
+                  "response_started": "False",
+                  "exception_handlers": {
+                    "\u003Cclass 'core.exceptions.base.ClientError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.ConflictError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.NotFoundError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.HTTPException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.ForbiddenError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.tenant.TenantNotFound'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.InvalidCredentials'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.WebSocketException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.RequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.WebSocketRequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E"
+                  }
+                },
+                "in_app": false,
+                "lineno": 53,
+                "module": "starlette._exception_handler",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py",
+                "filename": "starlette/_exception_handler.py",
+                "function": "wrapped_app",
+                "pre_context": [
+                  "",
+                  "            if handler is None:",
+                  "                handler = _lookup_exception_handler(exception_handlers, exc)",
+                  "",
+                  "            if handler is None:"
+                ],
+                "context_line": "                raise exc",
+                "post_context": [
+                  "",
+                  "            if response_started:",
+                  "                raise RuntimeError(\"Caught handled exception, but response already started.\") from exc",
+                  "",
+                  "            if is_async_callable(handler):"
+                ]
+              },
+              {
+                "vars": {
+                  "app": "\u003Cfastapi.routing.APIRouter object at 0x7d248caf3a70\u003E",
+                  "conn": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "send": "\u003Cfunction PrometheusInstrumentatorMiddleware.__call__.\u003Clocals\u003E.send_wrapper at 0x7d248c4e0180\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "sender": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "handler": "None",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "status_handlers": {
+  
+                  },
+                  "response_started": "False",
+                  "exception_handlers": {
+                    "\u003Cclass 'core.exceptions.base.ClientError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.ConflictError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.NotFoundError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.HTTPException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.ForbiddenError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.tenant.TenantNotFound'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.InvalidCredentials'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.WebSocketException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.RequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.WebSocketRequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E"
+                  }
+                },
+                "in_app": false,
+                "lineno": 42,
+                "module": "starlette._exception_handler",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py",
+                "filename": "starlette/_exception_handler.py",
+                "function": "wrapped_app",
+                "pre_context": [
+                  "            if message[\"type\"] == \"http.response.start\":",
+                  "                response_started = True",
+                  "            await send(message)",
+                  "",
+                  "        try:"
+                ],
+                "context_line": "            await app(scope, receive, sender)",
+                "post_context": [
+                  "        except Exception as exc:",
+                  "            handler = None",
+                  "",
+                  "            if isinstance(exc, HTTPException):",
+                  "                handler = status_handlers.get(exc.status_code)"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cfastapi.routing.APIRouter object at 0x7d248caf3a70\u003E",
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 716,
+                "module": "starlette.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/routing.py",
+                "filename": "starlette/routing.py",
+                "function": "__call__",
+                "pre_context": [
+                  "",
+                  "    async def __call__(self, scope: Scope, receive: Receive, send: Send) -\u003E None:",
+                  "        \"\"\"",
+                  "        The main entry point to the Router class.",
+                  "        \"\"\""
+                ],
+                "context_line": "        await self.middleware_stack(scope, receive, send)",
+                "post_context": [
+                  "",
+                  "    async def app(self, scope: Scope, receive: Receive, send: Send) -\u003E None:",
+                  "        assert scope[\"type\"] in (\"http\", \"websocket\", \"lifespan\")",
+                  "",
+                  "        if \"router\" not in scope:"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Cfastapi.routing.APIRouter object at 0x7d248caf3a70\u003E",
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "match": "\u003CMatch.FULL: 2\u003E",
+                  "route": "APIRoute(path='/api/horses', name='create_new_horse', methods=['POST'])",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "partial": "APIRoute(path='/api/horses', name='get_horses', methods=['GET'])",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "child_scope": {
+                    "route": "APIRoute(path='/api/horses', name='create_new_horse', methods=['POST'])",
+                    "endpoint": "\u003Cfunction create_new_horse at 0x7d248f15f560\u003E",
+                    "path_params": {
+  
+                    }
+                  },
+                  "partial_scope": {
+                    "route": "APIRoute(path='/api/horses', name='get_horses', methods=['GET'])",
+                    "endpoint": "\u003Cfunction get_horses at 0x7d248f15ef20\u003E",
+                    "path_params": {
+  
+                    }
+                  }
+                },
+                "in_app": false,
+                "lineno": 736,
+                "module": "starlette.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/routing.py",
+                "filename": "starlette/routing.py",
+                "function": "app",
+                "pre_context": [
+                  "            # Determine if any route matches the incoming scope,",
+                  "            # and hand over to the matching route if found.",
+                  "            match, child_scope = route.matches(scope)",
+                  "            if match == Match.FULL:",
+                  "                scope.update(child_scope)"
+                ],
+                "context_line": "                await route.handle(scope, receive, send)",
+                "post_context": [
+                  "                return",
+                  "            elif match == Match.PARTIAL and partial is None:",
+                  "                partial = route",
+                  "                partial_scope = child_scope",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "self": "APIRoute(path='/api/horses', name='create_new_horse', methods=['POST'])",
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 290,
+                "module": "starlette.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/routing.py",
+                "filename": "starlette/routing.py",
+                "function": "handle",
+                "pre_context": [
+                  "                raise HTTPException(status_code=405, headers=headers)",
+                  "            else:",
+                  "                response = PlainTextResponse(\"Method Not Allowed\", status_code=405, headers=headers)",
+                  "            await response(scope, receive, send)",
+                  "        else:"
+                ],
+                "context_line": "            await self.app(scope, receive, send)",
+                "post_context": [
+                  "",
+                  "    def __eq__(self, other: Any) -\u003E bool:",
+                  "        return (",
+                  "            isinstance(other, Route)",
+                  "            and self.path == other.path"
+                ]
+              },
+              {
+                "vars": {
+                  "f": "\u003Cfunction patch_get_request_handler.\u003Clocals\u003E._sentry_get_request_handler.\u003Clocals\u003E._sentry_app at 0x7d248c691a80\u003E",
+                  "app": "\u003Cfunction request_response.\u003Clocals\u003E.app.\u003Clocals\u003E.app at 0x7d248a231580\u003E",
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  }
+                },
+                "in_app": false,
+                "lineno": 78,
+                "module": "starlette.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/routing.py",
+                "filename": "starlette/routing.py",
+                "function": "app",
+                "pre_context": [
+                  "",
+                  "        async def app(scope: Scope, receive: Receive, send: Send) -\u003E None:",
+                  "            response = await f(request)",
+                  "            await response(scope, receive, send)",
+                  ""
+                ],
+                "context_line": "        await wrap_app_handling_exceptions(app, request)(scope, receive, send)",
+                "post_context": [
+                  "",
+                  "    return app",
+                  "",
+                  "",
+                  "def websocket_session("
+                ]
+              },
+              {
+                "vars": {
+                  "app": "\u003Cfunction request_response.\u003Clocals\u003E.app.\u003Clocals\u003E.app at 0x7d248a231580\u003E",
+                  "conn": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "sender": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248c4fc540\u003E",
+                  "handler": "None",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "status_handlers": {
+  
+                  },
+                  "response_started": "False",
+                  "exception_handlers": {
+                    "\u003Cclass 'core.exceptions.base.ClientError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.ConflictError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.NotFoundError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.HTTPException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.ForbiddenError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.tenant.TenantNotFound'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.InvalidCredentials'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.WebSocketException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.RequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.WebSocketRequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E"
+                  }
+                },
+                "in_app": false,
+                "lineno": 53,
+                "module": "starlette._exception_handler",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py",
+                "filename": "starlette/_exception_handler.py",
+                "function": "wrapped_app",
+                "pre_context": [
+                  "",
+                  "            if handler is None:",
+                  "                handler = _lookup_exception_handler(exception_handlers, exc)",
+                  "",
+                  "            if handler is None:"
+                ],
+                "context_line": "                raise exc",
+                "post_context": [
+                  "",
+                  "            if response_started:",
+                  "                raise RuntimeError(\"Caught handled exception, but response already started.\") from exc",
+                  "",
+                  "            if is_async_callable(handler):"
+                ]
+              },
+              {
+                "vars": {
+                  "app": "\u003Cfunction request_response.\u003Clocals\u003E.app.\u003Clocals\u003E.app at 0x7d248a231580\u003E",
+                  "conn": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248a3fd440\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "sender": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248c4fc540\u003E",
+                  "handler": "None",
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "status_handlers": {
+  
+                  },
+                  "response_started": "False",
+                  "exception_handlers": {
+                    "\u003Cclass 'core.exceptions.base.ClientError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.ConflictError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.base.NotFoundError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.HTTPException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.ForbiddenError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.tenant.TenantNotFound'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'core.exceptions.auth.InvalidCredentials'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'starlette.exceptions.WebSocketException'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.RequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E",
+                    "\u003Cclass 'fastapi.exceptions.WebSocketRequestValidationError'\u003E": "\u003Cfunction patch_exception_middleware.\u003Clocals\u003E._sentry_middleware_init.\u003Clocals\u003E._sentry_patched_exception_handler at 0x7d248c626fc0\u003E"
+                  }
+                },
+                "in_app": false,
+                "lineno": 42,
+                "module": "starlette._exception_handler",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py",
+                "filename": "starlette/_exception_handler.py",
+                "function": "wrapped_app",
+                "pre_context": [
+                  "            if message[\"type\"] == \"http.response.start\":",
+                  "                response_started = True",
+                  "            await send(message)",
+                  "",
+                  "        try:"
+                ],
+                "context_line": "            await app(scope, receive, sender)",
+                "post_context": [
+                  "        except Exception as exc:",
+                  "            handler = None",
+                  "",
+                  "            if isinstance(exc, HTTPException):",
+                  "                handler = status_handlers.get(exc.status_code)"
+                ]
+              },
+              {
+                "vars": {
+                  "f": "\u003Cfunction patch_get_request_handler.\u003Clocals\u003E._sentry_get_request_handler.\u003Clocals\u003E._sentry_app at 0x7d248c691a80\u003E",
+                  "send": "\u003Cfunction wrap_app_handling_exceptions.\u003Clocals\u003E.wrapped_app.\u003Clocals\u003E.sender at 0x7d248c4fc540\u003E",
+                  "scope": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "receive": "\u003Cbound method RequestResponseCycle.receive of \u003Cuvicorn.protocols.http.h11_impl.RequestResponseCycle object at 0x7d248a0291d0\u003E\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  }
+                },
+                "in_app": false,
+                "lineno": 75,
+                "module": "starlette.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/starlette/routing.py",
+                "filename": "starlette/routing.py",
+                "function": "app",
+                "pre_context": [
+                  "",
+                  "    async def app(scope: Scope, receive: Receive, send: Send) -\u003E None:",
+                  "        request = Request(scope, receive, send)",
+                  "",
+                  "        async def app(scope: Scope, receive: Receive, send: Send) -\u003E None:"
+                ],
+                "context_line": "            response = await f(request)",
+                "post_context": [
+                  "            await response(scope, receive, send)",
+                  "",
+                  "        await wrap_app_handling_exceptions(app, request)(scope, receive, send)",
+                  "",
+                  "    return app"
+                ]
+              },
+              {
+                "vars": {
+                  "body": {
+                    "sex": "'male'",
+                    "name": "'Норманн'",
+                    "bdate": "None",
+                    "height": "None",
+                    "breed_id": "'076496bf-bb2d-5450-8618-8f06121a8b99'",
+                    "bdate_mode": "'hide'",
+                    "description": "None",
+                    "this_stable": "False",
+                    "coat_color_id": "None",
+                    "pedigree_name": "'Норманн А68 (GER)'"
+                  },
+                  "errors": [],
+                  "message": "\u003Cemail.message.Message object at 0x7d248c4fe2b0\u003E",
+                  "request": {
+                    "asgi": {
+                      "version": "'3.0'",
+                      "spec_version": "'2.3'"
+                    },
+                    "path": "'/api/horses'",
+                    "type": "'http'",
+                    "client": [
+                      "'10.244.0.37'",
+                      "39102"
+                    ],
+                    "method": "'POST'",
+                    "scheme": "'http'",
+                    "server": [
+                      "'10.244.0.196'",
+                      "8000"
+                    ],
+                    "raw_path": "b'/api/horses'",
+                    "root_path": "''",
+                    "http_version": "'1.1'"
+                  },
+                  "subtype": "'json'",
+                  "response": "None",
+                  "json_body": {
+                    "sex": "'male'",
+                    "name": "'Норманн'",
+                    "bdate": "None",
+                    "height": "None",
+                    "breed_id": "'076496bf-bb2d-5450-8618-8f06121a8b99'",
+                    "bdate_mode": "'hide'",
+                    "description": "None",
+                    "this_stable": "False",
+                    "coat_color_id": "None",
+                    "pedigree_name": "'Норманн А68 (GER)'"
+                  },
+                  "body_bytes": "b'{\"name\":\"\\xd0\\x9d\\xd0\\xbe\\xd1\\x80\\xd0\\xbc\\xd0\\xb0\\xd0\\xbd\\xd0\\xbd\",\"pedigree_name\":\"\\xd0\\x9d\\xd0\\xbe\\xd1\\x80\\xd0\\xbc\\xd0\\xb0\\xd0\\xbd\\xd0\\xbd \\xd0\\x9068 (GER)\",\"description\":null,\"this_stable\":false,\"sex\":\"male\",\"breed_id\":\"076496bf-bb2d-5450-8618-8f06121a8b99\",\"coat_color_id\":null,\"height\":null,\"bdate\":null,\"bdate_mode\":\"hide\",\"ddate\":null,\"ddate_mode\":\"hide\",\"horse_owner_id\":null}'",
+                  "file_stack": "\u003Ccontextlib.AsyncExitStack object at 0x7d2489d6ad50\u003E",
+                  "content_type_value": "'application/json'"
+                },
+                "in_app": false,
+                "lineno": 302,
+                "module": "fastapi.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/fastapi/routing.py",
+                "filename": "fastapi/routing.py",
+                "function": "app",
+                "pre_context": [
+                  "                    async_exit_stack=async_exit_stack,",
+                  "                    embed_body_fields=embed_body_fields,",
+                  "                )",
+                  "                errors = solved_result.errors",
+                  "                if not errors:"
+                ],
+                "context_line": "                    raw_response = await run_endpoint_function(",
+                "post_context": [
+                  "                        dependant=dependant,",
+                  "                        values=solved_result.values,",
+                  "                        is_coroutine=is_coroutine,",
+                  "                    )",
+                  "                    if isinstance(raw_response, Response):"
+                ]
+              },
+              {
+                "vars": {
+                  "values": {
+                    "data": "HorseCreateInDto(name='Норманн', pedigree_name='Норманн А68 (GER)', description=None, breed_id=UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), coat_color_id=None, height=None, sex=\u003CHorseSexEnum.MALE: 'male'\u003E, bdate=None, ddate=None, bdate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, ddate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, horse_owner_id=None, this_stable=False)",
+                    "current_user": "UserOutDto(id=UUID('1a8ceea4-5c1c-4d50-bbdf-999cea635cf5'), equestrian_id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), username='nataly', first_name='Наталья', last_name='Тер-Погосян', middle_name='Павловна', created_at=datetime.datetime(2026, 6, 28, 10, 48, 56, 4068, tzinfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 6, 29, 12, 15, 40, 299777, tzinfo=datetime.timezone.utc), is_deleted=False, deleted_at=None, is_blocked=False, scopes=[UserScope(id=UUID('5c5d5e56-3ab7-4077-a8a8-5e28dfeb0b54'), scope_name='DEVELOPER', scope_description='Администрирование сайта и настройка интеграции')])",
+                    "horse_service": "\u003Ccore.services.horse.HorseService object at 0x7d24899453d0\u003E",
+                    "equestrian_context": "EquestrianContext(id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), source='authenticated')"
+                  },
+                  "dependant": "Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[ModelField(field_info=Body(PydanticUndefined), name='data', mode='validation')], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[ModelField(field_info=Cookie(None), name='access_token', mode='validation')], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='user_repository', call=\u003Cfunction get_user_repository at 0x7d2491dddc60\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_user_repository at 0x7d2491dddc60\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='security', call=\u003Cfunction get_security at 0x7d249050e8e0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_security at 0x7d249050e8e0\u003E, ()))], security_requirements=[], name='auth_service', call=\u003Cfunction get_auth_service at 0x7d2492b154e0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_auth_service at 0x7d2492b154e0\u003E, ()))], security_requirements=[], name='current_user', call=\u003Cfunction get_current_user at 0x7d248f56dbc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_current_user at 0x7d248f56dbc0\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='photo_url_builder', call=\u003Cfunction get_photo_url_builder at 0x7d248f9158a0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_photo_url_builder at 0x7d248f9158a0\u003E, ()))], security_requirements=[], name='horse_repository', call=\u003Cfunction get_horse_repository at 0x7d248f56d760\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_horse_repository at 0x7d248f56d760\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='horse_children_repository', call=\u003Cfunction get_horse_children_repository at 0x7d248f56d8a0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_horse_children_repository at 0x7d248f56d8a0\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='breed_repository', call=\u003Cfunction get_breed_repository at 0x7d248f999da0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_breed_repository at 0x7d248f999da0\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='coat_color_repository', call=\u003Cfunction get_coat_color_repository at 0x7d248f56d120\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_coat_color_repository at 0x7d248f56d120\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='horse_owner_repository', call=\u003Cfunction get_horse_owner_repository at 0x7d248f56d3a0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_horse_owner_repository at 0x7d248f56d3a0\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='photo_repository', call=\u003Cfunction get_photo_repository at 0x7d248f56d4e0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_photo_repository at 0x7d248f56d4e0\u003E, ()))], security_requirements=[], name='horse_service', call=\u003Cfunction get_horse_service at 0x7d248f56e7a0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_horse_service at 0x7d248f56e7a0\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[ModelField(field_info=Cookie(None), name='access_token', mode='validation')], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='session', call=\u003Cfunction get_session at 0x7d2491230cc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_session at 0x7d2491230cc0\u003E, ()))], security_requirements=[], name='user_repository', call=\u003Cfunction get_user_repository at 0x7d2491dddc60\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_user_repository at 0x7d2491dddc60\u003E, ())), Dependant(path_params=[], query_params=[], header_params=[], cookie_params=[], body_params=[], dependencies=[], security_requirements=[], name='security', call=\u003Cfunction get_security at 0x7d249050e8e0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_security at 0x7d249050e8e0\u003E, ()))], security_requirements=[], name='auth_service', call=\u003Cfunction get_auth_service at 0x7d2492b154e0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_auth_service at 0x7d2492b154e0\u003E, ()))], security_requirements=[], name='current_user', call=\u003Cfunction get_current_user at 0x7d248f56dbc0\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_current_user at 0x7d248f56dbc0\u003E, ()))], security_requirements=[], name='equestrian_context', call=\u003Cfunction get_protected_equestrian_context at 0x7d248f56e020\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=[], use_cache=True, path='/api/horses', cache_key=(\u003Cfunction get_protected_equestrian_context at 0x7d248f56e020\u003E, ()))], security_requirements=[], name=None, call=\u003Cfunction create_new_horse at 0x7d248f15f560\u003E, request_param_name=None, websocket_param_name=None, http_connection_param_name=None, response_param_name=None, background_tasks_param_name=None, security_scopes_param_name=None, security_scopes=None, use_cache=True, path='/api/horses', cache_key=(\u003Cfunction create_new_horse at 0x7d248f15f560\u003E, ()))",
+                  "is_coroutine": "True"
+                },
+                "in_app": false,
+                "lineno": 213,
+                "module": "fastapi.routing",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/fastapi/routing.py",
+                "filename": "fastapi/routing.py",
+                "function": "run_endpoint_function",
+                "pre_context": [
+                  "    # Only called by get_request_handler. Has been split into its own function to",
+                  "    # facilitate profiling endpoints, since inner functions are harder to profile.",
+                  "    assert dependant.call is not None, \"dependant.call must be a function\"",
+                  "",
+                  "    if is_coroutine:"
+                ],
+                "context_line": "        return await dependant.call(**values)",
+                "post_context": [
+                  "    else:",
+                  "        return await run_in_threadpool(dependant.call, **values)",
+                  "",
+                  "",
+                  "def get_request_handler("
+                ]
+              },
+              {
+                "vars": {
+                  "data": "HorseCreateInDto(name='Норманн', pedigree_name='Норманн А68 (GER)', description=None, breed_id=UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), coat_color_id=None, height=None, sex=\u003CHorseSexEnum.MALE: 'male'\u003E, bdate=None, ddate=None, bdate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, ddate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, horse_owner_id=None, this_stable=False)",
+                  "current_user": "UserOutDto(id=UUID('1a8ceea4-5c1c-4d50-bbdf-999cea635cf5'), equestrian_id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), username='nataly', first_name='Наталья', last_name='Тер-Погосян', middle_name='Павловна', created_at=datetime.datetime(2026, 6, 28, 10, 48, 56, 4068, tzinfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 6, 29, 12, 15, 40, 299777, tzinfo=datetime.timezone.utc), is_deleted=False, deleted_at=None, is_blocked=False, scopes=[UserScope(id=UUID('5c5d5e56-3ab7-4077-a8a8-5e28dfeb0b54'), scope_name='DEVELOPER', scope_description='Администрирование сайта и настройка интеграции')])",
+                  "horse_service": "\u003Ccore.services.horse.HorseService object at 0x7d24899453d0\u003E",
+                  "equestrian_context": "EquestrianContext(id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), source='authenticated')"
+                },
+                "in_app": true,
+                "lineno": 165,
+                "module": "api.horses",
+                "abs_path": "/eqsitecms/src/api/horses.py",
+                "filename": "api/horses.py",
+                "function": "create_new_horse",
+                "pre_context": [
+                  "    horse_service: Annotated[HorseService, Depends(get_horse_service)],",
+                  "    equestrian_context: Annotated[",
+                  "        EquestrianContext, Depends(get_protected_equestrian_context)",
+                  "    ],",
+                  ") -\u003E HorseOutDto:"
+                ],
+                "context_line": "    return await horse_service.create_horse(",
+                "post_context": [
+                  "        create_data=data, user=current_user, equestrian_context=equestrian_context",
+                  "    )",
+                  "",
+                  "",
+                  "@router.patch("
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Ccore.services.horse.HorseService object at 0x7d24899453d0\u003E",
+                  "user": "UserOutDto(id=UUID('1a8ceea4-5c1c-4d50-bbdf-999cea635cf5'), equestrian_id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), username='nataly', first_name='Наталья', last_name='Тер-Погосян', middle_name='Павловна', created_at=datetime.datetime(2026, 6, 28, 10, 48, 56, 4068, tzinfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 6, 29, 12, 15, 40, 299777, tzinfo=datetime.timezone.utc), is_deleted=False, deleted_at=None, is_blocked=False, scopes=[UserScope(id=UUID('5c5d5e56-3ab7-4077-a8a8-5e28dfeb0b54'), scope_name='DEVELOPER', scope_description='Администрирование сайта и настройка интеграции')])",
+                  "horse": "Horse(slug='normann', created_at=datetime.datetime(2026, 8, 24, 12, 40, 1, 275511), updated_at=datetime.datetime(2026, 8, 24, 12, 40, 1, 275514), id=UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf'), equestrian_id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), name='Норманн', description=None, pedigree_name='Норманн А68 (GER)', breed_id=UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), coat_color_id=None, height=None, sex=\u003CHorseSexEnum.MALE: 'male'\u003E, bdate=None, ddate=None, bdate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, ddate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, horse_owner_id=None, this_stable=False)",
+                  "create_data": "HorseCreateInDto(name='Норманн', pedigree_name='Норманн А68 (GER)', description=None, breed_id=UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), coat_color_id=None, height=None, sex=\u003CHorseSexEnum.MALE: 'male'\u003E, bdate=None, ddate=None, bdate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, ddate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, horse_owner_id=None, this_stable=False)",
+                  "horse_breed": "Breed(slug='shetlendskiy-poni', created_at=datetime.datetime(2026, 6, 28, 18, 44, 18, 740923, tzinfo=datetime.timezone.utc), updated_at=datetime.datetime(2026, 8, 18, 18, 11, 27, 555058, tzinfo=datetime.timezone.utc), id=UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), equestrian_id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), breed_group_id=UUID('f3b3aeaf-a789-4fcd-af2c-dc917b122ca3'), group=BreedGroupIdentity(id=UUID('f3b3aeaf-a789-4fcd-af2c-dc917b122ca3'), name='Шетлендские пони', slug='shetlendskie-poni'), name='Шетлендский пони', short_name='шетл.', description=None, page_data='\u003Cdiv\u003E\u003C/div\u003E', kind=\u003CHorseKindEnum.PONY: 'pony'\u003E)",
+                  "horse_owner": "None",
+                  "horse_coat_color": "None",
+                  "equestrian_context": "EquestrianContext(id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), source='authenticated')"
+                },
+                "in_app": true,
+                "lineno": 361,
+                "module": "core.services.horse",
+                "abs_path": "/eqsitecms/src/core/services/horse.py",
+                "filename": "core/services/horse.py",
+                "function": "create_horse",
+                "pre_context": [
+                  "                horse_owner_id=create_data.horse_owner_id,",
+                  "                this_stable=create_data.this_stable,",
+                  "            )",
+                  "        except ValidationError as ex:",
+                  "            raise ClientError(str(ex))"
+                ],
+                "context_line": "        new_horse = await self.horse_repository.create(horse)",
+                "post_context": [
+                  "        return self._get_horse_dto(",
+                  "            horse=new_horse,",
+                  "            breed=horse_breed,",
+                  "            coat_color=horse_coat_color,",
+                  "            horse_owner=horse_owner,"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Crepositories.horse_repository.HorseRepository object at 0x7d2489c725d0\u003E",
+                  "stmt": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "entity": "Horse(slug='normann', created_at=datetime.datetime(2026, 8, 24, 12, 40, 1, 275511), updated_at=datetime.datetime(2026, 8, 24, 12, 40, 1, 275514), id=UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf'), equestrian_id=UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), name='Норманн', description=None, pedigree_name='Норманн А68 (GER)', breed_id=UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), coat_color_id=None, height=None, sex=\u003CHorseSexEnum.MALE: 'male'\u003E, bdate=None, ddate=None, bdate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, ddate_mode=\u003CHorseDateModeEnum.HIDE: 'hide'\u003E, horse_owner_id=None, this_stable=False)"
+                },
+                "in_app": true,
+                "lineno": 128,
+                "module": "repositories.abstract_repository",
+                "abs_path": "/eqsitecms/src/repositories/abstract_repository.py",
+                "filename": "repositories/abstract_repository.py",
+                "function": "create",
+                "pre_context": [
+                  "    def __init__(self, session: AsyncSession) -\u003E None:",
+                  "        self.session = session",
+                  "",
+                  "    async def create(self, entity: E) -\u003E E:",
+                  "        stmt = insert(self.table).values(**entity.model_dump())"
+                ],
+                "context_line": "        await self.session.execute(stmt)",
+                "post_context": [
+                  "        await self.session.flush()",
+                  "        return entity",
+                  "",
+                  "    async def bulk_create(self, entities: list[E]) -\u003E list[E]:",
+                  "        if not entities:"
+                ]
+              },
+              {
+                "vars": {
+                  "kw": {
+  
+                  },
+                  "self": "\u003Csqlalchemy.ext.asyncio.session.AsyncSession object at 0x7d2489c71f10\u003E",
+                  "params": "None",
+                  "statement": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "bind_arguments": "None",
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  }
+                },
+                "in_app": false,
+                "lineno": 463,
+                "module": "sqlalchemy.ext.asyncio.session",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/session.py",
+                "filename": "sqlalchemy/ext/asyncio/session.py",
+                "function": "execute",
+                "pre_context": [
+                  "                _EXECUTE_OPTIONS",
+                  "            )",
+                  "        else:",
+                  "            execution_options = _EXECUTE_OPTIONS",
+                  ""
+                ],
+                "context_line": "        result = await greenlet_spawn(",
+                "post_context": [
+                  "            self.sync_session.execute,",
+                  "            statement,",
+                  "            params=params,",
+                  "            execution_options=execution_options,",
+                  "            bind_arguments=bind_arguments,"
+                ]
+              },
+              {
+                "vars": {
+                  "fn": "\u003Cbound method Session.execute of \u003Csqlalchemy.orm.session.Session object at 0x7d248c4e9e50\u003E\u003E",
+                  "args": [
+                    "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E"
+                  ],
+                  "kwargs": {
+                    "params": "None",
+                    "bind_arguments": "None",
+                    "execution_options": {
+                      "prebuffer_rows": "True"
+                    }
+                  },
+                  "result": "\u003Ccoroutine object AsyncAdapt_asyncpg_cursor._prepare_and_execute at 0x7d248dbe7a00\u003E",
+                  "context": "\u003C_AsyncIoGreenlet object at 0x7d248d0273c0 (otid=0x7d2491b425e0) dead\u003E",
+                  "_require_await": "False",
+                  "switch_occurred": "True"
+                },
+                "in_app": false,
+                "lineno": 201,
+                "module": "sqlalchemy.util._concurrency_py3k",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py",
+                "filename": "sqlalchemy/util/_concurrency_py3k.py",
+                "function": "greenlet_spawn",
+                "pre_context": [
+                  "            value = await result",
+                  "        except BaseException:",
+                  "            # this allows an exception to be raised within",
+                  "            # the moderated greenlet so that it can continue",
+                  "            # its expected flow."
+                ],
+                "context_line": "            result = context.throw(*sys.exc_info())",
+                "post_context": [
+                  "        else:",
+                  "            result = context.switch(value)",
+                  "",
+                  "    if _require_await and not switch_occurred:",
+                  "        raise exc.AwaitRequired("
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.orm.session.Session object at 0x7d248c4e9e50\u003E",
+                  "params": "None",
+                  "statement": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "_add_event": "None",
+                  "bind_arguments": "None",
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  },
+                  "_parent_execute_state": "None"
+                },
+                "in_app": false,
+                "lineno": 2365,
+                "module": "sqlalchemy.orm.session",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py",
+                "filename": "sqlalchemy/orm/session.py",
+                "function": "execute",
+                "pre_context": [
+                  "",
+                  "        :return: a :class:`_engine.Result` object.",
+                  "",
+                  "",
+                  "        \"\"\""
+                ],
+                "context_line": "        return self._execute_internal(",
+                "post_context": [
+                  "            statement,",
+                  "            params,",
+                  "            execution_options=execution_options,",
+                  "            bind_arguments=bind_arguments,",
+                  "            _parent_execute_state=_parent_execute_state,"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.orm.session.Session object at 0x7d248c4e9e50\u003E",
+                  "params": "None",
+                  "statement": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "_add_event": "None",
+                  "events_todo": "\u003Csqlalchemy.event.attr._EmptyListener object at 0x7d248c460500\u003E",
+                  "_scalar_result": "False",
+                  "bind_arguments": {
+                    "clause": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E"
+                  },
+                  "compile_state_cls": "None",
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  },
+                  "_parent_execute_state": "None"
+                },
+                "in_app": false,
+                "lineno": 2260,
+                "module": "sqlalchemy.orm.session",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py",
+                "filename": "sqlalchemy/orm/session.py",
+                "function": "_execute_internal",
+                "pre_context": [
+                  "                execution_options,",
+                  "                bind_arguments,",
+                  "                conn,",
+                  "            )",
+                  "        else:"
+                ],
+                "context_line": "            result = conn.execute(",
+                "post_context": [
+                  "                statement, params or {}, execution_options=execution_options",
+                  "            )",
+                  "",
+                  "        if _scalar_result:",
+                  "            return result.scalar()"
+                ]
+              },
+              {
+                "vars": {
+                  "meth": "\u003Cbound method ClauseElement._execute_on_connection of \u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E\u003E",
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "statement": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "parameters": {
+  
+                  },
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  },
+                  "distilled_parameters": [
+                    {
+  
+                    }
+                  ]
+                },
+                "in_app": false,
+                "lineno": 1419,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "execute",
+                "pre_context": [
+                  "        try:",
+                  "            meth = statement._execute_on_connection",
+                  "        except AttributeError as err:",
+                  "            raise exc.ObjectNotExecutableError(statement) from err",
+                  "        else:"
+                ],
+                "context_line": "            return meth(",
+                "post_context": [
+                  "                self,",
+                  "                distilled_parameters,",
+                  "                execution_options or NO_OPTIONS,",
+                  "            )",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "connection": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "distilled_params": [
+                    {
+  
+                    }
+                  ],
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  }
+                },
+                "in_app": false,
+                "lineno": 526,
+                "module": "sqlalchemy.sql.elements",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py",
+                "filename": "sqlalchemy/sql/elements.py",
+                "function": "_execute_on_connection",
+                "pre_context": [
+                  "        execution_options: CoreExecuteOptionsParameter,",
+                  "    ) -\u003E Result[Any]:",
+                  "        if self.supports_execution:",
+                  "            if TYPE_CHECKING:",
+                  "                assert isinstance(self, Executable)"
+                ],
+                "context_line": "            return connection._execute_clauseelement(",
+                "post_context": [
+                  "                self, distilled_params, execution_options",
+                  "            )",
+                  "        else:",
+                  "            raise exc.ObjectNotExecutableError(self)",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "elem": "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                  "keys": [],
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "dialect": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "has_events": "True",
+                  "event_params": {
+  
+                  },
+                  "for_executemany": "False",
+                  "event_multiparams": [],
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  },
+                  "distilled_parameters": []
+                },
+                "in_app": false,
+                "lineno": 1641,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "_execute_clauseelement",
+                "pre_context": [
+                  "            column_keys=keys,",
+                  "            for_executemany=for_executemany,",
+                  "            schema_translate_map=schema_translate_map,",
+                  "            linting=self.dialect.compiler_linting | compiler.WARN_LINTING,",
+                  "        )"
+                ],
+                "context_line": "        ret = self._execute_context(",
+                "post_context": [
+                  "            dialect,",
+                  "            dialect.execution_ctx_cls._init_compiled,",
+                  "            compiled_sql,",
+                  "            distilled_parameters,",
+                  "            execution_options,"
+                ]
+              },
+              {
+                "vars": {
+                  "kw": {
+                    "cache_hit": "\u003CCacheStats.CACHE_HIT: 0\u003E"
+                  },
+                  "yp": "None",
+                  "args": [
+                    "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGCompiler_asyncpg object at 0x7d248c5007d0\u003E",
+                    [],
+                    "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E",
+                    [
+                      "BindParameter('%(137595883083312 param)s', 'normann', type_=NullType())",
+                      "BindParameter('%(137595883083088 param)s', datetime.datetime(2026, 8, 24, 12, 40, 1, 275511), type_=NullType())",
+                      "BindParameter('%(137595883090928 param)s', datetime.datetime(2026, 8, 24, 12, 40, 1, 275514), type_=NullType())",
+                      "BindParameter('%(137595883088912 param)s', UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf'), type_=NullType())",
+                      "BindParameter('%(137595883080624 param)s', UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73'), type_=NullType())",
+                      "BindParameter('%(137595883090704 param)s', 'Норманн', type_=NullType())",
+                      "BindParameter('%(137595883083760 param)s', None, type_=NullType())",
+                      "BindParameter('%(137595883091600 param)s', 'Норманн А68 (GER)', type_=NullType())",
+                      "BindParameter('%(137595883092720 param)s', UUID('076496bf-bb2d-5450-8618-8f06121a8b99'), type_=NullType())",
+                      "BindParameter('%(137595883083984 param)s', None, type_=NullType())"
+                    ]
+                  ],
+                  "conn": "\u003Csqlalchemy.pool.base._ConnectionFairy object at 0x7d2489c708f0\u003E",
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "dialect": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "statement": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGCompiler_asyncpg object at 0x7d248c5007d0\u003E",
+                  "parameters": [],
+                  "constructor": "\u003Cbound method DefaultExecutionContext._init_compiled of \u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg'\u003E\u003E",
+                  "execution_options": {
+                    "prebuffer_rows": "True"
+                  }
+                },
+                "in_app": false,
+                "lineno": 1846,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "_execute_context",
+                "pre_context": [
+                  "        context.pre_exec()",
+                  "",
+                  "        if context.execute_style is ExecuteStyle.INSERTMANYVALUES:",
+                  "            return self._exec_insertmany_context(dialect, context)",
+                  "        else:"
+                ],
+                "context_line": "            return self._exec_single_context(",
+                "post_context": [
+                  "                dialect, context, statement, parameters",
+                  "            )",
+                  "",
+                  "    def _exec_single_context(",
+                  "        self,"
+                ]
+              },
+              {
+                "vars": {
+                  "fn": "\u003Cfunction ConnectionEvents._listen.\u003Clocals\u003E.wrap_before_cursor_execute at 0x7d248d757560\u003E",
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "cursor": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "context": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg object at 0x7d248c4f3130\u003E",
+                  "dialect": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "statement": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGCompiler_asyncpg object at 0x7d248c5007d0\u003E",
+                  "parameters": [
+                    [
+                      "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                      "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                      "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                      "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                      "'Норманн'",
+                      "'Норманн А68 (GER)'",
+                      "'normann'",
+                      "None",
+                      "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                      "None"
+                    ]
+                  ],
+                  "evt_handled": "False",
+                  "str_statement": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "effective_parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 1986,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "_exec_single_context",
+                "pre_context": [
+                  "            context.post_exec()",
+                  "",
+                  "            result = context._setup_result_proxy()",
+                  "",
+                  "        except BaseException as e:"
+                ],
+                "context_line": "            self._handle_dbapi_exception(",
+                "post_context": [
+                  "                e, str_statement, effective_parameters, cursor, context",
+                  "            )",
+                  "",
+                  "        return result",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "e": "IntegrityError('\u003Cclass \\'asyncpg.exceptions.UniqueViolationError\\'\u003E: duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"\\nDETAIL:  Key (equestrian_id, slug)=(5f6496aa-4fe9-42da-a763-29f9bab22d73, normann) already exists.')",
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "cursor": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "context": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg object at 0x7d248c4f3130\u003E",
+                  "exc_info": [
+                    "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError'\u003E",
+                    "IntegrityError('\u003Cclass \\'asyncpg.exceptions.UniqueViolationError\\'\u003E: duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"\\nDETAIL:  Key (equestrian_id, slug)=(5f6496aa-4fe9-42da-a763-29f9bab22d73, normann) already exists.')",
+                    "\u003Ctraceback object at 0x7d2489872680\u003E"
+                  ],
+                  "statement": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ],
+                  "is_sub_exec": "False",
+                  "is_exit_exception": "False",
+                  "invalidate_pool_on_disconnect": "True"
+                },
+                "in_app": false,
+                "lineno": 2355,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "_handle_dbapi_exception",
+                "pre_context": [
+                  "",
+                  "            if newraise:",
+                  "                raise newraise.with_traceback(exc_info[2]) from e",
+                  "            elif should_wrap:",
+                  "                assert sqlalchemy_exception is not None"
+                ],
+                "context_line": "                raise sqlalchemy_exception.with_traceback(exc_info[2]) from e",
+                "post_context": [
+                  "            else:",
+                  "                assert exc_info[1] is not None",
+                  "                raise exc_info[1].with_traceback(exc_info[2])",
+                  "        finally:",
+                  "            del self._reentrant_error"
+                ]
+              },
+              {
+                "vars": {
+                  "fn": "\u003Cfunction ConnectionEvents._listen.\u003Clocals\u003E.wrap_before_cursor_execute at 0x7d248d757560\u003E",
+                  "self": "\u003Csqlalchemy.engine.base.Connection object at 0x7d2489f7f410\u003E",
+                  "cursor": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "context": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg object at 0x7d248c4f3130\u003E",
+                  "dialect": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "statement": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGCompiler_asyncpg object at 0x7d248c5007d0\u003E",
+                  "parameters": [
+                    [
+                      "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                      "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                      "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                      "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                      "'Норманн'",
+                      "'Норманн А68 (GER)'",
+                      "'normann'",
+                      "None",
+                      "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                      "None"
+                    ]
+                  ],
+                  "evt_handled": "False",
+                  "str_statement": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "effective_parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 1967,
+                "module": "sqlalchemy.engine.base",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py",
+                "filename": "sqlalchemy/engine/base.py",
+                "function": "_exec_single_context",
+                "pre_context": [
+                  "                            context,",
+                  "                        ):",
+                  "                            evt_handled = True",
+                  "                            break",
+                  "                if not evt_handled:"
+                ],
+                "context_line": "                    self.dialect.do_execute(",
+                "post_context": [
+                  "                        cursor, str_statement, effective_parameters, context",
+                  "                    )",
+                  "",
+                  "            if self._has_events or self.engine._has_events:",
+                  "                self.dispatch.after_cursor_execute("
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGDialect_asyncpg object at 0x7d2490becec0\u003E",
+                  "cursor": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "context": "\u003Csqlalchemy.dialects.postgresql.asyncpg.PGExecutionContext_asyncpg object at 0x7d248c4f3130\u003E",
+                  "statement": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 951,
+                "module": "sqlalchemy.engine.default",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py",
+                "filename": "sqlalchemy/engine/default.py",
+                "function": "do_execute",
+                "pre_context": [
+                  "",
+                  "    def do_executemany(self, cursor, statement, parameters, context=None):",
+                  "        cursor.executemany(statement, parameters)",
+                  "",
+                  "    def do_execute(self, cursor, statement, parameters, context=None):"
+                ],
+                "context_line": "        cursor.execute(statement, parameters)",
+                "post_context": [
+                  "",
+                  "    def do_execute_no_params(self, cursor, statement, context=None):",
+                  "        cursor.execute(statement)",
+                  "",
+                  "    def is_disconnect("
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "operation": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ]
+                },
+                "in_app": false,
+                "lineno": 580,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "execute",
+                "pre_context": [
+                  "                )",
+                  "            except Exception as error:",
+                  "                self._handle_exception(error)",
+                  "",
+                  "    def execute(self, operation, parameters=None):"
+                ],
+                "context_line": "        self._adapt_connection.await_(",
+                "post_context": [
+                  "            self._prepare_and_execute(operation, parameters)",
+                  "        )",
+                  "",
+                  "    def executemany(self, operation, seq_of_parameters):",
+                  "        return self._adapt_connection.await_("
+                ]
+              },
+              {
+                "vars": {
+                  "current": "\u003C_AsyncIoGreenlet object at 0x7d248d0273c0 (otid=0x7d2491b425e0) dead\u003E",
+                  "awaitable": "\u003Ccoroutine object AsyncAdapt_asyncpg_cursor._prepare_and_execute at 0x7d248dbe7a00\u003E"
+                },
+                "in_app": false,
+                "lineno": 132,
+                "module": "sqlalchemy.util._concurrency_py3k",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py",
+                "filename": "sqlalchemy/util/_concurrency_py3k.py",
+                "function": "await_only",
+                "pre_context": [
+                  "",
+                  "    # returns the control to the driver greenlet passing it",
+                  "    # a coroutine to run. Once the awaitable is done, the driver greenlet",
+                  "    # switches back to this greenlet with the result of awaitable that is",
+                  "    # then returned to the caller (or raised as error)"
+                ],
+                "context_line": "    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501",
+                "post_context": [
+                  "",
+                  "",
+                  "def await_fallback(awaitable: Awaitable[_T]) -\u003E _T:",
+                  "    \"\"\"Awaits an async function in a sync method.",
+                  ""
+                ]
+              },
+              {
+                "vars": {
+                  "fn": "\u003Cbound method Session.execute of \u003Csqlalchemy.orm.session.Session object at 0x7d248c4e9e50\u003E\u003E",
+                  "args": [
+                    "\u003Csqlalchemy.sql.dml.Insert object at 0x7d2489944a50\u003E"
+                  ],
+                  "kwargs": {
+                    "params": "None",
+                    "bind_arguments": "None",
+                    "execution_options": {
+                      "prebuffer_rows": "True"
+                    }
+                  },
+                  "result": "\u003Ccoroutine object AsyncAdapt_asyncpg_cursor._prepare_and_execute at 0x7d248dbe7a00\u003E",
+                  "context": "\u003C_AsyncIoGreenlet object at 0x7d248d0273c0 (otid=0x7d2491b425e0) dead\u003E",
+                  "_require_await": "False",
+                  "switch_occurred": "True"
+                },
+                "in_app": false,
+                "lineno": 196,
+                "module": "sqlalchemy.util._concurrency_py3k",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py",
+                "filename": "sqlalchemy/util/_concurrency_py3k.py",
+                "function": "greenlet_spawn",
+                "pre_context": [
+                  "    while not context.dead:",
+                  "        switch_occurred = True",
+                  "        try:",
+                  "            # wait for a coroutine from await_only and then return its",
+                  "            # result back to it."
+                ],
+                "context_line": "            value = await result",
+                "post_context": [
+                  "        except BaseException:",
+                  "            # this allows an exception to be raised within",
+                  "            # the moderated greenlet so that it can continue",
+                  "            # its expected flow.",
+                  "            result = context.throw(*sys.exc_info())"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "operation": "'INSERT INTO horse (id, created_at, updated_at, equestrian_id, name, pedigree_name, slug, description, breed_id, coat_color_id, height, sex, bdate, ddate, bdate_mode, ddate_mode, horse_owner_id, this_stable) VALUES ($1::UUID, $2::TIMESTAMP WITH TIME ZONE, $3::TIMESTAMP WITH TIME ZONE, $4::UUID, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::UUID, $10::UUID, $11::INTEGER, $12::VARCHAR, $13::DATE, $14::DATE, $15::VARCHAR, $16::VARCHAR, $17::UUID, $18::BOOLEAN)'",
+                  "attributes": [],
+                  "parameters": [
+                    "UUID('c3c8ad68-3271-4069-985a-64ea46cfc8cf')",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275511)",
+                    "datetime.datetime(2026, 8, 24, 12, 40, 1, 275514)",
+                    "UUID('5f6496aa-4fe9-42da-a763-29f9bab22d73')",
+                    "'Норманн'",
+                    "'Норманн А68 (GER)'",
+                    "'normann'",
+                    "None",
+                    "UUID('076496bf-bb2d-5450-8618-8f06121a8b99')",
+                    "None"
+                  ],
+                  "prepared_stmt": "\u003Casyncpg.prepared_stmt.PreparedStatement object at 0x7d2489b2ab10\u003E",
+                  "adapt_connection": "\u003CAdaptedConnection \u003Casyncpg.connection.Connection object at 0x7d2489d2f890\u003E\u003E"
+                },
+                "in_app": false,
+                "lineno": 558,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_prepare_and_execute",
+                "pre_context": [
+                  "                        self.rowcount = int(reg.group(1))",
+                  "                    else:",
+                  "                        self.rowcount = -1",
+                  "",
+                  "            except Exception as error:"
+                ],
+                "context_line": "                self._handle_exception(error)",
+                "post_context": [
+                  "",
+                  "    async def _executemany(self, operation, seq_of_parameters):",
+                  "        adapt_connection = self._adapt_connection",
+                  "",
+                  "        self.description = None"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003Csqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_cursor object at 0x7d2489c71780\u003E",
+                  "error": "UniqueViolationError('duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"')"
+                },
+                "in_app": false,
+                "lineno": 508,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_handle_exception",
+                "pre_context": [
+                  "",
+                  "    def close(self):",
+                  "        self._rows.clear()",
+                  "",
+                  "    def _handle_exception(self, error):"
+                ],
+                "context_line": "        self._adapt_connection._handle_exception(error)",
+                "post_context": [
+                  "",
+                  "    async def _prepare_and_execute(self, operation, parameters):",
+                  "        adapt_connection = self._adapt_connection",
+                  "",
+                  "        async with adapt_connection._execute_mutex:"
+                ]
+              },
+              {
+                "vars": {
+                  "self": "\u003CAdaptedConnection \u003Casyncpg.connection.Connection object at 0x7d2489d2f890\u003E\u003E",
+                  "error": "UniqueViolationError('duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"')",
+                  "super_": "\u003Cclass 'asyncpg.exceptions.IntegrityConstraintViolationError'\u003E",
+                  "translated_error": "IntegrityError('\u003Cclass \\'asyncpg.exceptions.UniqueViolationError\\'\u003E: duplicate key value violates unique constraint \"ix_horse_equestrian_slug\"\\nDETAIL:  Key (equestrian_id, slug)=(5f6496aa-4fe9-42da-a763-29f9bab22d73, normann) already exists.')",
+                  "exception_mapping": {
+                    "\u003Cclass 'asyncpg.exceptions.InternalServerError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.InternalServerError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions.SyntaxOrAccessError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions._base.PostgresError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.Error'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions._base.InterfaceError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.InterfaceError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions.InvalidCachedStatementError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.InvalidCachedStatementError'\u003E",
+                    "\u003Cclass 'asyncpg.exceptions.IntegrityConstraintViolationError'\u003E": "\u003Cclass 'sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError'\u003E"
+                  }
+                },
+                "in_app": false,
+                "lineno": 792,
+                "module": "sqlalchemy.dialects.postgresql.asyncpg",
+                "abs_path": "/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py",
+                "filename": "sqlalchemy/dialects/postgresql/asyncpg.py",
+                "function": "_handle_exception",
+                "pre_context": [
+                  "                        \"%s: %s\" % (type(error), error)",
+                  "                    )",
+                  "                    translated_error.pgcode = translated_error.sqlstate = (",
+                  "                        getattr(error, \"sqlstate\", None)",
+                  "                    )"
+                ],
+                "context_line": "                    raise translated_error from error",
+                "post_context": [
+                  "            else:",
+                  "                raise error",
+                  "        else:",
+                  "            raise error",
+                  ""
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "modules": {
+      "h11": "0.16.0",
+      "six": "1.17.0",
+      "cffi": "2.0.0",
+      "comm": "0.2.3",
+      "fqdn": "1.5.1",
+      "idna": "3.10",
+      "jedi": "0.19.2",
+      "lark": "1.3.0",
+      "mako": "1.3.10",
+      "mypy": "1.17.1",
+      "pytz": "2025.2",
+      "ruff": "0.15.12",
+      "yarl": "1.20.1",
+      "anyio": "4.10.0",
+      "arrow": "1.3.0",
+      "attrs": "25.3.0",
+      "babel": "2.17.0",
+      "black": "25.1.0",
+      "boto3": "1.40.61",
+      "click": "8.2.1",
+      "httpx": "0.28.1",
+      "isort": "6.0.1",
+      "json5": "0.12.1",
+      "numpy": "2.3.2",
+      "parso": "0.8.5",
+      "pyjwt": "2.10.1",
+      "pyzmq": "27.1.0",
+      "redis": "6.4.0",
+      "wrapt": "1.17.3",
+      "bcrypt": "4.0.1",
+      "bleach": "6.2.0",
+      "flake8": "7.3.0",
+      "jinja2": "3.1.6",
+      "mccabe": "0.7.0",
+      "pandas": "2.3.2",
+      "pluggy": "1.6.0",
+      "psutil": "7.1.0",
+      "pytest": "8.4.2",
+      "pyyaml": "6.0.3",
+      "tzdata": "2025.2",
+      "aiohttp": "3.12.15",
+      "alembic": "1.16.5",
+      "asyncpg": "0.30.0",
+      "certifi": "2025.8.3",
+      "debugpy": "1.8.17",
+      "fastapi": "0.116.1",
+      "ipython": "9.6.0",
+      "mistune": "3.1.4",
+      "nats-py": "2.15.0",
+      "passlib": "1.7.4",
+      "pexpect": "4.9.0",
+      "rpds-py": "0.27.1",
+      "sniffio": "1.3.1",
+      "tornado": "6.5.2",
+      "urllib3": "2.5.0",
+      "uvicorn": "0.35.0",
+      "wcwidth": "0.2.13",
+      "aioboto3": "15.5.0",
+      "aiofiles": "25.1.0",
+      "botocore": "1.40.61",
+      "eventlet": "0.40.3",
+      "greenlet": "3.2.4",
+      "httpcore": "1.0.9",
+      "jmespath": "1.1.0",
+      "nbclient": "0.10.2",
+      "nbformat": "5.10.4",
+      "notebook": "7.4.7",
+      "pathspec": "0.12.1",
+      "pydantic": "2.11.7",
+      "pyflakes": "3.4.0",
+      "pygments": "2.19.2",
+      "requests": "2.32.5",
+      "tinycss2": "1.4.0",
+      "aiosignal": "1.4.0",
+      "aiosqlite": "0.21.0",
+      "asttokens": "3.0.0",
+      "async-lru": "2.0.5",
+      "decorator": "5.2.1",
+      "dnspython": "2.7.0",
+      "executing": "2.2.1",
+      "iniconfig": "2.1.0",
+      "ipykernel": "7.0.0",
+      "multidict": "6.6.4",
+      "nbconvert": "7.16.6",
+      "packaging": "25.0",
+      "propcache": "0.3.2",
+      "pure_eval": "0.2.3",
+      "pycparser": "2.23",
+      "soupsieve": "2.8",
+      "starlette": "0.47.3",
+      "terminado": "0.18.1",
+      "traitlets": "5.14.3",
+      "webcolors": "24.11.1",
+      "aiolimiter": "1.2.1",
+      "defusedxml": "0.7.1",
+      "frozenlist": "1.7.0",
+      "jsonschema": "4.25.1",
+      "jupyterlab": "4.4.9",
+      "markupsafe": "3.0.2",
+      "ptyprocess": "0.7.0",
+      "s3transfer": "0.14.0",
+      "send2trash": "1.8.3",
+      "sentry-sdk": "2.68.0",
+      "setuptools": "80.9.0",
+      "sqlalchemy": "2.0.43",
+      "stack-data": "0.6.3",
+      "aiobotocore": "2.25.1",
+      "argon2-cffi": "25.1.0",
+      "isoduration": "20.11.0",
+      "jsonpointer": "3.0.0",
+      "jupyter-lsp": "2.3.0",
+      "pycodestyle": "2.14.0",
+      "referencing": "0.37.0",
+      "aioitertools": "0.13.0",
+      "jupyter_core": "5.8.1",
+      "nest-asyncio": "1.6.0",
+      "platformdirs": "4.4.0",
+      "types-pyyaml": "6.0.12.20260815",
+      "uri-template": "1.3.0",
+      "webencodings": "0.5.1",
+      "notebook_shim": "0.2.4",
+      "pandocfilters": "1.5.1",
+      "pydantic_core": "2.33.2",
+      "python-dotenv": "1.1.1",
+      "types-passlib": "1.7.7.20250602",
+      "beautifulsoup4": "4.14.2",
+      "fastjsonschema": "2.21.2",
+      "jupyter-events": "0.12.0",
+      "jupyter_client": "8.6.3",
+      "jupyter_server": "2.17.0",
+      "prompt_toolkit": "3.0.52",
+      "pytest-asyncio": "1.1.0",
+      "rfc3987-syntax": "1.1.0",
+      "annotated-types": "0.7.0",
+      "mypy_extensions": "1.1.0",
+      "psycopg2-binary": "2.9.10",
+      "python-dateutil": "2.9.0.post0",
+      "aiohappyeyeballs": "2.6.1",
+      "python-multipart": "0.0.20",
+      "sqlalchemy-utils": "0.42.0",
+      "websocket-client": "1.9.0",
+      "jupyterlab_server": "2.27.3",
+      "matplotlib-inline": "0.1.7",
+      "prometheus_client": "0.23.1",
+      "pydantic-settings": "2.10.1",
+      "rfc3339-validator": "0.1.4",
+      "rfc3986-validator": "0.1.1",
+      "typing-inspection": "0.4.1",
+      "typing_extensions": "4.15.0",
+      "charset-normalizer": "3.4.4",
+      "python-json-logger": "4.0.0",
+      "dependency-injector": "4.49.1",
+      "jupyterlab_pygments": "0.3.0",
+      "argon2-cffi-bindings": "25.1.0",
+      "types-python-dateutil": "2.9.0.20251008",
+      "ipython_pygments_lexers": "1.1.1",
+      "jupyter_server_terminals": "0.5.3",
+      "jsonschema-specifications": "2025.9.1",
+      "prometheus-fastapi-instrumentator": "7.1.0"
+    },
+    "contexts": {
+      "trace": {
+        "op": "http.server",
+        "type": "trace",
+        "origin": "auto.http.starlette",
+        "status": "internal_error",
+        "span_id": "83fd715434372ad2",
+        "trace_id": "3b02f8db0b1845fa95ef633db6b4c536"
+      },
+      "runtime": {
+        "name": "CPython",
+        "type": "runtime",
+        "version": "3.13.5"
+      }
+    },
+    "sdk": {
+      "name": "sentry.python.fastapi",
+      "version": "2.68.0",
+      "packages": [
+        {
+          "name": "pypi:sentry-sdk",
+          "version": "2.68.0"
+        }
+      ],
+      "integrations": [
+        "aiohttp",
+        "argv",
+        "asyncpg",
+        "atexit",
+        "boto3",
+        "dedupe",
+        "excepthook",
+        "fastapi",
+        "httpx",
+        "logging",
+        "modules",
+        "redis",
+        "sqlalchemy",
+        "starlette",
+        "stdlib",
+        "threading",
+        "tornado"
+      ]
+    },
+    "type": "error",
+    "request": {
+      "url": "http://api.eqcms.ru/api/horses",
+      "data": {
+        "sex": "male",
+        "name": "Норманн",
+        "bdate": null,
+        "height": null,
+        "breed_id": "076496bf-bb2d-5450-8618-8f06121a8b99",
+        "bdate_mode": "hide",
+        "description": null,
+        "this_stable": false,
+        "coat_color_id": null,
+        "pedigree_name": "Норманн А68 (GER)"
+      },
+      "method": "POST",
+      "headers": [
+        [
+          "accept",
+          "application/json"
+        ],
+        [
+          "accept-encoding",
+          "gzip, deflate, br, zstd"
+        ],
+        [
+          "accept-language",
+          "ru,en-GB;q=0.9,en;q=0.8,en-US;q=0.7"
+        ],
+        [
+          "content-length",
+          "294"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ],
+        [
+          "cookie",
+          "[Filtered]"
+        ],
+        [
+          "host",
+          "api.eqcms.ru"
+        ],
+        [
+          "origin",
+          "https://admin.eqcms.ru"
+        ],
+        [
+          "priority",
+          "u=1, i"
+        ],
+        [
+          "referer",
+          "https://admin.eqcms.ru/"
+        ],
+        [
+          "sec-ch-ua",
+          "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\""
+        ],
+        [
+          "sec-ch-ua-mobile",
+          "?0"
+        ],
+        [
+          "sec-ch-ua-platform",
+          "\"Windows\""
+        ],
+        [
+          "sec-fetch-dest",
+          "empty"
+        ],
+        [
+          "sec-fetch-mode",
+          "cors"
+        ],
+        [
+          "sec-fetch-site",
+          "same-site"
+        ],
+        [
+          "user-agent",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0"
+        ],
+        [
+          "x-forwarded-for",
+          "[Filtered]"
+        ],
+        [
+          "x-forwarded-host",
+          "api.eqcms.ru"
+        ],
+        [
+          "x-forwarded-port",
+          "443"
+        ],
+        [
+          "x-forwarded-proto",
+          "https"
+        ],
+        [
+          "x-forwarded-scheme",
+          "https"
+        ],
+        [
+          "x-real-ip",
+          "[Filtered]"
+        ],
+        [
+          "x-request-id",
+          "e639cbfabe3a74d934a290beeb8b4b68"
+        ],
+        [
+          "x-scheme",
+          "https"
+        ]
+      ]
+    },
+    "environment": "production",
+    "extra": {
+      "sys.argv": [
+        "src/main.py"
+      ]
+    },
+    "user": {
+      "ip_address": "193.176.79.0"
+    },
+    "hashes": [
+      "1384c2d5e2a313846d89c955a2659832"
+    ],
+    "title": "IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) \u003Cclass 'asyncpg.exceptions.…",
+    "transaction": "/api/horses",
+    "tags": {
+      "environment": "production",
+      "server_name": "eqcms-backend-deployment-8474cc674c-sgb7g"
+    }
+  }

@@ -1,0 +1,129 @@
+## Чеклист
+
+### Backend
+
+- [x] 1.1 Backend owner: прочитать все `contextFiles` из `openspec instructions apply --change fix-photo-upload-edge-cases --json`, подтвердить approval и единое ownership tightly-coupled naming/schema zone: service/helper, collision-retry repository path, `src/models/photos.py`, одна Alembic revision и photo/migration tests.
+- [x] 1.2 Backend: реализовать pure bounded-name helper: basename `/`/`\\`, Unicode NFC, удаление control chars, trim, fallback `photo`, safe extension ≤10 и строгий итог ≤63 code points.
+- [x] 1.3 Backend: реализовать long-name candidate `<prefix>-<digest12><extension>` с SHA-256 от length-prefixed original NFC name + identity (create: content SHA-256; update: photo UUID).
+- [x] 1.3a Backend: переработать tenant-scoped unique-name loop для bounded suffix `-2..-100` перед extension и atomic retry после unique constraint; исчерпание возвращает явный `409`, не raw DB `500`.
+- [x] 1.3b Backend schema: заменить `ix_photos_equestrian_name` в `services/backend/src/models/photos.py` на `UniqueConstraint("equestrian_id", "name", name="uq_photos_equestrian_name")`.
+- [x] 1.3c Backend migration: создать одну Alembic revision с table lock, duplicate preflight, deterministic keeper `(created_at NULLS LAST, id)` и reserved-set bounded rename существующих дублей.
+- [x] 1.3d Backend migration: добавить post-cleanup duplicate/length assertions, drop старого non-unique index и create `uq_photos_equestrian_name` в одной транзакции; не удалять rows/path/relations.
+- [x] 1.3e Backend migration: downgrade удаляет constraint и восстанавливает non-unique index, явно документируя, что cleanup rename не обращается автоматически.
+- [x] 1.4 Backend: подтвердить Access matrix `POST/PATCH/DELETE /api/photos*` как Protected Write и отсутствие изменений Public Read `GET`; не добавлять исключений.
+- [x] 1.5 Backend: выполнить целевой unit suite PhotoService, lint/type checks по локальному Makefile и приложить команды/evidence.
+- [x] 1.6 Helm owner (отдельный непересекающийся deliverable): изменить только `services/backend/.helm/values.yaml` и `.helm/templates/backend-ingress.yml`, добавив overrideable body-size default `20m`.
+- [x] 1.7 Helm: проверить `helm template` с default values — annotation равен `20m`, TLS/path/service неизменны.
+- [x] 1.8 Helm: проверить `helm template` с override body-size и приложить render evidence.
+- [x] 1.9 Перед smoke проверить container `7c720ddc783d` и labels `com.docker.compose.project=eqsitecms` + service `db`; получить актуальные `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, host port, image и aliases через `docker inspect`, не хардкодить значения.
+
+- [x] 1.10 Unit: bounded naming — имя ровно 63 ASCII code points сохраняется без hash.
+- [x] 1.11 Unit: bounded naming — имя 64 ASCII code points преобразуется в prefix + `digest12` и укладывается в 63.
+- [x] 1.12 Unit: bounded naming — 63 Unicode code points принимаются без byte-count ошибки.
+- [x] 1.13 Unit: bounded naming — 64 Unicode code points сокращаются без повреждения Unicode.
+- [x] 1.14 Unit: normalization — composed/decomposed Unicode приводятся к одинаковой NFC форме.
+- [x] 1.15 Unit: normalization — Windows/POSIX path components удаляются, используется basename.
+- [x] 1.16 Unit: normalization — control chars удаляются, пустой результат получает fallback `photo`.
+- [x] 1.17 Unit: photo create — filename fallback длиной 63 принимается.
+- [x] 1.18 Unit: photo create — filename fallback длиной 64+ успешно сокращается до bounded name.
+- [x] 1.19 Unit: photo create — extension сохраняется, ограничивается safe budget и discriminator вставляется перед ним.
+- [x] 1.20 Unit: photo create — пустой name сохраняет существующий fallback contract.
+- [x] 1.21 Unit: photo create — name из пробелов сохраняет существующий fallback contract.
+- [x] 1.22 Unit: photo create — `None` name сохраняет существующий fallback contract.
+- [x] 1.23 Unit: photo create — валидное имя и допустимый media type создают Photo.
+- [x] 1.24 Unit: photo create — invalid media type остаётся `ClientError` и не создаёт row.
+- [x] 1.25 Unit: photo create — одинаковое длинное имя разных contents даёт разные `digest12`.
+- [x] 1.26 Unit: photo create — одинаковые name+content дают одинаковый base candidate.
+- [x] 1.27 Unit: unique name — повторный candidate получает `-2` перед extension и остаётся ≤63.
+- [x] 1.28 Unit: unique name — последующие collisions дают `-3`/многозначный counter с повторным prefix budgeting.
+- [x] 1.29 Unit: unique name — duplicate lookup выполняется tenant-scoped, другой tenant может использовать тот же candidate.
+- [x] 1.30 Unit: photo update — новое имя ровно 63 символа принимается.
+- [x] 1.31 Unit: photo update — новое имя 64+ символа сокращается с identity = photo UUID.
+- [x] 1.32 Unit: photo update — одинаковый long rename одной photo детерминирован и исключает собственную row из collision.
+- [x] 1.33 Unit: photo update — одинаковый long rename разных photos даёт разные digest по UUID.
+- [x] 1.34 Unit: photo update — long rename с новым файлом не использует content hash вместо стабильного photo UUID.
+- [x] 1.35 Unit: photo update — `name=None` не запускает rename validation и сохраняет имя.
+- [x] 1.36 Unit: photo update — empty-name сохраняет согласованное generation/normalization behavior.
+- [x] 1.37 Unit: photo update — foreign/not-found photo остаётся non-success без storage mutation.
+- [x] 1.38 Unit: forced `digest12` collision разрешается discriminator, correctness не зависит от hash uniqueness.
+- [x] 1.39 Unit: concurrent unique-constraint collision запускает ограниченный retry и получает следующий bounded discriminator.
+- [x] 1.40 Unit: исчерпание bounded retry возвращает явный conflict/client outcome без internal DB traceback/`500`.
+- [x] 1.40a Unit migration: preflight без дублей не меняет rows и создаёт constraint.
+- [x] 1.40b Unit migration: exact duplicates выбирают keeper по `created_at NULLS LAST, id` и получают deterministic suffix.
+- [x] 1.40c Unit migration: существующий suffix candidate резервируется и не перезаписывается.
+- [x] 1.40d Unit migration: very-long 63-char stem сокращается под multi-digit suffix без overflow.
+- [x] 1.40e Unit migration: post-check failure вызывает transactional abort; downgrade восстанавливает index, но не имитирует reverse rename.
+
+- [x] 1.41 Smoke: photos name/upload — через skill `smoke` применить миграции и проверить подключение к обнаруженной реальной PostgreSQL, не SQLite/mock/in-memory.
+- [x] 1.42 Smoke: photos name/upload — authenticated `POST /api/photos` с именем ровно 63 символа успешен и row читается из PostgreSQL.
+- [x] 1.43 Smoke: photos name/upload — authenticated POST с 64 ASCII-символами успешен, response name ≤63 с `digest12`, не `500`.
+- [x] 1.44 Smoke: photos name/upload — POST с 64 Unicode code points успешен и сохраняет корректный NFC bounded name.
+- [x] 1.45 Smoke: photos name/upload — очень длинное (тысячи code points) имя успешно создаёт PostgreSQL row с `char_length(name) <= 63`.
+- [x] 1.46 Smoke: photos name/upload — path-like/control-containing filename нормализуется до safe basename.
+- [x] 1.47 Smoke: photos name/upload — POST с empty name использует filename fallback по контракту.
+- [x] 1.48 Smoke: photos name/upload — POST с fallback filename >63 успешен, extension сохранён и имя ≤63.
+- [x] 1.49 Smoke: photos name/upload — POST без auth возвращает `401` и не создаёт row/object.
+- [x] 1.50 Smoke: photos name/upload — POST с валидной auth создаёт tenant-scoped resource.
+- [x] 1.51 Smoke: photos name/upload — public GET list с валидным tenant selector доступен без cookie.
+- [x] 1.52 Smoke: photos name/upload — public GET by id с валидным selector доступен без cookie.
+- [x] 1.53 Smoke: photos name/upload — public GET с missing/invalid selector сохраняет действующий контракт и не становится случайно CMS-private.
+- [x] 1.54 Smoke: photos name/upload — authenticated PATCH с именем ровно 63 символа успешен.
+- [x] 1.55 Smoke: photos name/upload — authenticated PATCH с именем 64+ символа успешен и сохраняет bounded name ≤63.
+- [x] 1.56 Smoke: photos name/upload — повтор того же long rename одной photo возвращает стабильное имя без self-collision suffix.
+- [x] 1.57 Smoke: photos name/upload — одинаковый long rename двух photos различается UUID-derived digest и обе rows сохраняются.
+- [x] 1.58 Smoke: photos name/upload — PATCH без auth возвращает `401`.
+- [x] 1.59 Smoke: photos name/upload — PATCH чужого tenant resource не меняет row/object и возвращает контрактный non-success status.
+- [x] 1.60 Smoke: photos name/upload — DELETE без auth возвращает `401`.
+- [x] 1.61 Smoke: photos name/upload — DELETE владельца удаляет row и media object.
+- [x] 1.62 Smoke: photos name/upload — DELETE чужого tenant resource не удаляет row/object.
+- [x] 1.63 N/A (user waiver): production/deployed authenticated upload не требуется; принят Helm render и уже полученный controlled runtime ingress evidence, локальные API smoke сохранены.
+- [x] 1.64 Smoke: photos name/upload — valid file ровно 10 МБ не получает nginx `413` и достигает backend.
+- [x] 1.65 Smoke: photos name/upload — valid file немного больше 10 МБ, но меньше `20m` с overhead, достигает backend.
+- [x] 1.66 Smoke: photos name/upload — request сверх настроенного body-size получает ingress `413` без DB row.
+- [x] 1.67 Smoke: photos name/upload — invalid MIME при допустимом размере возвращает application `400`, доказывая прохождение ingress.
+- [x] 1.68 Smoke: photos name/upload — concurrent одинаковые name+content создают отдельные rows с bounded base/`-2` discriminator без `500`.
+- [x] 1.69 Smoke: photos name/upload — одинаковое длинное имя разных contents получает разные digest; forced/existing candidate collision получает next discriminator.
+- [x] 1.70 Smoke: photos name/upload — cleanup удаляет все созданные rows/media objects и прикладывает HTTP/DB evidence.
+- [x] 1.71 Smoke: migration — на реальной PostgreSQL подготовить exact duplicates до upgrade и зафиксировать preflight count.
+- [x] 1.72 Smoke: migration — upgrade сохраняет keeper, детерминированно переименовывает остальные rows и создаёт `uq_photos_equestrian_name`.
+- [x] 1.73 Smoke: migration — rows с существующими `name-2` не перезаписываются; IDs, paths и relations после rename неизменны.
+- [x] 1.74 Smoke: migration — прямой duplicate insert после upgrade отклоняется PostgreSQL unique violation.
+- [x] 1.75 Smoke: migration — downgrade удаляет constraint, восстанавливает `ix_photos_equestrian_name` и сохраняет все rows/renamed values.
+
+### Frontend
+
+- [x] 2.1 Frontend owner: прочитать apply context, подтвердить approval и ownership только `services/frontend/src/features/gallery/hooks/useGallery.ts` и gallery tests; не менять backend/chart/site-*.
+- [x] 2.2 Frontend: реализовать guard — temporary/uploading/error item удаляется локально без `fetchDeletePhoto`.
+- [x] 2.3 Frontend: для status done + valid UUID сохранить Protected DELETE, success removal/refresh и error retention/toast.
+- [x] 2.4 Frontend unit: failed upload item удаляется из списка, DELETE spy не вызывается (регрессия `temp-*` → `422`).
+- [x] 2.5 Frontend unit: uploading temporary item удаляется локально без DELETE.
+- [x] 2.6 Frontend unit: malformed/non-UUID uid даже при ошибочном state не достигает API.
+- [x] 2.7 Frontend unit: successful done item с UUID вызывает ровно один DELETE и удаляется после success.
+- [x] 2.8 Frontend unit: DELETE `401` показывает denial и сохраняет server item.
+- [x] 2.9 Frontend unit: DELETE `403` показывает denial и сохраняет server item.
+- [x] 2.10 Frontend unit: generic/network delete error сохраняет item и позволяет retry.
+- [x] 2.11 Frontend component: AddPhotosModal покрыть open/close, uploading, done, error и remove callback.
+- [x] 2.12 Frontend permission: scope present разрешает upload/remove; scope missing скрывает/disabled/guarded mutation; double-submit/delete guard проверен.
+- [x] 2.13 Frontend access: anonymous `/gallery` blocked/redirected, authenticated permitted user видит page; MSW покрывает success/empty/validation/generic/401/403 без live backend calls.
+- [x] 2.14 Frontend regression: pagination сохраняет initial `limit/offset`, load-more offset, reset offset на filters/search/sort; upload/remove не дублирует items.
+- [x] 2.15 Frontend: выполнить `rg` checks из planner contract для raw API calls, API imports, page/pageSize и `site-*` mixing; не создавать `shared/widgets/entities`.
+- [x] 2.16 Frontend: выполнить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` и приложить evidence.
+- [x] 2.17 N/A (user waiver): Browser Plugin/manual desktop/tablet/mobile/Network QA пропущен, потому что plugin недоступен на Arch; acceptance обеспечивают выполненные jsdom/component/hook/MSW tests 2.4–2.16.
+
+### Quality Gate
+
+- [x] 3.1 Quality Gate: проверить совокупный diff одного change, отсутствие реализации вне назначенных ownership и отсутствие изменений main specs до sync.
+- [x] 3.2 Quality Gate: проверить Clean Architecture — validation/domain mapping не находится в router/repository и предшествует storage/DB side effects.
+- [x] 3.3 Quality Gate: сверить Access matrix для GET/POST/PATCH/DELETE photos, anonymous/authenticated/foreign tenant tests; исключений из Public Read/Protected Write нет.
+- [x] 3.4 Quality Gate: проверить минимум 30 разнообразных backend Unit checklist scenarios и фактическое regression coverage, без искусственных однотипных happy paths.
+- [x] 3.5 Scope waiver: deployed/production API, production auth и per-endpoint deployed timing не требуются; локальные live smoke на локальном API/реальной PostgreSQL приняты по 1.41–1.75, smoke pytest-файлы не создавались.
+- [x] 3.6 Quality Gate: проверить DB discovery evidence из `docker inspect`, отсутствие хардкода credentials/port и фактические PostgreSQL rows/rollback assertions.
+- [x] 3.7 Quality Gate: запустить применимые backend unit/full test, lint/type/static gates из `services/backend` и зафиксировать результаты.
+- [x] 3.8 Quality Gate: проверить Helm default/override render, annotation `20m`, неизменность TLS/path/service и live 10 МБ ingress evidence.
+- [x] 3.9 Quality Gate: запустить из `services/frontend` `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+- [x] 3.10 Quality Gate: проверить frontend tests относительно behavior diff, MSW/no live backend calls, anonymous/authenticated/scopes, Protected Write `401/403`, double-submit guard и item retention.
+- [x] 3.11 Quality Gate: проверить pagination `limit/offset`, reset offset и no `site-*` mixing через требуемые `rg` команды.
+- [x] 3.12 N/A (user waiver): Browser Plugin/manual responsive/screenshots/Network evidence не является gate на Arch; Quality Gate опирается на frontend automated evidence 2.4–2.16 и review 3.9–3.11.
+- [x] 3.13 Quality Gate: сохранить итоговый evidence report в `docs/reports` только после зелёного повторного gate.
+- [x] 3.14 Router после успешного Quality Gate: синхронизировать три delta specs в main specs через `openspec-sync-specs`, повторить strict validation.
+- [x] 3.15 Router после sync/validation и только при полном выполнении: архивировать change через `openspec-archive-change`.
