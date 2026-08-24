@@ -9,6 +9,11 @@ services:
       args:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8001/api}
         PORT: ${EXPOSE_FRONTEND_PORT:-3001}
+        SENTRY_ENABLED: ${SENTRY_ENABLED:-false}
+        SENTRY_DSN: ${SENTRY_DSN:-}
+        SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-}
+        SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
+        SENTRY_RELEASE: ${SENTRY_RELEASE:-}
     container_name: eqsitecms-frontend
     ports:
       - "${EXPOSE_FRONTEND_PORT:-3001}:${EXPOSE_FRONTEND_PORT:-3001}"

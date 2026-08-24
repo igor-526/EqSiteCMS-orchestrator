@@ -1,0 +1,125 @@
+## Чеклист
+
+### Backend
+
+- [x] 1.1 Backend audit: зафиксировать фактическую матрицу Sentry/Prometheus для `services/backend`, `services/email-service`, `services/notification-service` (settings, init, registry, listener, lifecycle, env, dependencies) в implementation evidence
+- [x] 1.2 Backend audit: проверить SOLID/Clean Architecture границы observability adapters и перечислить только доказанные расхождения до исправлений
+- [x] 1.3 Унифицировать настройки и validation Sentry в трёх `src/settings.py`, не меняя backend `.env` или `.env.example`
+- [x] 1.4 Унифицировать три `src/utils/configure_sentry.py`: disabled no-op, environment/release/rate, integrations и sanitization без credential/request body
+- [x] 1.5 Унифицировать FastAPI instrumentation и production metrics lifecycle в трёх `src/main.py`, доказав общий scrape-able registry и graceful shutdown
+- [x] 1.6 Проверить/обновить зависимости observability и lock-файлы каждого backend-сервиса только при фактической необходимости
+- [x] 1.7 Добавить focused unit test modules наблюдаемости в каждый backend-сервис; network, Sentry transport и metrics listener изолировать mocks/fixtures
+- [x] 1.8 Запустить unit/lint/type проверки из Makefile каждого backend-сервиса и сохранить команды/результаты для общего Quality Gate
+- [x] 1.9 Подтвердить, что business endpoints, access policy, AsyncAPI/NATS и DB schema не изменены
+- [x] 1.10 Найти PostgreSQL container по labels `com.docker.compose.project=eqsitecms` + service `db`, затем fallback `eqsitecms-db`/postgres, и непосредственно перед smoke получить DB env, host port, image, labels и aliases через `docker inspect` без хардкода
+- [x] Unit: backend observability — Backend Core с `SENTRY_ENABLED=false` не вызывает `sentry_sdk.init`
+- [x] Unit: backend observability — Email Service с `SENTRY_ENABLED=false` не вызывает `sentry_sdk.init`
+- [x] Unit: backend observability — Notification Service с `SENTRY_ENABLED=false` не вызывает `sentry_sdk.init`
+- [x] Unit: backend observability — Backend Core передаёт валидный DSN в SDK ровно один раз
+- [x] Unit: backend observability — Email Service передаёт валидный DSN в SDK ровно один раз
+- [x] Unit: backend observability — Notification Service передаёт валидный DSN в SDK ровно один раз
+- [x] Unit: backend observability — enabled Backend Core с пустым DSN отклоняется settings validation
+- [x] Unit: backend observability — enabled Email Service с пустым DSN отклоняется settings validation
+- [x] Unit: backend observability — enabled Notification Service с пустым DSN отклоняется settings validation
+- [x] Unit: backend observability — traces sample rate `0.0` принимается и передаётся без преобразования
+- [x] Unit: backend observability — traces sample rate `1.0` принимается и передаётся без преобразования
+- [x] Unit: backend observability — traces sample rate ниже `0.0` отклоняется
+- [x] Unit: backend observability — traces sample rate выше `1.0` отклоняется
+- [x] Unit: backend observability — пустой optional release нормализуется без фиктивной версии
+- [x] Unit: backend observability — заданные environment и release передаются одинаково во всех трёх сервисах
+- [x] Unit: backend observability — FastAPI и SQLAlchemy integrations зарегистрированы без дубликатов
+- [x] Unit: backend observability — production lifecycle запускает metrics listener на `0.0.0.0:9000`
+- [x] Unit: backend observability — development lifecycle не запускает отдельный metrics listener
+- [x] Unit: backend observability — test environment не открывает реальный TCP port
+- [x] Unit: backend observability — startup failure до yield не оставляет metrics thread
+- [x] Unit: backend observability — normal shutdown вызывает `shutdown`, `server_close`, `join` ровно один раз
+- [x] Unit: backend observability — повторный shutdown path безопасен и не зависает
+- [x] Unit: backend observability — NATS startup failure не маскируется observability cleanup
+- [x] Unit: backend observability — NATS/consumer shutdown сохраняет сервисный порядок cleanup
+- [x] Unit: backend observability — DB close в Email Service выполняется при shutdown вместе с metrics cleanup
+- [x] Unit: backend observability — DB close в Notification Service выполняется при shutdown вместе с metrics cleanup
+- [x] Unit: backend observability — instrumentator подключён к созданному FastAPI app ровно один раз
+- [x] Unit: backend observability — metrics registry после instrument содержит ожидаемую HTTP metric family
+- [x] Unit: backend observability — sanitization удаляет authorization header из Sentry event
+- [x] Unit: backend observability — sanitization удаляет cookie/service-key из Sentry event
+- [x] Unit: backend observability — sanitization не включает request body и DB/SMTP env values
+- [x] Unit: backend observability — import observability adapter не создаёт network connection как side effect при disabled config
+- [x] Smoke: backend observability — skill `smoke` запускает Backend Core на реальной PostgreSQL, найденной свежим `docker inspect`
+- [x] Smoke: backend observability — skill `smoke` запускает Notification Service с его реальной PostgreSQL и актуальным NATS
+- [x] Smoke: backend observability — skill `smoke` запускает Email Service с его реальной PostgreSQL, NATS и Redis
+- [x] Smoke: backend observability — Backend Core `/health` возвращает `200` после observability startup
+- [x] Smoke: backend observability — Notification Service `/health` возвращает `200` после observability startup
+- [x] Smoke: backend observability — Email Service `/health` возвращает `200` после observability startup
+- [x] Smoke: backend observability — Backend Core production `:9000/metrics` возвращает `200` и Prometheus content type во внутренней сети
+- [x] Smoke: backend observability — Notification Service production `:9000/metrics` возвращает `200` и Prometheus content type во внутренней сети
+- [x] Smoke: backend observability — Email Service production `:9000/metrics` возвращает `200` и Prometheus content type во внутренней сети
+- [x] Smoke: backend observability — Backend Core scrape после `/health` содержит HTTP request metric и label без credential
+- [x] Smoke: backend observability — Notification Service scrape после `/health` содержит HTTP request metric и label без credential
+- [x] Smoke: backend observability — Email Service scrape после `/health` содержит HTTP request metric и label без credential
+- [x] Smoke: backend observability — development Backend Core не слушает `:9000`
+- [x] Smoke: backend observability — development Notification Service не слушает `:9000`
+- [x] Smoke: backend observability — development Email Service не слушает `:9000`
+- [x] Smoke: backend observability — повторный scrape Backend Core увеличивает counters без duplicate metric registration error
+- [x] Smoke: backend observability — повторный scrape Notification Service увеличивает counters без duplicate metric registration error
+- [x] Smoke: backend observability — повторный scrape Email Service увеличивает counters без duplicate metric registration error
+- [x] Smoke: backend observability — graceful stop Backend Core освобождает port 9000 и контейнер завершается
+- [x] Smoke: backend observability — graceful stop Notification Service освобождает port 9000 и останавливает consumer/NATS
+- [x] Smoke: backend observability — graceful stop Email Service освобождает port 9000 и останавливает consumer/DB
+- [x] Smoke: backend observability — restart Backend Core после graceful stop не получает address-in-use
+- [x] Smoke: backend observability — restart Notification Service после graceful stop не получает address-in-use
+- [x] Smoke: backend observability — restart Email Service после graceful stop не получает address-in-use
+- [x] Smoke: backend observability — disabled Sentry во всех трёх контейнерах не требует DSN и не ломает readiness
+- [x] Smoke: backend observability — enabled Sentry с пустым DSN даёт явный startup/config failure без частичного ready state
+- [x] Smoke: backend observability — placeholder test DSN не печатается в container logs
+- [x] Smoke: backend observability — metrics не содержат PostgreSQL password, auth cookie или service key после реального API traffic
+- [x] Smoke: backend observability — существующий anonymous Public Read GET сохраняет контрактный outcome после rollout
+- [x] Smoke: backend observability — существующий protected write без auth сохраняет контрактный `401/403`
+- [x] Smoke: backend observability — cleanup smoke fixtures не оставляет созданные строки в реальной PostgreSQL
+
+### Frontend
+
+- [x] 2.1 Frontend Agent (`services/frontend` ownership): добавить `@sentry/nextjs` и обновить `package-lock.json`
+- [x] 2.2 Frontend Agent: реализовать узкий config helper с backend env names, disabled default, rate validation, environment/release и sanitization
+- [x] 2.3 Frontend Agent: добавить client/server/edge instrumentation и Next.js request-error capture без live transport в tests
+- [x] 2.4 Frontend Agent: добавить/обновить global error fallback и component test для capture, retry/render и отсутствия дубля
+- [x] 2.5 Frontend Agent: интегрировать Sentry wrapper в `next.config.ts`, не добавляя source-map auth token в repo/image
+- [x] 2.6 Frontend Agent: заполнить только `services/frontend/.env` и `.env.example` пятью Sentry variables с disabled/blank безопасными defaults
+- [x] 2.7 Frontend Agent: передать пять Sentry variables через builder/runtime stages `services/frontend/Dockerfile`
+- [x] 2.8 Frontend Agent: обновить `services/frontend/Makefile` и `.docker-compose/docker-compose.fe.yml` для воспроизводимой Sentry build-матрицы
+- [x] 2.9 Frontend Agent: добавить минимум 3 config unit tests (disabled, enabled/metadata, invalid rate/missing DSN) и tests server/edge/client/global error с mocked SDK
+- [x] 2.10 Frontend Agent: выполнить `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, compose config и placeholder Docker build
+- [x] 2.11 Frontend Agent: выполнить `rg` self-checks на direct API misuse, pagination aliases и `site-*` mixing; подтвердить отсутствие behavior diff access/scopes/pagination
+- [x] 3.1 Site Consumer Agent (`services/site-ad` ownership): добавить `@sentry/nextjs` и обновить `package-lock.json`
+- [x] 3.2 Site Consumer Agent: реализовать config helper, client/server/edge instrumentation и global error capture с теми же пятью env names
+- [x] 3.3 Site Consumer Agent: заполнить только `services/site-ad/.env` и `.env.example` безопасными disabled/blank defaults
+- [x] 3.4 Site Consumer Agent: передать Sentry build/runtime variables через оба stages `services/site-ad/Dockerfile`
+- [x] 3.5 Site Consumer Agent: добавить минимум 3 config unit tests и component/runtime tests с mocked SDK без live Sentry/backend calls
+- [x] 3.6 Site Consumer Agent: выполнить `npm test`, `npm run lint` (либо документировать существующий invalid script), `npx tsc --noEmit`, `npm run build` и placeholder Docker build
+- [x] 3.7 Site Consumer Agent: доказать отсутствие CMS-only imports/endpoints и сохранение anonymous Public Read SSR/SEO behavior
+- [x] 4.1 Documentation owner после runtime deliverables: создать `docs/operations/observability.md` по фактическому diff (архитектура, env matrix, build/runtime, ports, sanitization, test, rollout, troubleshooting, rollback)
+- [x] 4.2 Documentation owner: исправить противоречащие observability-факты в README затронутых сервисов и добавить ссылки на единый runbook без копирования secrets
+- [ ] 4.3 Documentation owner: выполнить Manual QA CMS steps для disabled/enabled, anonymous/authenticated, `401/403`, desktop/tablet/mobile и оформить evidence
+- [ ] 4.4 Documentation owner: выполнить Manual QA `site-ad` steps для disabled/enabled, anonymous Public Read, client/server error, SSR/SEO и desktop/tablet/mobile
+- [x] 4.5 Documentation owner: сохранить QA report в `docs/reports/054-observability-implementation-evidence.md` со screenshots только для failures и sanitized network evidence
+
+### Quality Gate
+
+- [x] 5.1 Запустить один общий review совокупного diff после завершения Backend, Frontend, Site Consumer и Documentation owners
+- [x] 5.2 Проверить соответствие `platform-observability` spec и отсутствие незапланированных API/NATS/DB изменений
+- [x] 5.3 Проверить SOLID/Clean Architecture и единообразие settings/adapters/lifecycle трёх backend-сервисов
+- [x] 5.4 Проверить, что каждая backend capability имеет минимум 30 разных Unit checklist-сценариев и результаты их выполнения
+- [x] 5.5 Проверить, что backend capability имеет минимум 30 разных Smoke checklist-сценариев через skill `smoke` на live API и реальной PostgreSQL, без pytest smoke-файлов
+- [x] 5.6 Проверить свежий `docker inspect` evidence DB env/host port/image/labels/aliases и отсутствие хардкода smoke connection
+- [x] 5.7 Проверить реальный scrape всех трёх сервисов, HTTP metric series, graceful shutdown/restart и недоступность port 9000 из публичного host contour
+- [x] 5.8 Проверить Sentry disabled/enabled/invalid tests, один event на ошибку и sanitization credentials/body во всех пяти приложениях
+- [x] 5.9 В `services/frontend` запустить `npm test`, `npm run lint`, `npx tsc --noEmit`/`npm run typecheck`, `npm run build`
+- [x] 5.10 В `services/site-ad` запустить `npm test`, применимую lint-команду, `npx tsc --noEmit`, `npm run build`
+- [x] 5.11 Проверить MSW/mocks/no live backend or Sentry calls в frontend unit/component tests и качество tests относительно behavior diff
+- [x] 5.12 Проверить CMS anonymous/authenticated и `401/403` regressions, отсутствие scope/pagination behavior diff и no `site-*` mixing
+- [x] 5.13 Выполнить frontend static checks: `rg -n "fetch\\(|axios" services/frontend/src -g '*.{ts,tsx}'`; `rg -n "from ['\\\"]@/api" services/frontend/src/app services/frontend/src/features -g '*.{ts,tsx}'`; `rg -n "\\bpage\\b|pageSize|page_size" services/frontend/src/features services/frontend/src/api services/frontend/src/types -g '*.{ts,tsx}'`; `rg -n "site-ad|site-\\*|Public Read|public read" services/frontend/src -g '*.{ts,tsx}'`; `find services/frontend/src -maxdepth 2 -type d \\( -name shared -o -name widgets -o -name entities \\)`
+- [x] 5.14 Проверить Dockerfiles, effective compose config и Make build targets с disabled defaults и placeholder QA values без раскрытия secrets в image metadata/logs
+- [x] 5.15 Проверить, что intended public browser DSN допускается в client bundle как non-secret endpoint identifier, а `SENTRY_AUTH_TOKEN`, credential-bearing/private DSN, cookie, service keys, DB/SMTP credentials и иные secrets отсутствуют в tracked artifacts, client bundles и images; полное значение public DSN не раскрывается в logs/evidence сверх минимальной sanitized диагностики
+- [x] 5.16 Сверить `docs/operations/observability.md` и implementation evidence с фактическими env names, ports, commands и lifecycle
+- [x] 5.17 Вернуть findings соответствующим path owners, дождаться fixes и повторить весь применимый общий Quality Gate
+- [x] 5.18 После успешного gate синхронизировать delta spec `platform-observability` в main specs и выполнить strict validation
+- [ ] 5.19 Только после sync/validation и пользовательского подтверждения завершения архивировать change `observability-054`
