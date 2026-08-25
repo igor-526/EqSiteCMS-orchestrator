@@ -1,9 +1,5 @@
-# callback-request-consumer-form Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - synchronized from change callback-requests-management-055.
-
-## Requirements
 ### Requirement: Публичная форма отправляет совместимый request
 `site-ad` callback form SHALL отправлять прямой cross-origin anonymous `POST /callback_requests` на абсолютный Public API base URL с selector-механизмом API client и полями `name`, `phone`, `comment`; она MUST NOT использовать CMS credentials, CMS-only endpoint или обязательный same-origin proxy. Browser preflight SHALL проходить по публичному credentialless CORS-контракту backend.
 
@@ -22,22 +18,3 @@ TBD - synchronized from change callback-requests-management-055.
 #### Scenario: CMS credentials отсутствуют
 - **WHEN** API-boundary test инспектирует прямой callback request
 - **THEN** request содержит только публичные headers, не включает cookie/Authorization и не обращается к CMS-only endpoint
-
-### Requirement: Валидация и защита от повторной отправки
-Форма MUST валидировать обязательные phone/name/policy согласно backend limits, вызывать submit через form semantics и блокировать повторную отправку до завершения request.
-
-#### Scenario: Невалидная форма
-- **WHEN** обязательные поля пусты или policy не принята
-- **THEN** request не отправляется и field errors показаны
-
-#### Scenario: Double submit
-- **WHEN** пользователь повторно нажимает submit во время pending request
-- **THEN** создаётся не более одного POST
-
-### Requirement: Проверки consumer integration
-Реализация SHALL иметь API-boundary/component tests и проверки lint/typecheck/build применимыми командами `site-ad`.
-
-#### Scenario: Contract regression test
-- **WHEN** test перехватывает request
-- **THEN** path равен `/callback_requests`, body содержит `comment` вместо `notes`, и CMS auth отсутствует
-

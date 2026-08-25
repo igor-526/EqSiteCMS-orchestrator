@@ -1,0 +1,109 @@
+## Чеклист
+
+### Backend
+
+- [x] B01 Прочитать `proposal.md`, `design.md`, обе delta specs и назначенные contextFiles; подтвердить ownership только `services/backend`.
+- [x] B02 Добавить в `services/backend/src/core/middleware/cors.py` immutable allowlist точной пары `POST /api/callback_requests` и route-aware классификацию actual/preflight.
+- [x] B03 Ограничить public callback preflight методами `POST, OPTIONS` и headers `Content-Type`, `X-Equestrian-Service-Key`; неизвестные requested headers отклонять без permissive ACAO.
+- [x] B04 Сохранить strict-CORS приоритет для CMS origins и строгий режим всех иных writes/protected GET.
+- [x] B05 Обновить backend route/CORS developer documentation, не меняя payload, auth, selector, БД или NATS contracts.
+- [x] B06 Найти PostgreSQL container по labels `project=eqsitecms` + `service=db`, fallback `eqsitecms-db`/image postgres; повторно получить env/host port через `docker inspect` и зафиксировать evidence без хардкода.
+- [x] B07 Unit: consumer preflight exact `/api/callback_requests` + POST возвращает `200` и ACAO `*`.
+- [x] B08 Unit: public preflight разрешает `POST, OPTIONS`.
+- [x] B09 Unit: public preflight разрешает `Content-Type`.
+- [x] B10 Unit: public preflight разрешает `X-Equestrian-Service-Key`.
+- [x] B11 Unit: имена requested headers обрабатываются case-insensitive.
+- [x] B12 Unit: несколько разрешённых requested headers с пробелами принимаются.
+- [x] B13 Unit: public preflight не возвращает `Access-Control-Allow-Credentials`.
+- [x] B14 Unit: public preflight возвращает ожидаемый max-age.
+- [x] B15 Unit: неизвестный requested header возвращает `400` без ACAO.
+- [x] B16 Unit: requested method GET к callback остаётся по Public GET policy, а не POST exception.
+- [x] B17 Unit: requested method PATCH к callback остаётся protected.
+- [x] B18 Unit: requested method DELETE к callback остаётся protected.
+- [x] B19 Unit: requested method PUT к callback остаётся protected.
+- [x] B20 Unit: trailing slash `/api/callback_requests/` не совпадает с exact exception.
+- [x] B21 Unit: detail `/api/callback_requests/{id}` не совпадает с exception.
+- [x] B22 Unit: `/api/callback_requests-extra` не совпадает с exception.
+- [x] B23 Unit: `/api/service/callback_requests/...` не совпадает с exception.
+- [x] B24 Unit: foreign-origin protected POST `/api/auth/logout` по-прежнему без ACAO.
+- [x] B25 Unit: CMS-origin protected POST сохраняет reflected origin, credentials и Vary.
+- [x] B26 Unit: consumer-origin Public GET сохраняет wildcard без credentials.
+- [x] B27 Unit: CMS-origin Public GET сохраняет strict convention.
+- [x] B28 Unit: actual valid callback POST `201` содержит wildcard без credentials.
+- [x] B29 Unit: actual missing-selector callback POST `401` содержит wildcard без credentials.
+- [x] B30 Unit: actual invalid-selector callback POST `401` содержит wildcard без credentials.
+- [x] B31 Unit: actual invalid-body callback POST `422` содержит wildcard без credentials.
+- [x] B32 Unit: actual callback POST без Origin не получает CORS headers и сохраняет application result.
+- [x] B33 Unit: CMS-origin actual anonymous callback POST не требует auth и получает strict CORS.
+- [x] B34 Unit: CMS-origin callback preflight получает reflected origin, credentials и Vary.
+- [x] B35 Unit: foreign-origin PATCH callback status не получает ACAO.
+- [x] B36 Unit: foreign-origin service PATCH не получает ACAO.
+- [x] B37 Запустить полный backend unit suite, lint/type checks проекта и сохранить команды/results.
+- [x] B38 Smoke: на live API и реальной PostgreSQL public preflight с `Content-Type` + selector header возвращает `200`.
+- [x] B39 Smoke: preflight ACAO равен `*` для origin `site-ad`.
+- [x] B40 Smoke: preflight разрешает `POST`.
+- [x] B41 Smoke: preflight разрешает `OPTIONS`.
+- [x] B42 Smoke: preflight разрешает `Content-Type`.
+- [x] B43 Smoke: preflight разрешает selector header.
+- [x] B44 Smoke: preflight не разрешает credentials.
+- [x] B45 Smoke: unknown requested header возвращает `400` без ACAO.
+- [x] B46 Smoke: preflight PATCH exact callback path от consumer origin отклонён strict CORS.
+- [x] B47 Smoke: preflight DELETE exact callback path от consumer origin отклонён strict CORS.
+- [x] B48 Smoke: preflight PUT exact callback path от consumer origin отклонён strict CORS.
+- [x] B49 Smoke: preflight POST с trailing slash не получает public exception.
+- [x] B50 Smoke: preflight POST похожего prefix не получает public exception.
+- [x] B51 Smoke: preflight service callback PATCH не получает public exception.
+- [x] B52 Smoke: valid anonymous POST создаёт ровно одну PostgreSQL row и возвращает `201` + wildcard.
+- [x] B53 Smoke: missing selector возвращает `401` + wildcard без PostgreSQL insert.
+- [x] B54 Smoke: invalid selector возвращает `401` + wildcard без PostgreSQL insert.
+- [x] B55 Smoke: malformed JSON возвращает `422` + wildcard без insert.
+- [x] B56 Smoke: missing optional name сохраняет заявку в PostgreSQL и возвращает `201` + wildcard.
+- [x] B57 Smoke: invalid phone возвращает `422` + wildcard без insert.
+- [x] B58 Smoke: extra field игнорируется по существующему BaseSchema contract, возвращается `201` + wildcard, поле отсутствует в сохранённой/прочитанной заявке.
+- [x] B59 Smoke: valid unicode name/comment сохраняются в PostgreSQL и response CORS корректен.
+- [x] B60 Smoke: empty optional comment создаёт row по контракту.
+- [x] B61 Smoke: два последовательных valid POST создают две заявки, CORS не вводит idempotency.
+- [x] B62 Smoke: actual POST без Origin сохраняет `201` без CORS headers.
+- [x] B63 Smoke: CMS-origin anonymous POST возвращает `201` с reflected ACAO и credentials.
+- [x] B64 Smoke: CMS-origin preflight возвращает reflected ACAO, credentials и Vary.
+- [x] B65 Smoke: foreign-origin auth POST остаётся strict и недоступен browser CORS.
+- [x] B66 Smoke: foreign-origin callback status PATCH остаётся strict и не изменяет row.
+- [x] B67 Smoke: foreign-origin callback spam PATCH остаётся strict и не изменяет row.
+- [x] B68 Smoke: foreign-origin service delivery PATCH остаётся strict и не изменяет row.
+- [x] B69 Smoke: anonymous protected callback list остаётся `401` и PII не раскрывается.
+- [x] B70 Smoke: Public GET statuses остаётся `200` с wildcard.
+- [x] B71 Smoke: другой Public GET остаётся `200`/доменный status с wildcard policy.
+- [x] B72 Smoke: разрешённый CMS protected write сохраняет strict CORS и прежний application contract.
+- [x] B73 Smoke: cleanup удаляет все синтетические callback rows из реальной PostgreSQL и фиксирует evidence.
+
+### Frontend
+
+- [x] F01 Прочитать proposal/design/consumer delta spec и подтвердить ownership только `services/site-ad` после завершения Backend deliverable.
+- [x] F02 Удалить opt-in `SITE_API_PROXY_TARGET` rewrite из `services/site-ad/next.config.ts`, не затрагивая иные Next/Sentry/image settings.
+- [x] F03 Обновить site-ad environment/deployment documentation: browser использует абсолютный `NEXT_PUBLIC_API_BASE_URL`, selector остаётся public header.
+- [x] F04 Обновить config/API tests: без proxy callback URL разрешается напрямую в backend `/api/callback_requests`.
+- [x] F05 API-boundary test: POST содержит JSON `name`, `phone`, `comment` и `Content-Type`.
+- [x] F06 API-boundary test: POST содержит selector и не содержит Authorization/CMS credentials.
+- [x] F07 API-boundary test: CORS-readable `201` сохраняет success flow и один request при double-submit.
+- [x] F08 API-boundary/component test: `401` selector error сохраняет форму и показывает ошибку.
+- [x] F09 API-boundary/component test: `422` validation error сохраняет форму и показывает ошибку.
+- [x] F10 API-boundary/component test: generic/network error сохраняет форму и показывает ошибку.
+- [x] F11 Проверить отсутствие `SITE_API_PROXY_TARGET` и callback rewrites через `rg`, а также отсутствие CMS endpoint/credentials imports.
+- [x] F12 Запустить в `services/site-ad` применимые `npm test`, lint, `npx tsc --noEmit`, build и сохранить results.
+
+### Quality Gate
+
+- [x] Q01 Провести единый review всего diff после Backend и Site Consumer; findings вернуть владельцам и повторить review после fixes.
+- [x] Q02 Проверить точность allowlist: только `POST /api/callback_requests`, без prefix/trailing-slash/service leakage.
+- [x] Q03 Сверить полную access/CORS matrix: OPTIONS, POST anonymous/authenticated, invalid origin, selector и credentials semantics.
+- [x] Q04 Проверить, что Public GET unchanged, protected writes/GET strict, PII routes не открыты.
+- [x] Q05 Проверить минимум 30 разнообразных backend unit scenarios и их связь с behavior diff/access matrix.
+- [x] Q06 Проверить минимум 30 разнообразных live smoke scenarios через skill `smoke`, не pytest, на PostgreSQL из свежего `docker inspect`.
+- [x] Q07 Повторить полный backend test/lint/typecheck suite и проверить отсутствие миграций/NATS contract changes.
+- [x] Q08 Повторить site-ad test/lint/typecheck/build и проверить прямой absolute API config без proxy.
+- [x] Q09 Browser QA: с origin site-ad проверить успешный preflight + один POST + success UI и Network headers/status.
+- [x] Q10 Browser QA: проверить `401`, `422`, generic error, сохранение формы и отсутствие credentialed request.
+- [x] Q11 Browser QA: подтвердить существующие Public GET, responsive form и отсутствие regression/double-submit.
+- [x] Q12 Записать evidence и результаты в новый отчёт `docs/reports/public-callback-request-cors-quality-gate.md`.
+- [x] Q13 После APPROVED синхронизировать обе delta specs в main specs и выполнить strict validation всех main specs.
+- [x] Q14 Архивировать change только после sync/validation и подтвердить отсутствие active change.
