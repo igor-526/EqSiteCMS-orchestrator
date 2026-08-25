@@ -1,8 +1,5 @@
-# notification-callback-handler Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
-## Requirements
 ### Requirement: CallbackEventHandler
 The system MUST provide a handler for formatting callback_request notifications whose subject and HTML body contain only the applicant name, phone and comment and MUST NOT contain callback, tenant/equestrian, event or other UUID values.
 
@@ -21,20 +18,7 @@ The CallbackRequestHandler MUST use NotificationOrchestratorService, MUST accept
 - **WHEN** a CallbackRequestedData payload with callback_request_id, phone and optional name/comment is handled
 - **THEN** the orchestrator.process_event is called with event_code="callback" without requiring or injecting an equestrian UUID, and callback_request_id is not rendered into subject/body
 
-
-### Requirement: DI Container Update
-The application container MUST register orchestrator dependencies.
-
-#### Scenario: Container provides orchestrator
-- GIVEN the ApplicationContainer
-- WHEN resolving CallbackRequestHandler
-- THEN it receives NotificationOrchestratorService dependency
-
-#### Scenario: Container provides repositories
-- GIVEN the ApplicationContainer
-- WHEN resolving NotificationOrchestratorService
-- THEN it receives EventRepository, ChannelRepository, UserNotificationSettingRepository
-
+## ADDED Requirements
 
 ### Requirement: Семантика доставки callback-уведомления
 Notification-service MUST выставлять `notifications_delivered=true` через защищённый backend service endpoint только после успешной публикации хотя бы одной предусмотренной downstream email command. Отсутствие eligible recipients, ошибка routing/publish либо отсутствие подтверждения публикации MUST оставлять значение `false`. SMTP acknowledgement/receipt MUST NOT требоваться и MUST NOT влиять на этот флаг.

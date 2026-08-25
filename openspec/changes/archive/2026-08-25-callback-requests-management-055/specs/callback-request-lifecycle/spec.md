@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Журнал и реестр статусов callback-заявок
-Backend SHALL хранить callback-заявки в PostgreSQL с tenant/equestrian ownership, `name`, `phone`, `comment`, числовым `status`, `is_spam`, `notifications_delivered`, `created_at` и `updated_at`; отдельный seed-реестр SHALL содержать уникальные коды `1` «Новая», `2` «Обработана», `3` «Закрыто» и валидный HEX-цвет каждого тега.
+Backend SHALL хранить callback-заявки в PostgreSQL с tenant/equestrian ownership, `name`, `phone`, `comment`, числовым `status`, `is_spam`, `notifications_delivered`, `created_at` и `updated_at`; полный seed-реестр SHALL содержать ровно два уникальных кода `1` «Новая» и `2` «Обработана» с валидным HEX-цветом каждого тега.
 
 #### Scenario: Создание журналируемой заявки
 - **WHEN** валидная публичная заявка принята
@@ -9,26 +9,34 @@ Backend SHALL хранить callback-заявки в PostgreSQL с tenant/eques
 
 #### Scenario: Реестр сидируется повторно
 - **WHEN** seed-механизм запускается несколько раз
-- **THEN** три статуса существуют ровно по одному разу и их коды/названия/цвета согласованы
+- **THEN** два статуса существуют ровно по одному разу и их коды/названия/цвета согласованы
 
 ### Requirement: Разрешённые переходы и неизменность заявки
-Платформа MUST позволять CMS менять только `status` и `is_spam`, а service caller — только `status`, `is_spam` либо `notifications_delivered` соответствующим узким endpoint; изменение контактных данных, tenant, timestamps и удаление заявки MUST быть невозможно. Установка `is_spam=true` SHALL атомарно присваивать статус `3`; снятие spam SHALL менять только `is_spam`, сохраняя текущий статус.
+Платформа MUST позволять CMS менять только `status` и `is_spam`, а service caller — только `status`, `is_spam` либо подтверждать `notifications_delivered=true` соответствующим узким endpoint; изменение контактных данных, tenant, timestamps и удаление заявки MUST быть невозможно. Delivery confirmation SHALL означать успешную публикацию notification-service downstream email command и MUST NOT зависеть от SMTP acknowledgement. Установка `is_spam=true` SHALL атомарно присваивать статус `2` («Обработана»); снятие spam SHALL менять только `is_spam`, сохраняя текущий статус.
 
 #### Scenario: Администратор меняет статус
 - **WHEN** ADMIN или SUPERUSER присваивает существующий seeded status
 - **THEN** меняется только status и updated_at
 
-#### Scenario: Spam закрывает заявку
+#### Scenario: Spam переводит заявку в обработанное состояние
 - **WHEN** пользователь или service caller устанавливает `is_spam=true`
-- **THEN** одна транзакция сохраняет `is_spam=true` и `status=3`
+- **THEN** одна транзакция сохраняет `is_spam=true` и `status=2` («Обработана»)
 
 #### Scenario: Снятие spam сохраняет статус
-- **WHEN** пользователь снимает spam у закрытой заявки
-- **THEN** `is_spam=false`, а status остаётся `3`
+- **WHEN** пользователь снимает spam у обработанной spam-заявки
+- **THEN** `is_spam=false`, а status остаётся `2` («Обработана»)
 
 #### Scenario: Произвольное редактирование запрещено
 - **WHEN** caller передаёт name, phone, comment либо неизвестное поле в mutation
 - **THEN** API возвращает `422` и не изменяет запись
+
+#### Scenario: Service подтверждает downstream publication
+- **WHEN** caller с valid service key подтверждает успешную публикацию email command
+- **THEN** backend идемпотентно устанавливает `notifications_delivered=true` без ожидания SMTP receipt
+
+#### Scenario: Delivery-флаг нельзя сбросить или выставить пользователем
+- **WHEN** CMS caller пытается изменить delivery-флаг либо service caller передаёт `false`
+- **THEN** API возвращает `403` или `422` согласно access/validation boundary и не изменяет значение
 
 ### Requirement: Список, деталь, сортировка, фильтры и пагинация
 CMS list SHALL поддерживать `limit/offset`, стабильную сортировку по `created_at` и `status`, фильтры `created_at_from/to`, множественные `status`, множественные `is_spam`, а также безопасный регистронезависимый regex для `name`, `phone`, `comment`. Default SHALL быть `is_spam=false`, `status ASC, created_at DESC, id ASC`; detail SHALL возвращать полную заявку без внутренних tenant/service данных.
@@ -78,4 +86,3 @@ Developer consumer documentation SHALL описывать только `POST /ca
 #### Scenario: Проверка developer documentation
 - **WHEN** разработчик читает public consumer documentation
 - **THEN** он находит создание заявки и не находит list/detail/status/spam/delivery endpoints
-

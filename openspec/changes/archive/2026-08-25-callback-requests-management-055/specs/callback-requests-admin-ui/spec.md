@@ -30,11 +30,19 @@ Page SHALL содержать вкладки «Заявки» и «Инстру�
 - **THEN** UI показывает различимое сообщение и сохраняет применимое состояние filters/page/modal
 
 ### Requirement: Filters, sorting и pagination
-UI SHALL отправлять backend-параметры для date range, multi-status, multi-spam, name/phone/comment regex, sort и `{limit, offset}`; phone input MUST запрещать буквы, кроме синтаксиса regex. Любое изменение filter/search/sort/page-size SHALL reset-ить offset согласно UX (page change меняет только offset).
+UI SHALL отправлять backend-параметры для date range, multi-status, multi-spam, name/phone/comment regex, sort и `{limit, offset}`; phone input MUST запрещать буквы, кроме синтаксиса regex. Каждый фильтр, имеющий собственную колонку, MUST находиться в `filterDropdown` заголовка этой колонки по общему CMS table-паттерну: date range — «Дата и время», multi-status — «Статус», multi-spam — «Спам», name — «Имя», phone — «Телефон», comment — «Комментарий». Активный фильтр SHALL визуально выделять `filterIcon`. Видимые placeholder и accessibility labels поисковых полей MUST называться «Имя», «Телефон» и «Комментарий» без технической подписи `(regex)`; это требование не меняет regex-семантику и имена backend query parameters. Любое изменение filter/search/sort/page-size SHALL reset-ить offset согласно UX (page change меняет только offset).
 
 #### Scenario: Фильтрация и сортировка
 - **WHEN** пользователь применяет или очищает filters/sort
 - **THEN** query нормализуется, offset сбрасывается в `0`, а таблица обновляется
+
+#### Scenario: Фильтры находятся в соответствующих колонках
+- **WHEN** пользователь открывает фильтры таблицы callback-заявок
+- **THEN** период, статусы, спам, имя, телефон и комментарий доступны из заголовков соответствующих колонок, а активные фильтры отмечены цветом иконки
+
+#### Scenario: Поисковые поля не раскрывают техническую реализацию
+- **WHEN** пользователь открывает фильтры колонок «Имя», «Телефон» или «Комментарий»
+- **THEN** placeholder и accessibility label не содержат `(regex)`, но введённое значение отправляется в прежний regex query parameter с прежним debounce и validation behavior
 
 #### Scenario: Пагинация
 - **WHEN** пользователь меняет страницу или page size
@@ -49,7 +57,7 @@ Status tag и spam value SHALL открывать dropdown только при �
 
 #### Scenario: Успешная установка spam
 - **WHEN** разрешённый пользователь выбирает spam=true
-- **THEN** строка после refresh показывает spam и status «Закрыто»
+- **THEN** строка после refresh показывает spam и status «Обработана» (`2`)
 
 #### Scenario: Scope отсутствует или backend запрещает
 - **WHEN** scope отсутствует либо backend отвечает `401/403`
@@ -62,7 +70,7 @@ Status tag и spam value SHALL открывать dropdown только при �
 |---|---|---|---|---|
 | route/sidebar | новый защищённый последний menu item | unit/component | anonymous, ADMIN, SUPERUSER, forbidden | `npm test` |
 | API/types/hooks | list/detail/statuses/mutations, query mapping | unit/API-boundary MSW | success/empty/422/500/401/403 | `npm test`, `npx tsc --noEmit` |
-| filters/table/pagination | filters/sort/limit/offset/modal | component | authenticated, scopes present/missing | `npm test`, `npm run lint` |
+| filters/table/pagination | column-header filters без `(regex)` в labels, sort/limit/offset/modal | component | authenticated, scopes present/missing | `npm test`, `npm run lint` |
 | mutation dropdowns | status/spam guards и invalidation | component/API-boundary | scopes, double-submit, 401/403 | `npm test` |
 | page flow | tabs «Заявки»/«Инструкция» | smoke/e2e + manual | allowed/denied roles | `npm run build`, browser QA |
 
@@ -73,4 +81,3 @@ Status tag и spam value SHALL открывать dropdown только при �
 #### Scenario: Responsive manual gate
 - **WHEN** flow проверяется на desktop, tablet и mobile
 - **THEN** таблица, filters, dropdowns и modal не перекрываются, а результаты QA и failed-case screenshots/network evidence сохраняются в общем отчёте
-

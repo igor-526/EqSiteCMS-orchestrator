@@ -1,0 +1,149 @@
+## Чеклист
+
+### Backend
+
+- [x] 1.1 **Backend Core owner, `services/backend` only:** прочитать apply contextFiles/specs и зафиксировать фактические route/schema/repository/seed/migration patterns; не менять notification/frontend/site paths.
+- [x] 1.2 Создать entities/DTO/protocols для callback request, status registry, list query/page и узких status/spam/delivery mutations с запретом extra fields.
+- [x] 1.3 Добавить SQLAlchemy tables, tenant FK/constraints/indexes и Alembic upgrade/downgrade для `callback_request_statuses` и `callback_requests`.
+- [x] 1.4 Добавить идемпотентный полный seed-реестр ровно двух состояний `1=Новая`, `2=Обработана` с валидными HEX colors существующим seed-механизмом.
+- [x] 1.5 Реализовать repository и service use cases: create-before-publish, tenant-scoped list/detail, safe regex, stable sorting/pagination и atomic status/spam/delivery updates.
+- [x] 1.6 Реализовать Access matrix из spec: public POST exception, public status GET, protected PII GET/PATCH и service-key PATCH; проверить `401/403/404/422` и tenant non-disclosure.
+- [x] 1.7 Обновить callback publisher/runtime schema и `services/backend/docs/asyncapi.yaml`: сохранить internal callback_request_id, удалить `X-Equestrian-Id`/UUID всадника, не менять subject/stream.
+- [x] 1.8 Обновить public developer docs только для `POST /callback_requests` и внутренний route inventory для всех routes; не раскрывать CMS/service API в consumer docs.
+- [x] 1.9 Обновить DI/exports/router registration и сохранить Clean Architecture (`api -> depends -> core.services -> protocols`; SQL только repository).
+- [x] 1.10 Найти PostgreSQL контейнер по labels `com.docker.compose.project=eqsitecms` + `com.docker.compose.service=db`, fallback `eqsitecms-db`/`postgres`, получить DB env/host port через `docker inspect` без хардкода и сохранить evidence для live smoke.
+- [x] 1.11 Unit: create — валидная заявка получает status=1, spam=false и delivered=false.
+- [x] 1.12 Unit: create — name nullable и корректно сериализуется.
+- [x] 1.13 Unit: create — comment nullable и корректно сериализуется.
+- [x] 1.14 Unit: create — пустой phone отклоняется до repository/publisher.
+- [x] 1.15 Unit: create — граничные длины name/phone/comment приняты.
+- [x] 1.16 Unit: create — превышение каждой длины возвращает validation error без записи.
+- [x] 1.17 Unit: create — missing tenant selector возвращает `401`.
+- [x] 1.18 Unit: create — invalid tenant selector возвращает `401`.
+- [x] 1.19 Unit: create — repository commit происходит до publish и published id совпадает с persisted id.
+- [x] 1.20 Unit: create — ошибка DB не вызывает NATS publish.
+- [x] 1.21 Unit: create — ошибка NATS сохраняет запись с delivered=false и мапится controlled error.
+- [x] 1.22 Unit: NATS payload — содержит callback_request_id/applicant data и не содержит equestrian_id/header.
+- [x] 1.23 Unit: seed — полный реестр содержит ровно две идемпотентные unique status rows с валидными HEX.
+- [x] 1.24 Unit: list — default filters `is_spam=false` и sort status ASC/created_at DESC/id ASC.
+- [x] 1.25 Unit: list — explicit multi-status filter корректно передаётся repository.
+- [x] 1.26 Unit: list — multi-spam `[true,false]` отменяет default exclusion.
+- [x] 1.27 Unit: list — created_at from/to boundaries inclusive и timezone-aware.
+- [x] 1.28 Unit: list — case-insensitive name regex и empty normalization.
+- [x] 1.29 Unit: list — case-insensitive comment regex и empty normalization.
+- [x] 1.30 Unit: list — phone regex допускает phone/regex chars и отклоняет невалидный pattern.
+- [x] 1.31 Unit: list — слишком длинный/опасный regex отклоняется без repository query.
+- [x] 1.32 Unit: pagination — initial limit/offset, zero/negative и max-limit boundaries.
+- [x] 1.33 Unit: sorting — allowed fields/directions mapped, unknown sort returns `422`.
+- [x] 1.34 Unit: detail — own tenant returns full DTO without tenant/equestrian UUID.
+- [x] 1.35 Unit: detail — foreign/missing resource returns non-disclosing `404`.
+- [x] 1.36 Unit: admin status — seeded status succeeds; unknown status rejects transactionally.
+- [x] 1.37 Unit: admin status — anonymous `401`, other role `403`, ADMIN/SUPERUSER success.
+- [x] 1.38 Unit: spam true — atomically sets spam=true and status=2 («Обработана»).
+- [x] 1.39 Unit: spam false — changes only spam and preserves current status.
+- [x] 1.40 Unit: concurrent status/spam — spam invariant wins without partial update.
+- [x] 1.41 Unit: service status/spam/delivery — valid key подтверждает delivery только значением true и идемпотентно; false отклоняется, missing/invalid key `401`.
+- [x] 1.42 Unit: narrow mutations — name/phone/comment/tenant/timestamps/unknown fields return `422`.
+- [x] 1.43 Unit: API responses — PII list/detail protected; public statuses/create anonymous contract verified.
+- [x] 1.44 Запустить backend unit/contract/migration/format/lint/type checks применимыми Make/uv командами и вернуть evidence; сразу отметить только фактически выполненные tasks.
+- [x] 1.45 **Notification owner, `services/notification-service` only, после 1.7:** прочитать NATS howto и обе AsyncAPI; обновить callback schema/handler/consumer/client без пересечения backend ownership.
+- [x] 1.46 Удалить equestrian UUID из callback flow и email HTML; callback_request_id использовать только для service correlation, никогда не рендерить UUID в subject/body.
+- [x] 1.47 После успешной публикации хотя бы одной downstream email command вызвать service delivery PATCH; при no recipients/routing/publish error оставить false, не ожидая SMTP acknowledgement/receipt и сохраняя retry/idempotency semantics.
+- [x] 1.48 Обновить notification AsyncAPI/runtime contract/unit tests и выполнить service tests/lint/type/`make asyncapi-validate` с evidence.
+- [x] 1.49 Unit: notification email — name/phone/comment присутствуют, UUID label/value отсутствуют.
+- [x] 1.50 Unit: notification email — null name/comment дают безопасные placeholders без UUID.
+- [x] 1.51 Unit: notification handler — payload без equestrian id принимается.
+- [x] 1.52 Unit: notification delivery — successful downstream email-command publish вызывает ровно один service update для callback id без ожидания SMTP acknowledgement.
+- [x] 1.53 Unit: notification delivery — no recipients и routing/publish/service errors не дают ложный true; SMTP delivery/receipt не участвует в decision, retry behavior сохранён.
+- [x] 1.54 Smoke: migration — upgrade создаёт обе таблицы/constraints/indexes на реальной PostgreSQL.
+- [x] 1.55 Smoke: migration — downgrade/повторный upgrade проходят на реальной PostgreSQL без schema drift.
+- [x] 1.56 Smoke: seed — повторный запуск оставляет полный реестр ровно из statuses 1/2 с ожидаемыми HEX.
+- [x] 1.57 Smoke: public create — anonymous POST с valid selector возвращает `201` и строку в PostgreSQL.
+- [x] 1.58 Smoke: public create — authenticated POST имеет тот же успешный контракт.
+- [x] 1.59 Smoke: public create — missing selector `401` и строка не создаётся.
+- [x] 1.60 Smoke: public create — invalid selector `401` и строка не создаётся.
+- [x] 1.61 Smoke: public create — invalid/missing phone `422` без DB row/NATS event.
+- [x] 1.62 Smoke: public create — boundary applicant lengths сохраняются без потерь UTF-8.
+- [x] 1.63 Smoke: public create — oversized fields `422` без partial row.
+- [x] 1.64 Smoke: create defaults — DB подтверждает status=1/spam=false/delivered=false и UTC timestamps.
+- [x] 1.65 Smoke: public statuses GET — anonymous и authenticated получают seeded statuses.
+- [x] 1.66 Smoke: protected list GET — anonymous `401`, other role `403`, ADMIN и SUPERUSER `200`.
+- [x] 1.67 Smoke: protected detail GET — anonymous `401`, other role `403`, allowed roles `200`.
+- [x] 1.68 Smoke: tenant isolation — foreign list/detail/mutation не раскрывают запись и detail/mutation дают `404`.
+- [x] 1.69 Smoke: default list — spam rows исключены, sort status ASC/created_at DESC/id ASC подтверждён данными.
+- [x] 1.70 Smoke: multi-status filter — возвращаются только выбранные codes.
+- [x] 1.71 Smoke: multi-spam filter — true/false combinations и default работают.
+- [x] 1.72 Smoke: date from/to — boundary и timezone records отфильтрованы корректно.
+- [x] 1.73 Smoke: name regex — case-insensitive Cyrillic/Latin matching.
+- [x] 1.74 Smoke: phone regex — digits/punctuation matching и invalid expression `422`.
+- [x] 1.75 Smoke: comment regex — case-insensitive matching, null rows не ломают query.
+- [x] 1.76 Smoke: dangerous/oversized regex — быстро получает `422` без деградации DB.
+- [x] 1.77 Smoke: pagination — initial page, next page, last/empty page без duplicate/missing ids.
+- [x] 1.78 Smoke: page-size and stable ties — limit/offset и одинаковые timestamps детерминированы.
+- [x] 1.79 Smoke: sorting — created_at/status asc/desc и invalid sort `422`.
+- [x] 1.80 Smoke: admin status PATCH — ADMIN/SUPERUSER success; anonymous `401`; other role `403`.
+- [x] 1.81 Smoke: unknown status — `422`/contract error и исходная row неизменна.
+- [x] 1.82 Smoke: spam true — DB атомарно хранит true/status=2 («Обработана»).
+- [x] 1.83 Smoke: spam false — DB сохраняет существующий status.
+- [x] 1.84 Smoke: forbidden extra mutation fields — `422`, applicant data неизменны.
+- [x] 1.85 Smoke: service status — valid key success, missing/invalid key `401`, missing id `404`.
+- [x] 1.86 Smoke: service spam — valid key success и status invariant; invalid key без изменений.
+- [x] 1.87 Smoke: service delivery — valid key идемпотентно выставляет только true; false отклоняется, invalid key не меняет значение.
+- [x] 1.88 Smoke: concurrent status/spam requests — нет lost update/partial state, spam invariant соблюдён.
+- [x] 1.89 Smoke: real NATS — persisted callback публикуется без X-Equestrian-Id и принимается notification-service.
+- [x] 1.90 Smoke: notification email command — subject/body содержат только applicant info и ни одного UUID.
+- [x] 1.91 Smoke: successful downstream email-command publish — service delivery flag становится true без SMTP receipt; no recipients/routing/publish failure оставляет false.
+- [x] 1.92 Smoke: NATS duplicate/redelivery — idempotency не создаёт duplicate callback row/email command/service update.
+- [x] 1.93 Smoke: PostgreSQL rollback — failed mutation/create не оставляет partial rows/invalid FK.
+- [x] 1.94 Smoke: response schema — list/detail/create не раскрывают tenant/equestrian/service fields.
+- [x] 1.95 Выполнить все пункты `Smoke:` только skill `smoke` на реальном API/PostgreSQL/NATS (не pytest smoke files, не mocks/in-memory), сохранить план/результаты в `docs/reports`.
+
+### Frontend
+
+- [x] 2.1 **CMS Frontend owner, `services/frontend` only:** создать `features/callbackRequests` API/types/services/hooks/UI и `/callback-requests` route; не менять `site-ad` и backend paths.
+- [x] 2.2 Добавить callback menu item подходящей icon последним; показать только ADMIN/SUPERUSER, добавить active key/title и route guard.
+- [x] 2.3 Реализовать tabs «Заявки»/«Инструкция», актуальную admin-инструкцию, table columns, tel link, truncated comment и full detail modal.
+- [x] 2.4 Реализовать statuses-on-render, filters/sort/query normalization и pagination initial `{limit,offset}`, page/page-size changes и reset offset на filter/search/sort.
+- [x] 2.5 Реализовать status/spam dropdown protected-write UX: scope present/missing, hidden/disabled/guarded action, mutation/double-submit guard, `401/403` surface и success invalidation.
+- [x] 2.6 Добавить MSW unit/component/API-boundary tests без live backend calls: success, loading, empty, validation, generic, `401`, `403`, data row, modal interaction и permission cases.
+- [x] 2.7 Добавить filter tests: apply, clear/normalize, regex/debounce expectation, phone alphabet restriction и offset reset; sort mapping/clear/reset.
+- [x] 2.8 Добавить pagination tests: initial limit/offset, page change, page-size change и reset offset на filter/search/sort.
+- [x] 2.9 Добавить status/spam mutation tests: scope present/missing, disabled/hidden, valid submit, backend error, double submit, row-click isolation и success refresh.
+- [x] 2.10 Добавить route/sidebar/page flow tests: anonymous redirect/block, ADMIN/SUPERUSER render, forbidden role, tabs и один smoke/e2e happy path либо documented manual substitute.
+- [x] 2.11 Выполнить no `site-*` mixing self-check и команды `rg -n "fetch\\(|axios" services/frontend/src -g '*.{ts,tsx}'`, `rg -n "from ['\"]@/api" services/frontend/src/app services/frontend/src/features -g '*.{ts,tsx}'`, pagination/site/shared directory checks из `agents/planner.md`.
+- [x] 2.12 Запустить из `services/frontend`: `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`; вернуть evidence и отметить только свои tasks.
+- [x] 2.13 **Site Consumer owner, `services/site-ad` only:** исправить path `/callback_requests`, body `comment`, submit semantics/pending/error UX и не добавлять CMS auth/CMS-only endpoints.
+- [x] 2.14 Добавить consumer API-boundary/component tests: valid success/reset modal, client validation, selector `401`, backend validation/generic error state preservation и double-submit.
+- [x] 2.15 Запустить применимые `site-ad` test/lint/typecheck/build и статически проверить отсутствие CMS-only imports/credentials; вернуть evidence и отметить только свои tasks.
+- [x] 2.28 **CMS Frontend regression owner, `services/frontend` only:** перенести period/status/spam/name/phone/comment controls из общей панели в `filterDropdown` соответствующих колонок `CallbackRequestsTable` по существующему CMS table-паттерну, подсвечивать активные `filterIcon`, оставить общий reset отдельным действием и убрать `(regex)` из видимых placeholder/`aria-label`, не меняя backend query contract, debounce и regex semantics.
+- [x] 2.29 Обновить callback filter/table component tests: точное соответствие шести фильтров колонкам, отсутствие `(regex)` в пользовательских labels, active-icon state, apply/clear/reset, phone alphabet restriction, debounce и offset reset; запустить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` и вернуть evidence.
+
+## Manual QA steps (UI тестирование)
+
+- [x] 2.16 Предусловия: применены migrations/seeds, backend+frontend запущены, созданы normal/spam/status/date/long-comment заявки и пользователи ADMIN, SUPERUSER, forbidden role; зафиксировать base URLs/build.
+- [x] 2.17 Anonymous: открыть CMS `/callback-requests` без session; ожидать redirect/block, отсутствие PII и menu; затем войти ADMIN и SUPERUSER — page/menu доступны, forbidden role — item отсутствует и direct route guarded.
+- [x] 2.18 Navigation/tabs: убедиться, что callback item последний и icon/active/title корректны; переключить «Заявки»/«Инструкция», сверить полноту инструкции.
+- [x] 2.19 Table/detail: проверить дату/время, status tag/color, spam, name, `tel:` phone, truncated comment; row modal показывает полные значения и закрывается без потери table state.
+- [x] 2.20 Filters/sort: открыть period/status/spam/name/phone/comment filters из заголовков соответствующих колонок, убедиться в подсветке active icon и отсутствии `(regex)` в видимых labels; проверить from/to, multi-status, multi-spam, case-insensitive name/comment regex semantics, допустимые phone regex chars, запрет букв, clear/общий reset/normalize и reset offset.
+- [x] 2.21 Pagination: проверить initial page, next/previous, page size и отсутствие duplicate/missing rows; filters/search/sort возвращают page к offset=0.
+- [x] 2.22 Protected Write: со scope сменить status/spam; spam=true показывает «Обработана» (`2`) после refresh, spam=false сохраняет status `2`; повторный click не создаёт второй request.
+- [x] 2.23 Permissions/errors: без scope action hidden/disabled; симулировать backend `401/403/422/500`, проверить понятные сообщения и сохранение table/filter/modal state без optimistic corruption.
+- [x] 2.24 Consumer: на `site-ad` открыть форму из всех entry points, проверить validation/policy, один POST при double click, success reset/modal и сохранение данных при selector/backend error.
+- [x] 2.25 Responsive: повторить критический table/column-filter dropdown/modal/form flow на desktop ≥1280px, tablet ~768px и mobile ~375px; dropdown каждого фильтра открывается из своей колонки и не перекрывает текст/buttons/table/picker/modal/layout, горизонтальная прокрутка контролируема.
+- [x] 2.26 Regression/no mixing: проверить существующие CMS routes/sidebar и публичные страницы `site-ad`; CMS не импортирует consumer code, consumer не вызывает list/detail/mutations.
+- [x] 2.27 Сохранить итог passed/failed report; для failed responsive/error/permission cases приложить screenshots, для API failures — method/path/status/body/network evidence.
+
+### Quality Gate
+
+- [x] 3.1 После завершения всех owners провести один общий diff review: ownership не пересекается, runtime changes соответствуют всем delta specs и OpenSpec tasks отмечены только по evidence.
+- [x] 3.2 Проверить backend Clean Architecture, migration upgrade/downgrade, seed idempotency, constraints/indexes, tenant isolation и отсутствие generic edit/delete.
+- [x] 3.3 Сверить каждую строку Access matrix anonymous/authenticated/service-key tests: public GET не приватизирован, исключения объяснены, protected writes/PII GET не открыты, foreign tenant не раскрыт.
+- [x] 3.4 Проверить наличие минимум 30 разнообразных `Unit:` и минимум 30 `Smoke:` scenarios, их связь с behavior/access matrix и отсутствие искусственно однотипных happy paths.
+- [x] 3.5 Проверить, что live smoke выполнен skill `smoke` на реальном API/PostgreSQL/NATS, DB параметры повторно получены `docker inspect`, без SQLite/mocks/in-memory/pytest smoke substitution.
+- [x] 3.6 Проверить обе AsyncAPI/runtime schemas, отсутствие `X-Equestrian-Id`/UUID всадника и UUID в email, затем запустить `make asyncapi-validate` и real JetStream acceptance.
+- [x] 3.7 Проверить delivery correlation/semantics: `true` только после успешного downstream email-command publish, без SMTP acknowledgement; проверить commit-before-publish, failure/redelivery/idempotency/concurrency и отсутствие ложного `true`.
+- [x] 3.8 Проверить frontend tests относительно behavior diff: MSW/no live calls, success/empty/422/500/401/403, scopes, protected-write UX, double submit, pagination limit/offset/reset и no `site-*` mixing.
+- [x] 3.9 Из `services/frontend` запустить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`; из `site-ad` — применимые test/lint/typecheck/build; review Manual QA evidence.
+- [x] 3.10 Выполнить backend/notification применимые unit/lint/type checks и repository-level `make check`; findings вернуть владельцам, дождаться исправлений и повторить единый общий review.
+- [x] 3.11 После PASS сохранить общий evidence report в `docs/reports`, синхронизировать delta specs в main specs, повторить strict validation и только затем архивировать change.
+- [x] 3.12 После выполнения 2.28–2.29 повторить общий frontend review и Manual QA: сверить шесть column-header filters, отсутствие пользовательских `(regex)` labels, неизменный API query contract/regex behavior, responsive dropdown layout и regression commands; findings вернуть Frontend owner до PASS.

@@ -25,7 +25,7 @@
 
 ### 1. Данные и числовые статусы
 
-Создаются `callback_request_statuses` (`id SMALLINT PK`, unique name, `color CHAR(7)` с HEX validation) и tenant-scoped `callback_requests` с FK на status. Фиксируем `1=Новая`, `2=Обработана`, `3=Закрыто`: третий код необходим из явно описанного spam rule, хотя в исходном перечне он не был пронумерован. Seed выполняется существующим backend seed mechanism идемпотентно.
+Создаются `callback_request_statuses` (`id SMALLINT PK`, unique name, `color CHAR(7)` с HEX validation) и tenant-scoped `callback_requests` с FK на status. Фиксируем полный реестр из двух состояний: `1=Новая`, `2=Обработана`; установка spam переводит заявку в `2=Обработана`. Seed выполняется существующим backend seed mechanism идемпотентно.
 
 Альтернатива — enum/строка в одной таблице — отвергнута, потому что ТЗ требует сортируемые числовые значения, человекочитаемый реестр и HEX color.
 
@@ -35,7 +35,7 @@ Use case валидирует selector, сохраняет заявку и по�
 
 ### 3. Correlation и notification-delivered
 
-`callback_request_id` остаётся внутренним полем event для вызова notification-service → backend service PATCH. `X-Equestrian-Id` и equestrian UUID удаляются из publisher, AsyncAPI, consumer schema/handler/tests. После успешной публикации хотя бы одной предусмотренной email command notification-service выставляет `notifications_delivered=true`; если нет eligible recipients либо routing/publish завершился ошибкой, флаг остаётся false. Это трактует «доставлены уведомления» как успешную передачу notification-service downstream, поскольку фактическое SMTP delivery принадлежит email-service и отдельного callback acknowledgement сейчас нет.
+`callback_request_id` остаётся внутренним полем event для вызова notification-service → backend service PATCH. `X-Equestrian-Id` и equestrian UUID удаляются из publisher, AsyncAPI, consumer schema/handler/tests. После успешной публикации хотя бы одной предусмотренной downstream email command notification-service выставляет `notifications_delivered=true`; если нет eligible recipients либо routing/publish завершился ошибкой, флаг остаётся false. Это окончательная семантика поля: фактическая SMTP-доставка и SMTP acknowledgement/receipt не входят в callback contract и не требуются для выставления флага.
 
 Альтернатива — удалить все UUID из межсервисного сообщения — исключила бы точную корреляцию service update; альтернатива — показывать id в письме — прямо запрещена.
 
@@ -53,6 +53,8 @@ Backend принимает ограниченные по длине regex patter
 
 Новый `features/callbackRequests` владеет types/service/hooks/components; route только композирует feature. Sidebar фильтрует item по ADMIN/SUPERUSER, route/hook повторно guard-ят доступ. Справочник статусов загружается при render и не хранится постоянно. Server state обновляется только после подтверждения mutation, с pending/double-submit guard и invalidation.
 
+Фильтры следуют принятому в CMS table-паттерну `filterIcon`/`filterDropdown` и располагаются в заголовках соответствующих колонок: период `created_at_from`/`created_at_to` — в «Дата и время», multi-status — в «Статус», multi-spam — в «Спам», поисковые поля `name`, `phone`, `comment` — в «Имя», «Телефон», «Комментарий». Активный фильтр визуально выделяет иконку колонки; общий reset может оставаться отдельным действием над таблицей. Пользовательские placeholder/`aria-label` поисковых полей не содержат технической подписи `(regex)`, хотя debounce, допустимый синтаксис, backend query names и regex-семантика API не меняются.
+
 ### 7. Consumer form boundary
 
 `site-ad` остаётся client-only интерактивным enhancement и не влияет на SEO content. API boundary исправляется на `/callback_requests`, `notes` преобразуется в `comment` (предпочтительно единое имя в view model), submit становится form submit, ошибки видимыми, pending блокирует повторный POST. CMS credentials не добавляются.
@@ -68,9 +70,9 @@ Backend принимает ограниченные по длине regex patter
 ## Risks / Trade-offs
 
 - [Commit выполнен, NATS publish упал] → заявка сохраняется с `notifications_delivered=false`; controlled error и operational evidence позволяют повторную обработку, outbox остаётся будущим улучшением.
-- [Название delivery-флага сильнее фактической гарантии SMTP] → contract явно определяет момент выставления как успешный downstream publish; отдельный SMTP acknowledgement потребует нового change.
+- [Название delivery-флага может восприниматься как SMTP-гарантия] → API/spec/docs однозначно определяют его как подтверждение успешного downstream publish notification-service; SMTP acknowledgement/receipt не является частью acceptance.
 - [Regex может быть дорогим] → лимиты длины/синтаксиса, statement timeout/безопасная subset validation и негативные тесты.
-- [Одновременные status/spam updates] → atomic repository update и concurrency tests; spam=true всегда выигрывает бизнес-инвариантом status=3.
+- [Одновременные status/spam updates] → atomic repository update и concurrency tests; spam=true всегда выигрывает бизнес-инвариантом status=2 («Обработана»).
 - [NATS breaking header change] → backend contract owner первым обновляет обе AsyncAPI, затем producer/consumer; `make asyncapi-validate` и real JetStream acceptance до rollout.
 - [PII leakage] → protected GET, tenant-scoped repository, response-schema review и запрет UUID в email snapshots.
 - [Разные API conventions frontend/consumer] → MSW contract tests фиксируют exact path/body/query/status.
@@ -81,8 +83,3 @@ Backend принимает ограниченные по длине regex patter
 2. Развернуть совместимые backend и notification-service изменения в одном release window; до этого не публиковать header-less callback event старому consumer.
 3. Развернуть CMS feature и исправленный `site-ad`; проверить anonymous create и protected admin processing.
 4. Rollback UI безопасен независимо. При rollback messaging вернуть producer/consumer одновременно. Downgrade DB допустим только если потеря новых callback rows явно принята; предпочтительный operational rollback — оставить таблицы и откатить runtime.
-
-## Open Questions
-
-- Подтвердить продуктовую трактовку, что «Закрыто» получает числовой код `3`.
-- Подтвердить, что `notifications_delivered=true` означает успешную публикацию notification-service в downstream email command, а не подтверждённую SMTP-доставку. Для SMTP-семантики потребуется отдельный acknowledgement contract от email-service.
