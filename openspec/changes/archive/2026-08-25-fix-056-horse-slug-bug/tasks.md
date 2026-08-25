@@ -1,0 +1,108 @@
+## 1. Реализация и проверки
+
+### Backend
+
+- [x] 1.1 Расширить `services/backend/src/core/schemas/horses.py`: добавить optional `slug` в `HorseCreateInDto` и `HorseUpdateInDto` с контрактом длины до 63 символов.
+- [x] 1.2 Обновить `services/backend/src/core/services/horse.py`: передавать create slug в `Horse`, различать omitted/empty/manual update и валидировать итоговую сущность через доменный слой.
+- [x] 1.3 Обновить `services/backend/src/core/services/horse.py`: проверять self-excluding tenant-scoped uniqueness, suffix-ить только автогенерацию и мапить ручную/race коллизию в управляемый `400`.
+- [x] 1.4 Заполнить и сверить Access matrix для `POST /api/horses`, `PATCH /api/horses/{horse_id}`, `GET /api/horses`, `GET /api/horses/{slug_or_id}`; не менять текущие auth dependencies/roles.
+- [x] 1.5 Перед smoke найти PostgreSQL по labels `project=eqsitecms` + `service=db`, затем fallback `eqsitecms-db`/image postgres, выполнить `docker inspect` и записать актуальные container/image/labels/aliases/env/host port без хардкода.
+- [x] 1.6 Unit: horse slug management — `HorseCreateInDto` принимает отсутствующий slug.
+- [x] 1.7 Unit: horse slug management — `HorseCreateInDto` принимает `slug=null`.
+- [x] 1.8 Unit: horse slug management — `HorseCreateInDto` принимает пустой slug.
+- [x] 1.9 Unit: horse slug management — `HorseCreateInDto` принимает ручной slug длиной 63.
+- [x] 1.10 Unit: horse slug management — DTO отклоняет slug длиннее 63.
+- [x] 1.11 Unit: horse slug management — extra fields остаются запрещены.
+- [x] 1.12 Unit: horse slug management — ручной create slug нормализуется в lowercase kebab-case.
+- [x] 1.13 Unit: horse slug management — кириллический ручной slug транслитерируется доменным алгоритмом.
+- [x] 1.14 Unit: horse slug management — create без slug генерирует slug из name.
+- [x] 1.15 Unit: horse slug management — create с `null` генерирует slug из name.
+- [x] 1.16 Unit: horse slug management — create с пустой строкой генерирует slug из name.
+- [x] 1.17 Unit: horse slug management — auto create collision выбирает минимальный свободный `-N`.
+- [x] 1.18 Unit: horse slug management — suffix при длинном base сохраняет предел 63.
+- [x] 1.19 Unit: horse slug management — ручной create conflict возвращает `ClientError`, не suffix.
+- [x] 1.20 Unit: horse slug management — constraint race ручного create мапится без необработанного exception.
+- [x] 1.21 Unit: horse slug management — constraint не slug-типа не маскируется как slug conflict.
+- [x] 1.22 Unit: horse slug management — PATCH без поля slug сохраняет текущий slug.
+- [x] 1.23 Unit: horse slug management — PATCH с новым ручным slug меняет его после нормализации.
+- [x] 1.24 Unit: horse slug management — PATCH текущим slug не вызывает self-conflict.
+- [x] 1.25 Unit: horse slug management — PATCH `slug=null` регенерирует из текущего имени.
+- [x] 1.26 Unit: horse slug management — PATCH `slug=""` регенерирует из нового имени того же payload.
+- [x] 1.27 Unit: horse slug management — regenerated PATCH collision выбирает минимальный свободный suffix.
+- [x] 1.28 Unit: horse slug management — ручной PATCH conflict возвращает `400` и repository update не вызывается.
+- [x] 1.29 Unit: horse slug management — значение, нормализуемое в пустоту, возвращает `400` без update.
+- [x] 1.30 Unit: horse slug management — одинаковый slug разрешён, если repository lookup другого tenant его не видит.
+- [x] 1.31 Unit: horse slug management — foreign tenant horse нельзя обновить по UUID.
+- [x] 1.32 Unit: horse slug management — пользователь без разрешённого scope получает `ForbiddenError` до mutation.
+- [x] 1.33 Unit: horse slug management — anonymous create/update отвергается до mutation.
+- [x] 1.34 Unit: horse slug management — пустой PATCH по-прежнему возвращает «Нет данных для обновления».
+- [x] 1.35 Unit: horse slug management — обновление иных полей вместе со slug атомарно формирует одну entity update.
+- [x] 1.36 Unit: horse slug management — ответ create содержит фактически сохранённый slug.
+- [x] 1.37 Unit: horse slug management — ответ PATCH содержит фактически сохранённый slug.
+- [x] 1.38 Unit: horse slug management — lookup нового slug находит запись, старого после update не находит.
+- [x] 1.39 Unit: horse slug management — Public Read projection не теряет slug.
+- [x] 1.40 Unit: horse slug management — repository unique mapping распознаёт только `ix_horse_equestrian_slug`.
+- [x] 1.41 Smoke: horse slug management — повторить `docker inspect`, применить миграции к реальной PostgreSQL и подтвердить readiness API.
+- [x] 1.42 Smoke: horse slug management — authenticated POST с ручным ASCII slug сохраняет строку в PostgreSQL.
+- [x] 1.43 Smoke: horse slug management — authenticated POST с кириллицей/пробелами возвращает нормализованный slug.
+- [x] 1.44 Smoke: horse slug management — POST без slug генерирует его из name.
+- [x] 1.45 Smoke: horse slug management — POST с `slug=null` генерирует его из name.
+- [x] 1.46 Smoke: horse slug management — POST с пустым slug генерирует его из name.
+- [x] 1.47 Smoke: horse slug management — два auto create одного base получают base и минимальный `-1`.
+- [x] 1.48 Smoke: horse slug management — длинный generated slug с suffix укладывается в 63 символа.
+- [x] 1.49 Smoke: horse slug management — duplicate ручной POST в одном tenant возвращает `400` и одна строка в PostgreSQL.
+- [x] 1.50 Smoke: horse slug management — одинаковый ручной slug в разных tenant сохраняется независимо.
+- [x] 1.51 Smoke: horse slug management — PATCH новым ручным slug возвращает его и фиксирует в PostgreSQL.
+- [x] 1.52 Smoke: horse slug management — PATCH без slug сохраняет прежний slug.
+- [x] 1.53 Smoke: horse slug management — PATCH текущим slug идемпотентно успешен.
+- [x] 1.54 Smoke: horse slug management — PATCH `slug=null` регенерирует slug из текущего name.
+- [x] 1.55 Smoke: horse slug management — PATCH пустым slug и новым name генерирует из нового name.
+- [x] 1.56 Smoke: horse slug management — regenerated PATCH collision получает минимальный свободный suffix.
+- [x] 1.57 Smoke: horse slug management — duplicate ручной PATCH возвращает `400` и исходная строка не меняется.
+- [x] 1.58 Smoke: horse slug management — значение длиннее 63 возвращает структурную ошибку и не меняет БД.
+- [x] 1.59 Smoke: horse slug management — значение, нормализуемое в пустоту, возвращает `400` без частичной записи.
+- [x] 1.60 Smoke: horse slug management — concurrent ручные POST одного tenant оставляют не более одной строку и не дают `500`.
+- [x] 1.61 Smoke: horse slug management — concurrent PATCH двух лошадей на один slug оставляет unique state и не даёт `500`.
+- [x] 1.62 Smoke: horse slug management — anonymous POST без cookie возвращает `401` и не создаёт строку.
+- [x] 1.63 Smoke: horse slug management — anonymous PATCH без cookie возвращает `401` и не меняет строку.
+- [x] 1.64 Smoke: horse slug management — authenticated пользователь без scope получает `403` на POST.
+- [x] 1.65 Smoke: horse slug management — authenticated пользователь без scope получает `403` на PATCH.
+- [x] 1.66 Smoke: horse slug management — foreign tenant PATCH возвращает контрактный denial и не меняет чужую строку.
+- [x] 1.67 Smoke: horse slug management — missing tenant selector возвращает `401` до write.
+- [x] 1.68 Smoke: horse slug management — invalid tenant selector возвращает `401` до write.
+- [x] 1.69 Smoke: horse slug management — Public GET list без CMS cookie с валидным selector возвращает новый slug.
+- [x] 1.70 Smoke: horse slug management — Public GET detail нового slug без CMS cookie возвращает `200`.
+- [x] 1.71 Smoke: horse slug management — Public GET старого slug после PATCH возвращает missing contract.
+- [x] 1.72 Smoke: horse slug management — Public GET нового slug другого tenant не раскрывает запись.
+- [x] 1.73 Smoke: horse slug management — malformed horse UUID на PATCH возвращает structural error без DB mutation.
+- [x] 1.74 Smoke: horse slug management — unknown horse UUID возвращает действующий not-found contract.
+- [x] 1.75 Smoke: horse slug management — generic non-slug DB constraint не превращается в сообщение о slug.
+- [x] 1.76 Smoke: horse slug management — cleanup удаляет все созданные строки из реальной PostgreSQL.
+
+### Frontend
+
+- [x] 1.77 Расширить `services/frontend/src/types/api/horses.ts`: optional `slug` в `HorseCreateInDto` и `HorseUpdateInDto` без локального дублирования DTO.
+- [x] 1.78 Обновить `HorseCreateUpdateModal.tsx`: slug state, reset/prefill, label/input maxLength=63, create/update payload и `validationErrors.slug`.
+- [x] 1.79 Component test: create modal показывает пустое поле «Путь URL» и ручное значение попадает в typed payload.
+- [x] 1.80 Component test: edit modal prefill-ит `selectedHorse.slug` и изменённое значение попадает в update payload.
+- [x] 1.81 Component test: очистка slug отправляет empty/null по согласованному контракту автогенерации.
+- [x] 1.82 Component test: ошибка `validationErrors.slug` видна у поля и введённое состояние сохраняется.
+- [x] 1.83 Component test: create/update с разрешённым scope доступны, без scope скрыты/disabled и mutation не вызывается.
+- [x] 1.84 Component test: pending slug mutation защищена от double submit и показывает loading/disabled.
+- [x] 1.85 API-boundary test с MSW: success возвращает новый slug; validation/generic/`401`/`403` проходят существующий error flow без live backend.
+- [x] 1.86 Regression test: loading/empty/table interaction и slug column не ломаются после modal change.
+- [x] 1.87 Проверить anonymous `/horses` redirect/block и authenticated render; проверить существующие pagination `{limit, offset}` и reset offset без изменения контракта.
+- [x] 1.88 Выполнить no `site-*` mixing checks: `rg` для `fetch|axios`, `@/api`, page/pageSize, `site-ad|Public Read` и FSD directory audit из Planner contract.
+- [x] 1.89 Выполнить Manual QA steps из `design.md` на desktop/tablet/mobile и вернуть evidence passed/failed, screenshots/network status/body для failures.
+
+### Quality Gate
+
+- [x] 1.90 Проверить совокупный diff после обоих владельцев: Clean Architecture, FSD, ownership и отсутствие изменений БД/NATS/site consumer вне scope.
+- [x] 1.91 Сверить Access matrix: Public Read GET не приватизированы; Protected Write POST/PATCH не открыты; anonymous/authenticated/scope/foreign tenant outcomes покрыты.
+- [x] 1.92 Проверить минимум 30 разнообразных Unit и 30 Smoke сценариев horse slug management, включая edge/error/race/tenant/access, без однотипного наполнения.
+- [x] 1.93 Проверить, что smoke выполнялся только через skill на живом API с реальной PostgreSQL, а параметры повторно получены через `docker inspect`, не хардкодились и pytest smoke-файлы не добавлены.
+- [x] 1.94 В `services/backend` запустить применимые unit suite/`make test` и сохранить команды/результаты.
+- [x] 1.95 В `services/frontend` запустить `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+- [x] 1.96 Проверить frontend tests против behavior diff: MSW/no live calls, anonymous/authenticated, scopes, `401/403`, double-submit, field error, responsive manual QA, pagination и no `site-*` mixing.
+- [x] 1.97 Сохранить единый Quality Gate evidence в `docs/reports`, вернуть findings владельцам, дождаться исправлений и повторить общий review до success.
+- [x] 1.98 После success синхронизировать delta specs в main specs, повторить strict validation и только затем архивировать `fix-056-horse-slug-bug`.

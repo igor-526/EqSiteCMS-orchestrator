@@ -122,4 +122,4 @@
 - [x] 5.16 Сверить `docs/operations/observability.md` и implementation evidence с фактическими env names, ports, commands и lifecycle
 - [x] 5.17 Вернуть findings соответствующим path owners, дождаться fixes и повторить весь применимый общий Quality Gate
 - [x] 5.18 После успешного gate синхронизировать delta spec `platform-observability` в main specs и выполнить strict validation
-- [ ] 5.19 Только после sync/validation и пользовательского подтверждения завершения архивировать change `observability-054`
+- [x] 5.19 Только после sync/validation и пользовательского подтверждения завершения архивировать change `observability-054`
