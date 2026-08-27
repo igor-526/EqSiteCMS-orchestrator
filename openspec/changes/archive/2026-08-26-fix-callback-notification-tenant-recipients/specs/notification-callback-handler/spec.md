@@ -1,8 +1,5 @@
-# notification-callback-handler Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
-## Requirements
 ### Requirement: CallbackEventHandler
 Система MUST предоставлять handler форматирования callback_request notification, который выбирает получателей только внутри `equestrian_id` события: запрашивает активных пользователей Backend Core с одновременными фильтрами `equestrian_ids=[equestrian_id]` и `role=[ADMIN,SUPERUSER]`, пересекает их с `enabled_user_ids`, затем оставляет только подтверждённые email. Subject и HTML body MUST содержать только имя, телефон и комментарий заявителя и MUST NOT содержать callback, tenant/equestrian, event или другие UUID.
 
@@ -41,32 +38,3 @@ CallbackRequestHandler MUST использовать NotificationOrchestratorSer
 - **WHEN** consumer получает payload без `equestrian_id` или с невалидным UUID
 - **THEN** schema validation отклоняет сообщение, оно не маршрутизируется получателям и применяется существующая retry/DLQ политика consumer
 
-
-### Requirement: DI Container Update
-The application container MUST register orchestrator dependencies.
-
-#### Scenario: Container provides orchestrator
-- GIVEN the ApplicationContainer
-- WHEN resolving CallbackRequestHandler
-- THEN it receives NotificationOrchestratorService dependency
-
-#### Scenario: Container provides repositories
-- GIVEN the ApplicationContainer
-- WHEN resolving NotificationOrchestratorService
-- THEN it receives EventRepository, ChannelRepository, UserNotificationSettingRepository
-
-
-### Requirement: Семантика доставки callback-уведомления
-Notification-service MUST выставлять `notifications_delivered=true` через защищённый backend service endpoint только после успешной публикации хотя бы одной предусмотренной downstream email command. Отсутствие eligible recipients, ошибка routing/publish либо отсутствие подтверждения публикации MUST оставлять значение `false`. SMTP acknowledgement/receipt MUST NOT требоваться и MUST NOT влиять на этот флаг.
-
-#### Scenario: Downstream command успешно опубликована
-- **WHEN** notification-service успешно публикует предусмотренную email command для callback_request_id
-- **THEN** он выполняет идемпотентное service update `notifications_delivered=true`, не ожидая SMTP acknowledgement
-
-#### Scenario: Downstream command не опубликована
-- **WHEN** eligible recipients отсутствуют либо routing/publish завершается ошибкой
-- **THEN** service update в `true` не выполняется и значение остаётся `false`
-
-#### Scenario: SMTP outcome не изменяет callback-флаг
-- **WHEN** email-service позднее доставляет или не доставляет письмо на SMTP-уровне
-- **THEN** callback contract не ожидает receipt и не выполняет дополнительное изменение `notifications_delivered`
