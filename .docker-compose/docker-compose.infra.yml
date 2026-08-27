@@ -50,6 +50,23 @@ services:
     networks:
       - eqsitecms_network
 
+  db-vk:
+    image: postgres:16
+    container_name: eqsitecms-db-vk
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_VK_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_VK_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_VK_NAME}
+    expose:
+      - 5432
+    ports:
+      - "${EXPOSE_VK_DB_PORT}:5432"
+    volumes:
+      - eqsitecms_vk_db_data:/var/lib/postgresql/data
+    networks:
+      - eqsitecms_network
+
   minio:
     image: minio/minio:latest
     container_name: eqsitecms-minio
@@ -120,6 +137,8 @@ volumes:
     name: ${EQSITECMS_NOTIFICATIONS_DB_VOLUME:-docker-compose_eqsitecms_notifications_db_data}
   eqsitecms_email_db_data:
     name: ${EQSITECMS_EMAIL_DB_VOLUME:-docker-compose_eqsitecms_email_db_data}
+  eqsitecms_vk_db_data:
+    name: ${EQSITECMS_VK_DB_VOLUME:-docker-compose_eqsitecms_vk_db_data}
   eqsitecms_minio_data:
     name: ${EQSITECMS_MINIO_VOLUME:-docker-compose_eqsitecms_minio_data}
   eqsitecms_nats_data:

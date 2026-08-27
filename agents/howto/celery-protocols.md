@@ -27,6 +27,7 @@ flowchart LR
 | Сервис | Очередь | Задачи |
 |--------|---------|--------|
 | `email-service` | `email` | `send_email_task` |
+| `vk-service` | `vk` | `vk.integration_probe` |
 
 ## Конфигурация
 
@@ -73,6 +74,8 @@ class CelerySettings(BaseSettings):
 - **БД 0** — зарезервирована (кэш backend, пока не используется)
 - **БД 1** — broker для email-service
 - **БД 2** — backend для email-service
+- **БД 3** — broker для vk-service
+- **БД 4** — backend для vk-service
 - Каждый новый сервис, использующий Celery, получает 2 БД (broker + backend)
 
 ## Переменные окружения

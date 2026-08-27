@@ -24,8 +24,22 @@ databases:
     config_alias: CELERY_APP_BACKEND
     default_value: "redis://:<password>@redis:6379/2"
 
+  - db_number: 3
+    service: vk-service
+    purpose: "Broker — очередь задач Celery"
+    status: active
+    config_alias: CELERY_APP_BROKER
+    default_value: "redis://:<password>@eqsitecms-redis:6379/3"
+
+  - db_number: 4
+    service: vk-service
+    purpose: "Backend — результаты задач Celery"
+    status: active
+    config_alias: CELERY_APP_BACKEND
+    default_value: "redis://:<password>@eqsitecms-redis:6379/4"
+
 # Правила нумерации:
 # - БД 0 зарезервирована
 # - Нумерация с 1
 # - Каждый сервис получает 2 последовательных номера (broker, backend)
-# - Следующий свободный номер: 3
+# - Следующий свободный номер: 5

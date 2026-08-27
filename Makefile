@@ -6,6 +6,7 @@ SERVICES_DIR = services
 COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
 COMPOSE_NOTIFICATION = $(COMPOSE_DIR)/docker-compose.notification.yml
 COMPOSE_EMAIL = $(COMPOSE_DIR)/docker-compose.email.yml
+COMPOSE_VK = $(COMPOSE_DIR)/docker-compose.vk.yml
 
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
@@ -14,6 +15,12 @@ COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 DC_BE = docker compose -f $(COMPOSE_BE)
 DC_NOTIFICATION = docker compose -f $(COMPOSE_NOTIFICATION)
 DC_EMAIL = docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_EMAIL)
+DC_VK = docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK)
+# vk-service: инфраструктурные переменные берутся из .docker-compose/.env,
+# переменные приложения — из services/vk-service/.env
+ENV_FILES_VK = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/vk-service/.env
+# Собственные сервисы проекта eqsitecms-vk
+VK_SERVICES = db-vk vk-migration vk-service vk-celery-worker
 
 DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
 DC_INFRA = docker compose -f $(COMPOSE_INFRA)
@@ -29,6 +36,7 @@ SERVICES_MANIFEST ?= services.manifest
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
+		vk-build vk-build-nc vk vk-attach check-vk fix-vk \
 		infra
 
 # =====ORCHESTRATOR COMMANDS=====
@@ -113,6 +121,14 @@ fe-build-nc:
 	@echo "Building frontend image without build cache..."
 	$(DC_FE) -p eqsitecms-fe build --no-cache
 
+vk-build:
+	@echo "Building vk service images..."
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build vk-service vk-migration vk-celery-worker
+
+vk-build-nc:
+	@echo "Building vk service images without build cache..."
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build --no-cache vk-service vk-migration vk-celery-worker
+
 # =====RUN COMMANDS=====
 
 # Infrastructure
@@ -140,6 +156,20 @@ email:
 email-attach:
 	$(DC_EMAIL) -p eqsitecms-email --env-file $(SERVICES_DIR)/email-service/.env up
 
+# VK Service (автономный проект eqsitecms-vk, вне core release scope).
+# Общая инфраструктура (redis, nats, minio) принадлежит core-стеку и здесь не
+# пересоздаётся: поднимаются только собственные контейнеры сервиса и его БД.
+# redis стартует в проекте eqsitecms-vk только если его контейнера ещё нет.
+vk:
+	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
+	@docker inspect eqsitecms-redis >/dev/null 2>&1 || $(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d redis
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d --no-deps $(VK_SERVICES)
+
+vk-attach:
+	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
+	@docker inspect eqsitecms-redis >/dev/null 2>&1 || $(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d redis
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up --no-deps $(VK_SERVICES)
+
 # Frontend
 fe:
 	$(DC_FE) -p eqsitecms-fe up -d
@@ -160,6 +190,9 @@ check-email:
 check-notification:
 	cd services/notification-service && uv run mypy src && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
 
+check-vk:
+	cd services/vk-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
+
 check-frontend:
 	cd services/frontend && npm test && npm run lint && npm run typecheck && npm run build
 
@@ -174,6 +207,9 @@ fix-email:
 fix-notification:
 	$(MAKE) -C services/notification-service format
 
+fix-vk:
+	$(MAKE) -C services/vk-service format
+
 fix-frontend:
 	cd services/frontend && npx eslint src --fix
 
@@ -182,6 +218,7 @@ compose-check:
 	docker compose -f $(COMPOSE_BE) config --quiet
 	docker compose -f $(COMPOSE_NOTIFICATION) config --quiet
 	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_EMAIL) config --quiet
+	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK) config --quiet
 	$(DC_FE) config --quiet
 	$(DC_CORE) config --quiet
 

@@ -1,25 +1,4 @@
-# redis-infrastructure Specification
-
-## Purpose
-TBD - created by archiving change celery-redis-architecture. Update Purpose after archive.
-## Requirements
-### Requirement: Redis в инфраструктурном docker compose
-Сервис Redis MUST быть добавлен в `.docker-compose/docker-compose.infra.yml`. Образ SHALL быть `redis:7-alpine` (последняя стабильная версия). Контейнер MUST использовать паролевой доступ через `--requirepass`. Контейнер MUST быть в сети `eqsitecms_network`. Данные MUST персиститься в volume `eqsitecms_redis_data`.
-
-#### Scenario: Redis запускается с паролем
-- **WHEN** выполняется `docker compose -f docker-compose.infra.yml up redis`
-- **THEN** контейнер `eqsitecms-redis` ЗАПУСКАЕТСЯ, ДОСТУПЕН на порту из `EXPOSE_REDIS_PORT`, ТРЕБУЕТ пароль из `REDIS_PASSWORD`
-
-#### Scenario: Redis персистит данные
-- **WHEN** контейнер Redis перезапущен
-- **THEN** данные СОХРАНЯЮТСЯ в volume `eqsitecms_redis_data`
-
-### Requirement: Переменные окружения Redis в .docker-compose/.env
-Файл `.docker-compose/.env` MUST СОДЕРЖАТЬ переменные: `REDIS_PASSWORD` (пароль Redis) и `EXPOSE_REDIS_PORT` (внешний порт, по умолчанию `6379`).
-
-#### Scenario: Переменные присутствуют в .env
-- **WHEN** администратор открывает `.docker-compose/.env`
-- **THEN** файл СОДЕРЖИТ `REDIS_PASSWORD=<значение>` и `EXPOSE_REDIS_PORT=6379`
+## MODIFIED Requirements
 
 ### Requirement: YAML-файл учёта БД Redis
 Файл `agents/redis-databases.yaml` MUST существовать и содержать массив записей. Каждая запись MUST СОДЕРЖАТЬ поле номера БД, поле `service` (имя сервиса) и поле `purpose` (назначение). Фактическая конвенция файла для номера БД — `db_number` (integer); архивная редакция этого требования называла поле `db`, что не соответствовало файлу. Требование фиксирует фактическую конвенцию `db_number`; переименование ключа не выполняется и вынесено за scope, поскольку файл не парсится инструментами и является справочником для агентов. БД 0 MUST быть зарезервирована с пометкой `reserved` и описанием "Кэш backend (пока не используется)". Сервис `vk-service` MUST занимать БД 3 (broker, `CELERY_APP_BROKER`) и БД 4 (backend, `CELERY_APP_BACKEND`); комментарий о следующем свободном номере MUST быть обновлён на 5.
@@ -41,15 +20,3 @@ TBD - created by archiving change celery-redis-architecture. Update Purpose afte
 #### Scenario: Номера БД не пересекаются между сервисами
 - **WHEN** reviewer сверяет `agents/redis-databases.yaml` с фактическими `CELERY_APP_BROKER` и `CELERY_APP_BACKEND` в `services/email-service/.env.example` и `services/vk-service/.env.example`
 - **THEN** email-service использует только БД 1 и 2, vk-service — только БД 3 и 4, пересечений нет
-
-### Requirement: Инструкция в backend.md и quality_gate.md
-Файлы `agents/backend.md` и `agents/quality_gate.md` MUST СОДЕРЖАТЬ инструкцию: при добавлении нового сервиса с Celery/Redis — обновлять `agents/redis-databases.yaml`, проверять отсутствие конфликтов нумерации.
-
-#### Scenario: Backend agent проверяет redis-databases.yaml
-- **WHEN** backend agent добавляет новый сервис с Celery
-- **THEN** agent ЧИТАЕТ `agents/redis-databases.yaml` и ВЫБИРАЕТ следующий свободный номер БД
-
-#### Scenario: Quality Gate проверяет актуальность redis-databases.yaml
-- **WHEN** Quality Gate ревьюит change с Redis
-- **THEN** quality_gate СВЕРЯЕТ номера БД в коде с `agents/redis-databases.yaml`
-

@@ -1,0 +1,197 @@
+## Чеклист
+
+### Backend
+
+**Ownership 1 — Backend owner, эксклюзивная зона `services/vk-service/**`. Не трогает `.docker-compose/`, `Makefile`, `agents/`, `SERVICES.md`, `services.manifest`, `scripts/` и другие сервисы.**
+
+- [x] 1.1 Скопировать `services/email-service` в `services/vk-service`, исключив `.git`, `.venv`, `.env`, `.mypy_cache`, `.ruff_cache`, `.pytest_cache`; подтвердить `git -C services/email-service status --porcelain` пустым
+- [x] 1.2 Удалить пакет `src/api/` целиком (`endpoints/emails.py`, `schemas/email.py`, `dependencies.py`, `__init__.py`)
+- [x] 1.3 Удалить пакет `src/infrastructure/` (`email_sender.py`, `__init__.py`)
+- [x] 1.4 Удалить `src/core/services/{email_confirmation,email_processing,user_email,notification_command_send_email}.py` и очистить `src/core/services/__init__.py` до пустого `__all__`
+- [x] 1.5 Удалить `src/core/protocols/email_publisher.py`, `src/core/protocols/email_sender.py` и обновить `src/core/protocols/__init__.py`
+- [x] 1.6 Удалить `src/core/protocols/messaging/handlers/notification_command_send_email.py` и очистить `src/core/protocols/messaging/handlers/__init__.py`
+- [x] 1.7 Удалить `src/core/schemas/messaging/notification_command_send_email.py`, сохранив `base_event_data.py`, и обновить `src/core/schemas/messaging/__init__.py`
+- [x] 1.8 Удалить `src/models/{email_confirmation,email_log,user_email}.py` и оставить `src/models/__init__.py` с пустым `__all__` без импортов
+- [x] 1.9 Удалить `src/repositories/{email_confirmation,email_log,user_email,protocols}.py` и оставить `src/repositories/__init__.py` с пустым `__all__`
+- [x] 1.10 Удалить миграции `src/migration/versions/20260710_0002_add_email_logs.py` и `20260814_0003_add_user_emails_and_confirmations.py`, оставив только `20260710_0001_initial.py`
+- [x] 1.11 Удалить `src/clients/nats/consumers/notification_commands_send_email.py` и `src/clients/nats/handlers/notification_commands_send_email.py`, очистить их `__init__.py` и `src/clients/nats/__init__.py` до экспорта только `NatsJetstreamClient`
+- [x] 1.12 Удалить `src/workers/tasks/{email,confirmation}.py`; в `src/workers/tasks/__init__.py` оставить только `integration_probe_task`
+- [x] 1.13 Переименовать задачу-пробник `email.integration_probe` → `vk.integration_probe` в `src/workers/tasks/integration_probe.py`
+- [x] 1.14 В `src/workers/celery_app.py` заменить очередь `email` на `vk` (`task_queues`, `task_default_queue`), сохранив сериализацию и настройки надёжности
+- [x] 1.15 В `src/settings.py` удалить класс `SMTPSettings`, экспорт `smtp_settings`, поля `email_confirmation_ttl_hours` и `frontend_url`
+- [x] 1.16 В `src/settings.py` убрать `SMTP_PASSWORD` из списка обязательных production-секретов, оставив `POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `CELERY_APP_BROKER`, `CELERY_APP_BACKEND`, `MAIN_BACKEND_SERVICE_KEY`, `NATS_SERVERS`
+- [x] 1.17 В `src/settings.py` задать `APP_TITLE` по умолчанию `VK Service`, `CELERY_APP_MAIN` — `vk-service`, broker — Redis DB `3`, backend — Redis DB `4`
+- [x] 1.18 В `NatsSettings` заменить email-поля на зарезервированные `NATS_SUBJECT_NOTIFICATION_COMMANDS_SEND_VK=commands.notification.vk.send` и `NATS_CONSUMER_NOTIFICATION_COMMANDS_SEND_VK=vk-service-commands-send-vk`
+- [x] 1.19 В `src/clients/nats/client.py` заменить `name="email-service"` на `name="vk-service"` и сделать `setup_streams()` и `setup_consumers()` no-op без вызовов `add_stream`/`add_consumer`
+- [x] 1.20 В `src/containers/application.py` оставить только `nats_settings`, `nats_client`, `celery_settings`, `celery_app`; удалить `smtp_settings`, `email_sender` и email-провайдеры
+- [x] 1.21 В `src/main.py` удалить импорт и подключение email-роутера, старт/стоп email-consumer'а; сохранить lifespan с `nats_client.connect()/close()`, metrics runtime, `close_database()`, обработчики ошибок и `GET /health`
+- [x] 1.22 В `pyproject.toml` задать `name = "vk-service"` и VK-описание, удалить `aiosmtplib`, заменить `pydantic[email]` на `pydantic`, актуализировать `known-first-party`
+- [x] 1.23 Пересобрать `uv.lock` командой `uv lock` и подтвердить успешный `uv sync --locked`
+- [x] 1.24 Переписать `.env.example` под VK-сервис: убрать блок SMTP, задать `CELERY_APP_MAIN=vk-service`, Redis DB `3`/`4`, добавить NATS-переменные, использовать только placeholder-значения
+- [x] 1.25 Скопировать `.github/workflows/check_and_deploy.yml` из `email-service` **без изменений**: `IMAGE`, helm release и шаги деплоя остаются email-значениями, потому что весь workflow обслуживает helm-деплой, исключённый из scope решением пользователя
+- [x] 1.26 Скопировать `.helm/**` из `email-service` **без изменений**: `Chart.yaml`, `values.yaml`, имена файлов `.helm/templates/email-service-*` , release name и ссылка на k8s-секрет `eqsitecms-email-service-secret` остаются как есть; переименование и приведение к VK выполняются отдельным change вместе с созданием remote и k8s-секрета
+- [x] 1.27 Удалить email-тесты: `tests/api/test_emails.py`, `tests/models/**`, `tests/services/**`, `tests/integration/test_email_log_concurrency.py`, `tests/clients/nats/test_notification_commands_send_email_consumer.py`
+- [x] 1.28 Адаптировать оставшиеся тесты (`tests/conftest.py`, `tests/api/test_health.py`, `tests/unit/test_observability.py`, `tests/clients/nats/test_adapter_contract.py`, `tests/integration/test_real_celery.py`) под VK-скелет и очередь `vk`
+- [x] 1.29 Переписать `services/vk-service/README.md`: стек, структура `src/`, запуск, переменные окружения, API-таблица с единственным `GET /health`, Celery-очередь `vk`, раздел «NATS JetStream (зарезервировано)» и раздел «Границы скелета»
+- [x] 1.30 Подтвердить отсутствие `services/vk-service/docs/asyncapi.yaml` и не создавать его в этом change
+- [x] 1.31 Выполнить guard-проверку **реализации** с нулевым результатом: `rg -ni "email|smtp|aiosmtplib" services/vk-service/src services/vk-service/pyproject.toml services/vk-service/.env.example`. Область намеренно ограничена реализацией и НЕ включает: `services/vk-service/tests/**` и `services/vk-service/README.md` — они **обязаны** называть email-сущности обычными литералами, потому что Unit-сценарии проверяют отсутствие `/emails*` endpoints, отсутствие `smtp_settings`/`SMTPSettings` и донорских полей `NatsSettings`, а README обязан прямо назвать `email-service` как сервис-донор `.helm/**`/`.github/**`; `services/vk-service/.helm/**` и `services/vk-service/.github/**` — копируются как есть по решению пользователя; `services/vk-service/uv.lock` — содержит транзитивные имена пакетов. Обфускация токенов (склейка из фрагментов вида `"e" + "mail"`) для прохождения guard ЗАПРЕЩЕНА и считается нарушением, а не выполнением
+- [x] 1.32 Выполнить `make lint` и `make test` в `services/vk-service`, приложить команды и вывод как evidence
+- [x] 1.33 Создать локальный `services/vk-service/.env` из обновлённого `.env.example` (файл gitignored, реальные секреты не коммитятся)
+- [x] 1.34 Найти PostgreSQL контейнер нового сервиса: сначала по labels `com.docker.compose.project=eqsitecms-vk` + `com.docker.compose.service=db-vk` (фактический project label проекта `eqsitecms-vk`, а не `eqsitecms`), затем fallback по имени `eqsitecms-db-vk` / образу `postgres`, и получить `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, host port `5432/tcp`, image, labels и network aliases через свежий `docker inspect` без хардкода connection-параметров
+- [x] 1.35 Выполнить `git init` в `services/vk-service` без настройки remote (сервис остаётся локальным); убедиться, что `services/vk-service/.gitignore` покрывает `.env`, `.venv`, кэши, и подтвердить, что `services.manifest` и корневой `git status` по `services/` не изменились
+- [x] 1.36 Документировать в `services/vk-service/README.md` инфраструктурные переменные, необходимые для запуска: `EXPOSE_VK_SERVICE_PORT=8004`, `POSTGRES_VK_USER=eqsitecmsvk`, `POSTGRES_VK_PASSWORD`, `POSTGRES_VK_NAME=eqsitecmsvk`, `EXPOSE_VK_DB_PORT=5436` (файл `.docker-compose/.env`, gitignored) и `VK_TEST_CELERY_BROKER` / `VK_TEST_CELERY_BACKEND` (требуются `tests/integration/test_real_celery.py`); без этого требование спеки о воспроизводимости окружения не выполнено
+- [x] 1.37 Исправить дефект `MAIN_BACKEND_URL`: значение `http://eqsitecms-backend:8000` указывает на несуществующий контейнер. Заменить на `http://eqsitecms-app:8000` в `services/vk-service/.env.example` и в локальном `services/vk-service/.env`; проверить резолв из контейнера (`docker exec eqsitecms-vk-service python -c "import socket; socket.gethostbyname('eqsitecms-app')"`) и задокументировать переменную в README
+- [x] Unit: vk-service skeleton — `GET /health` возвращает `200` и тело `{"status": "ok"}`
+- [x] Unit: vk-service skeleton — `GET /health` с валидной сессионной cookie возвращает тот же `200` без отличий от anonymous
+- [x] Unit: vk-service skeleton — `GET /emails` возвращает `404` (endpoint не унаследован)
+- [x] Unit: vk-service skeleton — `POST /emails` возвращает `404` без создания записей
+- [x] Unit: vk-service skeleton — `PATCH /emails` возвращает `404`
+- [x] Unit: vk-service skeleton — `DELETE /emails/{uuid}` возвращает `404`
+- [x] Unit: vk-service skeleton — `POST /emails/send-confirmation` возвращает `404` и не диспатчит Celery task
+- [x] Unit: vk-service skeleton — `PATCH /emails/confirm` возвращает `404`
+- [x] Unit: vk-service skeleton — `POST /api/auth/register` возвращает `404`, auth-маршруты не зарегистрированы
+- [x] Unit: vk-service skeleton — `GET /health` с заголовком `Origin` не возвращает CORS-заголовков
+- [x] Unit: vk-service skeleton — `Settings` не имеет атрибутов `cors_origins`, `email_confirmation_ttl_hours` и `frontend_url`
+- [x] Unit: vk-service skeleton — модуль `settings` не экспортирует `smtp_settings` и не содержит класс `SMTPSettings`
+- [x] Unit: vk-service skeleton — production-валидация проходит при безопасных значениях и отсутствии `SMTP_PASSWORD`
+- [x] Unit: vk-service skeleton — production-валидация отклоняет `REDIS_PASSWORD=eqsitecmsredis` как небезопасное значение
+- [x] Unit: vk-service skeleton — production-валидация отклоняет placeholder `<set-...>` в `CELERY_APP_BROKER`
+- [x] Unit: vk-service skeleton — development-окружение не требует production-секретов и стартует штатно
+- [x] Unit: vk-service skeleton — `database_url` собирается из `POSTGRES_*` и использует драйвер `postgresql+asyncpg`
+- [x] Unit: vk-service skeleton — `APP_TITLE` по умолчанию равен `VK Service`
+- [x] Unit: vk-service skeleton — `CelerySettings` по умолчанию использует Redis DB `3` для broker и `4` для backend
+- [x] Unit: vk-service skeleton — `celery_app_main` по умолчанию равен `vk-service`
+- [x] Unit: vk-service skeleton — `NatsSettings.nats_subject_notification_commands_send_vk` равен `commands.notification.vk.send`
+- [x] Unit: vk-service skeleton — `NatsSettings.nats_consumer_notification_commands_send_vk` равен `vk-service-commands-send-vk`
+- [x] Unit: vk-service skeleton — email-поля `NatsSettings` отсутствуют (обращение к ним вызывает `AttributeError`)
+- [x] Unit: vk-service skeleton — `NATS_SERVERS` со списком через запятую парсится в несколько адресов без пустых элементов
+- [x] Unit: vk-service skeleton — пустой `NATS_SERVERS` даёт fallback `nats://localhost:4222`
+- [x] Unit: vk-service skeleton — `celery_app.conf.task_queues` содержит только очередь `vk`, `task_default_queue` равен `vk`
+- [x] Unit: vk-service skeleton — очередь `email` в конфигурации Celery отсутствует
+- [x] Unit: vk-service skeleton — Celery сохраняет `task_acks_late`, `task_reject_on_worker_lost` и json-сериализацию
+- [x] Unit: vk-service skeleton — имя задачи-пробника равно `vk.integration_probe`
+- [x] Unit: vk-service skeleton — `workers.tasks.__all__` содержит только существующие задачи и не содержит email-задач
+- [x] Unit: vk-service skeleton — `setup_streams()` не выполняет ни одного вызова `add_stream` на mock JetStream
+- [x] Unit: vk-service skeleton — `setup_consumers()` не выполняет ни одного вызова `add_consumer` на mock JetStream
+- [x] Unit: vk-service skeleton — `connect()` передаёт клиентское имя `vk-service`
+- [x] Unit: vk-service skeleton — `setup()` без установленного соединения поднимает `RuntimeError`
+- [x] Unit: vk-service skeleton — повторный `close()` без соединения безопасен и не поднимает исключение
+- [x] Unit: vk-service skeleton — `ApplicationContainer.nats_client` возвращает один и тот же singleton при повторном вызове
+- [x] Unit: vk-service skeleton — контейнер не содержит провайдеров `smtp_settings`, `email_sender` и email-сервисов
+- [x] Unit: vk-service skeleton — контейнер не сохраняется в `app.state`
+- [x] Unit: vk-service skeleton — при `SENTRY_ENABLED=false` `sentry_sdk.init` не вызывается
+- [x] Unit: vk-service skeleton — при `SENTRY_ENABLED=true` и пустом DSN конфигурация завершается явной ошибкой
+- [x] Unit: vk-service skeleton — `start_metrics_runtime` в development возвращает `None` и не открывает TCP-порт
+- [x] Unit: vk-service skeleton — `start_metrics_runtime` в production запускает listener, а `close()` освобождает server и thread ровно один раз
+- [x] Unit: vk-service skeleton — импорт `models` не регистрирует ни одной таблицы в `utils.basemodel.metadata`
+- [x] Unit: vk-service skeleton — `repositories.__all__` пуст и модуль импортируется без ошибок
+- [x] Unit: vk-service skeleton — `migration/env.py` импортируется и связывает `target_metadata` с `utils.basemodel.metadata`
+- [x] Unit: vk-service skeleton — shutdown lifespan вызывает `close_database()` и закрытие NATS-соединения
+- [x] Unit: vk-service skeleton — обработчик `AppError` возвращает статус и `detail` из исключения
+- [x] Unit: vk-service skeleton — обработчик `RequestValidationError` возвращает `400` со списком ошибок
+- [x] Unit: vk-service skeleton — `/openapi.json` содержит единственный путь `/health`
+- [x] Unit: vk-service skeleton — самосканирующий тест подтверждает отсутствие строк `email`, `smtp`, `aiosmtplib` в `src/`; сами искомые токены объявлены в тесте обычными строковыми литералами без склейки из фрагментов
+- [x] Smoke: vk-service skeleton — перед прогоном повторно получены DB-параметры `eqsitecms-db-vk` через свежий `docker inspect` без хардкода
+- [x] Smoke: vk-service skeleton — `eqsitecms-vk-service-migration` применяет `alembic upgrade head` на реальной PostgreSQL с кодом 0
+- [x] Smoke: vk-service skeleton — в реальной БД `eqsitecmsvk` присутствует `alembic_version` с ревизией initial-миграции
+- [x] Smoke: vk-service skeleton — в реальной БД отсутствуют таблицы `email_logs`, `user_emails`, `email_confirmations`
+- [x] Smoke: vk-service skeleton — повторный запуск миграций идемпотентен: код 0 и та же ревизия в PostgreSQL
+- [x] Smoke: vk-service skeleton — `SKIP_MIGRATIONS=true` завершает контейнер миграций кодом 0 без изменений в PostgreSQL
+- [x] Smoke: vk-service skeleton — `alembic revision --autogenerate` на реальной БД не предлагает email-таблиц
+- [x] Smoke: vk-service skeleton — `GET /health` без cookie возвращает `200` и `{"status": "ok"}`
+- [x] Smoke: vk-service skeleton — `GET /health` с валидной CMS-cookie возвращает идентичный `200`
+- [x] Smoke: vk-service skeleton — docker healthcheck переводит `eqsitecms-vk-service` в состояние `healthy`
+- [x] Smoke: vk-service skeleton — `GET /emails?user_ids=<uuid>` на живом API возвращает `404`
+- [x] Smoke: vk-service skeleton — `POST /emails` без авторизации возвращает `404` и не создаёт строк в PostgreSQL
+- [x] Smoke: vk-service skeleton — `PATCH /emails` возвращает `404`
+- [x] Smoke: vk-service skeleton — `DELETE /emails/<uuid>` возвращает `404`
+- [x] Smoke: vk-service skeleton — `POST /emails/send-confirmation` возвращает `404` и не ставит задач в очередь
+- [x] Smoke: vk-service skeleton — `PATCH /emails/confirm` возвращает `404`
+- [x] Smoke: vk-service skeleton — `POST /api/auth/register` возвращает `404`
+- [x] Smoke: vk-service skeleton — неизвестный путь возвращает `404`, а не `500`
+- [x] Smoke: vk-service skeleton — `GET /health` с заголовком `Origin` не возвращает CORS-заголовков
+- [x] Smoke: vk-service skeleton — `GET /metrics` на порту приложения возвращает `404` (маршрут не зарегистрирован)
+- [x] Smoke: vk-service skeleton — порт `9000` не опубликован на host ни для одного контейнера `vk`
+- [x] Smoke: vk-service skeleton — порт приложения `8000` не опубликован на host (`docker inspect` подтверждает пустой port binding)
+- [x] Smoke: vk-service skeleton — `GET /openapi.json` на живом API содержит только путь `/health`
+- [x] Smoke: vk-service skeleton — `eqsitecms-vk-celery-worker` healthy, адресный `celery inspect ping` возвращает `pong`
+- [x] Smoke: vk-service skeleton — `celery inspect registered` содержит `vk.integration_probe` и не содержит задач домена `email`
+- [x] Smoke: vk-service skeleton — `celery inspect active_queues` показывает только очередь `vk`
+- [x] Smoke: vk-service skeleton — Redis DB `3` и `4` используются vk-воркером, DB `1` и `2` остаются за email-service
+- [x] Smoke: vk-service skeleton — enqueue `vk.integration_probe` завершается успехом, результат читается из Redis DB `4`
+- [x] Smoke: vk-service skeleton — повторный enqueue с тем же `probe_id` даёт `effect=duplicate` (идемпотентность)
+- [x] Smoke: vk-service skeleton — probe с `fail_until=1` ретраится и завершается успехом по `acks_late`
+- [x] Smoke: vk-service skeleton — рестарт воркера во время pending-задачи не приводит к дублирующему side effect
+- [x] Smoke: vk-service skeleton — после старта `vk-service` конфигурация stream `NOTIFICATION_COMMANDS` (subjects, storage, retention) не изменилась
+- [x] Smoke: vk-service skeleton — список durable consumers stream `NOTIFICATION_COMMANDS` не содержит `vk-service-commands-send-vk`
+- [x] Smoke: vk-service skeleton — durable `notification-service-commands-send-email` сохраняет прежнюю конфигурацию и pending-состояние
+- [x] Smoke: vk-service skeleton — доставка через shared stream `NOTIFICATION_COMMANDS` живая после запуска `vk-service`: публикация в `commands.notification.email.send` доставляется durable `notification-service-commands-send-email` и ack'ается, `num_pending` и `num_ack_pending` возвращаются к нулю, `delivered_stream_seq`/`ack_floor` продвигаются на опубликованный seq, побочные эффекты отсутствуют (`email_logs` не растёт, Celery-задача не создаётся), опубликованное сообщение удаляется из stream. Leg `backend → notification` вынесен за scope: у него нет ни одной точки соприкосновения с change, так как `vk-service` не создаёт stream, не регистрирует durable и не публикует сообщений. Реальная отправка письма запрещена — используется уже обработанный `event_uuid`, обработчик распознаёт дубликат и ack'ает без вызова Celery
+- [x] Smoke: vk-service skeleton — подключение к `eqsitecms-db-vk` по host-порту из `docker inspect` проходит с обнаруженными credentials
+- [x] Smoke: vk-service skeleton — credentials `eqsitecms-db-email` не дают доступа к БД `eqsitecmsvk` (изоляция сервисов)
+- [x] Smoke: vk-service skeleton — рестарт `eqsitecms-db-vk` сохраняет `alembic_version` благодаря отдельному volume
+- [x] Smoke: vk-service skeleton — логи `eqsitecms-vk-service` и `eqsitecms-vk-celery-worker` за 10 минут не содержат traceback, fatal и restart loop
+- [x] Smoke: vk-service skeleton — остановка проекта `eqsitecms-vk` не останавливает и не пересоздаёт контейнеры core-стека
+- [x] Smoke: vk-service skeleton — cleanup удаляет все созданные smoke-артефакты в PostgreSQL и Redis
+
+**Ownership 2 — инфраструктурный владелец, эксклюзивная зона `.docker-compose/**`, `Makefile`, `agents/redis-databases.yaml`, `agents/howto/celery-protocols.md`, `SERVICES.md`. Не трогает `services/vk-service/**`, `services.manifest` и `scripts/**`. Выполняется после deliverable 1.**
+
+- [x] 2.1 Создать `.docker-compose/docker-compose.vk.yml` с сервисами `vk-service`, `vk-migration`, `vk-celery-worker` по образцу `docker-compose.email.yml`, без публикации портов на host
+- [x] 2.2 Задать в compose имена контейнеров `eqsitecms-vk-service`, `eqsitecms-vk-service-migration`, `eqsitecms-vk-celery-worker` и образы `eqsitecms-vk:latest`, `eqsitecms-vk-migration:latest`, `eqsitecms-vk-celery:latest`
+- [x] 2.3 Настроить в compose healthcheck `GET /health` для API и адресный `celery inspect ping` для воркера с `depends_on: redis` (`service_healthy`)
+- [x] 2.4 Добавить сервис `db-vk` (`postgres:16`, `eqsitecms-db-vk`, volume `eqsitecms_vk_db_data`, порт `${EXPOSE_VK_DB_PORT}:5432`) в `.docker-compose/docker-compose.infra.yml`, не изменяя существующие сервисы
+- [x] 2.5 Добавить в локальный `.docker-compose/.env` переменные `EXPOSE_VK_SERVICE_PORT=8004`, `POSTGRES_VK_USER=eqsitecmsvk`, `POSTGRES_VK_PASSWORD`, `POSTGRES_VK_NAME=eqsitecmsvk`, `EXPOSE_VK_DB_PORT=5436` и проверить отсутствие конфликтов портов
+- [x] 2.6 Добавить в корневой `Makefile` переменные `COMPOSE_VK` и `DC_VK` и зарегистрировать новые цели в `.PHONY`
+- [x] 2.7 Добавить цели `vk-build` и `vk-build-nc` (сборка `vk-service`, `vk-migration`, `vk-celery-worker` в проекте `eqsitecms-vk`)
+- [x] 2.8 Добавить цели `vk` и `vk-attach`. Требуются **два** `--env-file`: `$(COMPOSE_DIR)/.env` (там живут `POSTGRES_VK_*` и `EXPOSE_VK_DB_PORT`) и `$(SERVICES_DIR)/vk-service/.env` (переменные приложения). Подъём выполняется с `up -d --no-deps` по явному списку сервисов, а `redis` стартует только при его отсутствии: без `--no-deps` `depends_on: redis` затягивает core-контейнер `eqsitecms-redis` в проект `eqsitecms-vk` и падает с `Conflict. The container name "/eqsitecms-redis" is already in use`. `depends_on` с `condition: service_healthy` в compose при этом сохраняется
+- [x] 2.9 Добавить цели `check-vk` (mypy, basedpyright, ruff check, ruff format --check, flake8, pytest без infrastructure) и `fix-vk` (`$(MAKE) -C services/vk-service format`)
+- [x] 2.10 Добавить в `compose-check` строку `docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK) config --quiet`
+- [x] 2.11 Подтвердить, что `build`, `build-nc`, `check`, `fix`, `test`, `lint`, `format`, `DC_CORE`, `migrate-core`, `recreate-core`, `health-core`, `status-core`, `logs-core`, `asyncapi-validate`, `secret-scan`, `services-branches` остались без изменений
+- [x] 2.12 Обновить `agents/redis-databases.yaml`: добавить записи БД 3 (vk-service broker) и 4 (vk-service backend), обновить комментарий о следующем свободном номере на 5
+- [x] 2.13 Обновить `SERVICES.md`: добавить `services/vk-service` в таблицу сервисов, отдельный раздел с ролью/ресурсами/границами скелета и записями Redis DB 3/4
+- [x] 2.14 Зафиксировать в `SERVICES.md`, что `vk-service` не входит в `services.manifest`, в core release scope и в `asyncapi-validate`
+- [x] 2.15 Подтвердить, что `services.manifest`, `scripts/secret-scan.sh`, `scripts/recreate-core.sh` и `scripts/sync.sh` не изменены
+- [x] 2.16 Выполнить `make compose-check`, `make vk-build-nc`, `make vk` и сохранить вывод как evidence
+- [x] 2.17 Проверить, что после изменений `make email`, `make notification`, `make be` и существующий core-стек продолжают работать без регрессий
+- [x] 2.18 Обновить таблицу «Сервисы и их очереди» в `agents/howto/celery-protocols.md`: добавить строку `vk-service` / очередь `vk` / задача `vk.integration_probe`. Требование нормативно закреплено в `agents/backend.md` (шаг 2 раздела «Добавление нового сервиса с Celery/Redis») и до этой правки не было назначено ни одному владельцу
+
+### Frontend
+
+- [x] 3.1 Изменений в `services/frontend` и `services/site-ad` не требуется: change не добавляет и не меняет API, потребляемые CMS или публичными сайтами; подтвердить пустой diff по обоим каталогам
+- [x] 3.2 Подтвердить, что скелет `vk-service` не публикует endpoint'ов, доступных из CMS или `site-*`, и не требует изменений клиентских контрактов
+
+### Quality Gate
+
+- [x] 4.1 Запустить один общий review совокупного diff после завершения Backend owner (зона 1) и инфраструктурного owner (зона 2)
+- [x] 4.2 Проверить соответствие delta specs `vk-service-skeleton`, `vk-service-orchestration`, `redis-infrastructure`, `celery-redis-protocols`, `nats-jetstream-protocols`
+- [x] 4.3 Проверить Clean Architecture: отсутствие зависимостей `core` от инфраструктуры, DI вместо `app.state`, пустые пакеты-точки расширения без мёртвого кода
+- [x] 4.4 Выполнить guard-проверку **реализации** и убедиться в нулевом результате: `rg -ni "email|smtp|aiosmtplib" services/vk-service/src services/vk-service/pyproject.toml services/vk-service/.env.example`. Область НЕ включает `services/vk-service/tests/**`, `services/vk-service/README.md`, `services/vk-service/.helm/**`, `services/vk-service/.github/**` и `services/vk-service/uv.lock`: тесты и README обязаны называть email-сущности прямо, чтобы фиксировать их отсутствие и происхождение деплой-конфигурации
+- [x] 4.5 Проверить отсутствие обфускации запрещённых токенов: `rg -n '"e"\s*\+\s*"mail"|"smt"\s*\+\s*"p"|"aio"\s*\+\s*"smt"' services/vk-service` не находит совпадений; в `services/vk-service/tests/**` и `README.md` токены `email`, `smtp`, `aiosmtplib` записаны обычными литералами и остаются grep-able
+- [x] 4.6 Подтвердить, что `services/vk-service/.helm/**` и `services/vk-service/.github/**` побайтово идентичны версии из `services/email-service` (`diff -r`), включая имена файлов `.helm/templates/email-service-*`; расхождения считать нарушением решения пользователя «helm и секреты не трогай вообще»
+- [x] 4.7 Подтвердить, что раздел техдолга в `services/vk-service/README.md` **прямо** называет `email-service` как сервис-донор `.helm/**`/`.github/**` с конкретными следствиями (release name `eqcms-email-service`, образ `ghcr.io/igor-526/eqsitecms-email-service`, worker-очередь `-Q email`, k8s-секрет `eqsitecms-email-service-secret`) и явным запретом выкатки; расплывчатые формулировки вида «сервис-донор» без имени считать findings
+- [x] 4.8 Подтвердить, что технический долг `.helm/**` и `.github/**` также зафиксирован в `SERVICES.md`
+- [x] 4.9 Проверить, что `services/vk-service/README.md` документирует инфраструктурные переменные: `rg -cE "EXPOSE_VK_SERVICE_PORT|POSTGRES_VK_|EXPOSE_VK_DB_PORT|VK_TEST_CELERY" services/vk-service/README.md` даёт ненулевой результат и значения совпадают с фактическим `.docker-compose/.env`
+- [x] 4.10 Проверить `MAIN_BACKEND_URL` в `services/vk-service/.env.example` и локальном `.env`: значение указывает на существующий контейнер main backend (`eqsitecms-app`), а не на несуществующий `eqsitecms-backend`; резолв имени из контейнера `eqsitecms-vk-service` проходит
+- [x] 4.11 Проверить, что таблица «Сервисы и их очереди» в `agents/howto/celery-protocols.md` содержит строку `vk-service` / `vk` / `vk.integration_probe`, и что требование `agents/backend.md` о добавлении нового Celery-сервиса выполнено полностью
+- [x] 4.12 Проверить `agents/redis-databases.yaml`: записи БД 3 и 4 для `vk-service` присутствуют, следующий свободный номер обновлён на 5, конвенция ключей файла (`db_number`) сохранена без несогласованного рефакторинга
+- [x] 4.13 Проверить, что Access matrix заполнена для всех endpoint'ов скелета (`GET /health`, `:9000/metrics`) и покрывает отсутствие унаследованных `/emails*`
+- [x] 4.14 Проверить, что нет случайной приватизации публичных `GET` и случайного открытия `POST/PATCH/DELETE` без авторизации
+- [x] 4.15 Проверить, что каждое исключение из дефолтной policy имеет причину и контрактные статусы, либо подтвердить их отсутствие
+- [x] 4.16 Проверить, что backend-фича `vk-service skeleton` имеет минимум 30 разных Unit checklist-сценариев и evidence их выполнения
+- [x] 4.17 Проверить, что backend-фича `vk-service skeleton` имеет минимум 30 разных Smoke checklist-сценариев, выполненных скиллом `.claude/skills/api-smoke-test` на живом API и реальной PostgreSQL
+- [x] 4.18 Проверить отсутствие pytest-файлов smoke (`tests/smoke/**`) и подмены smoke unit-тестами
+- [x] 4.19 Проверить свежий `docker inspect eqsitecms-db-vk` evidence (env, host port, image, labels `com.docker.compose.project=eqsitecms-vk`/`service=db-vk`, aliases) и отсутствие хардкода connection-параметров
+- [x] 4.20 Запустить `make -C services/vk-service lint` и `make -C services/vk-service test`, приложить вывод
+- [x] 4.21 Запустить `make compose-check` и подтвердить валидность всех compose-файлов, включая новый
+- [x] 4.22 Проверить, что `make check`, `make test`, `make lint`, `make format`, `make build` и core release targets не изменены и продолжают проходить на четырёх core-сервисах
+- [x] 4.23 Проверить, что `make vk` не затягивает core-контейнер `eqsitecms-redis` в проект `eqsitecms-vk`: после запуска `eqsitecms-redis` сохраняет исходный project label, а core-стек не пересоздан
+- [x] 4.24 Проверить неизменность `services.manifest` и `scripts/**`, а также что `git init` в `services/vk-service` выполнен без remote
+- [x] 4.25 Проверить неизменность NATS-топологии: конфигурация stream `NOTIFICATION_COMMANDS`, durable `notification-service-commands-send-email` и AsyncAPI backend/notification/email
+- [x] 4.26 Подтвердить, что `services/vk-service/docs/asyncapi.yaml` не создан и `asyncapi-validate` не расширен; `make asyncapi-validate` проходит на трёх существующих контрактах
+- [x] 4.27 Проверить изоляцию ресурсов: порты, имена контейнеров/образов, volume, БД и номера Redis DB не конфликтуют с существующими сервисами
+- [x] 4.28 Проверить наличие тестов для всего нового кода и качество сценариев относительно behavior diff (без однотипных happy-path проверок)
+- [x] 4.29 Запустить `make secret-scan` и убедиться, что реальные секреты отсутствуют в tracked-файлах
+- [x] 4.30 Проверить синхронность документации: `services/vk-service/README.md`, `SERVICES.md`, `agents/redis-databases.yaml`, `agents/howto/celery-protocols.md` соответствуют фактической реализации
+- [x] 4.31 Вернуть findings соответствующим path owners, дождаться исправлений и повторить весь применимый общий Quality Gate
+- [x] 4.32 После успешного gate синхронизировать delta specs в main specs (`openspec sync specs`)
+- [x] 4.33 Повторно выполнить `openspec validate vk-service-initialization-059 --type change --strict`
+- [x] 4.34 Только после sync/validation и пользовательского подтверждения архивировать change `vk-service-initialization-059`

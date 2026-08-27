@@ -1,0 +1,85 @@
+services:
+  vk-service:
+    build:
+      context: ../services/vk-service
+      dockerfile: Dockerfile
+    image: eqsitecms-vk:latest
+    container_name: eqsitecms-vk-service
+    restart: always
+    env_file:
+      - path: ../services/vk-service/.env
+        required: true
+    expose:
+      - "8000"
+    volumes:
+      - ../services/vk-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - eqsitecms_network
+
+  vk-migration:
+    build:
+      context: ../services/vk-service
+      dockerfile: Dockerfile
+    image: eqsitecms-vk-migration:latest
+    container_name: eqsitecms-vk-service-migration
+    restart: "no"
+    env_file:
+      - path: ../services/vk-service/.env
+        required: true
+    volumes:
+      - ../services/vk-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    command: >
+      sh -c 'if [ "$$SKIP_MIGRATIONS" = "true" ]; then
+        echo "Миграции пропущены (SKIP_MIGRATIONS=true)";
+        exit 0;
+      else
+        uv run alembic -c alembic.ini upgrade head;
+      fi'
+    networks:
+      - eqsitecms_network
+
+  vk-celery-worker:
+    build:
+      context: ../services/vk-service
+      dockerfile: Dockerfile
+    image: eqsitecms-vk-celery:latest
+    container_name: eqsitecms-vk-celery-worker
+    restart: always
+    env_file:
+      - path: ../services/vk-service/.env
+        required: true
+    volumes:
+      - ../services/vk-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    hostname: vk-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >-
+      uv run --no-sync celery -A workers.celery_app worker -Q vk -l info
+      --hostname vk-worker@%h
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          timeout 10s uv run --no-sync celery -A workers.celery_app inspect ping
+          --destination vk-worker@vk-worker --timeout 5
+          | tee /tmp/celery-readiness.log | grep -q pong
+      interval: 15s
+      timeout: 12s
+      retries: 5
+      start_period: 20s
+    networks:
+      - eqsitecms_network
+
+networks:
+  eqsitecms_network:
+    external: true

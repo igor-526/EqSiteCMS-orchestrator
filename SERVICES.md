@@ -26,6 +26,9 @@ EqSiteCMS поддерживает два контура доступа к API:
   - БД 0 — зарезервирована (кэш backend)
   - БД 1 — broker для email-service
   - БД 2 — backend для email-service
+  - БД 3 — broker для vk-service
+  - БД 4 — backend для vk-service
+  - Следующий свободный номер — 5
 - **NATS Jetstream**: Система обмена событиями между сервисами. Используется для pub/sub и command-потоков.
 
 ---
@@ -39,6 +42,7 @@ EqSiteCMS поддерживает два контура доступа к API:
 | Frontend CMS  | `services/frontend` | Админский интерфейс CMS (авторизованный контур)      |
 | Email Service | `services/email-service` | Отправка email через NATS-команды и Celery-очередь |
 | Notification Service | `services/notification-service` | Маршрутизация notification-команд между backend и каналами доставки |
+| VK Service | `services/vk-service` | Скелет канала доставки VK (вне core release scope, бизнес-логика ещё не реализована) |
 | Site: site-ad | `services/site-ad`  | Публичный сайт-потребитель read API                  |
 
 
@@ -80,7 +84,79 @@ EqSiteCMS поддерживает два контура доступа к API:
 **Технологии:** Python, FastAPI, PostgreSQL, NATS JetStream.
 **Роль:** принимает события backend и публикует команды каналам доставки по каноническому AsyncAPI-контракту. Входит в core release scope.
 
-### 5. Public Site `site-ad` (`services/site-ad`)
+### 5. VK Service (`services/vk-service`)
+
+**Технологии:** Python, FastAPI, Clean Architecture, NATS JetStream, Celery + Redis, SQLAlchemy, Alembic.
+**Роль:** скелет канала доставки VK. Создан копированием каркаса `services/email-service` с полной очисткой email-специфики. Бизнес-логика VK (VK API-клиент, отправка сообщений, подтверждение пользователей, модели БД, endpoint'ы рассылки) в этом сервисе **ещё не реализована**.
+
+**Границы скелета (что есть и чего нет):**
+
+- Единственный HTTP endpoint — `GET /health` (Public Read внутри `eqsitecms_network`). Унаследованных `/emails*` endpoint'ов нет.
+- Prometheus listener `:9000/metrics` поднимается только при `ENVIRONMENT=production` и на host **не публикуется**.
+- Alembic содержит одну initial-миграцию: `alembic upgrade head` создаёт только таблицу `alembic_version`. Доменных таблиц нет.
+- NATS JetStream клиент подключается, но **не создаёт** stream `NOTIFICATION_COMMANDS` и **не регистрирует** durable consumer. Владельцами stream остаются `notification-service` и `email-service`. Имена будущего VK-канала зарезервированы в настройках: subject `commands.notification.vk.send`, durable `vk-service-commands-send-vk`.
+- `services/vk-service/docs/asyncapi.yaml` **не создан**: публиковать канал, который сервис не потребляет, значит создать ложный канонический контракт.
+- Celery: очередь `vk`, `task_default_queue=vk`, задача-пробник `vk.integration_probe`, worker `--hostname vk-worker@%h`.
+
+**Ресурсы:**
+
+| Ресурс | Значение |
+|---|---|
+| PostgreSQL | контейнер `eqsitecms-db-vk`, БД/пользователь `eqsitecmsvk`, host-порт `5436`, volume `docker-compose_eqsitecms_vk_db_data` |
+| Redis | DB 3 (Celery broker), DB 4 (Celery backend) |
+| Celery очередь / worker hostname | `vk` / `vk-worker` |
+| NATS | `nats://eqsitecms-nats:4222` (клиент без streams/consumers) |
+| Main backend | `MAIN_BACKEND_URL` + `X-Service-Key` |
+| Compose-файл | `.docker-compose/docker-compose.vk.yml` |
+| Compose-проект | `eqsitecms-vk` |
+| Контейнеры | `eqsitecms-vk-service`, `eqsitecms-vk-service-migration`, `eqsitecms-vk-celery-worker` |
+| Образы | `eqsitecms-vk:latest`, `eqsitecms-vk-migration:latest`, `eqsitecms-vk-celery:latest` |
+| Порт приложения | `8000` внутри контейнера, `expose` без публикации на host |
+
+**Make-цели (автономные, вне core release scope):** `vk-build`, `vk-build-nc`, `vk`, `vk-attach`, `check-vk`, `fix-vk`. Валидация compose входит в `make compose-check`.
+
+⚠️ **Запускать `vk-service` следует только через `make vk` (проект `eqsitecms-vk`).** Поскольку `db-vk` объявлен в общем `.docker-compose/docker-compose.infra.yml`, цель `make infra` поднимает его без явного списка сервисов — то есть в проекте `eqsitecms-infra`. Если сначала выполнить `make infra`, а затем `make vk`, Docker вернёт `Conflict. The container name "/eqsitecms-db-vk" is already in use`: контейнер с этим именем уже принадлежит другому compose-проекту. В таком случае удалите лишний контейнер (`docker rm -f eqsitecms-db-vk`) и поднимите сервис заново через `make vk` — данные сохранятся в volume `docker-compose_eqsitecms_vk_db_data`. Цели `make migrate-core` и `make recreate-core` этой проблемой не затронуты: они перечисляют инфраструктурные сервисы явно и `db-vk` не поднимают.
+
+**Переменные локального `.docker-compose/.env`** (файл не версионируется, воспроизводится вручную):
+
+```bash
+EXPOSE_VK_SERVICE_PORT=8004
+POSTGRES_VK_USER=eqsitecmsvk
+POSTGRES_VK_PASSWORD=<локальное dev-значение>
+POSTGRES_VK_NAME=eqsitecmsvk
+EXPOSE_VK_DB_PORT=5436
+```
+
+Опционально: `EQSITECMS_VK_DB_VOLUME` (по умолчанию `docker-compose_eqsitecms_vk_db_data`).
+Переменные приложения задаются в `services/vk-service/.env` (создаётся из `services/vk-service/.env.example`); compose подключает этот файл с `required: true`.
+
+Для `make -C services/vk-service test-infra` дополнительно нужны `VK_TEST_CELERY_BROKER` и `VK_TEST_CELERY_BACKEND` (адреса Redis DB 3/4 с точки зрения хоста, где запускаются тесты).
+
+#### Ограничения интеграции в монорепозиторий
+
+`vk-service` сознательно оставлен вне процессной обвязки монорепозитория:
+
+- **Не входит в `services.manifest`.** Внутри `services/vk-service` создан локальный git-репозиторий через `git init` **без remote**. Следствия: `make sync` его не синхронизирует, `make services-branches` его не показывает, `make secret-scan` его не сканирует (`scripts/secret-scan.sh` выполняет `git -C services/<name> ls-files` по манифесту).
+- **Не входит в core release scope.** Цели `build`, `build-nc`, `check`, `fix`, `test`, `lint`, `format`, переменная `DC_CORE` и цели `migrate-core`, `recreate-core`, `health-core`, `status-core`, `logs-core` остаются на четырёх core-сервисах (`backend`, `frontend`, `email-service`, `notification-service`).
+- **Не входит в `asyncapi-validate`.** Цель проверяет три существующих контракта (`backend`, `notification-service`, `email-service`).
+
+Включение `vk-service` в манифест и core release scope выполняется отдельным change после создания remote-репозитория.
+
+#### ⚠️ Технический долг: деплой-конфигурация не готова
+
+Каталоги `services/vk-service/.helm/**` и `services/vk-service/.github/**` **скопированы из `services/email-service` без изменений** (решение пользователя: helm и секреты не трогать в рамках инициализации). Поэтому они описывают **email-service**, а не VK:
+
+| Артефакт | Фактическое значение (унаследовано от `email-service`) |
+|---|---|
+| Helm release name | `eqcms-email-service` |
+| Docker-образ в CI | `ghcr.io/igor-526/eqsitecms-email-service` |
+| Команда worker'а в `.helm/values.yaml` | `-Q email` |
+| Kubernetes-секрет | `eqsitecms-email-service-secret` |
+| Имена шаблонов helm | `.helm/templates/email-service-*` |
+
+**`services/vk-service` НЕ готов к деплою.** Выкатывать его запрещено: CI/Helm перезапишут релиз `email-service`. Приведение деплой-конфигурации к VK выполняется отдельным change вместе с созданием remote-репозитория и k8s-секрета.
+
+### 6. Public Site `site-ad` (`services/site-ad`)
 
 **Технологии:** отдельный фронтенд-проект сайта.  
 **Роль:** Внешний сайт-потребитель API EqSiteCMS.  

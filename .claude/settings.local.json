@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Skill(api-smoke-test)",
-      "Skill(smoke)"
+      "Skill(smoke)",
+      "Bash(docker compose:*)"
     ]
   }
 }
