@@ -42,7 +42,7 @@ EqSiteCMS поддерживает два контура доступа к API:
 | Frontend CMS  | `services/frontend` | Админский интерфейс CMS (авторизованный контур)      |
 | Email Service | `services/email-service` | Отправка email через NATS-команды и Celery-очередь |
 | Notification Service | `services/notification-service` | Маршрутизация notification-команд между backend и каналами доставки |
-| VK Service | `services/vk-service` | Скелет канала доставки VK (вне core release scope, бизнес-логика ещё не реализована) |
+| VK Service | `services/vk-service` | Канал доставки VK и бот привязки пользователей (вне core release scope; доставка уведомлений о событиях ещё не реализована) |
 | Site: site-ad | `services/site-ad`  | Публичный сайт-потребитель read API                  |
 
 
@@ -86,14 +86,17 @@ EqSiteCMS поддерживает два контура доступа к API:
 
 ### 5. VK Service (`services/vk-service`)
 
-**Технологии:** Python, FastAPI, Clean Architecture, NATS JetStream, Celery + Redis, SQLAlchemy, Alembic.
-**Роль:** скелет канала доставки VK. Создан копированием каркаса `services/email-service` с полной очисткой email-специфики. Бизнес-логика VK (VK API-клиент, отправка сообщений, подтверждение пользователей, модели БД, endpoint'ы рассылки) в этом сервисе **ещё не реализована**.
+**Технологии:** Python, FastAPI, Clean Architecture, NATS JetStream, Celery + Redis, SQLAlchemy, Alembic, `vkbottle` (VK API + Bots Long Poll).
+**Роль:** канал доставки VK и бот привязки пользователей. Сервис владеет привязкой пользователя EqSiteCMS к аккаунту VK: выдаёт контрольную строку, принимает её сообщением боту группы, хранит состояние привязки и журнал действий. Создан копированием каркаса `services/email-service` с полной очисткой email-специфики.
 
-**Границы скелета (что есть и чего нет):**
+**Границы сервиса (что есть и чего нет):**
 
-- Единственный HTTP endpoint — `GET /health` (Public Read внутри `eqsitecms_network`). Унаследованных `/emails*` endpoint'ов нет.
+- Реализовано: привязка и отвязка аккаунта VK, состояния `PENDING` / `ACTIVE` / `BLOCKED`, long-poll бот, приватный REST API `/vks*`.
+- **Не реализовано:** доставка уведомлений о событиях в VK. Публикации и потребления `commands.notification.vk.send` нет, поэтому включённый в CMS переключатель `callback/vk` пока не приводит к отправке сообщений. Также отсутствуют массовые рассылки, вложения и клавиатуры бота.
+- HTTP endpoints: `GET /health` (Public Read) и приватные `/vks*` — `GET /vks`, `GET /vks/bot-info`, `POST /vks`, `POST /vks/issue-confirmation`, `DELETE /vks/{user_id}`. Унаследованных `/emails*` endpoint'ов нет. Порт на host не публикуется: browser-facing gateway — только главный backend через `/api/vks/*`.
+- Публичного маршрута подтверждения нет: контрольную строку сверяет long-poll runtime по сообщению из VK, а не HTTP-запрос.
 - Prometheus listener `:9000/metrics` поднимается только при `ENVIRONMENT=production` и на host **не публикуется**.
-- Alembic содержит одну initial-миграцию: `alembic upgrade head` создаёт только таблицу `alembic_version`. Доменных таблиц нет.
+- Alembic: initial-миграция плюс ревизия VK-домена. `alembic upgrade head` создаёт `alembic_version`, `user_vks`, `vk_confirmations`, `vk_logs`.
 - NATS JetStream клиент подключается, но **не создаёт** stream `NOTIFICATION_COMMANDS` и **не регистрирует** durable consumer. Владельцами stream остаются `notification-service` и `email-service`. Имена будущего VK-канала зарезервированы в настройках: subject `commands.notification.vk.send`, durable `vk-service-commands-send-vk`.
 - `services/vk-service/docs/asyncapi.yaml` **не создан**: публиковать канал, который сервис не потребляет, значит создать ложный канонический контракт.
 - Celery: очередь `vk`, `task_default_queue=vk`, задача-пробник `vk.integration_probe`, worker `--hostname vk-worker@%h`.
@@ -102,18 +105,37 @@ EqSiteCMS поддерживает два контура доступа к API:
 
 | Ресурс | Значение |
 |---|---|
-| PostgreSQL | контейнер `eqsitecms-db-vk`, БД/пользователь `eqsitecmsvk`, host-порт `5436`, volume `docker-compose_eqsitecms_vk_db_data` |
+| PostgreSQL | контейнер `eqsitecms-db-vk`, БД/пользователь `eqsitecmsvk`, host-порт `5436`, volume `docker-compose_eqsitecms_vk_db_data`, таблицы `user_vks`, `vk_confirmations`, `vk_logs` |
 | Redis | DB 3 (Celery broker), DB 4 (Celery backend) |
 | Celery очередь / worker hostname | `vk` / `vk-worker` |
 | NATS | `nats://eqsitecms-nats:4222` (клиент без streams/consumers) |
 | Main backend | `MAIN_BACKEND_URL` + `X-Service-Key` |
 | Compose-файл | `.docker-compose/docker-compose.vk.yml` |
 | Compose-проект | `eqsitecms-vk` |
-| Контейнеры | `eqsitecms-vk-service`, `eqsitecms-vk-service-migration`, `eqsitecms-vk-celery-worker` |
-| Образы | `eqsitecms-vk:latest`, `eqsitecms-vk-migration:latest`, `eqsitecms-vk-celery:latest` |
+| Контейнеры | `eqsitecms-vk-service`, `eqsitecms-vk-service-migration`, `eqsitecms-vk-celery-worker`, `eqsitecms-vk-bot` (long-poll runtime, **единственный экземпляр**: Bots Long Poll допускает одного слушателя на группу) |
+| Образы | `eqsitecms-vk:latest`, `eqsitecms-vk-migration:latest`, `eqsitecms-vk-celery:latest`, `eqsitecms-vk-bot:latest` |
 | Порт приложения | `8000` внутри контейнера, `expose` без публикации на host |
 
-**Make-цели (автономные, вне core release scope):** `vk-build`, `vk-build-nc`, `vk`, `vk-attach`, `check-vk`, `fix-vk`. Валидация compose входит в `make compose-check`.
+**Make-цели (автономные, вне core release scope):** `vk-build`, `vk-build-nc`, `vk`, `vk-attach`, `vk-bot-logs`, `vk-bot-restart`, `check-vk`, `fix-vk`. Валидация compose входит в `make compose-check`.
+
+**Переменные окружения VK-домена** (в `services/vk-service/.env`, placeholders — в `.env.example`):
+
+| Переменная | По умолчанию | Кто заполняет |
+|---|---|---|
+| `VK_GROUP_TOKEN` | — | **Владелец VK-группы.** Секрет; в tracked-файлы, логи и ответы API не попадает |
+| `VK_GROUP_ID` | `0` | **Владелец VK-группы** |
+| `VK_GROUP_SCREEN_NAME` | — | **Владелец VK-группы** |
+| `VK_API_VERSION` | `5.199` | значение по умолчанию |
+| `VK_BOT_LINK_COMMAND` | `/link` | значение по умолчанию |
+| `VK_CONFIRMATION_TTL_MINUTES` | `30` | значение по умолчанию |
+| `VK_CONFIRMATION_CODE_LENGTH` | `8` | значение по умолчанию |
+| `VK_CONFIRMATION_MAX_ATTEMPTS` | `5` | значение по умолчанию |
+| `VK_CONFIRMATION_ATTEMPT_WINDOW_MINUTES` | `10` | значение по умолчанию |
+| `VK_LONGPOLL_WAIT_SECONDS` | `25` | значение по умолчанию |
+
+Пока первые три переменные не заполнены, контейнер `eqsitecms-vk-bot` завершается с понятной ошибкой в логах, `GET /vks/bot-info` отвечает `503`, а `eqsitecms-vk-service` остаётся `healthy`.
+
+Главный backend адресует сервис переменной `VK_SERVICE_URL=http://eqsitecms-vk-service:8000`.
 
 ⚠️ **Запускать `vk-service` следует только через `make vk` (проект `eqsitecms-vk`).** Поскольку `db-vk` объявлен в общем `.docker-compose/docker-compose.infra.yml`, цель `make infra` поднимает его без явного списка сервисов — то есть в проекте `eqsitecms-infra`. Если сначала выполнить `make infra`, а затем `make vk`, Docker вернёт `Conflict. The container name "/eqsitecms-db-vk" is already in use`: контейнер с этим именем уже принадлежит другому compose-проекту. В таком случае удалите лишний контейнер (`docker rm -f eqsitecms-db-vk`) и поднимите сервис заново через `make vk` — данные сохранятся в volume `docker-compose_eqsitecms_vk_db_data`. Цели `make migrate-core` и `make recreate-core` этой проблемой не затронуты: они перечисляют инфраструктурные сервисы явно и `db-vk` не поднимают.
 
@@ -130,7 +152,7 @@ EXPOSE_VK_DB_PORT=5436
 Опционально: `EQSITECMS_VK_DB_VOLUME` (по умолчанию `docker-compose_eqsitecms_vk_db_data`).
 Переменные приложения задаются в `services/vk-service/.env` (создаётся из `services/vk-service/.env.example`); compose подключает этот файл с `required: true`.
 
-Для `make -C services/vk-service test-infra` дополнительно нужны `VK_TEST_CELERY_BROKER` и `VK_TEST_CELERY_BACKEND` (адреса Redis DB 3/4 с точки зрения хоста, где запускаются тесты).
+Для `make -C services/vk-service test-infra` дополнительно нужны `VK_TEST_CELERY_BROKER` и `VK_TEST_CELERY_BACKEND` (адреса Redis DB 3/4 с точки зрения хоста, где запускаются тесты) и `VK_TEST_DATABASE_URL` (адрес БД `eqsitecmsvk` с точки зрения хоста; при отсутствии берётся адрес из настроек сервиса).
 
 #### Ограничения интеграции в монорепозиторий
 

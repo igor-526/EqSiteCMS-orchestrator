@@ -1,9 +1,4 @@
-# vk-service-orchestration Specification
-
-## Purpose
-Оркестрация сервиса `services/vk-service`: `.docker-compose/docker-compose.vk.yml` (включая контейнер long-poll бота), контейнер `db-vk`, переменные `.docker-compose/.env` и VK-домена, распределение портов/имён контейнеров и образов, автономные цели корневого `Makefile`, неизменность `services.manifest` и core release scope.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Compose-файл vk-service в .docker-compose
 
@@ -50,26 +45,6 @@
 
 - **WHEN** reviewer читает описание сервиса `vk-bot`
 - **THEN** секции `ports` и `expose` отсутствуют
-
-### Requirement: Отдельная база данных db-vk в инфраструктурном compose
-
-`.docker-compose/docker-compose.infra.yml` MUST содержать сервис `db-vk` на образе `postgres:16` с `container_name: eqsitecms-db-vk`, переменными `POSTGRES_VK_USER`, `POSTGRES_VK_PASSWORD`, `POSTGRES_VK_NAME`, публикацией `${EXPOSE_VK_DB_PORT}:5432`, сетью `eqsitecms_network` и volume `eqsitecms_vk_db_data` с именем из `${EQSITECMS_VK_DB_VOLUME:-docker-compose_eqsitecms_vk_db_data}`. Существующие сервисы `db`, `db-notifications`, `db-email`, `minio`, `nats`, `redis` и их volume MUST оставаться неизменными.
-
-#### Scenario: db-vk объявлен и валиден
-
-- **WHEN** выполняется `docker compose -f .docker-compose/docker-compose.infra.yml config --quiet`
-- **THEN** команда завершается с кодом 0
-- **AND** effective config содержит сервис `db-vk` с контейнером `eqsitecms-db-vk` и volume `eqsitecms_vk_db_data`
-
-#### Scenario: Существующая инфраструктура не изменена
-
-- **WHEN** reviewer сравнивает diff `docker-compose.infra.yml`
-- **THEN** изменения ограничены добавлением блока `db-vk` и его volume
-
-#### Scenario: База изолирована от email-service
-
-- **WHEN** `eqsitecms-db-vk` запущен
-- **THEN** он использует собственный volume и собственный host-порт, а данные `eqsitecms-db-email` остаются недоступными для `vk-service`
 
 ### Requirement: Непересекающееся распределение портов и переменных окружения
 
@@ -142,30 +117,6 @@
 
 - **WHEN** выполняется `make vk-build`
 - **THEN** собирается в том числе образ `eqsitecms-vk-bot:latest`
-
-### Requirement: services.manifest и скрипты оркестрации не изменяются
-
-`services.manifest` MUST оставаться неизменным: `vk-service` не добавляется в него в рамках этого change. `scripts/secret-scan.sh`, `scripts/recreate-core.sh` и `scripts/sync.sh` MUST оставаться неизменными, поскольку `secret-scan.sh` выполняет `git -C services/<name> ls-files`, а `services/vk-service` не является git-клоном без записи в манифесте. Внутри `services/vk-service` SHALL создаваться локальный git-репозиторий через `git init` **без настройки remote**. Следствие MUST быть зафиксировано в документации: `make services-branches` не показывает `vk-service`, а сам сервис остаётся локальным до отдельного change, заводящего remote-репозиторий и запись в манифесте.
-
-#### Scenario: Манифест не тронут
-
-- **WHEN** reviewer проверяет diff `services.manifest`
-- **THEN** изменений нет
-
-#### Scenario: Скрипты не тронуты
-
-- **WHEN** reviewer проверяет diff `scripts/`
-- **THEN** `secret-scan.sh`, `recreate-core.sh` и `sync.sh` не изменены
-
-#### Scenario: Ограничение задокументировано
-
-- **WHEN** reviewer читает `SERVICES.md` и `services/vk-service/README.md`
-- **THEN** явно указано, что `vk-service` пока не входит в `services.manifest`, в core release scope и в `asyncapi-validate`
-
-#### Scenario: Локальный репозиторий без remote
-
-- **WHEN** выполняется `git -C services/vk-service remote -v`
-- **THEN** вывод пуст, а `services.manifest` не изменён
 
 ### Requirement: Архитектурная документация и реестры синхронизированы
 

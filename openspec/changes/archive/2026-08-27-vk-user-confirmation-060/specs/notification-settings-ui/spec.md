@@ -1,20 +1,4 @@
-# notification-settings-ui Specification
-
-## Purpose
-Защищённый CMS-интерфейс управления email и доступными пользователю настройками уведомлений через основной backend.
-
-## Requirements
-
-### Requirement: Protected раздел «Уведомления»
-CMS MUST добавить `/notifications` и пункт sidebar с подходящей notification-иконкой для каждого authenticated пользователя независимо от scopes; anonymous пользователь MUST быть заблокирован существующим auth guard.
-
-#### Scenario: Authenticated navigation
-- **WHEN** authenticated пользователь с любым набором scopes открывает CMS
-- **THEN** он MUST видеть пункт «Уведомления» и иметь доступ к `/notifications`
-
-#### Scenario: Anonymous navigation
-- **WHEN** anonymous пользователь открывает `/notifications`
-- **THEN** CMS MUST перенаправить/заблокировать его по существующему protected-route contract
+## MODIFIED Requirements
 
 ### Requirement: Вкладки уведомлений
 
@@ -29,29 +13,6 @@ CMS MUST добавить `/notifications` и пункт sidebar с подход
 
 - **WHEN** пользователь выбирает «Настройки»
 - **THEN** UI MUST показать email block, VK block и доступные пользователю notification events
-
-### Requirement: Email lifecycle UI
-Email block MUST показывать состояния отсутствующего, неподтверждённого и подтверждённого адреса и управлять адресом только через основной backend.
-
-#### Scenario: Email отсутствует
-- **WHEN** owner email не найден
-- **THEN** UI MUST объяснить необходимость привязки и предложить создание, не показывая change/delete
-
-#### Scenario: Email не подтверждён
-- **WHEN** email существует с `approved=false`
-- **THEN** UI MUST показать адрес красным и объяснить необходимость подтверждения
-
-#### Scenario: Email подтверждён
-- **WHEN** email существует с `approved=true`
-- **THEN** UI MUST показать адрес обычным основным цветом
-
-#### Scenario: Change modal
-- **WHEN** пользователь с существующим email нажимает «Изменить»
-- **THEN** modal MUST запросить валидный новый email и предупредить о необходимости повторного подтверждения
-
-#### Scenario: Delete modal
-- **WHEN** пользователь нажимает «Удалить»
-- **THEN** modal MUST запросить подтверждение; для подтверждённого email текст MUST сообщить, что при повторной привязке потребуется новое подтверждение
 
 ### Requirement: Role-dependent event checkbox
 

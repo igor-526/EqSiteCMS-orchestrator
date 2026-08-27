@@ -80,6 +80,31 @@ services:
     networks:
       - eqsitecms_network
 
+  # Bots Long Poll допускает ОДНОГО слушателя на группу: несколько экземпляров
+  # получают дублирующиеся события и перетирают друг другу ts. Масштабировать
+  # этот сервис нельзя — только один экземпляр.
+  vk-bot:
+    build:
+      context: ../services/vk-service
+      dockerfile: Dockerfile
+    image: eqsitecms-vk-bot:latest
+    container_name: eqsitecms-vk-bot
+    restart: always
+    env_file:
+      - path: ../services/vk-service/.env
+        required: true
+    volumes:
+      - ../services/vk-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    depends_on:
+      vk-migration:
+        condition: service_completed_successfully
+    command: uv run --no-sync python -m bot
+    deploy:
+      replicas: 1
+    networks:
+      - eqsitecms_network
+
 networks:
   eqsitecms_network:
     external: true

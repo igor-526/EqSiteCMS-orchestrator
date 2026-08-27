@@ -1,9 +1,35 @@
-# notification-settings-api Specification
+## ADDED Requirements
 
-## Purpose
-Owner-scoped API управления настройками уведомлений через основной backend с private notification-service storage и строгой access matrix.
+### Requirement: Eligibility VK-канала для события callback
 
-## Requirements
+Основной backend MUST добавить в `NOTIFICATION_ELIGIBILITY` комбинацию `("callback", "vk")` с требуемыми scopes `ADMIN` и `SUPERUSER`, идентичными комбинации `("callback", "email")`. `KNOWN_NOTIFICATION_CHANNELS` уже содержит `vk` и MUST NOT изменяться. Notification-service MUST NOT изменяться: его `NotificationSettingsService.get_settings` уже возвращает кортеж `callback/vk` для активных seed-записей события `callback` и канала `vk`.
+
+#### Scenario: Eligible пользователь видит оба канала
+
+- **WHEN** authenticated пользователь со scope `ADMIN` или `SUPERUSER` запрашивает `GET /api/notification-settings`
+- **THEN** ответ MUST быть `200` и содержать ровно две записи для события `callback`: с `channel_code="email"` и с `channel_code="vk"`
+
+#### Scenario: Ineligible пользователь не видит VK-канал
+
+- **WHEN** authenticated пользователь без `ADMIN` и `SUPERUSER` запрашивает каталог
+- **THEN** ответ MUST быть `200` с пустым списком и MUST NOT раскрывать комбинацию `callback/vk`
+
+#### Scenario: Независимость каналов
+
+- **WHEN** eligible пользователь включает `callback/vk`
+- **THEN** значение `enabled` для `callback/email` MUST остаться неизменным, и наоборот
+
+#### Scenario: Доставка в VK вне scope этого change
+
+- **WHEN** eligible пользователь включил `callback/vk` и произошло событие обратного звонка
+- **THEN** уведомление в VK MUST NOT отправляться, поскольку публикация `commands.notification.vk.send` реализуется отдельной задачей; включение настройки MUST NOT приводить к ошибке обработки события
+
+#### Scenario: Notification-service не изменяется
+
+- **WHEN** reviewer сверяет `services/notification-service` до и после change
+- **THEN** seed-данные, репозитории, приватные routes и `NotificationSettingsService` MUST остаться неизменными
+
+## MODIFIED Requirements
 
 ### Requirement: Owner-scoped каталог настроек уведомлений
 
@@ -53,17 +79,6 @@ Owner-scoped API управления настройками уведомлен�
 - **WHEN** eligible owner меняет `enabled` для `callback/vk`
 - **THEN** сохранённое значение для `callback/email` MUST остаться прежним
 
-### Requirement: Private notification-service API
-Notification-service MUST владеть сохранением настроек и предоставить доступные только во внутренней сети routes `GET /internal/notification-settings/{user_id}` и `PUT /internal/notification-settings/{user_id}/{event_code}/{channel_code}`; основной backend MUST быть единственным browser-facing gateway.
-
-#### Scenario: Internal read
-- **WHEN** main backend запрашивает настройки owner
-- **THEN** notification-service MUST вернуть активные комбинации и сохранённый enabled state без чужих записей
-
-#### Scenario: Internal idempotent write
-- **WHEN** main backend повторяет одинаковый enable или disable
-- **THEN** notification-service MUST вернуть тот же state без duplicate row и без изменения чужих tuples
-
 ### Requirement: Access matrix notification settings
 
 Система MUST соблюдать следующую матрицу; protected GET являются исключениями из Public Read, потому что раскрывают персональные предпочтения и не предназначены consumer sites.
@@ -106,32 +121,3 @@ Backend-фича MUST иметь не менее 30 разнообразных u
 
 - **WHEN** выполняются smoke-сценарии каталога настроек
 - **THEN** они MUST подтверждать наличие `callback/vk` в ответе eligible пользователя и успешное независимое переключение обоих каналов
-
-### Requirement: Eligibility VK-канала для события callback
-
-Основной backend MUST добавить в `NOTIFICATION_ELIGIBILITY` комбинацию `("callback", "vk")` с требуемыми scopes `ADMIN` и `SUPERUSER`, идентичными комбинации `("callback", "email")`. `KNOWN_NOTIFICATION_CHANNELS` уже содержит `vk` и MUST NOT изменяться. Notification-service MUST NOT изменяться: его `NotificationSettingsService.get_settings` уже возвращает кортеж `callback/vk` для активных seed-записей события `callback` и канала `vk`.
-
-#### Scenario: Eligible пользователь видит оба канала
-
-- **WHEN** authenticated пользователь со scope `ADMIN` или `SUPERUSER` запрашивает `GET /api/notification-settings`
-- **THEN** ответ MUST быть `200` и содержать ровно две записи для события `callback`: с `channel_code="email"` и с `channel_code="vk"`
-
-#### Scenario: Ineligible пользователь не видит VK-канал
-
-- **WHEN** authenticated пользователь без `ADMIN` и `SUPERUSER` запрашивает каталог
-- **THEN** ответ MUST быть `200` с пустым списком и MUST NOT раскрывать комбинацию `callback/vk`
-
-#### Scenario: Независимость каналов
-
-- **WHEN** eligible пользователь включает `callback/vk`
-- **THEN** значение `enabled` для `callback/email` MUST остаться неизменным, и наоборот
-
-#### Scenario: Доставка в VK вне scope этого change
-
-- **WHEN** eligible пользователь включил `callback/vk` и произошло событие обратного звонка
-- **THEN** уведомление в VK MUST NOT отправляться, поскольку публикация `commands.notification.vk.send` реализуется отдельной задачей; включение настройки MUST NOT приводить к ошибке обработки события
-
-#### Scenario: Notification-service не изменяется
-
-- **WHEN** reviewer сверяет `services/notification-service` до и после change
-- **THEN** seed-данные, репозитории, приватные routes и `NotificationSettingsService` MUST остаться неизменными

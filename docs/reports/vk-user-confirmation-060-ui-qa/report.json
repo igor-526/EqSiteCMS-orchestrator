@@ -1,0 +1,218 @@
+[
+  {
+    "viewport": "desktop",
+    "case": "01-unlinked",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/desktop-01-unlinked.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "02-pending-with-code",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/desktop-02-pending-with-code.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "03-active",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/desktop-03-active.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "04-active-long-name",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/desktop-04-active-long-name.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "05-blocked",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/desktop-05-blocked.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "06-load-error",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/desktop-06-load-error.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "07-botinfo-unavailable",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/desktop-07-botinfo-unavailable.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "08-unlink-modal",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/desktop-08-unlink-modal.png"
+  },
+  {
+    "viewport": "desktop",
+    "case": "09-unlink-error",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/desktop-09-unlink-error.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "01-unlinked",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/tablet-01-unlinked.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "02-pending-with-code",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/tablet-02-pending-with-code.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "03-active",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/tablet-03-active.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "04-active-long-name",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/tablet-04-active-long-name.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "05-blocked",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/tablet-05-blocked.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "06-load-error",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/tablet-06-load-error.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "07-botinfo-unavailable",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/tablet-07-botinfo-unavailable.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "08-unlink-modal",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/tablet-08-unlink-modal.png"
+  },
+  {
+    "viewport": "tablet",
+    "case": "09-unlink-error",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/tablet-09-unlink-error.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "01-unlinked",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/mobile-01-unlinked.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "02-pending-with-code",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/mobile-02-pending-with-code.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "03-active",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/mobile-03-active.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "04-active-long-name",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/mobile-04-active-long-name.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "05-blocked",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/mobile-05-blocked.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "06-load-error",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/mobile-06-load-error.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "07-botinfo-unavailable",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/mobile-07-botinfo-unavailable.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "08-unlink-modal",
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": "/tmp/vk-qa/shots/mobile-08-unlink-modal.png"
+  },
+  {
+    "viewport": "mobile",
+    "case": "09-unlink-error",
+    "horizontalOverflow": false,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    ],
+    "screenshot": "/tmp/vk-qa/shots/mobile-09-unlink-error.png"
+  }
+]

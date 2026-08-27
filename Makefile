@@ -20,7 +20,9 @@ DC_VK = docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK)
 # переменные приложения — из services/vk-service/.env
 ENV_FILES_VK = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/vk-service/.env
 # Собственные сервисы проекта eqsitecms-vk
-VK_SERVICES = db-vk vk-migration vk-service vk-celery-worker
+VK_SERVICES = db-vk vk-migration vk-service vk-celery-worker vk-bot
+# Bots Long Poll допускает одного слушателя на группу: контейнер бота единственный
+VK_BOT_CONTAINER = eqsitecms-vk-bot
 
 DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
 DC_INFRA = docker compose -f $(COMPOSE_INFRA)
@@ -36,7 +38,7 @@ SERVICES_MANIFEST ?= services.manifest
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
-		vk-build vk-build-nc vk vk-attach check-vk fix-vk \
+		vk-build vk-build-nc vk vk-attach vk-bot-logs vk-bot-restart check-vk fix-vk \
 		infra
 
 # =====ORCHESTRATOR COMMANDS=====
@@ -123,11 +125,11 @@ fe-build-nc:
 
 vk-build:
 	@echo "Building vk service images..."
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build vk-service vk-migration vk-celery-worker
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build vk-service vk-migration vk-celery-worker vk-bot
 
 vk-build-nc:
 	@echo "Building vk service images without build cache..."
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build --no-cache vk-service vk-migration vk-celery-worker
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build --no-cache vk-service vk-migration vk-celery-worker vk-bot
 
 # =====RUN COMMANDS=====
 
@@ -169,6 +171,16 @@ vk-attach:
 	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
 	@docker inspect eqsitecms-redis >/dev/null 2>&1 || $(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d redis
 	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up --no-deps $(VK_SERVICES)
+
+# Long-poll runtime бота: логи и перезапуск только этого контейнера.
+vk-bot-logs:
+	docker logs -f --tail 200 $(VK_BOT_CONTAINER)
+
+# Пересоздание, а не docker restart: переменные из env_file фиксируются при
+# создании контейнера, поэтому после правки services/vk-service/.env (например
+# нового VK_GROUP_TOKEN) простой restart поднимет процесс со старым окружением.
+vk-bot-restart:
+	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d --no-deps --force-recreate vk-bot
 
 # Frontend
 fe:
