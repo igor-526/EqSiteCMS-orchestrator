@@ -1,8 +1,5 @@
-# notification-callback-handler Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
-## Requirements
 ### Requirement: CallbackEventHandler
 Система MUST предоставлять handler форматирования callback_request notification, который для каждого канала выбирает получателей только внутри `equestrian_id` события: запрашивает активных пользователей Backend Core с одновременными фильтрами `equestrian_ids=[equestrian_id]` и `role=[ADMIN,SUPERUSER]` и пересекает их с `enabled_user_ids` соответствующего канала. Для email handler MUST оставить только подтверждённые email; для VK MUST передать только UUID eligible/enabled пользователей, не запрашивая VK bindings. Subject/body/text MUST содержать только имя, телефон и комментарий заявителя и MUST NOT содержать callback, tenant/equestrian, event или user UUID.
 
@@ -46,32 +43,6 @@ TBD - created by archiving change notification-service-initialization. Update Pu
 - **WHEN** tenant-scoped запрос пользователей или channel destination lookup завершается ошибкой
 - **THEN** handler работает fail-closed, не возвращает command этого канала и не расширяет выборку до всех пользователей
 
-### Requirement: CallbackRequestHandler Integration
-CallbackRequestHandler MUST использовать NotificationOrchestratorService, MUST принимать внутренние `callback_request_id` и `equestrian_id` для service correlation и tenant routing, передавать их без подмены в orchestrator и MUST NOT отображать эти UUID в subject/body.
-
-#### Scenario: Process tenant-scoped callback via orchestrator
-- **WHEN** обрабатывается валидный `CallbackRequestedData` с `callback_request_id`, `equestrian_id`, phone и optional name/comment
-- **THEN** вызывается `orchestrator.process_event(event_code="callback")` с исходным tenant UUID, а callback/tenant UUID не отображаются в subject/body
-
-#### Scenario: Callback event без tenant UUID
-- **WHEN** consumer получает payload без `equestrian_id` или с невалидным UUID
-- **THEN** schema validation отклоняет сообщение, оно не маршрутизируется получателям и применяется существующая retry/DLQ политика consumer
-
-
-### Requirement: DI Container Update
-The application container MUST register orchestrator dependencies.
-
-#### Scenario: Container provides orchestrator
-- GIVEN the ApplicationContainer
-- WHEN resolving CallbackRequestHandler
-- THEN it receives NotificationOrchestratorService dependency
-
-#### Scenario: Container provides repositories
-- GIVEN the ApplicationContainer
-- WHEN resolving NotificationOrchestratorService
-- THEN it receives EventRepository, ChannelRepository, UserNotificationSettingRepository
-
-
 ### Requirement: Семантика доставки callback-уведомления
 Notification-service MUST выставлять `notifications_delivered=true` через защищённый backend service endpoint только после успешной публикации хотя бы одной предусмотренной downstream email или VK command. Отсутствие eligible recipients во всех каналах, ошибка routing/publish либо отсутствие PubAck MUST оставлять значение `false`. SMTP acknowledgement/receipt и фактический outcome VK API MUST NOT требоваться и MUST NOT изменять этот общий флаг.
 
@@ -94,3 +65,4 @@ Notification-service MUST выставлять `notifications_delivered=true` ч
 #### Scenario: Provider outcome не изменяет callback-флаг
 - **WHEN** Email Service или VK Service позднее доставляет либо не доставляет сообщение
 - **THEN** callback contract не ожидает receipt и не выполняет дополнительное изменение `notifications_delivered`
+

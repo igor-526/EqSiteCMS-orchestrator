@@ -10,7 +10,7 @@
 1. Работай только по заданию Router и создай proposal, design, delta specs и tasks через `openspec-propose`; `openspec-explore` запускай только по явному запросу пользователя.
 2. Все содержательные части артефактов пиши на русском; команды, пути, идентификаторы и нормативный синтаксис OpenSpec могут оставаться латинскими.
 3. Для endpoint changes включи access matrix `method | path | access class | roles | expected without auth | expected with auth`, причины исключений и anonymous/authenticated tests.
-4. Декомпозируй реализацию на ограниченные непересекающиеся ownership-зоны с завершённым deliverable для каждого профильного субагента.
+4. Декомпозируй реализацию на непересекающиеся ownership-зоны (**deliverables**) и раздели каждую на **execution units** — куски, помещающиеся в одну агентную сессию по бюджету из `AGENTS.md`. Выдай таблицу units и DAG зависимостей.
 5. Выполни `openspec status --change <change> --json` и `openspec validate <change> --type change --strict`.
 6. Верни Router ссылки на все артефакты, результаты проверок и открытые вопросы. Остановись на пользовательском approval gate; apply и runtime-реализацию не начинай.
 
@@ -43,23 +43,55 @@
   - Если да → нужно обновить `docs/asyncapi.yaml` затронутого сервиса
 - Есть ли риски нарушения Clean Architecture?
 - Зависимости: что должно быть реализовано раньше чего?
-- Если задача описывает backend-фичу, какие минимум 30 unit-тестов и минимум 30 smoke-тестов должны доказать корректность фичи?
+- Какие риски фичи реально нужно закрыть тестами и на каком уровне (unit / integration / smoke на живом API)?
+- Сколько execution units нужно на реализацию и где проходят их границы?
 
-### 2.1. Обязательное планирование тестов для backend-фич
+### 2.1. Risk-based test matrix для backend-фич
 
-Для **каждой** описанной backend-фичи Planner обязан включить в план:
+Фиксированной квоты «минимум 30 unit + 30 smoke» **больше нет**. Она раздувала любую backend-фичу независимо от риска и превращала acceptance-сценарии в десятки верхнеуровневых execution tasks. Количество сценариев определяется риском и наблюдаемым поведением.
 
-- Не менее **30 unit-тестов**.
-- Не менее **30 smoke-тестов**.
-- Unit и smoke тесты должны быть перечислены явными пачками в деталях реализации и в `## Чеклист`.
-- Тесты должны быть разнообразными: покрывай edge cases, негативные сценарии, права доступа, пустые/граничные значения, конкурентные операции, идемпотентность, сортировки/фильтры, пагинацию, транзакционность, ошибки внешних зависимостей, сериализацию, timezone/locale, уникальные ограничения, soft-delete/restore, race conditions и деградацию при частично отсутствующих данных.
-- Для endpoint'ов с доступом по policy обязательны сценарии:
-  - публичный `GET` без cookie (доступ разрешен по контракту),
-  - `POST/PATCH/DELETE` без auth (ожидаемо `401`/`403` по контракту),
-  - `POST/PATCH/DELETE` с валидной auth и ролью (успех по контракту),
-  - доступ к чужим ресурсам (ожидаемо `403` или иной явно зафиксированный контрактный статус).
-- Для каждого endpoint в тестах должна прослеживаться связь с Access matrix.
-- Запрещено заполнять список однотипными happy-path проверками ради количества. Если тесты выглядят повторяющимися, Planner обязан переработать матрицу сценариев.
+Три уровня — три разные сущности, и их запрещено смешивать:
+
+| Сущность | Где живёт | Гранулярность |
+|---|---|---|
+| Acceptance scenario | delta spec (`specs/<capability>/spec.md`) | одно поведение |
+| Test matrix row | `design.md`, раздел `## Test matrix` | один тест-сценарий с ID |
+| Checklist task | `tasks.md` | одно действие агента (группа сценариев) |
+
+#### Test matrix
+
+Для каждой backend-фичи Planner строит матрицу и кладёт её в `design.md` (`## Test matrix`), **не** в `tasks.md`:
+
+| ID | Уровень | Риск/ось | Сценарий | Ожидание | Где проверяется |
+|---|---|---|---|---|---|
+| `UT-CB-01` | unit | валидация входа | ... | ... | `services/backend/tests/unit/...` |
+| `SM-CB-01` | smoke | реальная PostgreSQL | ... | ... | `.claude/skills/api-smoke-test` |
+
+Каждый ID трассируется на scenario delta spec или на строку access matrix.
+
+#### Обязательные оси покрытия
+
+Каждая применимая ось получает минимум один сценарий. Неприменимая ось помечается `неприменимо` с причиной:
+
+1. Happy path основного поведения.
+2. Валидация входа и граничные значения.
+3. Ошибки и деградация внешних зависимостей.
+4. Транзакционность, идемпотентность, конкурентность — везде, где есть запись.
+5. Access matrix: публичный `GET` без cookie; `POST/PATCH/DELETE` без auth (`401`/`403` по контракту); write с валидной auth и ролью; доступ к чужому ресурсу (`403` или явно зафиксированный статус).
+6. Персистентность на реальной PostgreSQL для всего, что зависит от constraint'ов, транзакций, типов, сортировок и миграций.
+7. Контракт ответа: отсутствие приватных полей, стабильная схема, отсутствие секретов в payload и логах.
+8. Регрессия — отдельный сценарий на каждый исправляемый баг.
+
+#### Правила размера
+
+- Ось без реального риска не заполняется ради количества. Однотипные happy-path проверки запрещены.
+- Если матрица одной фичи выходит за ~25 сценариев, это сигнал, что «фича» на самом деле несколько фич: раздели её на отдельные capability и execution units, у каждой своя матрица.
+- Матрица **не** разворачивается в отдельные checklist-пункты. В `tasks.md` попадает одна задача на группу ID:
+
+```markdown
+- [ ] BE-4.1 Реализовать и прогнать unit-покрытие `UT-CB-01..UT-CB-18` из `design.md` → `## Test matrix`
+- [ ] SMOKE-1.2 Выполнить `SM-CB-01..SM-CB-12` через `.claude/skills/api-smoke-test` на реальной PostgreSQL
+```
 
 ### 2.2. Обязательное планирование тестов для CMS frontend-фич
 
@@ -69,7 +101,7 @@
 
 #### Frontend test matrix
 
-В каждой CMS frontend-фиче план должен содержать таблицу:
+Матрица живёт в `design.md` (`## Test matrix`, frontend-часть) и, как и backend-матрица, **не** разворачивается в отдельные checklist-пункты `tasks.md`. Таблица обязательна для каждой CMS frontend-фичи:
 
 | Area | Behavior diff | Required tests | Access scenario | Commands |
 |---|---|---|---|---|
@@ -102,7 +134,11 @@
 
 Запрещено заменять Manual QA только unit/component/API-boundary тестами или live-backend unit test substitution: автоматизированные тесты через MSW/mocks обязательны отдельно, а browser Manual QA фиксирует пользовательский flow и визуальное поведение.
 
+Manual QA steps живут в `design.md` и являются отдельным execution unit (`QA-<n>`, профиль Frontend или Quality Gate lane `QG-FE`). В `tasks.md` они попадают одной задачей со ссылкой на диапазон шагов, а не построчно.
+
 #### Минимумы frontend-тестов
+
+Это минимумы **строк матрицы**, а не checklist-пунктов: в `tasks.md` они группируются в одну задачу на компонент/фичу.
 
 | Тип изменения | Минимум |
 |---|---|
@@ -117,9 +153,9 @@
 
 #### Checklist tasks для Frontend и Quality Gate
 
-В `### Frontend` чеклиста Planner обязан добавлять конкретные test tasks для behavior diff, включая access scenarios: anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`.
+В frontend execution unit чеклиста Planner обязан добавлять test task со ссылкой на строки frontend test matrix, включая access scenarios: anonymous/authenticated, scopes/permissions, Protected Write UX и `401/403`. Одна задача покрывает группу сценариев, а не один сценарий.
 
-Если feature содержит списки/таблицы, чеклист обязан требовать pagination coverage:
+Если feature содержит списки/таблицы, матрица обязана требовать pagination coverage (одна задача в чеклисте, четыре строки в матрице):
 - initial `{ limit, offset }`;
 - page change;
 - page size change;
@@ -135,7 +171,7 @@ rg -n "site-ad|site-\\*|Public Read|public read" services/frontend/src -g '*.{ts
 find services/frontend/src -maxdepth 2 -type d \( -name shared -o -name widgets -o -name entities \)
 ```
 
-В `### Quality Gate` чеклиста Planner обязан добавлять пункты запуска из `services/frontend`:
+В execution unit `QG-FE` Planner обязан добавлять пункты запуска из `services/frontend`:
 
 ```bash
 npm test
@@ -197,145 +233,134 @@ Smoke-тесты backend-фич **обязательно** должны испо
 
 Эти значения являются примером обнаруженного окружения. При новом планировании всегда сначала выполняй поиск и `docker inspect`.
 
-### 3. Декомпозиция
+### 3. Декомпозиция: deliverables и execution units
 
-Разбей задачу на атомарные шаги. Каждый шаг — это конкретный файл или набор файлов.
+Planner обязан выдать **три уровня**, а не один плоский список шагов:
+
+1. **Deliverables** — непересекающиеся ownership-зоны: кто владеет какими файлами и specs.
+2. **Execution units** — границы одной агентной сессии внутри deliverable. Один deliverable может содержать несколько units одного профиля (`BE-1`, `BE-2`, `BE-3`).
+3. **Задачи внутри unit** — атомарные шаги: конкретный файл или набор файлов.
+
+Бюджет одного execution unit (норматив в `AGENTS.md`): один сервис **или** один архитектурный slice, примерно **8–12 существенных действий**, **одна группа verification**. Если unit не помещается — дели его на планировании, а не оставляй это агенту в рантайме.
+
+Типовые slice-границы:
+
+```text
+schema/storage → repository/domain → API/access control → интеграция с другим сервисом → unit tests → live verification
+```
+
+#### Таблица execution units (обязательна в `design.md` и в шапке `tasks.md`)
+
+| Unit | Профиль | Deliverable | Ownership paths | Зависит от | Verification |
+|---|---|---|---|---|---|
+| `CB-BE-1` | Backend | A | `services/backend/app/models/**`, `migrations/**` | — | `make test` |
+| `CB-BE-2` | Backend | A | `services/backend/app/repositories/**`, `core/services/**` | `CB-BE-1` | `make test` |
+| `CB-BE-3` | Backend | A | `services/backend/app/api/**` | `CB-BE-2` | `make test`, access matrix |
+| `CB-BE-4` | Backend | A | `services/backend/tests/unit/**` | `CB-BE-3` | `UT-CB-01..18` |
+| `CB-NOTIFY-1` | Backend | B | `services/notification-service/**` | `CB-BE-3` | `make -C services/notification-service test` |
+| `CB-SMOKE-1` | Backend | C | — (verification only) | `CB-BE-4`, `CB-NOTIFY-1` | `SM-CB-01..12` на живом API |
+
+#### DAG зависимостей (обязателен)
+
+```text
+CB-BE-1 → CB-BE-2 → CB-BE-3 ─┬→ CB-BE-4 ─────┐
+                             └→ CB-NOTIFY-1 ─┴→ CB-SMOKE-1
+```
+
+**Запрещено** выдавать deliverable, состоящий из одного execution unit с десятками задач вида `1.1–1.95`. Если получается такой список — это признак, что декомпозиция остановилась на уровне ownership и не дошла до execution boundedness.
 
 ### 4. Генерация OpenSpec-артефактов
 
 Сохрани планирование в apply-ready OpenSpec change. `docs/plans` используй только для чтения исторического контекста.
 
 **Структура результата:** proposal, design, delta specs и tasks по активной OpenSpec schema и правилам `openspec/config.yaml`.
+
+`design.md` обязан содержать:
+
 1. Заголовок, тикет, дата, сервисы
 2. Контекст и цель
 3. Детали реализации (файлы, API-контракт, схема БД)
 4. Access matrix:
    - таблица `method | path | access class (public/protected) | roles | expected without auth | expected with auth`
    - для каждого исключения из дефолта обязательна причина
-5. Порядок выполнения
-6. Backend test plan, если есть backend-фича:
-   - `### Unit-тесты backend-фичи <название>` — минимум 30 явных сценариев
-   - `### Smoke-тесты backend-фичи <название>` — минимум 30 явных сценариев на реальной PostgreSQL
-   - `### PostgreSQL для smoke-тестов` — результат поиска контейнера и параметры из `docker inspect`
-7. **Чеклист** — обязательный раздел, парсится оркестратором
+5. `## Execution units` — таблица units и DAG зависимостей (см. шаг 3)
+6. `## Test matrix` — risk-based матрица с ID (`UT-*`, `SM-*`), backend и frontend части; трассировка ID → scenario delta spec / строка access matrix
+7. `## PostgreSQL для smoke-тестов` — результат поиска контейнера и параметры из `docker inspect`, если планируются smoke
+8. `## Manual QA steps (UI тестирование)`, если есть CMS frontend UI diff
 
-Если в одном плане несколько backend-фич, блоки Unit/Smoke/DB discovery нужны для каждой фичи отдельно или в виде матрицы, где явно видно, что на каждую фичу приходится минимум 30 unit и 30 smoke сценариев.
+`tasks.md` содержит только execution units и их задачи (см. «Формат `tasks.md`»). Test matrix, manual QA steps и DAG в `tasks.md` **не** дублируются — на них ставится ссылка.
+
+Если в одном change несколько backend-фич, у каждой своя секция test matrix с собственным префиксом ID и свои execution units.
 
 ### 5. Постановка задач
 
-На основе OpenSpec tasks сообщи Router, какие агенты нужны, их ownership и порядок выполнения.
+На основе OpenSpec tasks сообщи Router:
+
+- список execution units с профилем, ownership и verification;
+- DAG зависимостей и рекомендуемый порядок делегирования;
+- какие units независимы и могут идти параллельно;
+- какие units планируются как Quality Gate lanes (`QG-BE`, `QG-FE`, `QG-CONTRACTS`, `QG-LIVE`, `QG-SYNTH`) и какие из них неприменимы;
+- точечный `contextFiles` set **на каждый unit** — это то, из чего Router собирает context pack, а не «все артефакты change».
 
 ---
 
-## Формат чеклиста (КРИТИЧНО)
+## Формат `tasks.md` (КРИТИЧНО)
 
-OpenSpec `tasks.md` — единственный изменяемый чеклист. Именно по нему Router и агенты отслеживают прогресс.
+OpenSpec `tasks.md` — единственный изменяемый чеклист. Именно по нему Router делегирует execution units, а агенты отмечают прогресс.
 
-**Правила:**
-- Секции называются строго: `### Backend`, `### Frontend`, `### Quality Gate`
-- Каждый пункт: `- [ ] описание`
-- Агент меняет на `- [x] описание` после выполнения
-- Каждый пункт — атомарное действие (один файл / один тест)
-- Для каждой backend-фичи в `### Backend` обязательны две явные пачки чеклист-пунктов:
-  - минимум 30 пунктов вида `Unit: <фича> — <конкретный сценарий>`
-  - минимум 30 пунктов вида `Smoke: <фича> — <конкретный сценарий>`
-- Smoke-пункты должны явно подразумевать реальную PostgreSQL, а не SQLite, mocks или in-memory storage.
-- В `### Backend` обязательно должен быть пункт получения DB-параметров через `docker inspect` перед smoke-тестами.
-- В `### Quality Gate` обязательно должны быть пункты проверки количества и качества backend unit/smoke тестов.
+**Структура файла:**
 
 ```markdown
-## Чеклист
+# Tasks — <change-id>
 
-### Backend
+<одно вводное предложение: ownership, порядок, где лежат test matrix и DAG>
 
-- [ ] Создать `app/domain/models/job.py`
-- [ ] Добавить `CreateJobCommand` в `app/application/commands.py`
-- [ ] Заполнить Access matrix для всех новых/измененных endpoint'ов (`method`, `path`, `access class`, `roles`, `expected without auth`, `expected with auth`)
-- [ ] Для каждого исключения из дефолтной policy (публичный write или защищенный GET) зафиксировать причину и контракт статусов
-- [ ] Найти PostgreSQL контейнер по labels `com.docker.compose.project=eqsitecms` + `com.docker.compose.service=db`, fallback `eqsitecms-db`/`postgres`, и получить DB env/host port через `docker inspect`
-- [ ] Unit: job creation — валидные обязательные поля создают доменную сущность
-- [ ] Unit: job creation — пустой title отклоняется доменной валидацией
-- [ ] Unit: job creation — title из пробелов нормализуется или отклоняется по правилам фичи
-- [ ] Unit: job creation — слишком длинный title возвращает ожидаемую ошибку
-- [ ] Unit: job creation — неизвестный user_id не вызывает запись в репозиторий
-- [ ] Unit: job creation — повторный idempotency key не создает вторую сущность
-- [ ] Unit: job creation — ошибка репозитория мапится в application error
-- [ ] Unit: job creation — timezone-aware timestamp сохраняется без потери timezone
-- [ ] Unit: job creation — запрещенное состояние не проходит transition guard
-- [ ] Unit: job creation — пользователь без роли получает authorization error
-- [ ] Unit: job creation — владелец получает доступ к собственной сущности
-- [ ] Unit: job creation — чужая сущность не раскрывается в ответе
-- [ ] Unit: job creation — deleted related entity блокирует создание
-- [ ] Unit: job creation — optional metadata `null` обрабатывается корректно
-- [ ] Unit: job creation — пустой metadata object не ломает сериализацию
-- [ ] Unit: job creation — невалидный enum возвращает доменную ошибку
-- [ ] Unit: job creation — граничное минимальное значение numeric поля принято
-- [ ] Unit: job creation — значение ниже минимума отклонено
-- [ ] Unit: job creation — значение выше максимума отклонено
-- [ ] Unit: job creation — дубликат уникального поля преобразуется в conflict
-- [ ] Unit: job creation — soft-deleted duplicate обрабатывается по правилам фичи
-- [ ] Unit: job creation — сортировка default не зависит от порядка mock данных
-- [ ] Unit: job creation — фильтр по статусу вызывает репозиторий с правильным query object
-- [ ] Unit: job creation — пагинация limit=0 отклоняется
-- [ ] Unit: job creation — пагинация сверх максимума clamp или error по контракту
-- [ ] Unit: job creation — cancellation во внешней зависимости не оставляет частичный state
-- [ ] Unit: job creation — retryable ошибка маркируется как retryable
-- [ ] Unit: job creation — non-retryable ошибка не ретраится
-- [ ] Unit: job creation — audit event формируется с expected actor/resource/action
-- [ ] Unit: job creation — NATS event payload не содержит приватных полей
-- [ ] Smoke: job creation — миграции применяются на реальной PostgreSQL
-- [ ] Smoke: job creation — POST создает запись и ее можно прочитать из PostgreSQL
-- [ ] Smoke: job creation — пустой title возвращает 422 без записи в PostgreSQL
-- [ ] Smoke: job creation — слишком длинный title возвращает 422 без записи
-- [ ] Smoke: job creation — duplicate unique value возвращает 409 на PostgreSQL constraint
-- [ ] Smoke: job creation — concurrent duplicate requests оставляют одну запись
-- [ ] Smoke: job creation — rollback после ошибки не оставляет частичных строк
-- [ ] Smoke: job creation — foreign key на user_id реально проверяется PostgreSQL
-- [ ] Smoke: job creation — transaction isolation не показывает uncommitted данные
-- [ ] Smoke: job creation — JSONB metadata сохраняется и читается без потерь
-- [ ] Smoke: job creation — null metadata сохраняется по контракту
-- [ ] Smoke: job creation — timestamp сохраняется в UTC или ожидаемой timezone
-- [ ] Smoke: job creation — сортировка по created_at стабильна при одинаковых датах
-- [ ] Smoke: job creation — фильтр по статусу возвращает только нужные строки
-- [ ] Smoke: job creation — пагинация первая страница не пропускает записи
-- [ ] Smoke: job creation — пагинация последняя страница возвращает пустой список корректно
-- [ ] Smoke: job creation — soft delete скрывает запись из read endpoint
-- [ ] Smoke: job creation — restore возвращает запись в read endpoint
-- [ ] Smoke: job creation — unauthorized request не создает запись
-- [ ] Smoke: public GET endpoint доступен без cookie
-- [ ] Smoke: protected write endpoint без cookie возвращает контрактный `401`/`403`
-- [ ] Smoke: protected write endpoint с валидной auth и ролью проходит по контракту
-- [ ] Smoke: доступ к чужому ресурсу возвращает контрактный `403` (или явно описанный альтернативный статус)
-- [ ] Smoke: job creation — forbidden request не раскрывает наличие чужой записи
-- [ ] Smoke: job creation — malformed UUID возвращает 422
-- [ ] Smoke: job creation — unknown UUID возвращает 404
-- [ ] Smoke: job creation — invalid enum возвращает 422
-- [ ] Smoke: job creation — boundary numeric minimum accepted
-- [ ] Smoke: job creation — numeric below minimum rejected by API/DB rule
-- [ ] Smoke: job creation — response schema не содержит приватных DB fields
-- [ ] Smoke: job creation — audit row создается в той же транзакции
-- [ ] Smoke: job creation — NATS/outbox row создается после успешного commit
-- [ ] Smoke: job creation — повторный idempotency key возвращает прежний result
-- [ ] Smoke: job creation — cleanup fixture удаляет все созданные PostgreSQL rows
+`contextFiles` перечислены **по units**, а не общим списком на весь change.
 
-### Frontend
+## Execution units
 
-- [ ] Создать `src/shared/api/jobs.ts`
-- [ ] Написать хук `useJobCreation.ts`
+| Unit | Профиль | Ownership paths | Зависит от | Verification | contextFiles |
+|---|---|---|---|---|---|
+| `CB-BE-1` | Backend | ... | — | `make test` | `design.md#execution-units`, `specs/callback-storage/spec.md` |
 
-### Quality Gate
+## 1. CB-BE-1 — схема, модели, миграция (профиль: Backend)
 
-- [ ] Проверить Clean Architecture (backend)
-- [ ] Проверить, что Access matrix заполнена для всех новых/измененных endpoint'ов
-- [ ] Проверить, что нет случайной приватизации публичных `GET`
-- [ ] Проверить, что нет случайного открытия `POST/PATCH/DELETE` без авторизации
-- [ ] Проверить, что каждая backend-фича имеет минимум 30 Unit checklist-пунктов с разными сценариями
-- [ ] Проверить, что каждая backend-фича имеет минимум 30 Smoke checklist-пунктов с разными сценариями на реальной PostgreSQL
-- [ ] Проверить, что smoke-тесты берут `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` и host port из `docker inspect`, без хардкода
-- [ ] Убедиться что `make test` проходит
-- [ ] Проверить наличие тестов для нового кода
-- [ ] Запустить `make asyncapi-validate` (если менялся NATS-контракт)
+**Specs:** `<capability>` · **Пути:** `<ownership paths>` · **Зависит от:** —
+
+- [ ] CB-BE-1.1 <атомарное действие>
+- [ ] CB-BE-1.2 <атомарное действие>
+- [ ] CB-BE-1.V Прогнать `<verification>` и вернуть Router handoff по формату `AGENTS.md`
+
+## 2. CB-BE-2 — repository и доменные сервисы (профиль: Backend)
+...
 ```
+
+**Правила:**
+
+- Заголовок каждого unit содержит **ID, название и профиль исполнителя**: `## <N>. <UnitID> — <название> (профиль: Backend | Frontend | Site Consumer | Quality Gate)`.
+- В одном unit — примерно **8–12 содержательных пунктов**, включая финальный verification/handoff. Больше — делить unit.
+- Каждый пункт — атомарное действие агента (один файл или связанный набор файлов).
+- Тестовые пункты **группируются по ID матрицы**: `Реализовать и прогнать UT-CB-01..UT-CB-18`. Разворачивать матрицу в один checklist-пункт на сценарий **запрещено**.
+- Последний пункт каждого unit — `<UnitID>.V`: verification этого unit + handoff Router.
+- Smoke-пункты явно указывают реальную PostgreSQL и скилл `.claude/skills/api-smoke-test`.
+- В том unit, который первым выполняет smoke, обязателен пункт discovery DB-параметров через `docker inspect`.
+- Quality Gate планируется как отдельные units-lanes `QG-BE`, `QG-FE`, `QG-CONTRACTS`, `QG-LIVE`, `QG-SYNTH`; неприменимые lanes перечисляются с пометкой `неприменимо` и причиной.
+- Плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в rework-чеклистах Quality Gate внутри `docs/reports/` (совместимость с оркестратором). В `tasks.md` структура — по execution units.
+
+**Пример компактного unit:**
+
+```markdown
+## 4. CB-BE-4 — unit-покрытие callback query semantics (профиль: Backend)
+
+**Specs:** `callback-requests` · **Пути:** `services/backend/tests/unit/**` · **Зависит от:** `CB-BE-3`
+
+- [ ] CB-BE-4.1 Реализовать и прогнать `UT-CB-01..UT-CB-08` (валидация входа и граничные значения) из `design.md` → `## Test matrix`
+- [ ] CB-BE-4.2 Реализовать и прогнать `UT-CB-09..UT-CB-14` (access matrix: anonymous GET, write без auth, write с ролью, чужой ресурс)
+- [ ] CB-BE-4.3 Реализовать и прогнать `UT-CB-15..UT-CB-18` (идемпотентность и ошибки внешних зависимостей)
+- [ ] CB-BE-4.V Прогнать `make test` из `services/backend`, отметить выполненные task IDs и вернуть handoff
+```
+
+Восемнадцать сценариев — это восемнадцать строк матрицы и **три** checklist-пункта, а не восемнадцать.
 
 ---
 
@@ -343,10 +368,13 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 
 - ❌ Планировать шаги, нарушающие Clean Architecture из `agents/backend.md`
 - ❌ Планировать шаги, нарушающие FSD из `agents/frontend.md`
-- ❌ Оставлять план без секции `## Чеклист`
-- ❌ Оставлять план без указания тестов в чеклисте
-- ❌ Для backend-фич оставлять план без минимум 30 unit-тестов на каждую фичу
-- ❌ Для backend-фич оставлять план без минимум 30 smoke-тестов на каждую фичу
+- ❌ Оставлять `tasks.md` без execution units, без их профилей или без DAG зависимостей
+- ❌ Оставлять `design.md` без разделов `## Execution units` и `## Test matrix`
+- ❌ Выдавать execution unit, выходящий за бюджет из `AGENTS.md` (один сервис/slice, ~8–12 существенных действий, одна группа verification)
+- ❌ Разворачивать test matrix в отдельные checklist-пункты по одному сценарию на строку
+- ❌ Оставлять backend-фичу без test matrix или с непокрытыми применимыми осями (happy path, валидация, внешние ошибки, транзакционность/идемпотентность, access matrix, реальная PostgreSQL, контракт ответа, регрессии)
+- ❌ Дублировать в `tasks.md` содержимое test matrix, manual QA steps или DAG вместо ссылки на `design.md`
+- ❌ Выдавать общий `contextFiles` set на весь change вместо точечного набора на каждый unit
 - ❌ Планировать smoke-тесты как pytest-скрипты или файлы в `tests/smoke/`. Smoke — только через скилл `.claude/skills/api-smoke-test` на реальном API.
 - ❌ Планировать smoke-тесты backend-фич без реальной PostgreSQL
 - ❌ Хардкодить параметры PostgreSQL для smoke-тестов вместо получения через `docker inspect`
@@ -354,11 +382,11 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 ## Tenant selector и email boundary
 
 Если change затрагивает эти контракты, access matrix фиксирует: selector не является секретом и missing/invalid → `401`; email create/update/delete — owner-only (`401` anonymous, `403` foreign, включая privileged, до lookup/downstream, `404` owner missing); malformed/invalid запрос → `400`; same normalized email → идемпотентный `201` с одной записью и сохранением confirmed/approved, different email → `409`; send-confirmation/confirm — public POST exceptions.
-- ❌ Планировать однотипные happy-path тесты вместо разнообразной матрицы edge cases
+- ❌ Планировать однотипные happy-path тесты вместо risk-based матрицы, а также добивать матрицу сценариями ради количества
 - ❌ Не описывать Access matrix для новых/измененных endpoint'ов
 - ❌ Оставлять исключения из policy без явной причины и контрактных статусов
 - ❌ Планировать smoke только в авторизованном режиме без проверок anonymous-доступа к публичным `GET`
 - ❌ Планировать без прочтения существующего кода сервиса
-- ❌ Называть секции чеклиста иначе чем `### Backend`, `### Frontend`, `### Quality Gate`
+- ❌ Называть unit-заголовки без ID и профиля исполнителя или смешивать несколько профилей в одном unit
 - ❌ Планировать изменения NATS-контракта без обновления `docs/asyncapi.yaml` в чеклисте
 - ❌ Не читать `services/*/docs/asyncapi.yaml` при задачах с межсервисным взаимодействием

@@ -34,7 +34,7 @@ SERVICES_MANIFEST ?= services.manifest
 
 .PHONY: sync update services-branches build build-nc test lint format check check-backend check-email \
 		check-notification check-frontend fix fix-backend fix-email fix-notification fix-frontend \
-		compose-check asyncapi-validate secret-scan migrate-core recreate-core health-core status-core logs-core \
+		compose-check asyncapi-validate asyncapi-validate-vk secret-scan migrate-core recreate-core health-core status-core logs-core \
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
@@ -238,6 +238,11 @@ asyncapi-validate:
 	npx --yes @asyncapi/cli@6.0.2 validate services/backend/docs/asyncapi.yaml
 	npx --yes @asyncapi/cli@6.0.2 validate services/notification-service/docs/asyncapi.yaml
 	npx --yes @asyncapi/cli@6.0.2 validate services/email-service/docs/asyncapi.yaml
+
+# VK Service remains outside the core release/check scope. Validate its
+# consumer contract explicitly when working on the standalone VK service.
+asyncapi-validate-vk:
+	npx --yes @asyncapi/cli@6.0.2 validate services/vk-service/docs/asyncapi.yaml
 
 secret-scan:
 	bash scripts/secret-scan.sh

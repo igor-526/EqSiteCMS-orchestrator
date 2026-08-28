@@ -87,18 +87,19 @@ EqSiteCMS поддерживает два контура доступа к API:
 ### 5. VK Service (`services/vk-service`)
 
 **Технологии:** Python, FastAPI, Clean Architecture, NATS JetStream, Celery + Redis, SQLAlchemy, Alembic, `vkbottle` (VK API + Bots Long Poll).
-**Роль:** канал доставки VK и бот привязки пользователей. Сервис владеет привязкой пользователя EqSiteCMS к аккаунту VK: выдаёт контрольную строку, принимает её сообщением боту группы, хранит состояние привязки и журнал действий. Создан копированием каркаса `services/email-service` с полной очисткой email-специфики.
+**Роль:** канал доставки VK и бот привязки пользователей. Сервис владеет привязкой пользователя EqSiteCMS к аккаунту VK: выдаёт контрольную строку, принимает её сообщением боту группы, хранит состояние привязки и журнал действий. Также потребляет callback-команды `commands.notification.vk.send` и доставляет сообщения по активным привязкам с per-recipient идемпотентностью. Создан копированием каркаса `services/email-service` с полной очисткой email-специфики.
 
 **Границы сервиса (что есть и чего нет):**
 
 - Реализовано: привязка и отвязка аккаунта VK, состояния `PENDING` / `ACTIVE` / `BLOCKED`, long-poll бот, приватный REST API `/vks*`.
-- **Не реализовано:** доставка уведомлений о событиях в VK. Публикации и потребления `commands.notification.vk.send` нет, поэтому включённый в CMS переключатель `callback/vk` пока не приводит к отправке сообщений. Также отсутствуют массовые рассылки, вложения и клавиатуры бота.
+- **Реализовано:** доставка callback-уведомлений через durable NATS consumer `commands.notification.vk.send`; выбор только ACTIVE/non-deleted привязок и отдельный ledger `vk_notification_deliveries` предотвращают повторную отправку уже успешному получателю.
+- **Не реализовано:** массовые рассылки, вложения и клавиатуры бота.
 - HTTP endpoints: `GET /health` (Public Read) и приватные `/vks*` — `GET /vks`, `GET /vks/bot-info`, `POST /vks`, `POST /vks/issue-confirmation`, `DELETE /vks/{user_id}`. Унаследованных `/emails*` endpoint'ов нет. Порт на host не публикуется: browser-facing gateway — только главный backend через `/api/vks/*`.
 - Публичного маршрута подтверждения нет: контрольную строку сверяет long-poll runtime по сообщению из VK, а не HTTP-запрос.
 - Prometheus listener `:9000/metrics` поднимается только при `ENVIRONMENT=production` и на host **не публикуется**.
-- Alembic: initial-миграция плюс ревизия VK-домена. `alembic upgrade head` создаёт `alembic_version`, `user_vks`, `vk_confirmations`, `vk_logs`.
-- NATS JetStream клиент подключается, но **не создаёт** stream `NOTIFICATION_COMMANDS` и **не регистрирует** durable consumer. Владельцами stream остаются `notification-service` и `email-service`. Имена будущего VK-канала зарезервированы в настройках: subject `commands.notification.vk.send`, durable `vk-service-commands-send-vk`.
-- `services/vk-service/docs/asyncapi.yaml` **не создан**: публиковать канал, который сервис не потребляет, значит создать ложный канонический контракт.
+- Alembic: initial-миграция, ревизия VK-домена и ledger доставки. `alembic upgrade head` создаёт `alembic_version`, `user_vks`, `vk_confirmations`, `vk_logs`, `vk_notification_deliveries`.
+- NATS JetStream клиент **не создаёт** stream `NOTIFICATION_COMMANDS`: владельцем stream остаётся `notification-service`. VK Service регистрирует и запускает только собственный durable consumer `vk-service-commands-send-vk` для subject `commands.notification.vk.send`.
+- `services/vk-service/docs/asyncapi.yaml` содержит зеркальный subscribe-контракт VK-команды. Он проверяется отдельной root-командой `make asyncapi-validate-vk`.
 - Celery: очередь `vk`, `task_default_queue=vk`, задача-пробник `vk.integration_probe`, worker `--hostname vk-worker@%h`.
 
 **Ресурсы:**
@@ -160,7 +161,7 @@ EXPOSE_VK_DB_PORT=5436
 
 - **Не входит в `services.manifest`.** Внутри `services/vk-service` создан локальный git-репозиторий через `git init` **без remote**. Следствия: `make sync` его не синхронизирует, `make services-branches` его не показывает, `make secret-scan` его не сканирует (`scripts/secret-scan.sh` выполняет `git -C services/<name> ls-files` по манифесту).
 - **Не входит в core release scope.** Цели `build`, `build-nc`, `check`, `fix`, `test`, `lint`, `format`, переменная `DC_CORE` и цели `migrate-core`, `recreate-core`, `health-core`, `status-core`, `logs-core` остаются на четырёх core-сервисах (`backend`, `frontend`, `email-service`, `notification-service`).
-- **Не входит в `asyncapi-validate`.** Цель проверяет три существующих контракта (`backend`, `notification-service`, `email-service`).
+- **Не входит в core `asyncapi-validate`.** Цель по-прежнему проверяет три core-контракта (`backend`, `notification-service`, `email-service`); автономный VK-контракт проверяется отдельной целью `asyncapi-validate-vk`.
 
 Включение `vk-service` в манифест и core release scope выполняется отдельным change после создания remote-репозитория.
 

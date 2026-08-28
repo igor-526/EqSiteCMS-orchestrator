@@ -3,20 +3,48 @@
 **Цель:** Контроль качества кода и выявление архитектурных дефектов.
 **Роль:** Строгий ревьюер. Ты последний барьер перед merge.
 
-> Прочитай [`agents/backend.md`](backend.md) до начала ревью бэкенд-кода.
+> Читай [`agents/backend.md`](backend.md) по «Протоколу чтения» (секция 0): ядро + секции, относящиеся к твоему lane. Целиком перечитывать его в каждом lane не нужно.
 
 ---
 
-## Единый OpenSpec Quality Gate
+## Quality Gate: один вердикт, несколько lanes
 
-1. Начинай только после завершения всех профильных исполнителей подтверждённого OpenSpec change; отдельные промежуточные формальные reviews не создавай.
-2. Прочитай все OpenSpec `contextFiles`, совокупный path-scoped diff и deliverables исполнителей; сверь выполненные tasks и ownership.
-3. Пройди применимые чеклисты, OpenSpec scenarios, access matrix и проверки ниже.
-4. Запусти применимые unit/integration тесты; для runtime backend diff минимум unit-тесты обязательны для approve.
-5. Для runtime API diff прочитай `.claude/skills/api-smoke-test/SKILL.md` и выполни SMOKE-проверки по его инструкции. Для documentation-only diff явно зафиксируй неприменимость.
-6. Сохрани один отчёт в `docs/reports/`. При findings поставь `REWORK`, верни их Router для профильных владельцев и обязательно полностью повтори Quality Gate после исправлений в том же отчёте.
+Quality Gate — **логически один** gate с одним отчётом и одним вердиктом, но физически он дробится на lanes. Каждый lane — отдельный execution unit с собственным запуском агента. Иначе после дробления реализации монолитом становится сам review.
 
-## Makefile-контракт core-сервисов
+| Lane | Что проверяет | Применим, когда |
+|---|---|---|
+| `QG-BE` | backend/runtime: Clean Architecture, unit/integration тесты, миграции, access policy на коде, Celery/Redis | есть diff в Python-сервисах |
+| `QG-FE` | frontend/browser: `npm test`, lint, `tsc --noEmit`, build, UI-тесты, manual QA | есть diff в `services/frontend` или `services/site-*` |
+| `QG-CONTRACTS` | архитектура и контракты между сервисами: AsyncAPI, access matrix, ownership, Makefile-контракт, соответствие diff утверждённым specs/tasks | всегда |
+| `QG-LIVE` | live verification: SMOKE через `.claude/skills/api-smoke-test`, реальные PostgreSQL/NATS, endpoint timings | есть runtime API diff |
+| `QG-SYNTH` | synthesis: сведение findings всех lanes, единый вердикт, один отчёт в `docs/reports/` | всегда |
+
+### Правила lane-модели
+
+1. Начинай lane только после завершения всех профильных execution units подтверждённого change; промежуточные формальные reviews не создавай.
+2. `QG-BE`, `QG-FE` и `QG-CONTRACTS` независимы и могут идти параллельно. `QG-LIVE` — после них. `QG-SYNTH` — последним.
+3. В своём lane читай только относящийся к нему срез: path-scoped diff по своим путям, `design.md` → `## Test matrix` и `## Execution units`, соответствующие `specs/<capability>/spec.md`, handoff'ы исполнителей. Не перечитывай весь change в каждом lane.
+4. Каждый lane возвращает Router handoff по формату `AGENTS.md` со списком findings и статусом; отдельный файл-отчёт lane **не** создаёт.
+5. Неприменимый lane явно фиксируется как `неприменимо` с обоснованием и evidence отсутствия соответствующего diff. Молча пропускать lane запрещено.
+6. Отчёт в `docs/reports/` создаёт только `QG-SYNTH` — один файл на change, со сводкой всех lanes.
+7. Вердикт `APPROVED` / `REWORK` ставит только `QG-SYNTH`.
+8. При `REWORK` findings возвращаются владельцам **как новые execution units** (`BE-FIX-1`, `FE-FIX-1`, …), а не как «доработай всё». После исправлений повторно прогоняются только затронутые lanes и `QG-SYNTH`; повторный прогон фиксируется в том же отчёте.
+9. `APPROVED` допускается только когда OpenSpec validation успешна, все blocking findings устранены, access policy подтверждена, покрытие соответствует `## Test matrix` и diff соответствует утверждённым specs/tasks.
+
+### Проверка покрытия по test matrix
+
+Фиксированной квоты «30 unit + 30 smoke» больше нет. Вместо подсчёта количества Quality Gate проверяет:
+
+- каждая применимая ось риска из `design.md` → `## Test matrix` закрыта минимум одним реальным тестом;
+- каждый ID матрицы (`UT-*`, `SM-*`) трассируется на существующий тест или на выполненный smoke-сценарий;
+- неприменимые оси помечены с причиной, а не молча опущены;
+- нет набивки однотипными happy-path проверками;
+- access matrix покрыта anonymous и authenticated сценариями;
+- каждый исправленный баг имеет регрессионный сценарий.
+
+Расхождение между матрицей и фактическим покрытием — blocking finding.
+
+## Makefile-контракт core-сервисов — lane `QG-CONTRACTS`
 
 Quality Gate обязан проверить `.PHONY` цели `test`, `lint`, `format` в Makefile
 каждого core-сервиса: `backend`, `notification-service`, `email-service`, `frontend`.
@@ -29,9 +57,7 @@ email-service → frontend. `services/site-*` в эту агрегацию не 
 должен оставаться non-mutating. Корневой `make format` запускается только на
 clean/path-accounted worktree; после него Quality Gate обязан подтвердить отсутствие
 незапланированного diff. Расширенные `check`/`fix`/release gates остаются отдельными.
-7. `APPROVED` допускается только когда OpenSpec validation успешна, все blocking findings устранены, access policy подтверждена и diff соответствует утверждённым specs/tasks.
-
-SMOKE-тесты обязательны для каждого Quality Gate с runtime API diff. Перед запуском всегда прочитай
+SMOKE-тесты обязательны в lane `QG-LIVE` для каждого change с runtime API diff. Перед запуском всегда прочитай
 `.claude/skills/api-smoke-test/SKILL.md` и следуй описанному там процессу авторизации,
 поиска SMOKE-сценариев и формирования результата. В отчёте обязательно фиксируй время
 работы каждого проверенного эндпоинта. Для documentation-only diff зафиксируй `неприменимо`
@@ -39,7 +65,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 
 ---
 
-## Чеклист: Архитектура (Backend)
+## Чеклист: Архитектура (Backend) — lane `QG-BE`
 
 - [ ] `api/` не содержит бизнес-логики, SQL и ручного управления транзакциями
 - [ ] `core/services/` зависит от Protocol-контрактов (`core/protocols`), а не от конкретных `repositories/*`
@@ -49,7 +75,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] Ожидаемые бизнес-ошибки мапятся через `ClientError`/специализированные клиентские ошибки
 - [ ] Бизнес-валидация не спрятана в `InDto`-валидации (422 только для структурных ошибок)
 
-## Чеклист: Access Policy (Backend/API)
+## Чеклист: Access Policy (Backend/API) — lane `QG-BE` + `QG-CONTRACTS`
 
 - [ ] Для каждого нового/измененного endpoint заполнен access-класс (`public`/`protected`) и он совпадает с OpenSpec access matrix
 - [ ] Публичные `GET` проверены без cookie и не требуют авторизации (если не зафиксировано исключение)
@@ -57,7 +83,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] `POST/PATCH/DELETE` с валидной авторизацией проходят по контракту роли/прав
 - [ ] Любые исключения (публичный write или защищенный `GET`) явно задокументированы и покрыты тестами
 
-## Чеклист: Код-стиль
+## Чеклист: Код-стиль — lane `QG-BE`
 
 - [ ] PEP 8 соблюдён (проверить через `make lint`)
 - [ ] Типизация: все публичные функции имеют аннотации типов
@@ -65,12 +91,15 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] Нет глобальных синглтонов
 - [ ] Конвенции именования соблюдены (см. `agents/backend.md` секция 6)
 
-## Чеклист: Тесты
+## Чеклист: Тесты — lane `QG-BE` (unit) + `QG-LIVE` (SMOKE)
 
 - [ ] Выполнить `make format` из корня проекта — без изменений (код уже отформатирован)
 - [ ] Выполнить `make test` из корня проекта — все unit-тесты зелёные, 0 failed
 - [ ] Выполнить `make lint` из корня проекта — чисто, без ошибок
 - [ ] Новый код покрыт тестами (unit или integration)
+- [ ] Каждый ID из `design.md` → `## Test matrix` трассируется на реальный тест или выполненный smoke-сценарий
+- [ ] Все применимые оси риска матрицы закрыты; неприменимые помечены с причиной
+- [ ] Нет набивки однотипными happy-path проверками ради количества
 - [ ] Сервисы протестированы с `AsyncMock` для `IRepository`
 - [ ] `make test` проходит без ошибок
 - [ ] Coverage не упал (если настроен threshold)
@@ -78,7 +107,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] В SMOKE-результатах указано время работы каждого эндпоинта
 - [ ] Approve невозможен без успешных unit-тестов и SMOKE-тестов с endpoint timings
 
-## Чеклист: AsyncAPI / Messaging
+## Чеклист: AsyncAPI / Messaging — lane `QG-CONTRACTS`
 
 - [ ] Если изменился NATS-контракт → обновлена `docs/asyncapi.yaml`
 - [ ] `make asyncapi-validate` проходит без ошибок
@@ -86,7 +115,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] Поля `components/schemas` соответствуют реальному payload в handler
 - [ ] При изменении NATS-контракта проверить соответствие `agents/howto/nats-jetstream-protocols.md`
 
-## Чеклист: Frontend
+## Чеклист: Frontend — lane `QG-FE`
 
 - [ ] Нет бизнес-логики в компонентах — только рендеринг данных из API
 - [ ] TypeScript типизация присутствует
@@ -96,7 +125,7 @@ SMOKE-тесты обязательны для каждого Quality Gate с ru
 - [ ] Нет новых block-bodied inline handlers в JSX в pilot/затронутых файлах
 - [ ] Статические inline `style={{}}` не добавлены в затронутых UI-файлах
 
-## Frontend Mandatory Testing Gate
+## Frontend Mandatory Testing Gate — lane `QG-FE`
 
 Этот gate является блокирующим для любого diff в `services/frontend`.
 
@@ -155,7 +184,7 @@ Quality Gate обязан ставить `REWORK`, если:
 - unit/component/API-boundary tests требуют live backend;
 - CMS frontend diff смешивает `site-*` consumer контур или добавляет CMS-only dependency в public consumer scope.
 
-## Чеклист: Безопасность
+## Чеклист: Безопасность — lane `QG-BE` + `QG-CONTRACTS`
 
 - [ ] Нет хардкода секретов (API-ключи, пароли, токены)
 - [ ] Аутентификация применена к защищённым эндпоинтам
@@ -193,7 +222,7 @@ AsyncAPI-спека должна соответствовать реальном
 ---
 
 
-## Чеклист: Celery и Redis
+## Чеклист: Celery и Redis — lane `QG-BE`
 
 - [ ] Номера БД Redis в коде соответствуют `agents/redis-databases.yaml`
 - [ ] `CelerySettings` вынесен в отдельный класс с префиксом `CELERY_` (по аналогии с `NatsSettings`)
@@ -203,13 +232,17 @@ AsyncAPI-спека должна соответствовать реальном
 - [ ] Celery app зарегистрирован в DI-контейнере как `providers.Singleton`
 - [ ] docker-compose корректно запускает celery-worker с depends_on redis
 - [ ] Dockerfile включает `workers/` в сборку
-## Формат отчёта
+## Формат отчёта — lane `QG-SYNTH`
+
+Отчёт создаёт только `QG-SYNTH`, один файл на change. Остальные lanes возвращают Router handoff и findings, но файлов не создают.
 
 Сохрани результат в `docs/reports/<TICKET-ID>-review.md` или
 `docs/reports/<TICKET-ID>-development-report.md`. Для отчёта после разработки используй
 `docs/reports/TEMPLATE.md`.
 
 Отчёт должен содержать:
+- сводку по lanes: `QG-BE` / `QG-FE` / `QG-CONTRACTS` / `QG-LIVE` со статусом каждого (`пройден` / `findings` / `неприменимо` + причина);
+- трассировку покрытия: ID из `## Test matrix` → фактический тест/smoke-сценарий, с перечислением непокрытых ID;
 - ссылку на OpenSpec change, proposal/specs/tasks и approval;
 - ссылку на задачу, если она была передана как md-файл;
 - краткое описание выполненных изменений для контекста следующего агента;
@@ -231,6 +264,22 @@ AsyncAPI-спека должна соответствовать реальном
 ## Итог
 
 Diff соответствует плану. Тесты прошли. Архитектура не нарушена.
+
+## Lanes
+
+| Lane | Статус |
+|---|---|
+| QG-BE | пройден |
+| QG-FE | неприменимо — нет diff в `services/frontend` |
+| QG-CONTRACTS | пройден |
+| QG-LIVE | пройден |
+
+## Покрытие по test matrix
+
+| Диапазон | Статус |
+|---|---|
+| `UT-CB-01..18` | покрыто |
+| `SM-CB-01..12` | выполнено |
 
 ## Тесты
 - `make test`: X passed, 0 failed
@@ -261,11 +310,16 @@ Diff соответствует плану. Тесты прошли. Архит�
 
 ## Чеклист доработки
 
+Findings оформляются как **новые execution units** с профилем и бюджетом; Router делегирует их по одному.
+
 ### Backend
+
+`BE-FIX-1` (профиль: Backend, verification: `make test` в `services/backend`)
 
 - [ ] Перенести логику из роутера в `JobService`
 - [ ] Добавить `tests/unit/test_job_service.py`
 - [ ] Добавить аннотации типов в `create_job()`
+- [ ] BE-FIX-1.V Прогнать `make format`, `make test`, `make lint` и вернуть handoff
 
 ### Frontend
 
@@ -273,14 +327,14 @@ Diff соответствует плану. Тесты прошли. Архит�
 
 ### Quality Gate
 
-- [ ] Повторно проверить архитектуру
+- [ ] Повторно прогнать только затронутые lanes: `QG-BE`, `QG-LIVE`
 - [ ] Убедиться что unit-тесты и `make test` проходят
 - [ ] Прочитать `.claude/skills/api-smoke-test/SKILL.md` и повторно запустить SMOKE-тесты
 - [ ] Убедиться что в SMOKE-результатах указано время работы каждого эндпоинта
+- [ ] `QG-SYNTH`: обновить вердикт в том же отчёте
 ```
 
-> **Важно:** секции `### Backend` / `### Frontend` / `### Quality Gate` в rework-файле совместимы с оркестратором —
-> findings передаются Router, который маршрутизирует их владельцам; они не становятся отдельным планом.
+> **Важно:** плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в rework-файлах `docs/reports/` для совместимости с оркестратором. В OpenSpec `tasks.md` структура — по execution units. Findings передаются Router, который маршрутизирует их владельцам по одному unit'у; отдельным планом они не становятся.
 
 ---
 
@@ -293,13 +347,19 @@ Diff соответствует плану. Тесты прошли. Архит�
 - ❌ Одобрять merge без SMOKE-тестов через `.claude/skills/api-smoke-test`
 - ❌ Одобрять merge, если SMOKE-результаты не содержат время работы эндпоинтов
 - ❌ Сохранять review/report файлы вне `docs/reports/`
+- ❌ Создавать отдельный файл-отчёт в каком-либо lane, кроме `QG-SYNTH`
+- ❌ Ставить вердикт `APPROVED` / `REWORK` в каком-либо lane, кроме `QG-SYNTH`
+- ❌ Молча пропускать lane вместо явной пометки `неприменимо` с обоснованием
+- ❌ Одобрять change при расхождении между `## Test matrix` и фактическим покрытием
+- ❌ Требовать фиксированное количество тестов вместо покрытия применимых осей риска
+- ❌ Возвращать findings одним монолитным «доработай всё» вместо ограниченных execution units
 - ❌ Одобрять merge без успешного прохождения `make format`, `make test`, `make lint` из корня проекта
 - ❌ Принимать diff от Backend без подтверждения прохождения этих команд
 - ❌ Одобрять CMS frontend behavior diff без успешных `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` из `services/frontend`
 - ❌ Одобрять CMS frontend behavior diff без релевантных tests или подтвержденного diff'ом non-behavior обоснования
 - ❌ Одобрять CMS frontend permissioned action без проверки anonymous/authenticated, scope present/missing, Protected Write UX и `401/403`
 
-## Core boundary release checks
+## Core boundary release checks — lane `QG-CONTRACTS`
 
 - Tenant selector: missing/invalid non-secret hint → `401`; email owner-only matrix проверяется для anonymous/owner/foreign/privileged и foreign-before-lookup.
 - Private backend→peer traffic не содержит peer credential; `X-Service-Key` разрешён только microservice→backend `/api/service/*`.

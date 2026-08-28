@@ -1,10 +1,7 @@
-# notification-orchestrator Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
-## Requirements
 ### Requirement: NotificationOrchestratorService
-Система MUST предоставлять orchestrator service для обработки notification events и MUST отправлять уведомление каждого канала только пользователям, которые сохраняют допустимую роль, явно включили соответствующую пару event/channel и имеют валидное назначение во владеющем им сервисе. Для callback events orchestrator MUST независимо публиковать email- и VK-команды через протокол соответствующего канала и MUST обрабатывать сбой канала по fail-closed модели без расширения списка получателей.
+The system MUST provide an orchestrator service for processing notification events and MUST send each channel notification only to users who are currently role-eligible, have explicitly enabled the event/channel tuple, and have a valid destination owned by the destination service. For callback events the orchestrator MUST independently publish email and VK commands through channel-specific protocols and MUST treat a channel failure as fail-closed without expanding recipients.
 
 #### Scenario: Process callback_request event
 - **WHEN** обрабатывается callback_request event с phone, comment и equestrian_id
@@ -55,29 +52,3 @@ TBD - created by archiving change notification-service-initialization. Update Pu
 #### Scenario: Production runtime запускается
 - **WHEN** стартует штатный Notification Service container/lifespan
 - **THEN** smoke harness не импортируется и production NATS publishers остаются единственными runtime adapters
-
-### Requirement: EventHandlerRegistry
-The system MUST provide a registry for mapping event codes to handlers.
-
-#### Scenario: Get handler for known event
-- GIVEN a handler registered for "callback_request"
-- WHEN calling get_handler with "callback_request"
-- THEN the handler instance is returned
-
-#### Scenario: Get handler for unknown event
-- GIVEN no handler for "unknown_event"
-- WHEN calling get_handler with "unknown_event"
-- THEN HandlerNotFoundError is raised
-
-### Requirement: CallbackEventHandler
-The system MUST provide a handler for formatting callback_request notifications.
-
-#### Scenario: Format email notification
-- GIVEN callback_request payload and channel_code="email"
-- WHEN calling format_notification
-- THEN EmailNotificationData with subject and HTML body is returned
-
-#### Scenario: Unsupported channel
-- GIVEN callback_request payload and channel_code="sms"
-- WHEN calling format_notification
-- THEN UnsupportedChannelError is raised
