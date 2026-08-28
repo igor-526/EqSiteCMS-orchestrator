@@ -34,7 +34,7 @@ SERVICES_MANIFEST ?= services.manifest
 
 .PHONY: sync update services-branches build build-nc test lint format check check-backend check-email \
 		check-notification check-frontend fix fix-backend fix-email fix-notification fix-frontend \
-		compose-check asyncapi-validate asyncapi-validate-vk secret-scan migrate-core recreate-core health-core status-core logs-core \
+		compose-check asyncapi-validate asyncapi-validate-vk contracts-check secret-scan migrate-core recreate-core health-core status-core logs-core \
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
@@ -191,7 +191,7 @@ fe-attach:
 
 # =====CHECKS (NON-MUTATING) / FIXES=====
 
-check: check-backend check-email check-notification check-frontend compose-check asyncapi-validate secret-scan
+check: check-backend check-email check-notification check-frontend compose-check asyncapi-validate contracts-check secret-scan
 
 check-backend:
 	cd services/backend && uv run mypy src tests && uv run ruff check src tests && uv run ruff format --check src tests && uv run flake8 src tests && uv run pytest
@@ -243,6 +243,16 @@ asyncapi-validate:
 # consumer contract explicitly when working on the standalone VK service.
 asyncapi-validate-vk:
 	npx --yes @asyncapi/cli@6.0.2 validate services/vk-service/docs/asyncapi.yaml
+
+# Кросс-репозиторные контрактные тесты сверяют AsyncAPI соседнего сервиса.
+# В CI отдельного репозитория соседа нет, и тест деградирует до skip.
+# EQCMS_MONOREPO=1 превращает такой skip в падение: в монорепе документ
+# обязан существовать, иначе проверка молча перестанет выполняться.
+contracts-check:
+	cd services/notification-service && EQCMS_MONOREPO=1 uv run pytest \
+		tests/unit/messaging/test_nats_adapter_contract.py -q
+	cd services/vk-service && EQCMS_MONOREPO=1 uv run pytest \
+		tests/clients/nats/test_vk_contract_equality.py -q
 
 secret-scan:
 	bash scripts/secret-scan.sh

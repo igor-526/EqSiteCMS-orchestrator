@@ -84,6 +84,25 @@ class NatsSettings(BaseSettings):
         ge=1,
     )
 
+    # Connection error policy
+    nats_error_report_after_attempts: int = Field(
+        default=3,
+        alias="NATS_ERROR_REPORT_AFTER_ATTEMPTS",
+        ge=1,
+    )
+
+    # Setup retry (durable на stream другого владельца)
+    nats_setup_max_attempts: int = Field(
+        default=10,
+        alias="NATS_SETUP_MAX_ATTEMPTS",
+        ge=1,
+    )
+    nats_setup_backoff_seconds: float = Field(
+        default=2.0,
+        alias="NATS_SETUP_BACKOFF_SECONDS",
+        ge=0,
+    )
+
     model_config = SettingsConfigDict(populate_by_name=True)
 ```
 
@@ -99,17 +118,93 @@ class NatsSettings(BaseSettings):
 | `NATS_CONSUMER_CALLBACK_REQUESTED` | Durable имя consumer | `notification-service-callback-requested` |
 | `NATS_CONSUMER_ACK_WAIT_SECONDS` | Время ожидания ack (секунды) | `30` |
 | `NATS_CONSUMER_MAX_DELIVER` | Максимум попыток доставки | `5` |
+| `NATS_ERROR_REPORT_AFTER_ATTEMPTS` | Порог эскалации ошибок соединения в мониторинг | `3` |
+| `NATS_SETUP_MAX_ATTEMPTS` | Попыток регистрации durable на чужом stream | `10` |
+| `NATS_SETUP_BACKOFF_SECONDS` | Шаг линейного backoff между попытками | `2.0` |
 
 ## NATS Jetstream Client
 
 ### Реализация клиента
 
+**Обязательные свойства клиента:**
+
+1. Все сбои соединения проходят через собственную политику логирования: транзиентный reconnect не должен становиться событием мониторинга, затяжная недоступность брокера — должна, ровно один раз за инцидент.
+2. `close()` не падает: `drain()` выбрасывает `ConnectionReconnectingError`, если остановка пришлась на момент переподключения, и это не повод ронять `lifespan`.
+3. Durable на stream другого владельца регистрируется с bounded retry (см. раздел «Consuming»).
+
 ```python
+# clients/nats/lifecycle.py
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class NatsConnectionErrorPolicy:
+    """Гасит шум reconnect'ов, эскалируя ровно один раз за инцидент."""
+
+    def __init__(self, *, service_name: str, report_after_attempts: int) -> None:
+        self._service_name = service_name
+        self._report_after_attempts = report_after_attempts
+        self._consecutive_failures = 0
+        self._escalated = False
+
+    @property
+    def consecutive_failures(self) -> int:
+        return self._consecutive_failures
+
+    @property
+    def escalated(self) -> bool:
+        return self._escalated
+
+    def reset(self) -> None:
+        self._consecutive_failures = 0
+        self._escalated = False
+
+    async def on_error(self, error: Exception) -> None:
+        self._consecutive_failures += 1
+
+        if self._consecutive_failures > self._report_after_attempts and not self._escalated:
+            self._escalated = True
+            logger.error(
+                "NATS is unavailable for %s: %s consecutive failed attempts",
+                self._service_name,
+                self._consecutive_failures,
+                exc_info=error,
+            )
+            return
+
+        logger.warning(
+            "NATS connection error for %s (attempt %s): %s",
+            self._service_name,
+            self._consecutive_failures,
+            error,
+        )
+
+    async def on_disconnected(self) -> None:
+        logger.warning("NATS disconnected for %s", self._service_name)
+
+    async def on_reconnected(self) -> None:
+        logger.info("NATS reconnected for %s", self._service_name)
+        self.reset()
+
+    async def on_closed(self) -> None:
+        logger.info("NATS connection closed for %s", self._service_name)
+```
+
+Политику дополняет `ignore_logger("nats.aio.client")` в `utils/configure_sentry.py`: без него собственное логирование библиотеки обходит порог эскалации и снова наполняет мониторинг шумом.
+
+```python
+import logging
+
+import nats.errors
 from nats import NATS
 from nats.js import JetStreamContext
 from nats.js.api import PubAck
 
+from clients.nats.lifecycle import NatsConnectionErrorPolicy
 from settings import NatsSettings
+
+logger = logging.getLogger(__name__)
 
 
 class NatsJetstreamClient:
@@ -117,6 +212,10 @@ class NatsJetstreamClient:
         self._settings = settings
         self._connection: NATS | None = None
         self._jetstream: JetStreamContext | None = None
+        self._error_policy = NatsConnectionErrorPolicy(
+            service_name="service-name",  # Уникальное имя сервиса
+            report_after_attempts=settings.nats_error_report_after_attempts,
+        )
 
     @property
     def is_connected(self) -> bool:
@@ -136,12 +235,18 @@ class NatsJetstreamClient:
             return
 
         self._connection = NATS()
+        self._error_policy.reset()
+
         await self._connection.connect(
             servers=self._settings.nats_servers,
             name="service-name",  # Уникальное имя сервиса
             connect_timeout=5,
             reconnect_time_wait=2,
             max_reconnect_attempts=-1,
+            error_cb=self._error_policy.on_error,
+            disconnected_cb=self._error_policy.on_disconnected,
+            reconnected_cb=self._error_policy.on_reconnected,
+            closed_cb=self._error_policy.on_closed,
         )
         self._jetstream = self._connection.jetstream()
 
@@ -151,7 +256,12 @@ class NatsJetstreamClient:
 
         try:
             if not self._connection.is_closed:
-                await self._connection.drain()
+                try:
+                    await self._connection.drain()
+                except (TimeoutError, nats.errors.Error) as error:
+                    # Остановка во время reconnect — не повод ронять lifespan.
+                    logger.warning("NATS drain failed on shutdown, closing connection: %s", error)
+                    await self._connection.close()
         finally:
             self._connection = None
             self._jetstream = None
@@ -341,6 +451,44 @@ class CallbackRequestEventPublisher(NatsEventPublisher):
 ```
 
 ## Consuming (Потребление сообщений)
+
+### Durable на stream другого владельца
+
+Stream создаёт только сервис-владелец, поэтому потребитель может стартовать раньше владельца и получить от JetStream `404 stream not found`. Это штатная гонка деплоя, а не ошибка конфигурации: `setup_consumers()` обязан ретраить её с backoff и падать только после исчерпания попыток.
+
+Ретраить нужно **только** `NotFoundError`. `BadRequestError` означает несовместимую конфигурацию durable — его повтор бессмысленен, он должен падать сразу. Создавать чужой stream через `add_stream`, чтобы «обойти» 404, запрещено: два владельца одного `StreamConfig` конкурируют за retention и storage.
+
+```python
+async def setup_consumers(self) -> None:
+    stream = self._settings.nats_stream_site_events
+    max_attempts = self._settings.nats_setup_max_attempts
+    backoff_seconds = self._settings.nats_setup_backoff_seconds
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            await self._add_consumer()
+            return
+        except NotFoundError:
+            if attempt >= max_attempts:
+                logger.error(
+                    "Stream %s не появился после %s попыток", stream, max_attempts
+                )
+                raise
+
+            wait_time = backoff_seconds * attempt if backoff_seconds > 0 else 0
+            logger.warning(
+                "Stream %s ещё не создан владельцем (попытка %s из %s). Повтор через %.1f секунд.",
+                stream,
+                attempt,
+                max_attempts,
+                wait_time,
+            )
+            if wait_time:
+                await asyncio.sleep(wait_time)
+```
+
+Дефолты (`10` попыток с шагом `2.0` с — до ~110 с ожидания) подобраны так, чтобы окно ретраев было больше типичного старта владельца и меньше `initialDelaySeconds: 120` у liveness probe.
+
 
 ### Consumer с Pull-подпиской
 
