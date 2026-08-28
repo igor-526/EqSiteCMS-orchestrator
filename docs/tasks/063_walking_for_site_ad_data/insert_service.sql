@@ -1,33 +1,42 @@
-# Базовые поля
+BEGIN;
 
-## Наименование
+DO $sql$
+DECLARE
+    v_equestrian_id uuid;
+    v_group_id uuid;
+    v_price_id uuid;
+    v_display_order integer;
+BEGIN
+    SELECT id
+      INTO STRICT v_equestrian_id
+      FROM equestrians
+     WHERE name = 'ЦКСК "Александрова дача"';
 
-Конные прогулки
+    SELECT id
+      INTO STRICT v_group_id
+      FROM price_groups
+     WHERE equestrian_id = v_equestrian_id
+       AND name = 'Конные прогулки и катания'
+     FOR UPDATE;
 
-## Slug
-
-`konnye-progulki`
-
-## Описание
-
-Конные прогулки на лошадях и пони по паркам Пушкина и Павловска: Александрова Дача, Мариенталь и Нижний парк, а также активные маршруты в полях. Для начинающих, детей и опытных всадников. Бронирование по телефону с 10:30 до 19:30.
-
-# Таблицы
-
-Для строк с маршрутами использовать форматтер цены **«От»**. Для сопровождения фотографа или видеооператора цена фиксированная, без форматтера.
-
-| Маршрут | Продолжительность | Цена |
-| --- | --- | --- |
-| Парк Александрова Дача | 30 мин. | 1 500 р. |
-| Парк Мариенталь и замок БИП | 1 ч. 15 мин. | 4 000 р. с человека |
-| Поля Павловска | 1–2 часа | 3 000 р. |
-| Нижний парк Пушкина — верхом | 30 мин. – 1 час | 5 000 р. |
-| Нижний парк Пушкина — в карете | 30 мин. – 1 час | 8 000 р. |
-| Фотограф или видеооператор | 1 час | 5 000 р. |
-
-# Страница
-
-```html
+    INSERT INTO prices (
+        id,
+        created_at,
+        updated_at,
+        name,
+        description,
+        page_data,
+        slug,
+        price_tables,
+        equestrian_id
+    )
+    VALUES (
+        gen_random_uuid(),
+        now(),
+        NULL,
+        'Конные прогулки',
+        'Конные прогулки на лошадях и пони по паркам Пушкина и Павловска: Александрова Дача, Мариенталь и Нижний парк, а также активные маршруты в полях. Для начинающих, детей и опытных всадников. Бронирование по телефону с 10:30 до 19:30.',
+        $page$
 <article>
   <header>
     <h1>Конные прогулки в Пушкине и Павловске</h1>
@@ -95,6 +104,87 @@
       <li>Сопровождение фотографа или видеооператора — 5 000 р. в час.</li>
     </ul>
   </section>
-
 </article>
-```
+        $page$,
+        'konnye-progulki',
+        $json$
+[
+  {
+    "columns": [
+      {"key": "route", "title": "Маршрут", "annotation": "", "cell_formatter": []},
+      {"key": "duration", "title": "Продолжительность", "annotation": "", "cell_formatter": []},
+      {"key": "price", "title": "Цена", "annotation": "", "cell_formatter": ["text_bold"]}
+    ],
+    "rows": [
+      {"cells": {
+        "route": {"value": "Парк Александрова Дача", "annotation": "", "cell_formatter": []},
+        "duration": {"value": "30 мин.", "annotation": "", "cell_formatter": []},
+        "price": {"value": "от 1 500 р.", "annotation": "Цена зависит от дня и предварительной записи", "cell_formatter": []}
+      }},
+      {"cells": {
+        "route": {"value": "Парк Мариенталь и замок БИП", "annotation": "", "cell_formatter": []},
+        "duration": {"value": "1 ч. 15 мин.", "annotation": "", "cell_formatter": []},
+        "price": {"value": "от 4 000 р. с человека", "annotation": "Цена для группы от двух человек", "cell_formatter": []}
+      }},
+      {"cells": {
+        "route": {"value": "Поля Павловска", "annotation": "Для опытных всадников", "cell_formatter": []},
+        "duration": {"value": "1–2 часа", "annotation": "", "cell_formatter": []},
+        "price": {"value": "от 3 000 р.", "annotation": "Цена зависит от продолжительности и дня недели", "cell_formatter": []}
+      }},
+      {"cells": {
+        "route": {"value": "Нижний парк Пушкина — верхом", "annotation": "", "cell_formatter": []},
+        "duration": {"value": "30 мин. – 1 час", "annotation": "", "cell_formatter": []},
+        "price": {"value": "от 5 000 р.", "annotation": "Цена зависит от продолжительности и уровня всадника", "cell_formatter": []}
+      }},
+      {"cells": {
+        "route": {"value": "Нижний парк Пушкина — в карете", "annotation": "Количество пассажиров не ограничено", "cell_formatter": []},
+        "duration": {"value": "30 мин. – 1 час", "annotation": "Выезд от одного часа", "cell_formatter": []},
+        "price": {"value": "от 8 000 р.", "annotation": "Цена зависит от продолжительности", "cell_formatter": []}
+      }},
+      {"cells": {
+        "route": {"value": "Фотограф или видеооператор", "annotation": "Сопровождение прогулки", "cell_formatter": []},
+        "duration": {"value": "1 час", "annotation": "", "cell_formatter": []},
+        "price": {"value": "5 000 р.", "annotation": "Фиксированная цена за час", "cell_formatter": []}
+      }}
+    ]
+  }
+]
+        $json$::jsonb,
+        v_equestrian_id
+    )
+    ON CONFLICT (equestrian_id, slug) DO UPDATE
+       SET name = EXCLUDED.name,
+           description = EXCLUDED.description,
+           page_data = EXCLUDED.page_data,
+           price_tables = EXCLUDED.price_tables,
+           updated_at = now()
+    RETURNING id INTO v_price_id;
+
+    IF NOT EXISTS (
+        SELECT 1
+          FROM price_groups_relations
+         WHERE price_id = v_price_id
+           AND group_id = v_group_id
+    ) THEN
+        SELECT COALESCE(MAX(display_order), 0) + 1
+          INTO v_display_order
+          FROM price_groups_relations
+         WHERE group_id = v_group_id;
+
+        INSERT INTO price_groups_relations (
+            id,
+            price_id,
+            group_id,
+            display_order
+        )
+        VALUES (
+            gen_random_uuid(),
+            v_price_id,
+            v_group_id,
+            v_display_order
+        );
+    END IF;
+END
+$sql$;
+
+COMMIT;
