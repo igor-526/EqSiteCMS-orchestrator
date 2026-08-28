@@ -1,8 +1,5 @@
-# notification-orchestrator Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
-## Requirements
 ### Requirement: NotificationOrchestratorService
 Система MUST предоставлять orchestrator service для обработки notification events и MUST отправлять уведомление каждого канала только пользователям, которые сохраняют допустимую роль, явно включили соответствующую пару event/channel и имеют валидное назначение во владеющем им сервисе. Для callback events orchestrator MUST независимо публиковать email- и VK-команды через протокол соответствующего канала и MUST обрабатывать сбой канала по fail-closed модели без расширения списка получателей. Orchestrator MUST различать `PubAck`, в котором сообщение принято как новое, и `PubAck` с признаком duplicate: дубликат MUST трактоваться как идемпотентно принятая ранее команда того же канала, MUST логироваться на уровне не ниже `warning` с correlation context и кодом канала и MUST NOT приводить ни к ошибке обработки события, ни к повторной публикации. Обход активных каналов MUST быть детерминированным и не зависеть от физического порядка строк в хранилище.
 
@@ -54,44 +51,3 @@ TBD - created by archiving change notification-service-initialization. Update Pu
 #### Scenario: VK AsyncAPI equality
 - **WHEN** contract tests сравнивают Notification Service publish и VK Service subscribe для `commands.notification.vk.send`
 - **THEN** stream, subject, headers, required payload fields, formats и `additionalProperties` совпадают
-
-### Requirement: Изолированная проверка publisher failures
-Система MUST предоставлять отдельный one-shot local CLI composition root для smoke-проверки orchestrator с production handler/domain/repositories и scripted email/VK publisher adapters. Harness MUST быть disabled by default, MUST отказать до внешних подключений вне явно подтверждённого local режима, MUST работать только с точным synthetic callback fixture и MUST NOT входить в production DI/lifespan, создавать HTTP endpoints, публиковать реальные downstream commands либо выводить payload/PII/secrets.
-
-#### Scenario: Оба publisher завершаются ошибкой
-- **WHEN** для synthetic callback оба scripted publishers настроены на deterministic failure
-- **THEN** production orchestrator не вызывает delivery confirmation и callback flag остаётся `false`
-
-#### Scenario: Только один publisher подтверждён
-- **WHEN** один scripted publisher возвращает ack, а второй завершается ошибкой или не имеет eligible recipients
-- **THEN** delivery confirmation вызывается ровно один раз согласно command-acceptance semantics
-
-#### Scenario: Production runtime запускается
-- **WHEN** стартует штатный Notification Service container/lifespan
-- **THEN** smoke harness не импортируется и production NATS publishers остаются единственными runtime adapters
-
-### Requirement: EventHandlerRegistry
-The system MUST provide a registry for mapping event codes to handlers.
-
-#### Scenario: Get handler for known event
-- GIVEN a handler registered for "callback_request"
-- WHEN calling get_handler with "callback_request"
-- THEN the handler instance is returned
-
-#### Scenario: Get handler for unknown event
-- GIVEN no handler for "unknown_event"
-- WHEN calling get_handler with "unknown_event"
-- THEN HandlerNotFoundError is raised
-
-### Requirement: CallbackEventHandler
-The system MUST provide a handler for formatting callback_request notifications.
-
-#### Scenario: Format email notification
-- GIVEN callback_request payload and channel_code="email"
-- WHEN calling format_notification
-- THEN EmailNotificationData with subject and HTML body is returned
-
-#### Scenario: Unsupported channel
-- GIVEN callback_request payload and channel_code="sms"
-- WHEN calling format_notification
-- THEN UnsupportedChannelError is raised

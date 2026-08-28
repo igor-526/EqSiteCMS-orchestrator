@@ -376,6 +376,32 @@ def get_callback_request_event_publisher() -> CallbackRequestEventPublisher:
 
 ## Publishing (Публикация событий)
 
+### Идентичность сообщения и дедупликация (обязательно)
+
+Дедупликация JetStream действует **на уровне stream, а не subject**: два сообщения с одинаковым
+`Nats-Msg-Id`, попавшие в один stream внутри `duplicate_window` (по умолчанию 120 секунд),
+считаются дубликатами, даже если адресованы разным subjects. Второе сообщение брокер молча
+отбрасывает, возвращая `PubAck` с `duplicate=True` и без ошибки.
+
+Отсюда два обязательных правила:
+
+1. `Nats-Msg-Id` MUST быть уникален в пределах stream. Если одно бизнес-событие порождает
+   команды нескольких каналов в один stream, идентификатор выводится из пары
+   «корреляция + канал», например
+   `uuid5(NAMESPACE_NOTIFICATION_COMMAND, f"{callback_request_id}:{channel_code}")`.
+   Переиспользовать один `callback_request_id` как `Nats-Msg-Id` для разных subjects одного
+   stream запрещено — это приводит к потере всех команд, кроме первой.
+   Корреляция между командами выражается полями payload, а не общим заголовком.
+2. `PubAck` MUST проверяться. Publisher MUST NOT логировать публикацию как успешную, не
+   посмотрев на `duplicate`, и MUST сообщать вызывающему коду, было ли сообщение принято как
+   новое. Отброшенный дубликат MUST логироваться на уровне не ниже `warning` с correlation
+   context: при уникальном в пределах stream идентификаторе он означает повторную обработку
+   того же события, а не потерю сообщения.
+
+Идентификатор при этом MUST оставаться **детерминированным**: он вычисляется из стабильных
+полей корреляции, а не из значения, которое генерируется заново на каждой обработке. Иначе
+redelivery события породит вторую пользовательскую отправку.
+
 ### Базовый Publisher
 
 ```python
@@ -402,18 +428,26 @@ class NatsEventPublisher:
         event: MessagingEvent,
         payload: MessagingBaseEventData,
         headers: dict[str, str] | None = None,
-    ) -> None:
+    ) -> PublishedCommand:
         completed_headers = {
             "Nats-Msg-Id": str(event.event_id),
         }
         if headers is not None:
             completed_headers.update(headers)
 
-        await self._client.publish(
+        ack = await self._client.publish(
             subject=event.event_subject,
             payload=payload.model_dump_json().encode("utf-8"),
             headers=completed_headers,
         )
+        duplicate = bool(getattr(ack, "duplicate", False))
+        if duplicate:
+            logger.warning(
+                "Command was deduplicated by broker: subject=%s, message_id=%s",
+                event.event_subject,
+                event.event_id,
+            )
+        return PublishedCommand(message_id=event.event_id, duplicate=duplicate)
 ```
 
 ### Специализированный Publisher
