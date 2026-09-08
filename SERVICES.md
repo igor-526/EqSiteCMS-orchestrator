@@ -44,6 +44,7 @@ EqSiteCMS поддерживает два контура доступа к API:
 | Notification Service | `services/notification-service` | Маршрутизация notification-команд между backend и каналами доставки |
 | VK Service | `services/vk-service` | Канал доставки VK и бот привязки пользователей (вне core release scope; доставка уведомлений о событиях ещё не реализована) |
 | Site: site-ad | `services/site-ad`  | Публичный сайт-потребитель read API                  |
+| Site: site-ksk-inlove | `services/site-ksk-inlove` | Нейтральный каркас публичного сайта-потребителя Public Read API (вне core release scope; deployment запрещён) |
 
 
 ### 1. Backend Core (`services/backend`)
@@ -188,5 +189,20 @@ EXPOSE_VK_DB_PORT=5436
 - Использует public read API backend-сервиса (преимущественно `GET` без авторизации).
 - Не использует CMS-only endpoint'ы для администрирования.
 - Может иметь собственную презентационную логику и маршруты, но контент получает из backend EqSiteCMS.
+
+### 7. Public Site `site-ksk-inlove` (`services/site-ksk-inlove`)
+
+**Технологии:** Next.js 15, React, TypeScript.
+
+**Статус:** нейтральный starter публичного сайта-потребителя вне core release scope.
+
+**Роль:** заготовка сайта InLove для anonymous Public Read API EqSiteCMS; пользовательские страницы и брендовый контент пока отсутствуют.
+
+**Границы доступа и эксплуатации:**
+
+- Публичные данные читаются через `GET` без CMS cookie, `Authorization` и иных admin credentials; tenant-bound маршруты требуют явно настроенный `NEXT_PUBLIC_EQUESTRIAN_SERVICE_KEY` и не имеют fallback на чужой tenant.
+- Единственное сохранённое write-исключение — anonymous `POST /api/callback_requests` с tenant selector; формы и другого пользовательского UI в starter нет. CMS-only endpoint'ы и остальные write-операции запрещены.
+- Stand domain `inlove-stand.eqcms.ru` является только deployment/configuration value, не runtime fallback. Git, remote и включение в `services.manifest`/orchestration выполняются пользователем отдельно.
+- `.helm/**` и `.github/**` неизменно унаследованы от `site-ad` и сохраняют его deployment identity. **Запускать Helm/Actions и развёртывать `site-ksk-inlove` запрещено** до отдельного deployment change.
 
 ---

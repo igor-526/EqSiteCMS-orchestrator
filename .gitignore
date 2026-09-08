@@ -21,3 +21,4 @@ htmlcov/
 */.obsidian/
 .kube/
 .directory
+/docs/parsings/

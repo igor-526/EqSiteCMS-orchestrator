@@ -6,5 +6,6 @@ backend git@github.com:igor-526/EqSiteCMS-backend.git
 notification-service git@github.com:igor-526/EqSiteCMS-notification-service.git
 email-service git@github.com:igor-526/EqSiteCMS-email-service.git
 frontend git@github.com:igor-526/EqSiteCMS-frontend.git
-site-ad git@github.com:igor-526/aleksandrova-dacha-site.git
 vk-service git@github.com:igor-526/EqSiteCMS-vk-service.git
+site-ad git@github.com:igor-526/aleksandrova-dacha-site.git
+site-ksk-inlove https://github.com/igor-526/inlove-site
