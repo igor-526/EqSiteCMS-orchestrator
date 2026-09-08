@@ -1,0 +1,4 @@
+interface:
+  display_name: "Парсинг данных бизнеса"
+  short_description: "Собирает контент и медиа для нового сайта"
+  default_prompt: "Используй $business-data-parsing для сбора данных бизнеса из публичных источников."
