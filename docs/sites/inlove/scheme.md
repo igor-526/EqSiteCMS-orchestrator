@@ -22,6 +22,8 @@
 | `GET` | `/api/horses` | Public Read | нет | `401` | `200` |
 | `GET` | `/api/news` | Public Read | нет | `401` | `200` |
 | `GET` | `/api/news/by-slug/{slug}` | Public Read | нет | `401` | `200` опубликованная своего tenant; `404` иначе |
+| `GET` | `/api/prices/{slug_or_id}` | Public Read | нет | `401` | `200` тариф своего tenant, входящий в allow-list вызвавшей detail-страницы (`/uslugi/zanyatiya\|progulki\|postoy/[slug]`); `404` чужой tenant, несуществующий slug/id, а также свой-tenant slug вне allow-list этой страницы — site-side guard поверх backend-ответа, см. подраздел «Детали сущности» соответствующей секции услуг |
+| `GET` | `/api/horses/{slug_or_id}` | Public Read | нет | `401` | `200` лошадь своего tenant с `this_stable=true`; `404` чужой tenant, несуществующий slug/id, а также свой-tenant лошадь с `this_stable≠true` — сайт возвращает `404` даже если backend вернул `200` (site-side privacy guard, см. «Наши лошади» → «Детали сущности») |
 | `GET` | `/api/photos` | Public Read | нет | `401` | `200` |
 | `POST` | `/api/callback_requests` | Public POST exception | нет | `401` | `201` |
 
@@ -119,6 +121,10 @@ SEO: seeded `seo.lessons.title`, `seo.lessons.description`; fallback — `site.s
 
 До загрузки — skeleton. Пустой ответ сообщает «Стоимость уточняется» и оставляет CTA, но не показывает нулевую цену. Ошибка имеет retry. Нет фото — нейтральное клубное изображение; нет таблицы — описание сохраняется. CTA тарифа передаёт его `name` и `slug` в форму.
 
+### Детали сущности
+
+Маршрут `/uslugi/zanyatiya/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; доступен только slug из allow-list этой страницы (`individual-lesson-official`, `group-lesson-official`, `training-package-8-official`, `individual-membership-official`, `subscription-4-yandex`, `riding-training-yandex`, `subscription-8-yandex`, `individual-subscription-8-yandex` — тот же список, что и у списочного запроса). SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` тарифа (если поле пустое, description не выводится), canonical — точный путь `/uslugi/zanyatiya/{slug}`. Fallback/404: slug вне allow-list этой страницы (в том числе валидный тариф другой страницы услуг или чужого tenant) даёт 404 без обращения к backend; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Тариф временно недоступен | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
+
 ---
 
 ## Услуги / Прогулки
@@ -148,6 +154,10 @@ Hero; «Как проходит прогулка»; варианты и цены
 
 Skeleton сохраняет размеры блоков. При пустых ценах — «Стоимость уточняется» и форма. Две конфликтующие позиции показываются раздельно с CMS-названиями. Основной CTA передаёт контекст «Прогулки» и тариф; вторичные ведут к звонку и занятиям.
 
+### Детали сущности
+
+Маршрут `/uslugi/progulki/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; доступен только slug из allow-list этой страницы (`horse-rides-official`, `horse-ride-yandex`). SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` (если поле пустое, description не выводится), canonical — точный путь `/uslugi/progulki/{slug}`. Fallback/404: slug вне allow-list этой страницы (валидный тариф другой страницы или чужого tenant) даёт 404 без обращения к backend; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Прогулка временно недоступна | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
+
 ---
 
 ## Услуги / Постой
@@ -176,6 +186,10 @@ Hero; инфраструктура; «Что входит»; стоимость;
 
 Пустой тариф означает «Стоимость и наличие мест уточняются», не бесплатную услугу. Пустой included скрывается. Ошибка CMS оставляет телефон и callback. Спорные `about.features` публикуются только после редакционной проверки. Modal получает контекст «Постой» и вопрос о местах.
 
+### Детали сущности
+
+Маршрут `/uslugi/postoy/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; доступен только slug из allow-list этой страницы (`horse-boarding-yandex`). SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` (если поле пустое, description не выводится), canonical — точный путь `/uslugi/postoy/{slug}`. Fallback/404: slug вне allow-list этой страницы (валидный тариф другой страницы или чужого tenant) даёт 404 без обращения к backend; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Постой временно недоступен | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
+
 ---
 
 ## Наши лошади
@@ -189,7 +203,7 @@ SEO: seeded `seo.horses.title`, `seo.horses.description`; fallback — заго�
 
 ### Цель страницы
 
-Познакомить с лошадьми клуба и укрепить доверие. Отдельные публичные detail routes не создаются.
+Познакомить с лошадьми клуба и укрепить доверие. Карточки ведут на отдельный утверждённый маршрут `/loshadi/[slug]`; доступны только лошади клуба (`this_stable=true`), постойные лошади через прямой URL не раскрываются.
 
 ### Интеграция с CMS
 
@@ -199,11 +213,15 @@ SEO: seeded `seo.horses.title`, `seo.horses.description`; fallback — заго�
 
 ### Секции и вёрстка
 
-Введение; сетка карточек с главным фото, кличкой, описанием и непустыми характеристиками; раскрываемые подробности внутри текущей страницы; CTA. Desktop — 3–4 карточки, tablet — 2, mobile — 1. Несуществующий detail route не используется.
+Введение; сетка карточек с главным фото, кличкой, описанием и непустыми характеристиками; раскрываемые подробности внутри текущей страницы, а также ссылка на полную деталь `/loshadi/[slug]`; CTA. Desktop — 3–4 карточки, tablet — 2, mobile — 1.
 
 ### Состояния, fallback и CTA
 
 Во время загрузки — skeleton. При пустом каталоге — `horses.empty_text`, fallback «Скоро познакомим вас с лошадьми клуба», и CTA. Упоминания из отзывов автоматически карточками не становятся. CTA выбранной карточки передаёт имя лошади.
+
+### Детали сущности
+
+Маршрут `/loshadi/[slug]`. Источник данных — `GET /api/horses/{slug_or_id}`. SEO/canonical формируются сервером: title — `{name лошади} | Инлав`, description — первые 200 символов очищенного от разметки `description` лошади (если поле пустое, description не выводится), canonical — точный путь `/loshadi/{slug}`. Fallback/404: backend возвращает лошадь по slug без фильтра по `this_stable` (в том числе приватных постойных лошадей), поэтому сайт самостоятельно проверяет `this_stable === true` и отдаёт 404, если это условие не выполнено, — независимо от того, что backend ответил `200`; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Лошадь временно недоступна | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
 
 ---
 

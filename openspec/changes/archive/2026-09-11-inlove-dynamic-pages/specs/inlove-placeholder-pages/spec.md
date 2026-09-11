@@ -1,8 +1,4 @@
-# Purpose
-
-Зафиксировать публичную карту маршрутов INLOVE (семь основных маршрутов, все с полноценным SSR-контентом, без заглушек) и серверные metadata. `UnderConstructionPage`/`PLACEHOLDER_ROUTES` остаются в кодовой базе как переиспользуемый механизм для будущих новых заглушек, но ни один из семи основных маршрутов его больше не использует.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Карта сайта обслуживает семь публичных маршрутов
 Сайт SHALL обслуживать `/`, `/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy`, `/loshadi`, `/novosti` и `/about` внутри общей оболочки с одним route-specific h1. Все семь маршрутов MUST содержать полноценные SSR-композиции: `/`, `/novosti`, `/about` — по capabilities `inlove-content-pages` и `inlove-news-pages`; `/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy` — по capability `inlove-services-pages`; `/loshadi` — по capability `inlove-horses-pages`. Плейсхолдеров (`UnderConstructionPage`) среди семи основных маршрутов больше нет. Дополнительно MUST обслуживаться утверждённые detail routes: `/novosti/[slug]` с опубликованными новостями, `/uslugi/zanyatiya/[slug]`, `/uslugi/progulki/[slug]`, `/uslugi/postoy/[slug]` с тарифами по правилам `inlove-services-pages`, `/loshadi/[slug]` с лошадьми по правилам `inlove-horses-pages`.
