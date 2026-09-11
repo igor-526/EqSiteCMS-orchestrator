@@ -44,8 +44,8 @@
 
 - **Назначение:** ссылка на `/` и идентификация клуба.
 - **Contract:** `{ variant: "light" | "dark"; shortName: string; asset?: ImageSource }`.
-- **Источник / settings:** `site.short_name`; ассет статический.
-- **Fallback:** при ошибке/отсутствии ассета выводится текст `site.short_name`, затем «ИНЛав».
+- **Источник:** статический consumer config; ассет статический.
+- **Fallback:** при ошибке/отсутствии ассета выводится «ИНЛав».
 - **Responsive / states / a11y:** desktop ширина `132–150px`; достаточный clear space; доступное имя ссылки, без tooltip.
 
 ### `Icon`
@@ -119,7 +119,7 @@
 
 - **Назначение:** общая SSR-навигация, телефон и открытие callback modal.
 - **Contract:** `{ shortName; menu: NavItem[]; phone?; ctaLabel; transparentOnHero?: boolean }`, где `NavItem={label,href}`.
-- **Источник / settings:** `site.short_name`, `header.menu`, `header.contact_phone`, `header.cta_label`, fallback phone `contacts.primary_phone`.
+- **Источник:** brand/menu/CTA из consumer config; optional phone только из `contacts.primary_phone`.
 - **Fallback:** семь разрешённых routes из схемы; неизвестные CMS href фильтруются. Пустой телефон скрывает только ссылку.
 - **Responsive / states / a11y:** desktop sticky transparent→blurred; mobile оставляет logo/call/menu. Активная ссылка имеет `aria-current="page"`; settings error не скрывает навигацию.
 
@@ -135,7 +135,7 @@
 
 - **Назначение:** повторная навигация, контакты, соцсети и copyright.
 - **Contract:** `{ shortName; description?; menu; address?; phone?; workingHours?; mapsUrl?; socialLinks; copyrightName }`.
-- **Источник / settings:** `footer.description`, `footer.copyright_name`, `contacts.address`, `contacts.primary_phone`, `contacts.working_hours`, `contacts.maps_url`, `social.vk_url`, `social.instagram_url`, `site.short_name`.
+- **Источник / settings:** `footer.description`, `footer.copyright_name`, атомарные contacts и social keys; brand/menu из consumer config.
 - **Fallback:** текущий год вычисляется; пустая соцсеть/часы скрываются; расписание не выдумывается.
 - **Responsive / states / a11y:** desktop три колонки, mobile последовательные блоки; внешние ссылки имеют понятные имена.
 
@@ -143,7 +143,7 @@
 
 - **Назначение:** быстрый вызов формы после прохождения 30–40% первого экрана.
 - **Contract:** `{ label; visible; onActivate }`.
-- **Источник:** page CTA setting либо `header.cta_label`.
+- **Источник:** типизированный consumer config.
 - **Fallback:** «Записаться»; не показывается при открытой/видимой форме.
 - **Responsive / states / a11y:** только mobile, full-width с отступами; не перекрывает контент/системную safe area.
 
@@ -154,14 +154,14 @@
 - **Назначение:** единая заявка из любого CTA.
 - **Contract:** `{ open; context: { route; serviceName?; serviceSlug?; horseName? }; onClose }`; поля `phone` 1–63 символа, `name` ≤127, `comment` ≤2000; API payload строго `{ name?, phone, comment? }`. Обязательный непредвыбранный consent checkbox является локальным UI/legal-состоянием и в payload не входит.
 - **Источник / settings:** `callback.title`, `callback.description`, `callback.submit_label`, `callback.success_message`, `callback.consent_text`, необязательный `callback.policy_url`; `POST /api/callback_requests` с tenant selector.
-- **Fallback:** встроенные тексты из схемы; для consent — «Я соглашаюсь с политикой обработки персональных данных». Отсутствующий/невалидный policy URL и удалённый `/about#privacy` не создают ссылку; безопасный настроенный внутренний или `http(s)` URL сохраняется. `201` — success; `4xx` сохраняет поля и consent; network/`5xx` даёт retry; `401` сообщает о конфигурационной ошибке без login UI.
-- **Responsive / states / a11y:** desktop max-width `560px`, mobile padding `24px`; submit disabled до consent и во время pending; success заменяет форму сообщением. Consent остаётся обязательным и без policy link; настроенная валидная ссылка доступна с клавиатуры независимо от checkbox. Ошибка отсутствующего согласия показывается inline, связана с checkbox через `aria-describedby` и `aria-invalid`, фокус переводится к checkbox. `role="dialog"`, `aria-modal`, focus trap, `Escape`, возврат фокуса.
+- **Fallback:** встроенные тексты из схемы; для consent — «Я соглашаюсь с политикой обработки персональных данных». Отсутствующий/невалидный policy URL и удалённый `/about#privacy` нормализуются к доступному статическому маршруту `/privacy`, и ссылка рендерится; безопасный настроенный внутренний или `http(s)` URL сохраняется. `201` — success; `4xx` сохраняет поля и consent; network/`5xx` даёт retry; `401` сообщает о конфигурационной ошибке без login UI.
+- **Responsive / states / a11y:** desktop max-width `560px`, mobile padding `24px`; submit disabled до consent и во время pending; success заменяет форму сообщением. Consent остаётся обязательным независимо от policy link; ссылка доступна с клавиатуры независимо от checkbox. Ошибка отсутствующего согласия показывается inline, связана с checkbox через `aria-describedby` и `aria-invalid`, фокус переводится к checkbox. `role="dialog"`, `aria-modal`, focus trap, `Escape`, возврат фокуса.
 
 ### `Toast`, `InlineNotice`, `Skeleton`, `ErrorBlock`, `EmptyState`
 
 - **Назначение:** неблокирующая обратная связь и устойчивые async-состояния.
 - **Contract:** `{ tone; title?; message; action? }`; skeleton получает variant и count.
-- **Источник / settings:** notice может использовать `services.notice`; остальные тексты определяет владеющая секция.
+- **Источник:** тексты определяет владеющая секция либо consumer config.
 - **Fallback:** error не удаляет уже загруженные данные; skeleton соответствует итоговой геометрии; optional empty section может скрыться.
 - **Responsive / states / a11y:** toast справа снизу desktop и по центру снизу mobile; `role=status` для success, `role=alert` для ошибки; shimmer отключается при reduced-motion.
 
@@ -179,7 +179,7 @@
 
 - **Назначение:** компактная редакционная галерея, horses/media swipe и раскрытие фото.
 - **Contract:** `{ items: ImageSource[]; layout: "editorial" | "carousel"; initialIndex? }`.
-- **Источник / settings:** `GET /api/photos?limit=24&sort=created_at`; предпочтительно seeded `about.gallery_photo_ids` после появления API-фильтра; также `photos` профильных сущностей.
+- **Источник:** `photos` профильных сущностей. `/about` общую gallery не выводит.
 - **Fallback:** пустая gallery скрывается; error не скрывает соседний текст; карточка без фото использует placeholder.
 - **Responsive / states / a11y:** desktop 1 large + 2 small + 1 medium либо 2.5–3.5 cards; mobile native swipe/scroll snap, карточка 86–90vw. Стрелки `44px`, понятные labels; порядок фокуса следует DOM.
 
@@ -197,7 +197,7 @@
 
 - **Назначение:** направление услуги и конкретное ценовое предложение.
 - **Contract:** `ServiceCard { price: PriceSummary; href?; onRequest }`; `PriceRow { name; description?; priceTables; onRequest }`.
-- **Источник:** `GET /api/prices`; поля `id,name,slug,description,photos,groups,price_tables`. Settings: `services.notice`; page intro/CTA keys seeded.
+- **Источник:** `GET /api/prices`; поля `id,name,slug,description,photos,groups,price_tables`. Intro/notice/CTA задаются consumer config.
 - **Fallback:** нет фото — клубный placeholder; нет таблицы — описание; нет цены — «Стоимость уточняется». Конфликтующие предложения не объединяются.
 - **Responsive / states / a11y:** desktop grid/list rows, mobile одна колонка; таблица становится label/value либо имеет управляемый horizontal scroll. CTA передаёт `name/slug`; hover image не содержит скрытой информации.
 
@@ -221,7 +221,7 @@
 
 - **Назначение:** команда, свойства инфраструктуры и агрегированное социальное доказательство.
 - **Contract:** `PersonCard { name; roles[]; phone?; status? }`; `FeatureItem { id; label; value; note? }`; `ReviewSummary { rating; rating_count; review_count; strengths[]; collected_at }`.
-- **Источник / settings:** `team.people`, `about.features`, `reviews.summary`.
+- **Источник:** компонент не используется в текущей `/about`; legacy settings удалены из consumer contract.
 - **Fallback:** пустые блоки скрываются, фиктивные люди/отзывы не создаются; команда выводится только после редакционного одобрения; спорный feature не заявляется без проверки.
 - **Responsive / states / a11y:** desktop grid/editorial quote, mobile stack; рейтинг получает текстовое представление, иконки не заменяют подписи.
 
@@ -231,7 +231,7 @@
 
 - **Назначение:** вводный текст страницы и чередование «текст / медиа».
 - **Contract:** `{ eyebrow?; title; body?; image?; imageSide?: "left" | "right"; actions? }`.
-- **Источник / settings:** seeded `about.intro`, `about.setting`, `services.lessons.intro`, `services.rides.intro`, `services.boarding.intro`, `horses.intro`, `news.intro`.
+- **Источник:** consumer config либо описание профильной сущности Public Read API; для `/about` — парные `about_1_*`/`about_2_*` строки.
 - **Fallback:** page title и copy из схемы; optional image/block скрывается.
 - **Responsive / states / a11y:** desktop 7/1/4 и зеркальный layout; mobile текст перед соответствующим фото; длина строки ограничена.
 
@@ -239,7 +239,7 @@
 
 - **Назначение:** преимущества программ, клуба или инфраструктуры.
 - **Contract:** `{ title?; items: { title; text? }[]; tone? }`.
-- **Источник / settings:** `home.program_benefits`, `home.club_benefits`; `about.features` перед использованием преобразуется и проходит editorial filter.
+- **Источник:** статическая consumer-композиция либо профильный API; legacy benefits и `about.features` не читаются.
 - **Fallback:** пустой массив скрывает секцию; invalid item пропускается независимо.
 - **Responsive / states / a11y:** desktop editorial grid без SaaS-card избыточности; mobile stack; смысл не кодируется одной иконкой.
 
@@ -247,7 +247,7 @@
 
 - **Назначение:** список тарифов, локальный фильтр и CTA.
 - **Contract:** `{ items: PriceSummary[]; mode: "featured" | "lessons" | "rides" | "boarding"; notice?; filter? }`.
-- **Источник:** `/api/prices` с query из scheme; seeded `services.notice` и page CTA keys.
+- **Источник:** `/api/prices` с query из scheme; presentation-copy и CTA — consumer config.
 - **Fallback:** empty сообщает «Стоимость уточняется» и оставляет callback; error содержит retry; loading — price-row skeleton.
 - **Responsive / states / a11y:** desktop large rows/two-column composition, mobile stacked label/value. Локальный «Разовые / Абонементы» — tablist только если реализована настоящая tab-семантика, иначе группа кнопок.
 
@@ -270,8 +270,8 @@
 ### `ContactSection`
 
 - **Назначение:** адрес, часы, три строки каналов «телефон / VK / Instagram», карта и callback CTA.
-- **Contract:** `{ address; alternativeAddress?; coordinates?; mapsUrl?; phone?; workingHours?; socialLinks; ctaLabel; context }`.
-- **Источник / settings:** `contacts.address`, `contacts.address_alternative`, `contacts.coordinates`, `contacts.maps_url`, `contacts.primary_phone`, `contacts.working_hours`, `social.*`, `header.cta_label`.
+- **Contract:** `{ address; coordinates?; mapsUrl?; nearestStop?; phone?; workingHours?; socialLinks; ctaLabel; context }`.
+- **Источник / settings:** атомарные `contacts.address/coordinates/maps_url/nearest_stop/primary_phone/working_hours` и `social.*`; CTA — consumer config. Alternative address и legacy phone keys не читаются.
 - **Fallback:** SSR-контакты; отсутствующий канал или часы скрываются и не заменяются выдуманными данными; без карты сохраняются адрес, доступные каналы и CTA «Обратный звонок».
 - **Responsive / states / a11y:** desktop контакты рядом с map, mobile последовательно; каждый канал имеет локальную статическую иконку и текст, `tel:` использует raw phone, display форматирует российский номер. Телефон, VK и Instagram открываются в новой вкладке с `noopener noreferrer`; callback получает контекст текущей страницы.
 
@@ -279,7 +279,7 @@
 
 - **Назначение:** подготовка/безопасность прогулок, состав постоя и требования.
 - **Contract:** `{ blocks: { title; body | items[] }[]; verifiedOnly?: boolean }`.
-- **Источник / settings:** seeded `services.rides.preparation`, `services.rides.safety`, `services.boarding.included`, `services.boarding.requirements`.
+- **Источник:** статическая consumer-композиция; удалённые `services.*` settings не читаются.
 - **Fallback:** блок без setting скрывается; неподтверждённые возрастные, весовые и погодные ограничения не генерируются.
 - **Responsive / states / a11y:** desktop split/cards, mobile порядок из схемы; списки семантические.
 
@@ -290,25 +290,25 @@
 ### `HomePage`
 
 - **Состав:** `HeroMedia` с локальным фото → четыре квадратные service-route cards с локальными иконками → `BenefitsSection(program)` → `BenefitsSection(club)` → `NewsSection(latest)` → `ContactSection`. Блока стоимости нет.
-- **Данные:** home settings + `GET /api/news?page=1&limit=1`; prices не запрашиваются; SEO `seo.home.*` seeded, fallback `seo.default_*`.
+- **Данные:** `home.hero_title/home.hero_subtitle`, shared contacts и `GET /api/news?page=1&limit=1`; prices не запрашиваются; SEO из consumer config.
 - **Responsive / states:** всё содержимое SSR; desktop допускает асимметрию, mobile строго последователен; ошибка news не блокирует остальные секции.
 
 ### `LessonsPage`
 
 - **Состав:** intro → local filter → `PricesSection(lessons)` → benefits → notice → CTA.
-- **Данные:** `GET /api/prices?groups=Основные услуги` с whitelist slug из scheme; `services.lessons.intro/cta_label`, `seo.lessons.*` seeded.
+- **Данные:** exact-match `GET /api/horse_services?name=Занятия` и профильные prices; settings не запрашиваются.
 - **Responsive / states:** desktop две колонки/таблицы, mobile cards; empty/error всегда сохраняют callback.
 
 ### `RidesPage`
 
 - **Состав:** hero → «Как проходит» → `PricesSection(rides)` → setting → `PreparationSafetySection` → notice → CTA.
-- **Данные:** повторяемый `name` query и whitelist двух slug; `about.setting`, `services.notice`, `services.rides.*`, `seo.rides.*` seeded.
+- **Данные:** exact-match `GET /api/horse_services?name=Прогулки` и профильные prices; settings не запрашиваются.
 - **Responsive / states:** конфликтующие позиции раздельны; mobile `описание → цена → условия → CTA`; empty price не означает free.
 
 ### `BoardingPage`
 
 - **Состав:** hero → инфраструктура → included → `PricesSection(boarding)` → requirements → notice → CTA.
-- **Данные:** price slug `horse-boarding-yandex`; `about.setting`, `about.features`, `services.notice`, `services.boarding.*`, `seo.boarding.*` seeded.
+- **Данные:** exact-match `GET /api/horse_services?name=Постой` и профильные prices; settings не запрашиваются.
 - **Responsive / states:** desktop условия/цена + gallery, mobile stack без sticky sidebar; пустой included скрывается.
 
 ### `HorsesPage`
@@ -331,8 +331,8 @@
 
 ### `AboutPage`
 
-- **Состав:** intro → setting/infrastructure → `Gallery` → team → `ReviewSummary` → переиспользуемый `ContactSection`. Блоков payment/privacy нет.
-- **Данные:** `about.intro/setting/features`, `team.people`, `reviews.summary`, `about.gallery_photo_ids`, `about.cta_label`, `seo.about.*`; `/api/photos?limit=24&sort=created_at`. Контакты используют те же shared settings, что главная.
+- **Состав:** до двух последовательных текстовых блоков → переиспользуемый `ContactSection` и CTA. Gallery, team, reviews, payment/privacy отсутствуют.
+- **Данные:** только четыре строки `about_1_title/about_1_text/about_2_title/about_2_text`; контакты используют те же shared settings, что главная.
 - **Responsive / states:** desktop чередует text/media и grids, mobile сохраняет порядок; каждый optional block скрывается независимо, invalid JSON не роняет страницу.
 
 ## Матрица покрытия маршрутов

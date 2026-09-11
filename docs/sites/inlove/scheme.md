@@ -6,11 +6,12 @@
 
 ## Общие правила CMS
 
-- Вариативные заголовки, пояснения, CTA, порядок блоков и SEO хранятся в `site_settings`, а не в компонентах.
+- Каталог `site_settings` ограничен allowlist: footer/social, `home.hero_title/home.hero_subtitle`, четыре строки `about_1_*`/`about_2_*`, `contacts.primary_phone` и атомарные address/map/nearest-stop/hours поля.
+- Меню, brand, CTA, SEO и presentation-copy задаются типизированным consumer config. Названия групп услуг `Занятия`, `Прогулки`, `Постой` — неизменяемые идентификаторы профильного API.
 - Профильные сущности не дублируются: тарифы читаются из `prices`, лошади — из `horses`, новости — из `news`, связанные изображения — из их поля `photos`.
 - `GET /api/site_settings?key=<key>&key=<key>` возвращает массив `{ key, value, type }`. Значение разбирается согласно `type`; без `full=true` пагинации нет.
-- Shared layout одним запросом получает header, footer, контакты, соцсети, форму и SEO defaults. Страница запрашивает только собственные ключи.
-- Все используемые ниже ключи создаются текущим `seed.sql`. Для отсутствующего или некорректного значения всегда действует описанный fallback.
+- Shared layout одним запросом получает только разрешённые footer/contact/social ключи. Главная дополнительно запрашивает `home.hero_title/home.hero_subtitle`, `/about` — четыре `about_*` строки; страницы услуг settings не запрашивают.
+- Разрешённые shared/home ключи создаются текущим `seed.sql`; четыре `about_*` ключа создаются maintenance SQL change `inlove-site-settings-073`. Для отсутствующего или некорректного значения всегда действует описанный fallback.
 - `GET /api/photos` используется лишь для общей галереи, которую нельзя связать с профильной сущностью.
 
 ## Матрица доступа используемых API
@@ -29,9 +30,9 @@
 
 ## Общий header
 
-Shared layout запрашивает `site.short_name`, `header.menu`, `header.contact_phone`, `header.cta_label`, `contacts.primary_phone`. Логотип — ссылка на `/` с доступным текстом из `site.short_name`; при ошибке ассета показывается текст. `header.contact_phone` приоритетнее `contacts.primary_phone`.
+Shared layout запрашивает разрешённые shared settings, включая `contacts.primary_phone`. Логотип — ссылка на `/` со статическим доступным именем и fallback «ИНЛав». `header.contact_phone` и `contacts.phones` игнорируются без alias/fallback.
 
-`header.menu` управляет подписями и порядком, но ссылки обязаны принадлежать существующей карте: `/`, `/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy`, `/loshadi`, `/novosti`, `/about`. Неизвестные пути из настройки не выводятся. Fallback — меню из этих семи маршрутов.
+Меню и порядок статичны: `/`, `/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy`, `/loshadi`, `/novosti`, `/about`. Три услуги сгруппированы под «Услуги» и подписаны строго «Занятия», «Прогулки», «Постой».
 
 На desktop слева расположен логотип, по центру меню, справа телефон и CTA формы. Три страницы услуг допускается объединить в раскрываемый пункт «Услуги». Текущий пункт получает `aria-current="page"`. На mobile остаются логотип, звонок и кнопка меню; CTA и соцсети находятся в панели. Фокус удерживается внутри панели, `Escape` закрывает её и возвращает фокус.
 
@@ -39,7 +40,7 @@ Header рендерится SSR с fallback. Ошибка settings не скры
 
 ## Общий footer
 
-Shared layout использует `footer.description`, `footer.copyright_name`, `contacts.address`, `contacts.primary_phone`, `contacts.working_hours`, `contacts.maps_url`, `social.vk_url`, `social.instagram_url`, `site.short_name`. Footer содержит логотип, описание, навигацию по семи маршрутам, контакты, соцсети и copyright с текущим годом.
+Shared layout использует `footer.description`, `footer.copyright_name`, `contacts.address`, `contacts.primary_phone`, `contacts.working_hours`, `contacts.maps_url`, `contacts.nearest_stop`, `social.vk_url`, `social.instagram_url`. Brand и навигация статичны; телефон в header, footer и контактах поступает только из `contacts.primary_phone`.
 
 На desktop это колонки «Клуб», «Разделы», «Контакты»; на mobile — последовательные блоки с удобными touch targets. Пустая соцсеть не выводится. Пустые часы не заменяются выдуманным расписанием.
 
@@ -52,7 +53,7 @@ Modal вызывается из header и любого CTA. Тексты: `callb
 - необязательный `comment`, до 2000 символов;
 - route и выбранная услуга добавляются в `comment` как контекст CTA.
 
-Перед submit пользователь обязан явно установить непредвыбранный checkbox согласия. Рядом показывается текст `callback.consent_text` (fallback: «Я соглашаюсь с политикой обработки персональных данных»). Ссылка выводится только для безопасного настроенного `callback.policy_url`: допустим внутренний путь либо `http(s)` URL; отсутствующее, невалидное значение и удалённый fragment `/about#privacy` не получают ссылочный fallback. Настроенная валидная ссылка доступна с клавиатуры независимо от checkbox. Consent сохраняется без ссылки, является локальным UI/legal-состоянием и не добавляется в API payload. Пока согласие не дано, submit disabled. Попытка отправки без согласия показывает inline error, связывает его с checkbox через `aria-describedby`, устанавливает `aria-invalid="true"` и переводит фокус к checkbox.
+Перед submit пользователь обязан явно установить непредвыбранный checkbox согласия. Рядом показывается текст `callback.consent_text` (fallback: «Я соглашаюсь с политикой обработки персональных данных»). Безопасный настроенный внутренний либо `http(s)` URL сохраняется; отсутствующее/невалидное значение и удалённый fragment `/about#privacy` направляются на статический публичный маршрут `/privacy`. Ссылка доступна с клавиатуры независимо от checkbox. Consent сохраняется без ссылки, является локальным UI/legal-состоянием и не добавляется в API payload. Пока согласие не дано, submit disabled. Попытка отправки без согласия показывает inline error, связывает его с checkbox через `aria-describedby`, устанавливает `aria-invalid="true"` и переводит фокус к checkbox.
 
 Отправка: `POST /api/callback_requests`, JSON `{ name, phone, comment }`, `Content-Type: application/json`, tenant selector. Успех — `201`. Во время отправки кнопка disabled; повторный submit запрещён. При успехе показывается `callback.success_message`; при `4xx` значения и consent сохраняются, при сети/`5xx` доступен retry. `401` — ошибка конфигурации сайта, не приглашение войти. Modal удерживает фокус, закрывается по `Escape` и возвращает фокус инициатору.
 
@@ -65,7 +66,7 @@ Modal вызывается из header и любого CTA. Тексты: `callb
 **Заголовок:** «Инлав»  
 **Путь:** `/`
 
-SEO: seeded `seo.home.title`, `seo.home.description`; fallback — `seo.default_title`, `seo.default_description`. Canonical — `/`.
+SEO задаётся consumer config; прежние `seo.*` не читаются. Canonical — `/`.
 
 ### Цель страницы
 
@@ -73,9 +74,9 @@ SEO: seeded `seo.home.title`, `seo.home.description`; fallback — `seo.default_
 
 ### Интеграция с CMS
 
-- `GET /api/site_settings?key=home.hero_title&key=home.hero_subtitle&key=home.hero_cta_label&key=home.program_benefits&key=home.club_benefits`.
+- `GET /api/site_settings` запрашивает из page-specific keys только `home.hero_title` и `home.hero_subtitle` вместе с разрешёнными shared contact keys.
 - `GET /api/news?page=1&limit=1`: `items[].id/slug/name/snippet/published_at/photos`, `total`.
-- Контакты и карта берутся из shared settings: `contacts.address`, `contacts.address_alternative`, `contacts.coordinates`, `contacts.maps_url`, `contacts.primary_phone`, `contacts.working_hours`, `social.vk_url`, `social.instagram_url`.
+- Контакты и карта берутся из shared settings: `contacts.address`, `contacts.coordinates`, `contacts.maps_url`, `contacts.nearest_stop`, `contacts.primary_phone`, `contacts.working_hours`, `social.vk_url`, `social.instagram_url`. `contacts.address_alternative` не используется.
 
 ### Секции и вёрстка
 
@@ -101,7 +102,7 @@ Hero, четыре service cards, преимущества, новость и к
 **Заголовок:** «Инлав | Занятия и абонементы»  
 **Путь:** `/uslugi/zanyatiya`
 
-SEO: seeded `seo.lessons.title`, `seo.lessons.description`; fallback — `site.short_name` и заголовок.
+SEO задаётся consumer config; description может поступать из exact-match группы API.
 
 ### Цель страницы
 
@@ -111,7 +112,7 @@ SEO: seeded `seo.lessons.title`, `seo.lessons.description`; fallback — `site.s
 
 - `GET /api/prices?groups=Основные услуги`, затем отбор slug: `individual-lesson-official`, `group-lesson-official`, `training-package-8-official`, `individual-membership-official`, `subscription-4-yandex`, `riding-training-yandex`, `subscription-8-yandex`, `individual-subscription-8-yandex`.
 - Поля: `name`, `slug`, `description`, `photos[].url/is_main`, `price_tables[].columns/rows`, `groups`.
-- Seeded settings: `services.notice`, `home.program_benefits`, `services.lessons.intro`, `services.lessons.cta_label`.
+- `GET /api/horse_services?name=Занятия`: требуется ровно один exact-match; settings страницей не запрашиваются.
 
 ### Секции и вёрстка
 
@@ -134,7 +135,7 @@ SEO: seeded `seo.lessons.title`, `seo.lessons.description`; fallback — `site.s
 **Заголовок:** «Инлав | Прогулки»  
 **Путь:** `/uslugi/progulki`
 
-SEO: seeded `seo.rides.title`, `seo.rides.description`; fallback — заголовок и default description.
+SEO задаётся consumer config; description может поступать из exact-match группы API.
 
 ### Цель страницы
 
@@ -144,11 +145,11 @@ SEO: seeded `seo.rides.title`, `seo.rides.description`; fallback — загол�
 
 - `GET /api/prices?name=Конные прогулки&name=Конная прогулка`; API принимает повторяемый `name`. Проверяются slug `horse-rides-official`, `horse-ride-yandex`, чтобы сохранить конфликтующие предложения.
 - Поля: `id`, `name`, `slug`, `description`, `photos`, `price_tables`, `groups`.
-- Seeded settings: `services.notice`, `about.setting`, `services.rides.intro`, `services.rides.preparation`, `services.rides.safety`, `services.rides.cta_label`.
+- `GET /api/horse_services?name=Прогулки`: требуется ровно один exact-match; settings страницей не запрашиваются.
 
 ### Секции и вёрстка
 
-Hero; «Как проходит прогулка»; варианты и цены; окружение из `about.setting`; подготовка и безопасность; notice; CTA. Неподтверждённые возрастные, весовые и погодные ограничения не публикуются как факт. Desktop чередует текст и медиа; mobile сохраняет порядок «описание → цена → условия → CTA».
+Hero; «Как проходит прогулка»; варианты и цены; статический блок окружения; статические подготовка и безопасность; CTA. Неподтверждённые возрастные, весовые и погодные ограничения не публикуются как факт. Desktop чередует текст и медиа; mobile сохраняет порядок «описание → цена → условия → CTA».
 
 ### Состояния, fallback и CTA
 
@@ -167,7 +168,7 @@ Skeleton сохраняет размеры блоков. При пустых ц�
 **Заголовок:** «Инлав | Постой»  
 **Путь:** `/uslugi/postoy`
 
-SEO: seeded `seo.boarding.title`, `seo.boarding.description`; fallback — заголовок и default description.
+SEO задаётся consumer config; description может поступать из exact-match группы API.
 
 ### Цель страницы
 
@@ -176,7 +177,7 @@ SEO: seeded `seo.boarding.title`, `seo.boarding.description`; fallback — за�
 ### Интеграция с CMS
 
 - `GET /api/prices?name=Постой частных лошадей`, проверка slug `horse-boarding-yandex`; поля `name`, `slug`, `description`, `photos`, `price_tables`.
-- Seeded settings: `about.setting`, `about.features`, `services.notice`, `services.boarding.intro`, `services.boarding.included`, `services.boarding.requirements`, `services.boarding.cta_label`.
+- `GET /api/horse_services?name=Постой`: требуется ровно один exact-match; settings страницей не запрашиваются.
 
 ### Секции и вёрстка
 
@@ -184,7 +185,7 @@ Hero; инфраструктура; «Что входит»; стоимость;
 
 ### Состояния, fallback и CTA
 
-Пустой тариф означает «Стоимость и наличие мест уточняются», не бесплатную услугу. Пустой included скрывается. Ошибка CMS оставляет телефон и callback. Спорные `about.features` публикуются только после редакционной проверки. Modal получает контекст «Постой» и вопрос о местах.
+Пустой тариф означает «Стоимость и наличие мест уточняются», не бесплатную услугу. Состав и требования являются статической consumer-композицией; legacy `about.features/services.*` игнорируются. Ошибка профильного API локальна и оставляет callback. Modal получает контекст «Постой» и вопрос о местах.
 
 ### Детали сущности
 
@@ -263,25 +264,24 @@ SEO: seeded `seo.news.title`, `seo.news.description`; fallback — заголо�
 **Заголовок:** «Инлав | О клубе»  
 **Путь:** `/about`
 
-SEO: seeded `seo.about.title`, `seo.about.description`; fallback — заголовок и default description.
+SEO задаётся consumer config; прежние `seo.about.*` не читаются.
 
 ### Цель страницы
 
-Собрать историю, атмосферу, инфраструктуру, команду и практические контакты в доверительную страницу.
+Показать до двух управляемых текстовых блоков о клубе и практические контакты.
 
 ### Интеграция с CMS
 
-- Seeded settings: `about.intro`, `about.setting`, `about.features`, `team.people`, `reviews.summary`, `about.gallery_photo_ids`, `about.cta_label`.
-- `GET /api/photos?limit=24&sort=created_at` — временный fallback общей галереи. Текущий API не имеет `include_ids`; предпочтительный вариант — редакционный выбор после появления соответствующего фильтра.
-- Поля фото: `id`, `name`, `description`, `path`, `url`. Контакты и соцсети — shared settings.
+- `GET /api/site_settings`: только `about_1_title`, `about_1_text`, `about_2_title`, `about_2_text` плюс shared contact settings.
+- Старые `about.*`, gallery, `team.people`, `reviews.summary` и `seo.about.*` не используются.
 
 ### Секции и вёрстка
 
-Вступление и текст об окружении из `about.*`; инфраструктура; галерея; команда; сводка отзывов без копирования текстов отзывов; переиспользуемые с главной контакты и CTA. Блоков способов оплаты и обработки персональных данных нет. Публично выводятся только одобренные редактором записи команды. Desktop чередует текст и медиа, использует сетку команды и карту рядом с контактами. Mobile сохраняет порядок, галерея становится доступной каруселью или лентой.
+Первый блок выводится только при непустой паре `about_1_title/about_1_text`, второй — только при непустой паре `about_2_title/about_2_text`. После них идут переиспользуемые с главной контакты и CTA. Gallery, team, reviews, payment/privacy отсутствуют.
 
 ### Состояния, fallback и CTA
 
-Необязательный пустой блок скрывается независимо. Ошибка photos не скрывает текст из settings. При отсутствии team/reviews фиктивные карточки не создаются. Некорректный JSON setting ведёт к fallback конкретного блока, не падению страницы. CTA «Обратный звонок» передаёт контекст «О клубе»; также доступны те же телефон, VK, Instagram и карта, что на главной. `/about#privacy` не является fallback-целью.
+Неполная пара скрывается целиком; ошибка settings не скрывает контакты. CTA «Обратный звонок» передаёт контекст «О клубе»; доступны те же primary phone, VK, Instagram и карта, что на главной.
 
 ## SSR, загрузка и ошибки
 

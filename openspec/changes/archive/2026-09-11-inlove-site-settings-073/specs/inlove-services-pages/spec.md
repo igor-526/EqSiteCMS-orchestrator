@@ -1,8 +1,4 @@
-# Purpose
-
-Зафиксировать SSR-композицию трёх публичных страниц услуг INLOVE (`/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy`) и их detail routes по slug тарифа, включая scoping тарифов к своей странице (allow-list), fallback цен, SEO/canonical, responsive-таблицы и 404-поведение для чужих/несуществующих slug.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Три страницы услуг рендерят SSR-контент из профильного API
 `/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy` SHALL быть SSR-композициями, в которых соответствующая группа находится по точному неизменяемому имени из consumer config (`Занятия`, `Прогулки`, `Постой` соответственно), а описание, фотографии, карточки и цены поступают из существующих профильных Public Read API. Site settings `services.*`, `services.notice`, `home.program_benefits`, `about.setting`, `about.features` и service-specific `seo.*` MUST NOT управлять страницами. Дополнительные presentation-блоки MAY быть статическими в consumer-коде и MUST NOT возвращаться в CMS catalog.
@@ -19,21 +15,6 @@
 - **WHEN** профильный API завершается сетевой ошибкой или 5xx
 - **THEN** header/footer и статическая часть страницы остаются доступными, а динамический блок показывает error state
 
-### Requirement: Detail route тарифа по slug, ограниченный своей страницей
-Каждая из трёх страниц услуг SHALL обслуживать `/uslugi/zanyatiya/[slug]`, `/uslugi/progulki/[slug]`, `/uslugi/postoy/[slug]` соответственно, используя `GET /api/prices/{slug_or_id}`. Detail route MUST принимать только slug тарифа, принадлежащего набору тарифов родительской страницы (тот же allow-list, что определяет список карточек). Slug, не входящий в allow-list своей страницы (включая валидный slug тарифа другой группы/страницы того же tenant), MUST возвращать `404` через `notFound()`.
-
-#### Scenario: Валидный slug своей страницы рендерится
-- **WHEN** anonymous visitor открывает `/uslugi/progulki/horse-rides-official`
-- **THEN** HTML содержит серверно отрендеренные name, description, photos и price_tables тарифа
-
-#### Scenario: Slug чужой страницы недоступен
-- **WHEN** anonymous visitor открывает `/uslugi/zanyatiya/<slug-тарифа-постоя>`
-- **THEN** Next.js возвращает `404`, даже если `GET /api/prices/{slug_or_id}` для этого slug у backend вернул бы `200`
-
-#### Scenario: Несуществующий или чужой tenant slug
-- **WHEN** `GET /api/prices/{slug_or_id}` возвращает `404` для несуществующего или принадлежащего другому tenant slug
-- **THEN** Next.js возвращает `404`
-
 ### Requirement: SEO и доступ по карте услуг
 Три list-страницы SHALL иметь серверные title/description из consumer config и/или описания exact-match группы API, canonical на собственный путь. Detail routes SHALL формировать title/description из полей сущности API. Удалённые `seo.lessons.*`, `seo.rides.*`, `seo.boarding.*` и `site.short_name` MUST NOT влиять на metadata. Используемые GET SHALL оставаться Public Read с tenant selector.
 
@@ -49,10 +30,3 @@
 #### Scenario: Анонимный доступ без tenant selector
 - **WHEN** запрос к используемому GET выполнен без selector или с неверным значением
 - **THEN** API возвращает `401`
-
-### Requirement: Адаптивная вёрстка страниц услуг
-Список и detail каждой из трёх страниц SHALL быть адаптивными: desktop — две колонки и полноценные таблицы price_tables; mobile — одна колонка, таблица преобразуется в пары «параметр — значение» либо получает управляемый горизонтальный скролл. Detail route наследует тот же адаптивный паттерн таблиц, что и список.
-
-#### Scenario: Мобильная раскладка таблицы тарифа
-- **WHEN** страница услуги или её detail route открыта на viewport мобильной ширины
-- **THEN** `price_tables` отображается как пары «параметр — значение» либо в контейнере с управляемым горизонтальным скроллом, без горизонтального скролла всей страницы

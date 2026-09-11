@@ -1,14 +1,10 @@
-# Purpose
-
-Зафиксировать серверную общую оболочку INLOVE, разрешённую навигацию и устойчивые header/footer.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Shared layout получает настройки один раз и предоставляет fallback
 Общий layout SHALL на сервере получать одним запросом только разрешённые настройки footer, контактов и соцсетей через существующий anonymous Public Read `GET /api/site_settings` с tenant selector. Меню, brand, CTA и SEO defaults SHALL задаваться типизированным consumer config, а не строками site settings. `contacts.primary_phone` MUST быть единственным источником телефона для header, footer и контактов; `header.contact_phone` и `contacts.phones` MUST NOT читаться как alias/fallback. Ошибка или некорректное значение отдельного разрешённого ключа MUST использовать безопасный fallback и MUST NOT скрывать навигацию либо остальную страницу.
 
 #### Scenario: Shared settings доступны при SSR
-- **WHEN** валидный tenant selector и API возвращают shared settings
+- **WHEN** валидный tenant selector и API возвращают разрешённые shared settings
 - **THEN** header, footer и контакты получают одинаковый `contacts.primary_phone` без client-only fetch и без CMS credentials, а статические menu/brand/CTA не зависят от удалённых keys
 
 #### Scenario: Ошибка settings деградирует локально
@@ -50,3 +46,4 @@
 #### Scenario: Footer синхронизирован с header
 - **WHEN** настройки содержат primary phone и доступные social/contact значения
 - **THEN** footer повторяет статический порядок и service grouping header, использует тот же primary phone, показывает icons доступных channels и безопасно открывает contact links
+

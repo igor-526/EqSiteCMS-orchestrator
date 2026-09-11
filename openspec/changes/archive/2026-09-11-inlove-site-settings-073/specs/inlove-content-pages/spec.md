@@ -1,8 +1,4 @@
-# Purpose
-
-Зафиксировать серверные контентные страницы INLOVE, общие контакты, SEO, безопасность и адаптивность.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Серверная главная страница
 Маршрут `/` SHALL выводить в порядке scheme.md hero с CTA и доступной локальной фотографией, четыре карточки услуг, преимущества, последнюю опубликованную новость и контакты. Hero, подписи, CTA, порядок и SEO SHALL задаваться consumer config либо профильными API и MUST NOT зависеть от удалённых action 1 site settings. Управляемыми site settings на странице остаются только actions 2/4/6. Бизнес-сущности MUST поступать из профильных Public Read API. Все индексируемые блоки MUST содержаться в завершённом серверном HTML без browser fetch.
@@ -40,14 +36,3 @@
 #### Scenario: Отдельное поле отсутствует
 - **WHEN** отсутствует nearest stop либо working hours или API неожиданно возвращает legacy `contacts.address_alternative`
 - **THEN** скрывается только соответствующий элемент без пустого placeholder и без влияния на остальные контакты
-
-### Requirement: Общие SSR SEO и адаптивность
-Все страницы этого change MUST использовать существующий дизайн и компоненты 069, один h1, доступные изображения и ссылки, серверные title/description/canonical. Контент SHALL быть доступен при выключенном JavaScript на desktop/tablet/mobile; клиентские острова разрешены для callback, галереи и других взаимодействий. Ошибка selector MUST не маскироваться данными другого tenant. HTML из CMS MUST проходить серверный allowlist sanitizer; обычные settings рендерятся как текст.
-
-#### Scenario: Адаптивная доступность
-- **WHEN** страницы открываются на ширинах 375, 768 и 1440 px, с длинным текстом и keyboard-only navigation
-- **THEN** нет горизонтального overflow, порядок секций логичен, CTA доступны, focus виден, reduced motion соблюдён
-
-#### Scenario: Серверная безопасность и SEO
-- **WHEN** CMS поле содержит script, обработчик события или javascript URL
-- **THEN** исполняемое содержимое не попадает в HTML, полезный безопасный текст сохраняется и metadata доступна до hydration
