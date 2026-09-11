@@ -12,16 +12,17 @@
 - **THEN** в нём отсутствуют `.git`, локальный `.env`, зависимости и build/cache artifacts
 - **AND** diff исходного `services/site-ad` пуст
 
-### Requirement: Каркас сохраняет только интеграционный слой CMS
-`site-ksk-inlove` SHALL сохранять Next.js/App Router toolchain, обновлённый с Next.js `15.5.6` до `15.5.25` без миграции на Vite, API client/wrappers, DTO, переиспользуемые data services без презентационного контента, site-settings provider/context/hook, observability plumbing и минимальный технический app shell. Он MUST NOT содержать custom content routes, feature UI, общий UI-kit, Storybook stories или brand-bound page-data services.
+### Requirement: Каркас сохраняет интеграционный слой CMS и получает первый презентационный слой
+`site-ksk-inlove` SHALL сохранять Next.js/App Router toolchain на Next.js `15.5.25`, API client/wrappers, DTO, data services, site-settings provider/context/hook и observability plumbing. Он SHALL дополнительно содержать брендовый UI-каталог INLOVE, общую layout-оболочку, семь placeholder routes и универсальную callback form в границах соответствующих capabilities. Он MUST NOT содержать маршруты вне утверждённой карты, CMS admin UI, CMS-only endpoint usage или brand-bound data services, дублирующие профильные API.
 
 #### Scenario: Retained API и hook доступны разработчику
-- **WHEN** новый проект устанавливается и проходит typecheck
-- **THEN** Public Read wrappers, типы и `useSiteSettings` с provider/service доступны без импортов удалённого UI/content
+- **WHEN** проект устанавливается и проходит typecheck
+- **THEN** Public Read wrappers, типы и `useSiteSettings` с provider/service доступны компонентам без CMS credentials
 
-#### Scenario: Пользовательские страницы отсутствуют
-- **WHEN** production server получает `GET /`
-- **THEN** он возвращает стандартный технический `404` без custom страницы, навигации, контента или брендового UI
+#### Scenario: Утверждённые страницы заменяют технический baseline
+- **WHEN** production server получает `GET` одного из семи утверждённых routes
+- **THEN** он возвращает пользовательскую placeholder page с общей оболочкой и metadata
+- **AND** неизвестный route по-прежнему возвращает `404`
 
 ### Requirement: Наследие Александровой дачи полностью удаляется
 За исключением неизменяемых `.helm/**` и `.github/**`, `site-ksk-inlove` MUST NOT содержать названия, тексты, домены, адреса, social links, tenant defaults, metadata, source-name identifiers, изображения или иные брендовые данные «Александровой дачи». Все презентационные файлы в `public/**` MUST быть удалены.

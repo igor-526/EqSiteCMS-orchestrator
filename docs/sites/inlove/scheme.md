@@ -1,6 +1,6 @@
 # Что это
 
-Этот документ описывает неизменяемую карту публичного сайта конного клуба «ИНЛав», состав страниц, адаптивное поведение и интеграцию с CMS.
+Этот документ описывает утверждённую карту публичного сайта конного клуба «ИНЛав», состав страниц, адаптивное поведение и интеграцию с CMS.
 
 Все запросы отправляются с tenant selector `X-Equestrian-Service-Key: inlove`. Отсутствующий или неверный selector возвращает `401`; сайт не должен подменять данные другого клуба. Перечисленные `GET` доступны анонимно. Единственная используемая запись — публичное исключение `POST /api/callback_requests`.
 
@@ -10,7 +10,7 @@
 - Профильные сущности не дублируются: тарифы читаются из `prices`, лошади — из `horses`, новости — из `news`, связанные изображения — из их поля `photos`.
 - `GET /api/site_settings?key=<key>&key=<key>` возвращает массив `{ key, value, type }`. Значение разбирается согласно `type`; без `full=true` пагинации нет.
 - Shared layout одним запросом получает header, footer, контакты, соцсети, форму и SEO defaults. Страница запрашивает только собственные ключи.
-- Все перечисленные ниже ключи, кроме явно помеченного `legal.privacy_policy_text`, уже создаются текущим `seed.sql`. Для отсутствующего или некорректного значения всегда действует описанный fallback.
+- Все используемые ниже ключи создаются текущим `seed.sql`. Для отсутствующего или некорректного значения всегда действует описанный fallback.
 - `GET /api/photos` используется лишь для общей галереи, которую нельзя связать с профильной сущностью.
 
 ## Матрица доступа используемых API
@@ -21,6 +21,7 @@
 | `GET` | `/api/prices` | Public Read | нет | `401` | `200` |
 | `GET` | `/api/horses` | Public Read | нет | `401` | `200` |
 | `GET` | `/api/news` | Public Read | нет | `401` | `200` |
+| `GET` | `/api/news/by-slug/{slug}` | Public Read | нет | `401` | `200` опубликованная своего tenant; `404` иначе |
 | `GET` | `/api/photos` | Public Read | нет | `401` | `200` |
 | `POST` | `/api/callback_requests` | Public POST exception | нет | `401` | `201` |
 
@@ -42,14 +43,14 @@ Shared layout использует `footer.description`, `footer.copyright_name`
 
 ## Универсальная форма обратной связи
 
-Modal вызывается из header и любого CTA. Тексты: `callback.title`, `callback.description`, `callback.submit_label`, `callback.success_message`, а обязательное согласие — из seeded-настроек `callback.consent_text` и `callback.policy_url`. Поля соответствуют `CallbackRequestCreateDto`:
+Modal вызывается из header и любого CTA. Тексты: `callback.title`, `callback.description`, `callback.submit_label`, `callback.success_message`, обязательное согласие — из `callback.consent_text`, необязательная ссылка на политику — из `callback.policy_url`. Поля соответствуют `CallbackRequestCreateDto`:
 
 - обязательный `phone`, 1–63 символа;
 - необязательный `name`, до 127 символов;
 - необязательный `comment`, до 2000 символов;
 - route и выбранная услуга добавляются в `comment` как контекст CTA.
 
-Перед submit пользователь обязан явно установить непредвыбранный checkbox согласия. Рядом показывается текст `callback.consent_text` (fallback: «Я соглашаюсь с политикой обработки персональных данных») со ссылкой на `callback.policy_url`; seeded-значение и безопасный внутренний fallback — `/about#privacy`. Ссылка доступна с клавиатуры и открывает политику независимо от checkbox. Consent является локальным UI/legal-состоянием и не добавляется в API payload. Пока согласие не дано, submit disabled. Попытка отправки без согласия показывает inline error, связывает его с checkbox через `aria-describedby`, устанавливает `aria-invalid="true"` и переводит фокус к checkbox.
+Перед submit пользователь обязан явно установить непредвыбранный checkbox согласия. Рядом показывается текст `callback.consent_text` (fallback: «Я соглашаюсь с политикой обработки персональных данных»). Ссылка выводится только для безопасного настроенного `callback.policy_url`: допустим внутренний путь либо `http(s)` URL; отсутствующее, невалидное значение и удалённый fragment `/about#privacy` не получают ссылочный fallback. Настроенная валидная ссылка доступна с клавиатуры независимо от checkbox. Consent сохраняется без ссылки, является локальным UI/legal-состоянием и не добавляется в API payload. Пока согласие не дано, submit disabled. Попытка отправки без согласия показывает inline error, связывает его с checkbox через `aria-describedby`, устанавливает `aria-invalid="true"` и переводит фокус к checkbox.
 
 Отправка: `POST /api/callback_requests`, JSON `{ name, phone, comment }`, `Content-Type: application/json`, tenant selector. Успех — `201`. Во время отправки кнопка disabled; повторный submit запрещён. При успехе показывается `callback.success_message`; при `4xx` значения и consent сохраняются, при сети/`5xx` доступен retry. `401` — ошибка конфигурации сайта, не приглашение войти. Modal удерживает фокус, закрывается по `Escape` и возвращает фокус инициатору.
 
@@ -70,26 +71,24 @@ SEO: seeded `seo.home.title`, `seo.home.description`; fallback — `seo.default_
 
 ### Интеграция с CMS
 
-- `GET /api/site_settings?key=home.hero_title&key=home.hero_subtitle&key=home.hero_cta_label&key=home.program_benefits&key=home.club_benefits&key=services.notice`.
-- `GET /api/prices?groups=Основные услуги&limit=4`: `id`, `name`, `slug`, `description`, `photos`, `groups`, `price_tables`.
-- `GET /api/news?page=1&limit=1`: `items[].id/name/snippet/published_at/photos`, `total`.
-- Контакты берутся из shared settings.
+- `GET /api/site_settings?key=home.hero_title&key=home.hero_subtitle&key=home.hero_cta_label&key=home.program_benefits&key=home.club_benefits`.
+- `GET /api/news?page=1&limit=1`: `items[].id/slug/name/snippet/published_at/photos`, `total`.
+- Контакты и карта берутся из shared settings: `contacts.address`, `contacts.address_alternative`, `contacts.coordinates`, `contacts.maps_url`, `contacts.primary_phone`, `contacts.working_hours`, `social.vk_url`, `social.instagram_url`.
 
 ### Секции и вёрстка
 
-1. Hero с медиа, заголовком, подзаголовком и CTA.
-2. Ссылки «Занятия», «Прогулки», «Абонементы», «Постой»; абонементы ведут на `/uslugi/zanyatiya`.
+1. Hero с локальной фотографией клуба, заголовком, подзаголовком и CTA.
+2. Четыре квадратные карточки «Занятия», «Прогулки», «Абонементы», «Постой» с локальными статическими иконками; абонементы ведут на `/uslugi/zanyatiya`.
 3. Преимущества программ.
-4. Четыре популярных предложения.
-5. Преимущества клуба.
-6. Последняя новость и ссылка `/novosti`.
-7. Контакты: карта, адрес, часы, соцсети, телефон, CTA.
+4. Преимущества клуба.
+5. Последняя новость и ссылка `/novosti`.
+6. Общие контакты: адрес и часы, три строки каналов «телефон / VK / Instagram» с локальными иконками, CTA «Обратный звонок» и Яндекс-карта по координатам из settings. Телефон и внешние ссылки открываются в новой вкладке с `noopener noreferrer`; отсутствующий канал не выдумывается.
 
 На mobile секции последовательны. На desktop hero и контакты занимают контейнер, услуги и новость допускают асимметричную сетку.
 
 ### Состояния, fallback и CTA
 
-Hero и контакты имеют SSR fallback. Prices/news показывают skeleton. Пустые услуги заменяются ссылками на service routes; пустая новость скрывает карточку, сохраняя ссылку на архив. Ошибка блока не блокирует страницу. Основной CTA открывает modal с контекстом «Главная»; вторичные ведут на услуги, новости, телефон и карту.
+Hero, четыре service cards, преимущества, новость и контакты полностью рендерятся сервером; skeleton допустим только как временный streaming fallback. Главная не запрашивает prices и не содержит блока стоимости. Пустая новость скрывает карточку, сохраняя ссылку на архив; её ошибка не блокирует страницу. Основной CTA открывает modal с контекстом «Главная»; вторичные ведут на услуги, новости, телефон и карту.
 
 ---
 
@@ -219,21 +218,23 @@ SEO: seeded `seo.news.title`, `seo.news.description`; fallback — заголо�
 
 ### Цель страницы
 
-Показывать жизнь клуба и опубликованные анонсы. Деталь открывается внутри `/novosti`, поскольку новый route добавлять нельзя.
+Показывать жизнь клуба и опубликованные анонсы. Карточки ведут на отдельный утверждённый маршрут `/novosti/[slug]`; slug берётся из API, сохраняется сервером один раз и не меняется при переименовании.
 
 ### Интеграция с CMS
 
-- `GET /api/news?page=<n>&limit=12`: только опубликованные записи; поля `items[].id/name/snippet/published_at/photos[].url/is_main`, `total`.
-- `GET /api/news/{news_id}` возвращает тот же публичный DTO без `content`. До изменения API деталь показывает только название, snippet, дату и фото.
-- Seeded settings: `news.intro`, `news.empty_text`, `news.load_more_label`.
+- `GET /api/news?page=<n>&limit=12`: опубликованные записи; `items[].id/slug/name/snippet/published_at/photos[].url/is_main`, `total`.
+- `GET /api/news/by-slug/{slug}`: опубликованная новость своего tenant с полным `content`; CMS credentials не передаются.
+- Seeded settings: `news.intro`, `news.empty_text`, `news.load_more_label` (допустима подпись следующей ссылки).
 
 ### Секции и вёрстка
 
-Заголовок и intro; выделенная первая карточка; хронологическая сетка; пагинация или «Показать ещё» до `total`; раскрытие на текущем route. Desktop — 3 колонки, tablet — 2, mobile — 1. Дата форматируется в `site.timezone`.
+Архив: заголовок и intro; выделенная первая карточка без повторения в сетке; хронологическая сетка; обычные ссылки `/novosti?page=N` при limit=12. Desktop — 3 колонки, tablet — 2, mobile — 1. Дата форматируется в `site.timezone`. Первая страница canonical `/novosti`, последующие `/novosti?page=N`; пагинация работает без JavaScript, без накопления карточек в client state.
+
+Деталь `/novosti/[slug]`: один h1 с названием, дата, фотографии, полный санитизированный content и ссылка на архив. Metadata формируется сервером из тех же данных: title новости, description из snippet/безопасного текста, canonical с точным slug. HTML допускает p/br/strong/em/ul/ol/li/blockquote/h2/h3/a и безопасные ссылки; script/style/iframe, on*, javascript/data URLs удаляются, фотографии выводятся из DTO.
 
 ### Состояния, fallback и CTA
 
-Первичная загрузка — skeleton; догрузка сохраняет карточки. Пустой список показывает `news.empty_text`, fallback «Новостей пока нет». Ошибка первой страницы имеет retry, ошибка следующей локальна у кнопки. Карточка без фото получает placeholder. CTA формы — лишь вторичное «Задать вопрос».
+Весь контент архива и детали доступен в серверном HTML. Пустая первая страница — 200 с `news.empty_text`, fallback «Новостей пока нет». Невалидный page перенаправляется на `/novosti`; N>1 за последней страницей — настоящий 404. Missing/deleted/future/foreign slug — 404. Ошибка selector, timeout или 5xx — отдельное SSR error state с ссылкой повторить запрос и noindex, не пустой список и не ложный 404. Карточка без фото получает placeholder. CTA формы — вторичное «Задать вопрос».
 
 ---
 
@@ -252,23 +253,21 @@ SEO: seeded `seo.about.title`, `seo.about.description`; fallback — загол�
 
 ### Интеграция с CMS
 
-- Seeded settings: `about.intro`, `about.setting`, `about.features`, `about.payment_methods`, `team.people`, `reviews.summary`, `about.gallery_photo_ids`, `about.cta_label`.
+- Seeded settings: `about.intro`, `about.setting`, `about.features`, `team.people`, `reviews.summary`, `about.gallery_photo_ids`, `about.cta_label`.
 - `GET /api/photos?limit=24&sort=created_at` — временный fallback общей галереи. Текущий API не имеет `include_ids`; предпочтительный вариант — редакционный выбор после появления соответствующего фильтра.
 - Поля фото: `id`, `name`, `description`, `path`, `url`. Контакты и соцсети — shared settings.
 
 ### Секции и вёрстка
 
-Вступление; окружение и инфраструктура; галерея; команда; сводка отзывов без копирования текстов отзывов; способы оплаты; контакты и CTA; legal/privacy section с `id="privacy"`. Публично выводятся только одобренные редактором записи команды. Desktop чередует текст и медиа, использует сетку команды и карту рядом с контактами. Mobile сохраняет порядок, галерея становится доступной каруселью или лентой.
-
-Legal/privacy section является SSR-частью существующего route `/about`, доступной по `/about#privacy`. Текст приходит из `legal.privacy_policy_text` (единственный предлагаемый ключ, ожидающий добавления следующим seed unit). До появления ключа секция показывает редакционный fallback о целях обработки имени, телефона и комментария, способе связи для отзыва согласия и не подставляет выдуманные реквизиты оператора. HTML из настройки допускается только после sanitization; предпочтительный формат значения — plain text или Markdown, преобразованный безопасным renderer.
+Вступление и текст об окружении из `about.*`; инфраструктура; галерея; команда; сводка отзывов без копирования текстов отзывов; переиспользуемые с главной контакты и CTA. Блоков способов оплаты и обработки персональных данных нет. Публично выводятся только одобренные редактором записи команды. Desktop чередует текст и медиа, использует сетку команды и карту рядом с контактами. Mobile сохраняет порядок, галерея становится доступной каруселью или лентой.
 
 ### Состояния, fallback и CTA
 
-Необязательный пустой блок скрывается независимо. Ошибка photos не скрывает описание. При отсутствии team/reviews фиктивные карточки не создаются. Некорректный JSON setting ведёт к fallback конкретного блока, не падению страницы. CTA передаёт контекст «О клубе»; также доступны телефон, соцсети и карта.
+Необязательный пустой блок скрывается независимо. Ошибка photos не скрывает текст из settings. При отсутствии team/reviews фиктивные карточки не создаются. Некорректный JSON setting ведёт к fallback конкретного блока, не падению страницы. CTA «Обратный звонок» передаёт контекст «О клубе»; также доступны те же телефон, VK, Instagram и карта, что на главной. `/about#privacy` не является fallback-целью.
 
 ## SSR, загрузка и ошибки
 
-- SEO, header/footer, hero и первый экран загружаются на сервере. Settings можно кэшировать дольше news; TTL определяет реализация.
+- SEO, header/footer и весь контент `/`, `/about`, `/novosti`, `/novosti/[slug]` загружаются на сервере; callback/modal и gallery могут оставаться островами интерактивности. News использует request-time SSR и no-store, metadata/detail согласованы в рамках запроса. Settings можно кэшировать дольше news; TTL определяет реализация.
 - Ошибка selector не маскируется stale-данными другого tenant.
 - Независимые запросы выполняются параллельно; частичная ошибка деградирует только свой блок.
 - Вариативный текст безопасно рендерится. HTML в разрешённых профильных полях санитизируется.

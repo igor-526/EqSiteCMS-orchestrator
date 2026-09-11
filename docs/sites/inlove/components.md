@@ -1,11 +1,11 @@
 # Каталог компонентов публичного сайта «ИНЛав»
 
-Документ является прикладным каталогом для реализации неизменяемой карты страниц из [scheme.md](scheme.md). Визуальные значения берутся из [design_system_specification.md](design_system_specification.md), а не копируются в компоненты. Все запросы передают `X-Equestrian-Service-Key: inlove`. Публичные `GET` не требуют авторизации; `POST /api/callback_requests` — явное публичное исключение. Ответ `401` означает ошибку tenant selector, а не предложение войти.
+Документ является прикладным каталогом для реализации утверждённой карты страниц из [scheme.md](scheme.md). Визуальные значения берутся из [design_system_specification.md](design_system_specification.md), а не копируются в компоненты. Все запросы передают `X-Equestrian-Service-Key: inlove`. Публичные `GET` не требуют авторизации; `POST /api/callback_requests` — явное публичное исключение. Ответ `401` означает ошибку tenant selector, а не предложение войти.
 
 ## Общие контракты
 
 - Вариативные тексты, порядок меню, CTA и SEO берутся из `site_settings`. Компонент содержит только безопасный fallback, указанный в `scheme.md`.
-- Все ключи этого каталога, кроме явно помеченного `legal.privacy_policy_text`, присутствуют в текущем `seed.sql`. Этот единственный предлагаемый ключ должен быть добавлен следующим seed unit.
+- Используемые ключи этого каталога присутствуют в текущем `seed.sql`; отсутствующее или некорректное значение использует fallback конкретного потребителя.
 - `Setting<T> = { key: string; value: T; type: "string" | "object" }`; неверный `type` или JSON изолированно переводит потребителя ключа на fallback.
 - Профильные данные не дублируются в settings: `Price`, `Horse`, `News`, `Photo` приходят из соответствующих public read API.
 - Для каждого асинхронного блока действуют четыре состояния: loading сохраняет геометрию, empty использует документированный fallback или скрывает необязательный блок, error локален и допускает retry, disabled применяется только к недоступному действию.
@@ -106,13 +106,12 @@
 - **Fallback:** пустой список скрывается; ошибку данных показывает владеющая секция.
 - **Responsive / states / a11y:** нативная кнопка, `aria-expanded/controls`; управление клавиатурой; motion отключается по reduced-motion.
 
-### `PaginationLoadMore`
+### `NewsPagination`
 
-- **Назначение:** догрузка новостей до `total`.
-- **Contract:** `{ page; loaded; total; pending; error; onLoadMore }`.
-- **Источник / settings:** `GET /api/news?page=<n>&limit=12`; seeded `news.load_more_label`, fallback «Показать ещё».
-- **Fallback:** скрывается при `loaded >= total`; локальный error оставляет загруженные карточки и retry.
-- **Responsive / states / a11y:** disabled во время запроса; сообщает добавление карточек через polite live region, фокус не скачет.
+- **Назначение:** серверная ссылочная пагинация архива без JavaScript.
+- **Contract:** `{ page; total; limit: 12 }`; ссылки на `/novosti` и `/novosti?page=N`.
+- **Источник / settings:** `GET /api/news?page=N&limit=12`; `news.load_more_label` допустим для следующей ссылки.
+- **Состояния / a11y:** текущая страница `aria-current="page"`; при total=0 навигация скрыта; неверный page redirect, страница N>1 за total — 404. Client load-more state не используется.
 
 ## Navigation
 
@@ -154,9 +153,9 @@
 
 - **Назначение:** единая заявка из любого CTA.
 - **Contract:** `{ open; context: { route; serviceName?; serviceSlug?; horseName? }; onClose }`; поля `phone` 1–63 символа, `name` ≤127, `comment` ≤2000; API payload строго `{ name?, phone, comment? }`. Обязательный непредвыбранный consent checkbox является локальным UI/legal-состоянием и в payload не входит.
-- **Источник / settings:** seeded `callback.title`, `callback.description`, `callback.submit_label`, `callback.success_message`, `callback.consent_text`, `callback.policy_url`; `POST /api/callback_requests` с tenant selector.
-- **Fallback:** встроенные тексты из схемы; для consent — «Я соглашаюсь с политикой обработки персональных данных», для отсутствующего/невалидного policy URL — `/about#privacy`. `201` — success; `4xx` сохраняет поля и consent; network/`5xx` даёт retry; `401` сообщает о конфигурационной ошибке без login UI.
-- **Responsive / states / a11y:** desktop max-width `560px`, mobile padding `24px`; submit disabled до consent и во время pending; success заменяет форму сообщением. Ссылка на политику доступна с клавиатуры независимо от checkbox. Ошибка отсутствующего согласия показывается inline, связана с checkbox через `aria-describedby` и `aria-invalid`, фокус переводится к checkbox. `role="dialog"`, `aria-modal`, focus trap, `Escape`, возврат фокуса.
+- **Источник / settings:** `callback.title`, `callback.description`, `callback.submit_label`, `callback.success_message`, `callback.consent_text`, необязательный `callback.policy_url`; `POST /api/callback_requests` с tenant selector.
+- **Fallback:** встроенные тексты из схемы; для consent — «Я соглашаюсь с политикой обработки персональных данных». Отсутствующий/невалидный policy URL и удалённый `/about#privacy` не создают ссылку; безопасный настроенный внутренний или `http(s)` URL сохраняется. `201` — success; `4xx` сохраняет поля и consent; network/`5xx` даёт retry; `401` сообщает о конфигурационной ошибке без login UI.
+- **Responsive / states / a11y:** desktop max-width `560px`, mobile padding `24px`; submit disabled до consent и во время pending; success заменяет форму сообщением. Consent остаётся обязательным и без policy link; настроенная валидная ссылка доступна с клавиатуры независимо от checkbox. Ошибка отсутствующего согласия показывается inline, связана с checkbox через `aria-describedby` и `aria-invalid`, фокус переводится к checkbox. `role="dialog"`, `aria-modal`, focus trap, `Escape`, возврат фокуса.
 
 ### `Toast`, `InlineNotice`, `Skeleton`, `ErrorBlock`, `EmptyState`
 
@@ -172,8 +171,8 @@
 
 - **Назначение:** эмоциональный full-bleed первый экран с overlay.
 - **Contract:** `{ image; title; subtitle?; primaryAction?; secondaryAction?; minHeightVariant? }`.
-- **Источник / settings:** главная — `home.hero_title`, `home.hero_subtitle`, `home.hero_cta_label`; service/page copy — соответствующие seeded intro/CTA settings; изображение из профильного DTO либо редакционного media.
-- **Fallback:** SSR-текст страницы и клубное изображение; ошибка медиа не скрывает CTA.
+- **Источник / settings:** главная — `home.hero_title`, `home.hero_subtitle`, `home.hero_cta_label` и локальный ассет `/images/070-home-hero.jpg`; service/page copy — соответствующие seeded intro/CTA settings; изображение других страниц — из профильного DTO либо редакционного media.
+- **Fallback:** SSR-текст страницы и локальное клубное изображение; ошибка медиа не скрывает CTA.
 - **Responsive / states / a11y:** desktop `92vh`, mobile `88svh`; content bottom-left; overlay обеспечивает AA; meaningful image имеет alt, декоративный background — пустой alt.
 
 ### `Gallery` и `Carousel`
@@ -186,11 +185,11 @@
 
 ### `MapEmbed`
 
-- **Назначение:** карта и переход к внешнему маршруту.
+- **Назначение:** Яндекс-карта и переход к внешнему маршруту.
 - **Contract:** `{ coordinates?; address; mapsUrl? }`.
-- **Источник / settings:** `contacts.coordinates`, `contacts.address`, `contacts.maps_url`.
-- **Fallback:** при ошибке embed остаются адрес и внешняя ссылка; без URL показывается только адрес.
-- **Responsive / states / a11y:** radius `16px`, фиксированная резервируемая высота; iframe имеет title, keyboard trap не создаётся.
+- **Источник / settings:** `contacts.coordinates` формирует `https://yandex.ru/map-widget/v1/` для iframe; `contacts.address` подписывает карту; `contacts.maps_url` используется только отдельной ссылкой маршрута.
+- **Fallback:** без валидных координат iframe показывает «Карта недоступна»; адрес и валидная внешняя ссылка маршрута сохраняются.
+- **Responsive / states / a11y:** radius `16px`, фиксированная резервируемая высота; iframe имеет title, keyboard trap не создаётся; ссылка маршрута открывается в новой вкладке с `noopener noreferrer`.
 
 ## Content cards
 
@@ -212,11 +211,11 @@
 
 ### `NewsCard`
 
-- **Назначение:** preview и раскрытие новости внутри `/novosti`.
-- **Contract:** `{ news: { id; name; snippet?; published_at?; photos? }; featured?: boolean; onOpen }`.
-- **Источник:** `GET /api/news?page=<n>&limit=12`, деталь `GET /api/news/{news_id}`; API пока не отдаёт `content`.
+- **Назначение:** preview со ссылкой на `/novosti/{slug}`.
+- **Contract:** `{ news: { id; slug; name; snippet?; published_at?; photos? }; featured?: boolean }`.
+- **Источник:** `GET /api/news?page=<n>&limit=12`, деталь `GET /api/news/by-slug/{slug}` возвращает полный `content`.
 - **Fallback:** placeholder без фото; пустые snippet/date не заменяются выдуманным текстом.
-- **Responsive / states / a11y:** featured-card крупнее на desktop, mobile одна колонка; интерактивная область — корректная кнопка/ссылка, раскрытие управляет фокусом.
+- **Responsive / states / a11y:** featured-card крупнее на desktop, mobile одна колонка; ссылка доступна с клавиатуры и работает без JavaScript.
 
 ### `PersonCard`, `FeatureItem`, `ReviewSummary`
 
@@ -262,19 +261,19 @@
 
 ### `NewsSection`
 
-- **Назначение:** latest preview на главной либо архив с догрузкой.
+- **Назначение:** latest preview на главной либо архив с SSR пагинацией.
 - **Contract:** `{ items; total; mode: "latest" | "archive"; pagination? }`.
 - **Источник / settings:** `/api/news`; seeded `news.intro`, `news.empty_text`, `news.load_more_label`; дата в `site.timezone`.
 - **Fallback:** latest empty скрывает карточку, но оставляет `/novosti`; archive — «Новостей пока нет»; частичная ошибка локальна.
-- **Responsive / states / a11y:** desktop archive 3 колонки, tablet 2, mobile 1; новые элементы объявляются, дата рендерится `<time>`.
+- **Responsive / states / a11y:** desktop archive 3 колонки, tablet 2, mobile 1; ссылочная навигация доступна без JavaScript, дата рендерится `<time>`.
 
 ### `ContactSection`
 
-- **Назначение:** адрес, часы, телефон, соцсети, карта и callback CTA.
+- **Назначение:** адрес, часы, три строки каналов «телефон / VK / Instagram», карта и callback CTA.
 - **Contract:** `{ address; alternativeAddress?; coordinates?; mapsUrl?; phone?; workingHours?; socialLinks; ctaLabel; context }`.
 - **Источник / settings:** `contacts.address`, `contacts.address_alternative`, `contacts.coordinates`, `contacts.maps_url`, `contacts.primary_phone`, `contacts.working_hours`, `social.*`, `header.cta_label`.
-- **Fallback:** SSR-контакты; пустые часы/соцсети скрываются; без карты сохраняются адрес/телефон/CTA.
-- **Responsive / states / a11y:** desktop контакты рядом с map, mobile последовательно; адрес разбивается читабельно, `tel:` использует raw phone, display форматирует российский номер.
+- **Fallback:** SSR-контакты; отсутствующий канал или часы скрываются и не заменяются выдуманными данными; без карты сохраняются адрес, доступные каналы и CTA «Обратный звонок».
+- **Responsive / states / a11y:** desktop контакты рядом с map, mobile последовательно; каждый канал имеет локальную статическую иконку и текст, `tel:` использует raw phone, display форматирует российский номер. Телефон, VK и Instagram открываются в новой вкладке с `noopener noreferrer`; callback получает контекст текущей страницы.
 
 ### `PreparationSafetySection` и `ConditionsSection`
 
@@ -284,23 +283,15 @@
 - **Fallback:** блок без setting скрывается; неподтверждённые возрастные, весовые и погодные ограничения не генерируются.
 - **Responsive / states / a11y:** desktop split/cards, mobile порядок из схемы; списки семантические.
 
-### `PrivacySection`
-
-- **Назначение:** публичная политика обработки данных для callback-формы без добавления отдельного route.
-- **Contract:** `{ id: "privacy"; text; updatedAt? }`; корневой элемент сохраняет `id="privacy"`, чтобы `/about#privacy` был стабильной целью ссылки.
-- **Источник / settings:** предлагаемый `legal.privacy_policy_text`; SSR на существующей странице `/about`.
-- **Fallback:** редакционный текст описывает цели обработки имени, телефона и комментария и способ отзыва согласия, но не подставляет неизвестные реквизиты оператора.
-- **Responsive / states / a11y:** читаемая ширина строки, семантические заголовки и ссылки; plain text/Markdown рендерится безопасно, HTML допускается только после sanitization; отсутствие настройки не удаляет anchor target.
-
 ## Page compositions
 
 Композиции оркестрируют запросы и секции, но не дублируют внутреннюю разметку компонентов. Shared settings запрашиваются layout один раз; page settings — только своей страницей. Независимые API-запросы выполняются параллельно, а ошибка деградирует только зависимую секцию.
 
 ### `HomePage`
 
-- **Состав:** `HeroMedia` → service-route links → `BenefitsSection(program)` → `PricesSection(featured)` → `BenefitsSection(club)` → `NewsSection(latest)` → `ContactSection`.
-- **Данные:** home settings + `GET /api/prices?groups=Основные услуги&limit=4` + `GET /api/news?page=1&limit=1`; SEO `seo.home.*` seeded, fallback `seo.default_*`.
-- **Responsive / states:** SSR hero/contact; desktop допускает асимметрию, mobile строго последователен; сбой prices/news не блокирует страницу.
+- **Состав:** `HeroMedia` с локальным фото → четыре квадратные service-route cards с локальными иконками → `BenefitsSection(program)` → `BenefitsSection(club)` → `NewsSection(latest)` → `ContactSection`. Блока стоимости нет.
+- **Данные:** home settings + `GET /api/news?page=1&limit=1`; prices не запрашиваются; SEO `seo.home.*` seeded, fallback `seo.default_*`.
+- **Responsive / states:** всё содержимое SSR; desktop допускает асимметрию, mobile строго последователен; ошибка news не блокирует остальные секции.
 
 ### `LessonsPage`
 
@@ -328,24 +319,33 @@
 
 ### `NewsPage`
 
-- **Состав:** intro → featured first item → `NewsSection(archive)` → inline news detail → вторичный callback CTA.
-- **Данные:** list/detail news API; `news.*`, `seo.news.*` seeded; timezone из `site.timezone`.
-- **Responsive / states:** 3/2/1 columns; pagination сохраняет предыдущие карточки; detail ограничен полями DTO без `content`.
+- **Состав:** intro → featured first item без дублирования → `NewsSection(archive)` → `NewsPagination` → вторичный callback CTA.
+- **Данные:** серверный `GET /api/news?page=N&limit=12`; `news.*`, `seo.news.*`; timezone из `site.timezone`.
+- **Responsive / states:** 3/2/1 columns; весь контент SSR, обычные ссылки pagination; empty 200, invalid page redirect, overflow N>1 404, API error с retry-ссылкой и noindex. Canonical первой страницы `/novosti`, остальных `/novosti?page=N`.
+
+### `NewsDetailPage`
+
+- **Маршрут / данные:** `/novosti/[slug]`, серверный `GET /api/news/by-slug/{slug}` с tenant selector без CMS credentials, request-time SSR/no-store.
+- **Состав:** один h1, дата, фотографии, полный безопасно санитизированный content, ссылка на архив.
+- **SEO / states:** согласованные metadata/page данные; title новости, description из snippet/plain text, canonical точного slug. Missing/deleted/future/foreign — настоящий 404; 401/5xx/timeout — SSR error/retry/noindex. Без JavaScript доступен весь текст.
 
 ### `AboutPage`
 
-- **Состав:** intro → setting/infrastructure → `Gallery` → team → `ReviewSummary` → payment methods → `ContactSection` → `PrivacySection`.
-- **Данные:** seeded `about.intro/setting/features/payment_methods`, `team.people`, `reviews.summary`, `about.gallery_photo_ids`, `about.cta_label`, `seo.about.*`; временно `/api/photos?limit=24&sort=created_at`. Для `PrivacySection` используется предлагаемый `legal.privacy_policy_text`.
+- **Состав:** intro → setting/infrastructure → `Gallery` → team → `ReviewSummary` → переиспользуемый `ContactSection`. Блоков payment/privacy нет.
+- **Данные:** `about.intro/setting/features`, `team.people`, `reviews.summary`, `about.gallery_photo_ids`, `about.cta_label`, `seo.about.*`; `/api/photos?limit=24&sort=created_at`. Контакты используют те же shared settings, что главная.
 - **Responsive / states:** desktop чередует text/media и grids, mobile сохраняет порядок; каждый optional block скрывается независимо, invalid JSON не роняет страницу.
 
 ## Матрица покрытия маршрутов
 
 | Route | Ключевые композиции | API кроме settings |
 |---|---|---|
-| `/` | Hero, benefits, featured prices, latest news, contacts | prices, news |
+| `/` | local-photo Hero, 4 square service cards, benefits, latest news, contacts | news |
 | `/uslugi/zanyatiya` | intro, filter, prices, benefits, notice, CTA | prices |
 | `/uslugi/progulki` | hero, prices, setting, preparation/safety, notice | prices |
 | `/uslugi/postoy` | hero, infrastructure, included, price, requirements | prices |
 | `/loshadi` | intro, horse grid/details, CTA | horses |
-| `/novosti` | intro, featured/archive, load more, inline detail | news list/detail |
-| `/about` | intro, setting, gallery, team, reviews, payments, contacts, privacy (`#privacy`) | photos |
+| `/novosti` | intro, featured/archive, SSR pagination | news list |
+| `/novosti/[slug]` | title, date, photos, full sanitized content, archive link | news by-slug detail |
+| `/about` | intro, settings text, gallery, team, reviews, shared contacts | photos |
+
+В change `inlove-static-pages` реализуются `/`, `/novosti`, `/about` и `/novosti/[slug]`. Три service routes и `/loshadi` сохраняют оболочку, route-specific metadata/h1 и сообщение о разработке; их композиции в таблице описывают будущую реализацию. Другие detail routes не добавляются.
