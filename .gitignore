@@ -17,6 +17,8 @@ htmlcov/
 .env.*
 # Исходники сервисов — отдельные git-репозитории (см. services.manifest)
 /services/
+# Оркестратор — отдельный git-репозиторий, не часть eqSiteCMS (см. docs/tasks/agent_orchestration)
+/orchestrator/
 .claude/skills/api-researcher/task_*
 */.obsidian/
 .kube/
