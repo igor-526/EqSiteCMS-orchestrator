@@ -25,10 +25,12 @@
 ### `PageContainer` и `Section`
 
 - **Назначение:** сетка, вертикальный ритм, фон и ограничение ширины.
-- **Variants / contract:** `PageContainer { size: "default" | "wide" }`; `Section { tone: "ivory" | "surface" | "sage" | "sand" | "forest"; spacing: "compact" | "default" | "editorial"; label?; headingId? }`.
+- **Variants / contract:** `PageContainer { size: "default" | "wide" }`; `Section { tone: "ivory" | "surface" | "sage" | "sand" | "forest"; spacing: "compact" | "default" | "editorial"; trimBottom?: boolean; label?; headingId? }`.
+- **Seam-механизм:** смежные `Section` схлопывают отступ между собой вместо суммирования независимых `padding-block` двух секций (был источник избыточных разрывов: 120+120=240px, editorial+default=160+120=280px). CSS-правило смежности `.section + .section` обнуляет верхний padding второй секции и заменяет его единым `margin-top: var(--space-seam)` (`56px` desktop / `32px` mobile, см. дизайн-спецификацию §11). Правило применяется автоматически везде, где `Section` идут подряд, без точечной настройки каждой пары. Явный escape hatch (data-атрибут на `Section`) отключает схлопывание там, где нужен полный отступ у намеренно смежных крупных секций.
+- **`trimBottom`:** явный проп обрезает нижний padding секции на границе с `SiteFooter` (используется на `ContactSection` главной и `/about`), чтобы переход к footer не суммировал padding секции и footer.
 - **Источник / settings:** контент передаётся родителем; вариативный порядок секций задаётся страницей по схеме, не произвольным CMS layout JSON.
-- **Fallback:** ivory/default; пустая секция не рендерится.
-- **Responsive / states / a11y:** container padding `40/32/20px`, section spacing из спецификации; `section` связывается с заголовком через `aria-labelledby`.
+- **Fallback:** ivory/default; пустая секция не рендерится и не создаёт seam-отступ у соседей.
+- **Responsive / states / a11y:** container padding `40/32/20px`, section spacing и seam-отступ — из спецификации §10–11; `section` связывается с заголовком через `aria-labelledby`.
 
 ### `Typography`
 
@@ -44,9 +46,9 @@
 
 - **Назначение:** ссылка на `/` и идентификация клуба.
 - **Contract:** `{ variant: "light" | "dark"; shortName: string; asset?: ImageSource }`.
-- **Источник:** статический consumer config; ассет статический.
-- **Fallback:** при ошибке/отсутствии ассета выводится «ИНЛав».
-- **Responsive / states / a11y:** desktop ширина `132–150px`; достаточный clear space; доступное имя ссылки, без tooltip.
+- **Источник:** статический consumer config; основной ассет — `inlove-logo-transparent.png` (копия с автоматически удалённым белым фоном, alpha-канал). Оригинальный `inlove-logo.jpg` не изменяется и не удаляется, остаётся файлом-источником и запасным ассетом.
+- **Fallback:** при неудовлетворительном качестве/ошибке основного ассета — `inlove-logo.jpg`; при полном отсутствии обоих файлов выводится «ИНЛав».
+- **Responsive / states / a11y:** desktop ширина `132–150px`; достаточный clear space; доступное имя ссылки, без tooltip; читаемость логотипа проверяется на светлом и тёмном (`tone`) фоне секции.
 
 ### `Icon`
 
@@ -121,7 +123,15 @@
 - **Contract:** `{ shortName; menu: NavItem[]; phone?; ctaLabel; transparentOnHero?: boolean }`, где `NavItem={label,href}`.
 - **Источник:** brand/menu/CTA из consumer config; optional phone только из `contacts.primary_phone`.
 - **Fallback:** семь разрешённых routes из схемы; неизвестные CMS href фильтруются. Пустой телефон скрывает только ссылку.
-- **Responsive / states / a11y:** desktop sticky transparent→blurred; mobile оставляет logo/call/menu. Активная ссылка имеет `aria-current="page"`; settings error не скрывает навигацию.
+- **Responsive / states / a11y:** desktop sticky transparent→blurred; mobile оставляет logo/call/menu. Активная ссылка имеет `aria-current="page"`; маркер активного пункта/раскрытого dropdown-триггера выровнен по вертикали относительно центра строки текста, а не от нижней границы `44px`-touch-target блока; settings error не скрывает навигацию.
+
+### `GroupedNavigation`
+
+- **Назначение:** визуальная группа «Услуги», объединяющая три страницы услуг под одним пунктом в desktop dropdown (внутри `SiteHeader`), `MobileMenu` и `SiteFooter` — группа должна читаться как группа, а не как рядовой пункт того же уровня, что остальные пункты меню.
+- **Contract:** `{ label: "Услуги"; items: NavItem[3] }`, пункты — `/uslugi/zanyatiya`, `/uslugi/progulki`, `/uslugi/postoy`, подписаны строго «Занятия», «Прогулки», «Постой».
+- **Источник:** статичные пункты из consumer config/схемы; список не CMS-редактируемый.
+- **Fallback:** отсутствует — группа статична и рендерится всегда; текущая внутри группы страница получает `aria-current="page"` на вложенном пункте.
+- **Responsive / states / a11y:** визуально отличимое оформление группы (контейнер/разделитель/подпись-заголовок группы) одинаково применяется во всех трёх местах — desktop dropdown, mobile menu, footer; маркер активного пункта dropdown-триггера (`.navLink[aria-current="page"]::after` / `.servicesTrigger[data-active="true"]::after`) выровнен по центру строки текста. Клавиатурная навигация и `aria-expanded`/`aria-controls` для desktop dropdown-триггера обязательны.
 
 ### `MobileMenu`
 
@@ -193,13 +203,13 @@
 
 ## Content cards
 
-### `ServiceCard` и `PriceRow`
+### `ServiceCard`, `TariffCard` и `PriceRow`
 
-- **Назначение:** направление услуги и конкретное ценовое предложение.
-- **Contract:** `ServiceCard { price: PriceSummary; href?; onRequest }`; `PriceRow { name; description?; priceTables; onRequest }`.
-- **Источник:** `GET /api/prices`; поля `id,name,slug,description,photos,groups,price_tables`. Intro/notice/CTA задаются consumer config.
+- **Назначение:** направление услуги на главной (`ServiceCard`), карточка тарифа в сетке услуг на `/uslugi/zanyatiya|progulki|postoy` (`TariffCard`) и построчное табличное представление цены (`PriceRow`).
+- **Contract:** `ServiceCard { price: PriceSummary; href?; onRequest }`; `TariffCard { price: PriceSummary; href; onRequest }` — название тарифа рендерится полужирным (`font-weight: 700`); изображение обёрнуто ссылкой (`href`) на detail-страницу тарифа на desktop, на mobile клик по изображению отключён (`pointer-events: none`), сама карточка остаётся кликабельной через отдельный CTA; `PriceRow { name; description?; priceTables; onRequest }`.
+- **Источник:** `GET /api/prices`; поля `id,name,slug,description,photos,groups,price_tables`. Intro/CTA задаются consumer config.
 - **Fallback:** нет фото — клубный placeholder; нет таблицы — описание; нет цены — «Стоимость уточняется». Конфликтующие предложения не объединяются.
-- **Responsive / states / a11y:** desktop grid/list rows, mobile одна колонка; таблица становится label/value либо имеет управляемый horizontal scroll. CTA передаёт `name/slug`; hover image не содержит скрытой информации.
+- **Responsive / states / a11y:** `TariffCard`-сетка — 3 колонки на desktop (≥1024px) вместо прежних 2, 1 колонка на mobile с уменьшенным (менее доминирующим, чем desktop `4:5`) соотношением изображения; desktop grid/list rows для `PriceRow`, mobile одна колонка; таблица становится label/value либо имеет управляемый horizontal scroll. CTA передаёт `name/slug`; изображение-ссылка `TariffCard` имеет доступное имя (не голый `<a>` без текста), hover image не содержит скрытой информации.
 
 ### `HorseCard`
 
@@ -230,10 +240,10 @@
 ### `IntroSection` и `EditorialSplitSection`
 
 - **Назначение:** вводный текст страницы и чередование «текст / медиа».
-- **Contract:** `{ eyebrow?; title; body?; image?; imageSide?: "left" | "right"; actions? }`.
+- **Contract:** `IntroSection { eyebrow?; title; body?; actions?; spacing?: "editorial" | "compact" }` (default `"editorial"`, `160/96px` desktop; `"compact"` — сокращённый разрыв со следующим блоком, используется на `/loshadi` и первом блоке `/about`); `EditorialSplitSection { eyebrow?; title; body?; image?; imageSide?: "left" | "right"; actions? }` — при отсутствии `image` рендерится full-width вариантом (`grid-template-columns: 1fr` вместо узкой `7fr`-колонки текста с пустой `4fr`-колонкой) вместо визуально сжатого текста в правой трети; используется вторым блоком `/about`, когда задана только текстовая пара `about_2_*`.
 - **Источник:** consumer config либо описание профильной сущности Public Read API; для `/about` — парные `about_1_*`/`about_2_*` строки.
-- **Fallback:** page title и copy из схемы; optional image/block скрывается.
-- **Responsive / states / a11y:** desktop 7/1/4 и зеркальный layout; mobile текст перед соответствующим фото; длина строки ограничена.
+- **Fallback:** page title и copy из схемы; optional image/block скрывается, при отсутствии `image` секция не сжимается в узкую колонку.
+- **Responsive / states / a11y:** desktop 7/1/4 (или full-width при отсутствии `image`) и зеркальный layout; mobile текст перед соответствующим фото; длина строки ограничена.
 
 ### `BenefitsSection`
 
@@ -245,11 +255,11 @@
 
 ### `PricesSection`
 
-- **Назначение:** список тарифов, локальный фильтр и CTA.
-- **Contract:** `{ items: PriceSummary[]; mode: "featured" | "lessons" | "rides" | "boarding"; notice?; filter? }`.
-- **Источник:** `/api/prices` с query из scheme; presentation-copy и CTA — consumer config.
+- **Назначение:** список тарифов и CTA. Компонент не принимает notice-проп — предупредительный блок о переменности цен окончательно убран из контракта и вёрстки.
+- **Contract:** `{ items: PriceSummary[]; mode: "featured" | "lessons" | "rides" | "boarding"; filter? }`.
+- **Источник:** `/api/prices` с query из `scheme.md` — одна выделенная группа на страницу/состояние переключателя, без catch-all «Основные услуги»; presentation-copy и CTA — consumer config.
 - **Fallback:** empty сообщает «Стоимость уточняется» и оставляет callback; error содержит retry; loading — price-row skeleton.
-- **Responsive / states / a11y:** desktop large rows/two-column composition, mobile stacked label/value. Локальный «Разовые / Абонементы» — tablist только если реализована настоящая tab-семантика, иначе группа кнопок.
+- **Responsive / states / a11y:** desktop large rows/two-column composition (3 колонки карточек тарифов, см. `TariffCard`), mobile stacked label/value. Локальный переключатель «Разовые / Абонементы» переключает источник между двумя раздельными group-запросами (не клиентской категоризацией) — tablist только если реализована настоящая tab-семантика, иначе группа кнопок.
 
 ### `HorsesSection`
 
@@ -295,27 +305,27 @@
 
 ### `LessonsPage`
 
-- **Состав:** intro → local filter → `PricesSection(lessons)` → benefits → notice → CTA.
+- **Состав:** intro → local filter → `PricesSection(lessons)` → benefits → CTA.
 - **Данные:** exact-match `GET /api/horse_services?name=Занятия` и профильные prices; settings не запрашиваются.
 - **Responsive / states:** desktop две колонки/таблицы, mobile cards; empty/error всегда сохраняют callback.
 
 ### `RidesPage`
 
-- **Состав:** hero → «Как проходит» → `PricesSection(rides)` → setting → `PreparationSafetySection` → notice → CTA.
+- **Состав:** hero → «Как проходит» → `PricesSection(rides)` → setting → `PreparationSafetySection` → CTA.
 - **Данные:** exact-match `GET /api/horse_services?name=Прогулки` и профильные prices; settings не запрашиваются.
 - **Responsive / states:** конфликтующие позиции раздельны; mobile `описание → цена → условия → CTA`; empty price не означает free.
 
 ### `BoardingPage`
 
-- **Состав:** hero → инфраструктура → included → `PricesSection(boarding)` → requirements → notice → CTA.
+- **Состав:** hero → инфраструктура → included → `PricesSection(boarding)` → requirements → CTA.
 - **Данные:** exact-match `GET /api/horse_services?name=Постой` и профильные prices; settings не запрашиваются.
 - **Responsive / states:** desktop условия/цена + gallery, mobile stack без sticky sidebar; пустой included скрывается.
 
 ### `HorsesPage`
 
-- **Состав:** intro → `HorsesSection(grid)` с inline details → CTA.
+- **Состав:** intro (компактный spacing) → `HorsesSection(grid)` с inline details, без отдельного заголовка секции и без завершающего CTA-блока «Записаться…».
 - **Данные:** `/api/horses?this_stable=true&sort=name`; `horses.*` и `seo.horses.*` seeded; `horses.review_mentions` только редакционный материал.
-- **Responsive / states:** 3–4/2/1 columns; empty text + CTA; никакого detail route.
+- **Responsive / states:** 3–4/2/1 columns; empty text + CTA — из `HorsesSection`-контракта (empty-state, не отдельный page-level CTA-блок); никакого detail route на этой странице (карточка ведёт на `/loshadi/[slug]`).
 
 ### `NewsPage`
 
@@ -340,8 +350,8 @@
 | Route | Ключевые композиции | API кроме settings |
 |---|---|---|
 | `/` | local-photo Hero, 4 square service cards, benefits, latest news, contacts | news |
-| `/uslugi/zanyatiya` | intro, filter, prices, benefits, notice, CTA | prices |
-| `/uslugi/progulki` | hero, prices, setting, preparation/safety, notice | prices |
+| `/uslugi/zanyatiya` | intro, filter, prices, benefits, CTA | prices |
+| `/uslugi/progulki` | hero, prices, setting, preparation/safety | prices |
 | `/uslugi/postoy` | hero, infrastructure, included, price, requirements | prices |
 | `/loshadi` | intro, horse grid/details, CTA | horses |
 | `/novosti` | intro, featured/archive, SSR pagination | news list |

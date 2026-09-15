@@ -1,8 +1,4 @@
-# Purpose
-
-Зафиксировать серверные контентные страницы INLOVE, общие контакты, SEO, безопасность и адаптивность.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Серверная главная страница
 Маршрут `/` SHALL выводить в порядке scheme.md hero с CTA и доступной локальной фотографией, четыре карточки услуг, преимущества, последнюю опубликованную новость и контакты. Hero, подписи, CTA, порядок и SEO SHALL задаваться consumer config либо профильными API и MUST NOT зависеть от удалённых action 1 site settings. Управляемыми site settings на странице остаются только actions 2/4/6. Бизнес-сущности MUST поступать из профильных Public Read API. Все индексируемые блоки MUST содержаться в завершённом серверном HTML без browser fetch. Последняя опубликованная новость SHALL отображаться компактной горизонтальной карточкой на всю ширину контейнера (изображение и текст расположены рядом, не одной высокой вертикальной картой). Вертикальный разрыв между блоком карточек услуг и заголовком «Новости», а также между блоком контактов и footer, SHALL использовать переиспользуемый seam/trimBottom-механизм `Section` (`inlove-ui-components`) и визуально не превышать примерно четверть прежнего суммарного отступа.
@@ -37,25 +33,3 @@
 #### Scenario: Сокращённый разрыв от шапки до первого заголовка
 - **WHEN** `/about` отображается на desktop и mobile viewport
 - **THEN** видимый разрыв между header и h1 первого блока заметно меньше прежнего editorial-паддинга и использует компактный spacing-вариант `IntroSection`
-
-### Requirement: Общий блок контактов
-Главная и `/about` MUST переиспользовать один ContactSection на основе отдельных `contacts.address`, `contacts.coordinates`, `contacts.maps_url`, `contacts.nearest_stop`, `contacts.working_hours`, `contacts.primary_phone` и доступных social keys. `contacts.address_alternative` MUST игнорироваться как удалённый дубликат без alias/fallback. Все ссылки MUST иметь `target="_blank"` и `rel="noopener noreferrer"`. Карта MUST формировать iframe widget URL из coordinates; maps URL остаётся отдельной ссылкой. Отсутствующие поля MUST скрываться независимо и не выдумываться.
-
-#### Scenario: Контакты и карта на обеих страницах
-- **WHEN** разрешённые contact keys и coordinates заполнены
-- **THEN** обе страницы содержат одинаковый primary phone и доступные адресные/social строки, рабочий iframe widget и безопасные ссылки
-
-#### Scenario: Отдельное поле отсутствует
-- **WHEN** отсутствует nearest stop либо working hours или API неожиданно возвращает legacy `contacts.address_alternative`
-- **THEN** скрывается только соответствующий элемент без пустого placeholder и без влияния на остальные контакты
-
-### Requirement: Общие SSR SEO и адаптивность
-Все страницы этого change MUST использовать существующий дизайн и компоненты 069, один h1, доступные изображения и ссылки, серверные title/description/canonical. Контент SHALL быть доступен при выключенном JavaScript на desktop/tablet/mobile; клиентские острова разрешены для callback, галереи и других взаимодействий. Ошибка selector MUST не маскироваться данными другого tenant. HTML из CMS MUST проходить серверный allowlist sanitizer; обычные settings рендерятся как текст.
-
-#### Scenario: Адаптивная доступность
-- **WHEN** страницы открываются на ширинах 375, 768 и 1440 px, с длинным текстом и keyboard-only navigation
-- **THEN** нет горизонтального overflow, порядок секций логичен, CTA доступны, focus виден, reduced motion соблюдён
-
-#### Scenario: Серверная безопасность и SEO
-- **WHEN** CMS поле содержит script, обработчик события или javascript URL
-- **THEN** исполняемое содержимое не попадает в HTML, полезный безопасный текст сохраняется и metadata доступна до hydration

@@ -23,7 +23,7 @@
 | `GET` | `/api/horses` | Public Read | нет | `401` | `200` |
 | `GET` | `/api/news` | Public Read | нет | `401` | `200` |
 | `GET` | `/api/news/by-slug/{slug}` | Public Read | нет | `401` | `200` опубликованная своего tenant; `404` иначе |
-| `GET` | `/api/prices/{slug_or_id}` | Public Read | нет | `401` | `200` тариф своего tenant, входящий в allow-list вызвавшей detail-страницы (`/uslugi/zanyatiya\|progulki\|postoy/[slug]`); `404` чужой tenant, несуществующий slug/id, а также свой-tenant slug вне allow-list этой страницы — site-side guard поверх backend-ответа, см. подраздел «Детали сущности» соответствующей секции услуг |
+| `GET` | `/api/prices/{slug_or_id}` | Public Read | нет | `401` | `200` тариф своего tenant, чьи `groups` пересекаются с допустимым множеством групп вызвавшей detail-страницы (`/uslugi/zanyatiya\|progulki\|postoy/[slug]`); `404` чужой tenant, несуществующий slug/id, а также свой-tenant тариф с `groups` вне допустимого множества этой страницы — site-side guard поверх backend-ответа по полю `groups`, без статического списка slug, см. подраздел «Детали сущности» соответствующей секции услуг |
 | `GET` | `/api/horses/{slug_or_id}` | Public Read | нет | `401` | `200` лошадь своего tenant с `this_stable=true`; `404` чужой tenant, несуществующий slug/id, а также свой-tenant лошадь с `this_stable≠true` — сайт возвращает `404` даже если backend вернул `200` (site-side privacy guard, см. «Наши лошади» → «Детали сущности») |
 | `GET` | `/api/photos` | Public Read | нет | `401` | `200` |
 | `POST` | `/api/callback_requests` | Public POST exception | нет | `401` | `201` |
@@ -110,13 +110,13 @@ SEO задаётся consumer config; description может поступать 
 
 ### Интеграция с CMS
 
-- `GET /api/prices?groups=Основные услуги`, затем отбор slug: `individual-lesson-official`, `group-lesson-official`, `training-package-8-official`, `individual-membership-official`, `subscription-4-yandex`, `riding-training-yandex`, `subscription-8-yandex`, `individual-subscription-8-yandex`.
+- Переключатель «Разовые / Абонементы» выполняет два отдельных запроса — по одной выделенной группе на состояние, без объединённого repeatable `groups=A&groups=B` и без клиентского allow-list/категоризации (`LESSON_CATEGORY`): `GET /api/prices?groups=Разовые` для состояния «Разовые», `GET /api/prices?groups=Абонементы` для состояния «Абонементы». Страница не обращается к catch-all группе «Основные услуги».
 - Поля: `name`, `slug`, `description`, `photos[].url/is_main`, `price_tables[].columns/rows`, `groups`.
 - `GET /api/horse_services?name=Занятия`: требуется ровно один exact-match; settings страницей не запрашиваются.
 
 ### Секции и вёрстка
 
-Вводный экран; локальный переключатель «Разовые / Абонементы»; карточки тарифов; преимущества; notice; финальный CTA. Desktop — две колонки и полноценные таблицы. Mobile — одна колонка; таблица преобразуется в пары «параметр — значение» либо получает контролируемый горизонтальный скролл.
+Вводный экран; локальный переключатель «Разовые / Абонементы»; карточки тарифов; преимущества; финальный CTA. Desktop — две колонки и полноценные таблицы. Mobile — одна колонка; таблица преобразуется в пары «параметр — значение» либо получает контролируемый горизонтальный скролл.
 
 ### Состояния, fallback и CTA
 
@@ -124,7 +124,7 @@ SEO задаётся consumer config; description может поступать 
 
 ### Детали сущности
 
-Маршрут `/uslugi/zanyatiya/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; доступен только slug из allow-list этой страницы (`individual-lesson-official`, `group-lesson-official`, `training-package-8-official`, `individual-membership-official`, `subscription-4-yandex`, `riding-training-yandex`, `subscription-8-yandex`, `individual-subscription-8-yandex` — тот же список, что и у списочного запроса). SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` тарифа (если поле пустое, description не выводится), canonical — точный путь `/uslugi/zanyatiya/{slug}`. Fallback/404: slug вне allow-list этой страницы (в том числе валидный тариф другой страницы услуг или чужого tenant) даёт 404 без обращения к backend; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Тариф временно недоступен | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
+Маршрут `/uslugi/zanyatiya/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; тариф допускается на этой странице, если ответ содержит поле `groups`, пересекающееся с допустимым множеством групп страницы (`Разовые`, `Абонементы`) — site-side guard сверяется с `groups` ответа, а не со статическим списком slug. SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` тарифа (если поле пустое, description не выводится), canonical — точный путь `/uslugi/zanyatiya/{slug}`. Fallback/404: backend `200` с `groups`, не пересекающимися с допустимым множеством этой страницы (валидный тариф другой страницы услуг, в т.ч. тариф из группы «Основные услуги»), даёт 404 после site-side guard поверх ответа backend; ответ backend `404` также приводит к 404 страницы; чужой tenant даёт 404; временная ошибка/timeout — title «Тариф временно недоступен | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
 
 ---
 
@@ -143,7 +143,7 @@ SEO задаётся consumer config; description может поступать 
 
 ### Интеграция с CMS
 
-- `GET /api/prices?name=Конные прогулки&name=Конная прогулка`; API принимает повторяемый `name`. Проверяются slug `horse-rides-official`, `horse-ride-yandex`, чтобы сохранить конфликтующие предложения.
+- `GET /api/prices?groups=Прогулки`; группа объединяет оба конфликтующих предложения (`horse-rides-official`, `horse-ride-yandex`), которые отображаются раздельно без объединения в одну карточку.
 - Поля: `id`, `name`, `slug`, `description`, `photos`, `price_tables`, `groups`.
 - `GET /api/horse_services?name=Прогулки`: требуется ровно один exact-match; settings страницей не запрашиваются.
 
@@ -157,7 +157,7 @@ Skeleton сохраняет размеры блоков. При пустых ц�
 
 ### Детали сущности
 
-Маршрут `/uslugi/progulki/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; доступен только slug из allow-list этой страницы (`horse-rides-official`, `horse-ride-yandex`). SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` (если поле пустое, description не выводится), canonical — точный путь `/uslugi/progulki/{slug}`. Fallback/404: slug вне allow-list этой страницы (валидный тариф другой страницы или чужого tenant) даёт 404 без обращения к backend; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Прогулка временно недоступна | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
+Маршрут `/uslugi/progulki/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; тариф допускается на этой странице, если ответ содержит поле `groups`, пересекающееся с допустимым множеством групп страницы (`Прогулки`) — site-side guard сверяется с `groups` ответа, а не со статическим списком slug. SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` (если поле пустое, description не выводится), canonical — точный путь `/uslugi/progulki/{slug}`. Fallback/404: backend `200` с `groups`, не пересекающимися с допустимым множеством этой страницы (валидный тариф другой страницы услуг), даёт 404 после site-side guard поверх ответа backend; ответ backend `404` также приводит к 404 страницы; чужой tenant даёт 404; временная ошибка/timeout — title «Прогулка временно недоступна | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
 
 ---
 
@@ -176,12 +176,12 @@ SEO задаётся consumer config; description может поступать 
 
 ### Интеграция с CMS
 
-- `GET /api/prices?name=Постой частных лошадей`, проверка slug `horse-boarding-yandex`; поля `name`, `slug`, `description`, `photos`, `price_tables`.
+- `GET /api/prices?groups=Постой частных лошадей`; единственный тариф группы — `horse-boarding-yandex`; поля `name`, `slug`, `description`, `photos`, `price_tables`, `groups`.
 - `GET /api/horse_services?name=Постой`: требуется ровно один exact-match; settings страницей не запрашиваются.
 
 ### Секции и вёрстка
 
-Hero; инфраструктура; «Что входит»; стоимость; требования и знакомство с клубом; notice; CTA. Desktop — две колонки «условия / стоимость» и галерея. Mobile — последовательные карточки без липкой боковой панели.
+Hero; инфраструктура; «Что входит»; стоимость; требования и знакомство с клубом; CTA. Desktop — две колонки «условия / стоимость» и галерея. Mobile — последовательные карточки без липкой боковой панели.
 
 ### Состояния, fallback и CTA
 
@@ -189,7 +189,7 @@ Hero; инфраструктура; «Что входит»; стоимость;
 
 ### Детали сущности
 
-Маршрут `/uslugi/postoy/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; доступен только slug из allow-list этой страницы (`horse-boarding-yandex`). SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` (если поле пустое, description не выводится), canonical — точный путь `/uslugi/postoy/{slug}`. Fallback/404: slug вне allow-list этой страницы (валидный тариф другой страницы или чужого tenant) даёт 404 без обращения к backend; ответ backend `404` также приводит к 404 страницы; временная ошибка/timeout — title «Постой временно недоступен | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
+Маршрут `/uslugi/postoy/[slug]`. Источник данных — `GET /api/prices/{slug_or_id}`; тариф допускается на этой странице, если ответ содержит поле `groups`, пересекающееся с допустимым множеством групп страницы (`Постой частных лошадей`) — site-side guard сверяется с `groups` ответа, а не со статическим списком slug. SEO/canonical формируются сервером: title — `{name тарифа} | Инлав`, description — первые 200 символов очищенного от разметки `description` (если поле пустое, description не выводится), canonical — точный путь `/uslugi/postoy/{slug}`. Fallback/404: backend `200` с `groups`, не пересекающимися с допустимым множеством этой страницы (валидный тариф другой страницы услуг), даёт 404 после site-side guard поверх ответа backend; ответ backend `404` также приводит к 404 страницы; чужой tenant даёт 404; временная ошибка/timeout — title «Постой временно недоступен | Инлав» с `robots: noindex, follow` и canonical на тот же slug, без ложного 404.
 
 ---
 
@@ -214,11 +214,11 @@ SEO: seeded `seo.horses.title`, `seo.horses.description`; fallback — заго�
 
 ### Секции и вёрстка
 
-Введение; сетка карточек с главным фото, кличкой, описанием и непустыми характеристиками; раскрываемые подробности внутри текущей страницы, а также ссылка на полную деталь `/loshadi/[slug]`; CTA. Desktop — 3–4 карточки, tablet — 2, mobile — 1.
+Введение (компактный spacing, сокращённый разрыв «заголовок → сетка»); сетка карточек с главным фото, кличкой, описанием и непустыми характеристиками; раскрываемые подробности внутри текущей страницы, а также ссылка на полную деталь `/loshadi/[slug]`. Сетка не получает собственный заголовок секции (`h2`) — дублирующий заголовок «Лошади клуба» не рендерится, единственный заголовок страницы задаётся вводной секцией. Списочная страница не содержит отдельного CTA-блока «Записаться…» после сетки. Desktop — 3–4 карточки, tablet — 2, mobile — 1.
 
 ### Состояния, fallback и CTA
 
-Во время загрузки — skeleton. При пустом каталоге — `horses.empty_text`, fallback «Скоро познакомим вас с лошадьми клуба», и CTA. Упоминания из отзывов автоматически карточками не становятся. CTA выбранной карточки передаёт имя лошади.
+Во время загрузки — skeleton. При пустом каталоге — `horses.empty_text`, fallback «Скоро познакомим вас с лошадьми клуба». Упоминания из отзывов автоматически карточками не становятся. CTA выбранной карточки передаёт имя лошади.
 
 ### Детали сущности
 
@@ -277,7 +277,7 @@ SEO задаётся consumer config; прежние `seo.about.*` не чита
 
 ### Секции и вёрстка
 
-Первый блок выводится только при непустой паре `about_1_title/about_1_text`, второй — только при непустой паре `about_2_title/about_2_text`. После них идут переиспользуемые с главной контакты и CTA. Gallery, team, reviews, payment/privacy отсутствуют.
+Первый блок — вводная секция с компактным spacing (сокращённый разрыв «шапка → заголовок» вместо editorial-паддинга) и выводится только при непустой паре `about_1_title/about_1_text`. Второй блок — full-width вариант секции «текст/медиа» без `image`-колонки (вместо визуально сжатого текста в узкой правой трети) и выводится только при непустой паре `about_2_title/about_2_text`. После них идут переиспользуемые с главной контакты и CTA. Gallery, team, reviews, payment/privacy отсутствуют.
 
 ### Состояния, fallback и CTA
 

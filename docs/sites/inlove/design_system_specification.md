@@ -774,6 +774,16 @@ Mobile:
 
 `56px`
 
+Seam (стык двух смежных `Section`, вместо суммирования независимых `padding-block`, см. `components.md` → `PageContainer и Section`):
+
+Desktop:
+
+`56px`
+
+Mobile:
+
+`32px`
+
 ---
 
 # 12. Радиусы

@@ -3,7 +3,9 @@
     "allow": [
       "Skill(api-smoke-test)",
       "Skill(smoke)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Skill(update-config)",
+      "Bash(claude -p:*)"
     ]
   }
 }
