@@ -1,23 +1,4 @@
-# Purpose
-
-Зафиксировать серверную общую оболочку INLOVE, разрешённую навигацию и устойчивые header/footer.
-
-## Requirements
-
-### Requirement: Shared layout получает настройки один раз и предоставляет fallback
-Общий layout SHALL на сервере получать одним запросом только разрешённые настройки footer, контактов и соцсетей через существующий anonymous Public Read `GET /api/site_settings` с tenant selector. Меню, brand, CTA и SEO defaults SHALL задаваться типизированным consumer config, а не строками site settings. `contacts.primary_phone` MUST быть единственным источником телефона для header, footer и контактов; `header.contact_phone` и `contacts.phones` MUST NOT читаться как alias/fallback. Ошибка или некорректное значение отдельного разрешённого ключа MUST использовать безопасный fallback и MUST NOT скрывать навигацию либо остальную страницу.
-
-#### Scenario: Shared settings доступны при SSR
-- **WHEN** валидный tenant selector и API возвращают shared settings
-- **THEN** header, footer и контакты получают одинаковый `contacts.primary_phone` без client-only fetch и без CMS credentials, а статические menu/brand/CTA не зависят от удалённых keys
-
-#### Scenario: Ошибка settings деградирует локально
-- **WHEN** API недоступен либо отдельный setting отсутствует или имеет неверный тип
-- **THEN** layout рендерит статическое разрешённое меню и обязательные подписи, а пустые optional phone/social/hours блоки скрываются
-
-#### Scenario: Legacy телефон не используется
-- **WHEN** API неожиданно возвращает `header.contact_phone` или `contacts.phones`, но `contacts.primary_phone` отсутствует
-- **THEN** телефон отсутствует одновременно в header, footer и контактах, а legacy значения игнорируются
+## MODIFIED Requirements
 
 ### Requirement: Header предоставляет разрешённую desktop и mobile навигацию
 `SiteHeader` SHALL выводить статический клубный logo без непрозрачного фона, впечатанного в изображение (логотип отображается с прозрачным фоном поверх любого фона секции), статическое меню, optional `contacts.primary_phone` и один статический callback CTA на desktop, а на mobile — logo, optional call action и menu trigger. Текстовое доступное имя и fallback «ИНЛав» SHALL задаваться consumer config. Семь разрешённых route, их подписи и порядок MUST NOT управляться через site settings. Три service routes MUST быть сгруппированы под trigger «Услуги» с пунктами «Занятия», «Прогулки», «Постой». Группа «Услуги» SHALL иметь визуально отличимое от одиночных пунктов меню оформление (например, контейнер, разделитель или маркер группы), а не только текстовую подпись того же начертания, что и остальные пункты — как на desktop dropdown, так и в мобильном меню. Активный дочерний маршрут MUST иметь `aria-current="page"`, группа MUST иметь доступный active state, не обозначенный одним цветом, а маркер активного пункта в выпадающем списке MUST отображаться непосредственно под строкой текста пункта, не перекрывая буквы и не отрываясь от неё визуально заметным разрывом.
