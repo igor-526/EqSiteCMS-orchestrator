@@ -1,0 +1,17 @@
+- insert:
+    - id: playwright-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: pw
+        transport: stdio
+        command: npx
+        args: ['-y', '@playwright/mcp@0.0.83']
+        cwd: !!js |
+          (() => {
+            const path = process.getBuiltinModule('node:path');
+            return path.resolve(dshHomePath(), '..', '..');
+          })()
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: !!js process.env.HOME + '/.cache/ms-playwright'
+        failOnStartupError: false
+        toolCallTimeoutMs: 120000

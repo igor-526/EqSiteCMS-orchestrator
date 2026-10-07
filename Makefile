@@ -31,21 +31,25 @@ DC_CORE = docker compose --env-file $(COMPOSE_DIR)/.env -p eqsitecms-core \
 	-f $(COMPOSE_EMAIL) -f $(COMPOSE_FE)
 
 SERVICES_MANIFEST ?= services.manifest
+HARNESS_HOST ?= 127.0.0.1
+HARNESS_PORT ?= 3080
 
-.PHONY: sync update services-branches build build-nc test lint format check check-backend check-email \
+.PHONY: sync update services-branches harness build build-nc test lint format check check-backend check-email \
 		check-notification check-frontend fix fix-backend fix-email fix-notification fix-frontend \
 		compose-check asyncapi-validate asyncapi-validate-vk contracts-check secret-scan migrate-core recreate-core health-core status-core logs-core \
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
 		vk-build vk-build-nc vk vk-attach vk-bot-logs vk-bot-restart check-vk fix-vk \
-		infra
+		infra \
+		e2e-install e2e e2e-ui e2e-headed e2e-frontend e2e-report \
+		ship-test
 
-# =====ORCHESTRATOR COMMANDS=====
+# =====MONOREPO COMMANDS=====
 
 sync:
 	@echo "Syncing all services..."
-	@bash scripts/sync.sh
+	@bash scripts/sync.sh $(SYNC_FLAGS)
 
 update: sync
 
@@ -59,9 +63,9 @@ services-branches:
 		if [ "$$br" = "HEAD" ]; then br="detached @$$(git rev-parse --short HEAD 2>/dev/null)"; fi; \
 		n=$$(git status --porcelain 2>/dev/null | wc -l | tr -d ' '); \
 		[ "$$n" = "0" ] && wt=clean || wt="dirty ($$n files)"; \
-		printf "%-28s %-36s %s\n" "orchestration (monorepo root)" "$$br" "$$wt"; \
+		printf "%-28s %-36s %s\n" "monorepo root" "$$br" "$$wt"; \
 	else \
-		printf "%-28s %-36s %s\n" "orchestration (monorepo root)" "(not a git repo)" "-"; \
+		printf "%-28s %-36s %s\n" "monorepo root" "(not a git repo)" "-"; \
 	fi
 	@while IFS= read -r line || [ -n "$$line" ]; do \
 		case "$$line" in ""|\#*) continue ;; esac; \
@@ -84,6 +88,22 @@ services-branches:
 	done < $(SERVICES_MANIFEST)
 	@echo ""
 	@echo "Source list: $(SERVICES_MANIFEST)"
+
+# Первый вызов запускает DSH в foreground; повторный безопасно использует
+# подтверждённый работающий DSH и не пытается занять его порт второй раз.
+harness:
+	@status=$$(curl -sS -o /dev/null -w '%{http_code}' --max-time 2 \
+		"http://$(HARNESS_HOST):$(HARNESS_PORT)/" 2>/dev/null || true); \
+	if [ "$$status" = "000" ]; then \
+		exec npm --prefix dsh run web -- --host "$(HARNESS_HOST)" --port "$(HARNESS_PORT)"; \
+	fi; \
+	body=$$(curl -sS --max-time 2 "http://$(HARNESS_HOST):$(HARNESS_PORT)/" 2>/dev/null || true); \
+	if [ "$$status" = "401" ] && [ "$$body" = "dsh web authentication required; reopen the URL printed by dsh web." ]; then \
+		echo "DeepSeek Harness is already running at http://$(HARNESS_HOST):$(HARNESS_PORT); using the existing attached process."; \
+		exit 0; \
+	fi; \
+	echo "Error: $(HARNESS_HOST):$(HARNESS_PORT) is occupied by a service that was not identified as DeepSeek Harness (HTTP $$status)." >&2; \
+	exit 1
 
 # =====BUILD COMMANDS=====
 
@@ -319,3 +339,36 @@ be-makemigrations:
 
 be-migrate:
 	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic upgrade head"
+
+# =====E2E TESTS (PLAYWRIGHT)=====
+
+e2e-install:
+	@echo "Installing Playwright..."
+	npm install
+	npm run playwright:install
+
+e2e:
+	@echo "Running E2E tests (headless)..."
+	npm run e2e
+
+e2e-ui:
+	@echo "Running E2E tests (UI mode)..."
+	npm run e2e:ui
+
+e2e-headed:
+	@echo "Running E2E tests (headed mode)..."
+	npm run e2e:headed
+
+e2e-frontend:
+	@echo "Running frontend E2E tests only..."
+	npm run e2e -- --project=frontend
+
+e2e-report:
+	@echo "Showing E2E test report..."
+	npm run e2e:report
+
+# =====SHIP TESTS=====
+
+ship-test: | Makefile
+	@echo "Running ship tooling tests..."
+	node --test scripts/tests/**/*.test.mjs

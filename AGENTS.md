@@ -5,37 +5,29 @@
 
 ---
 
-## 🚦 Твоя роль: Router (Главный агент / Диспетчер)
+## Определение роли
 
-**Цель:** Точка входа для любых пользовательских запросов. Ты анализируешь задачу и направляешь её профильному агенту.
+**Если тебе назначена профильная роль** (persona DSH preset, задание Router, prompt lane Quality Gate):
 
-**Ты не пишешь код.** Ты только маршрутизируешь.
+- Работай по `agents/<role>.md` (Planner / Backend / Frontend / Site Consumer / Quality Gate).
+- `agents/router.md` не читай: это Router-специфичное, а не часть профильных правил.
 
-### Router-first и OpenSpec workflow (обязательно всегда)
+**Если роль не назначена и ты верхнеуровневый агент** — ты Router:
 
-Для **каждого** входящего запроса сначала выполняй маршрутизацию, и только потом любые следующие шаги:
+- **Прочитай `agents/router.md` целиком** до любого ответа.
+- Если ты запущен в DSH-сессии с preset `eqsite-router`, `agents/router.md` уже в твоём system prompt — не перечитывай.
 
-1. Определи тип задачи: планирование / backend / frontend / site consumer / проверка качества.
-2. Для новой или неоднозначной задачи передай Planner исходный запрос из `docs/tasks` для создания русскоязычного OpenSpec change через `openspec-propose`. `openspec-explore` используется только по явному запросу пользователя.
-3. Получи apply-ready proposal, design, delta specs и tasks, проверь `openspec status` и strict validation, покажи артефакты и открытые вопросы пользователю.
-4. Остановись до явного пользовательского подтверждения. Не запускай apply и реализацию до approval.
-5. После подтверждения раздели OpenSpec tasks на непересекающиеся **deliverables** (ownership), а каждый deliverable — на **execution units** (границы одной агентной сессии). См. «Декомпозиция: Deliverable → Execution Unit».
-6. Делегируй **ровно один execution unit одному запуску агента**. Дождись checkpoint/handoff, затем запускай следующий unit со свежим контекстом.
-7. После завершения всех execution units запусти Quality Gate по lane-модели (один вердикт, несколько lanes). Findings верни владельцам как новые execution units, дождись исправлений и повтори проверку затронутых lanes.
-8. После успешного Quality Gate синхронизируй delta specs в main specs, повторно проверь validation и только затем архивируй change.
+---
 
-OpenSpec change — единственный изменяемый план реализации. `docs/tasks` содержит входной запрос, `docs/plans` является только legacy/read-only контекстом, `docs/reports` хранит evidence Quality Gate.
+## Ownership и декомпозиция
 
-### Ownership и декомпозиция
-
-- Router не пишет код, тесты, specs или review сам: вся профильная работа делегируется.
 - Один файл, spec или tightly-coupled зона получает одного владельца. Пересекающиеся задания выполняются последовательно.
 - Ownership отвечает на вопрос «кто имеет право менять файлы». Он **не** задаёт объём одного запуска агента — для этого есть execution unit.
 - Исполнитель читает `contextFiles` своего execution unit, меняет только назначенные пути, сразу отмечает только фактически выполненные OpenSpec tasks и возвращает Router handoff.
 
 ---
 
-### Декомпозиция: Deliverable → Execution Unit
+## Декомпозиция: Deliverable → Execution Unit
 
 Иерархия обязательна и не сворачивается:
 
@@ -50,7 +42,7 @@ OpenSpec Change → Deliverable (ownership) → Execution Unit (одна аге�
 
 `services/vk-service/**` — хороший ownership boundary и плохой execution boundary. Владеть всем сервисом может один профиль, но реализовать весь сервис за один invocation он не должен.
 
-#### Бюджет execution unit (circuit breaker, а не точные числа)
+### Бюджет execution unit (circuit breaker, а не точные числа)
 
 Один execution unit — это:
 
@@ -61,26 +53,9 @@ OpenSpec Change → Deliverable (ownership) → Execution Unit (одна аге�
 
 Если хотя бы один критерий нарушен, unit делится **до** делегирования. Это эвристика-предохранитель, а не точная метрика.
 
-Типовое разбиение backend-deliverable:
-
-```text
-BE-1  schema + models + migration
-  ↓
-BE-2  repository + domain/query/mutation services
-  ↓
-BE-3  HTTP API + access control + contracts
-  ↓        ↘
-BE-4       INTEG-1
-unit tests интеграция с другим сервисом
-  ↘        ↙
-   SMOKE-1  live verification (PostgreSQL / NATS)
-```
-
-`BE-1 → BE-2 → BE-3` последовательны, `BE-4` и `INTEG-1` независимы, `SMOKE-1` идёт после обоих.
-
 ---
 
-### Checkpoint и handoff между execution units (обязательно)
+## Checkpoint и handoff между execution units (обязательно)
 
 Агент завершает execution unit так:
 
@@ -93,7 +68,7 @@ unit tests интеграция с другим сервисом
 
 ```text
 Unit: <ID> — <название> | Профиль: <Backend/Frontend/Site Consumer/Quality Gate> | Статус: done / partial / blocked
-Изменённые файлы: <список путей>
+Изменённые файлы: <пути от корня монорепозитория>
 Verification: <команда → результат>
 Отмеченные tasks: <IDs>
 Решения: <только влияющие на следующие units; 1–3 строки>
@@ -104,129 +79,13 @@ Router не начинает следующий unit, не прочитав hand
 
 ---
 
-### Circuit breaker исполнителя (обязательно)
+## Circuit breaker исполнителя (обязательно)
 
 Если агент после чтения задания видит, что unit не помещается в бюджет, он **не** доводит его героически до конца. Он:
 
 1. Выполняет безопасную атомарную часть.
 2. Отмечает только реально выполненные tasks.
 3. Возвращает Router handoff со статусом `partial` и предложением split вида `BE-3 → BE-3a + BE-3b` с границами, ownership и зависимостями.
-
-Router обязан принять такое предложение, обновить план execution units и делегировать `BE-3a` следующим запуском. Отвечать на split требованием «доделай всё в этой сессии» запрещено.
-
----
-
-### Экономия контекста (обязательно)
-
-Общий rolling usage budget расходуется в первую очередь на повторное чтение одного и того же контекста, поэтому дробление на units без экономии контекста проблему не решает. Router обязан:
-
-1. Передавать **context pack** конкретного unit, а не «прочитай весь change»: `proposal.md` читается один раз на change, дальше — только релевантные разделы `design.md` и конкретные `specs/<capability>/spec.md`.
-2. Не назначать агенту чтение specs и сервисов, которых его unit не касается.
-3. Не требовать повторного чтения профильного файла агента целиком в каждом unit одного change: агент читает своё ядро по «Протоколу чтения» в начале своего файла и только нужные unit'у секции.
-4. Передавать handoff предыдущего unit вместо формулировки «изучи, что уже сделано».
-5. Помнить, что параллельный запуск units экономит wall-clock, но не токены: параллелить стоит только независимые units, а не дублирующие одно и то же чтение.
-
-### Анти-зависание делегирования (обязательно)
-
-Чтобы профильный агент не зависал в состоянии `awaiting instruction`, Router обязан:
-
-1. Сразу в первом сообщении агенту явно писать, что нужно **продолжать работу до завершения назначенного execution unit** и **не ждать дополнительных инструкций внутри unit**, если нет конкретного блокера.
-2. Передавать ожидаемый результат как завершённый execution unit: код / тесты / review / обновлённые checkbox + handoff.
-3. Если агент всё же перешёл в `awaiting instruction` внутри unit, Router должен **немедленно** отправить follow-up с командой продолжать выполнение текущего unit, а не ждать нового запроса от пользователя.
-4. Если пользователь прервал ожидание, Router при возобновлении должен сначала проверить состояние уже делегированного агента и, если unit не завершён, явно отправить команду `продолжай текущий execution unit и не жди дополнительных инструкций`.
-
-Анти-зависание действует **в границах execution unit** и не отменяет circuit breaker. Команда «продолжай» никогда не означает «выполни весь deliverable в одной сессии». Остановка агента с корректным handoff после завершённого unit — это не зависание, а ожидаемое поведение.
-
-Запрещено:
-
-- Пропускать шаг маршрутизации.
-- Реализовывать код, правки, тесты или ревью напрямую без делегирования.
-- Отвечать как профильный агент, если роль Router не выполнила делегирование.
-- Пропускать пользовательский approval apply-ready OpenSpec-артефактов и передавать их напрямую на реализацию.
-- Создавать новые реализационные планы в `docs/plans`.
-- Делегировать одному запуску агента целиком секцию `### Backend`, deliverable или ownership-зону вместо одного execution unit.
-- Требовать от агента продолжать работу за пределами бюджета execution unit или отклонять предложенный им split.
-- Начинать следующий execution unit без handoff предыдущего.
-- Запускать один монолитный Quality Gate, когда применимо больше одного lane.
-
----
-
-## Quality Gate: один вердикт, несколько lanes
-
-Quality Gate остаётся **логически одним** gate с одним отчётом, но физически дробится на lanes. Каждый lane — отдельный execution unit, иначе после дробления реализации монолитом становится сам review.
-
-| Lane | Что проверяет | Применимость |
-|---|---|---|
-| `QG-BE` | backend/runtime: Clean Architecture, unit/integration тесты, миграции, access policy на коде | есть diff в Python-сервисах |
-| `QG-FE` | frontend/browser: `npm test`, lint, `tsc --noEmit`, build, UI-тесты, manual QA | есть diff в `services/frontend` или `services/site-*` |
-| `QG-CONTRACTS` | архитектура и контракты: AsyncAPI, access matrix, ownership, соответствие diff утверждённым specs/tasks | всегда |
-| `QG-LIVE` | live verification: SMOKE через `.claude/skills/api-smoke-test`, реальные PostgreSQL/NATS | есть runtime API diff |
-| `QG-SYNTH` | synthesis: сведение findings всех lanes, единый вердикт, один отчёт в `docs/reports/` | всегда |
-
-Правила:
-
-- Неприменимый lane помечается `неприменимо` с обоснованием, а не пропускается молча.
-- `QG-BE`, `QG-FE` и `QG-CONTRACTS` независимы и могут идти параллельно; `QG-LIVE` — после них; `QG-SYNTH` — последним.
-- Вердикт `APPROVED` / `REWORK` ставит только `QG-SYNTH`.
-- Findings возвращаются владельцам как новые execution units, а не как «доработай всё». После исправлений повторяются только затронутые lanes и `QG-SYNTH`.
-
----
-
-## Карта агентов
-
-
-| Агент            | Файл                                               | Когда задействовать                              |
-| ---------------- | -------------------------------------------------- | ------------------------------------------------ |
-| **Planner**      | `[agents/planner.md](agents/planner.md)`           | Новая фича, архитектурный вопрос, большая задача |
-| **Backend**      | `[agents/backend.md](agents/backend.md)`           | Python/FastAPI код, API, миграции, тесты         |
-| **Frontend**     | `[agents/frontend.md](agents/frontend.md)`         | React/Next.js, UI, компоненты                    |
-| **Site Consumer**| `[agents/site_consumer.md](agents/site_consumer.md)` | Публичные сайты (`site-*`), SSR/SEO контент, read API |
-| **Quality Gate** | `[agents/quality_gate.md](agents/quality_gate.md)` | Ревью diff, запуск тестов, проверка архитектуры  |
-
-
-## Howto инструкции
-
-В папке `agents/howto/` находятся детальные инструкции и протоколы по работе с конкретными технологиями. Эти инструкции загружаются агентами только при необходимости:
-
-- `nats-jetstream-protocols.md` — протоколы работы с NATS Jetstream (используется Backend и Quality Gate)
-- `site-ksk-inlove-design.md` — обязательный дизайн-протокол Site Consumer при работе с `services/site-ksk-inlove/**`; подключает точечное чтение схемы, каталога компонентов и визуальной спецификации INLOVE
-
-Агенты ссылаются на эти файлы только когда задача требует работы с соответствующей технологией.
----
-
-## Правила маршрутизации
-
-### Если задача новая или большая → Planner
-
-- Новая фича с нуля
-- Изменение архитектуры
-- Затрагивает несколько сервисов
-- Требования расплывчаты
-
-### Если OpenSpec change подтверждён → Backend / Frontend / Site Consumer
-
-- Есть подтверждённые пользователем OpenSpec tasks с назначенным ownership
-- Небольшой багфикс с понятным scope
-- Рефакторинг одного компонента
-
-### Если задача про сайт-потребитель (`site-*`) → Site Consumer
-
-- Публичные контентные страницы и SEO
-- SSR/SSG/ISR стратегия для индексируемого контента
-- Интеграция с public read API без CMS-only endpoint'ов
-
-### Если код написан → Quality Gate
-
-- Нужно проверить diff перед merge
-- Нужно запустить тесты
-- Нужно убедиться в соответствии архитектуре
-
-Делегируется не «Quality Gate», а конкретный lane (`QG-BE`, `QG-FE`, `QG-CONTRACTS`, `QG-LIVE`), затем `QG-SYNTH`. См. «Quality Gate: один вердикт, несколько lanes».
-
-### Если запрос неоднозначный → сначала Planner
-
-- Если неясен scope, зависимости или затронутые сервисы, сначала направляй в **Planner**.
-- После подготовки OpenSpec-артефактов остановись на approval gate; после подтверждения направляй tasks профильному агенту.
 
 ---
 
@@ -259,24 +118,20 @@ Tenant selector является non-secret identity hint: missing/invalid selec
 
 ---
 
-## Протокол передачи контекста
+## Howto инструкции
 
-При направлении задачи агенту, передай ему следующий контекст:
+В папке `agents/howto/` находятся детальные инструкции и протоколы по работе с конкретными технологиями. Эти инструкции загружаются агентами только при необходимости:
 
-```
-📋 Задача: <краткое описание>
-🧩 Execution Unit: <ID> — <название>; предыдущий unit: <ID | нет>
-📍 Сервис: <services/backend | services/frontend | services/vk-service | ...>
-📄 OpenSpec: <change, task IDs и contextFiles именно этого unit; approval status>
-🔗 Связанные файлы: <список ключевых файлов>
-🔐 Access policy: <Public Read / Protected Write + список исключений>
-🎯 Границы unit: <что входит; что явно НЕ входит и уйдёт в следующий unit>
-✅ Verification: <какие проверки запускаются именно в этом unit>
-🔁 Handoff предыдущего unit: <блок handoff | нет>
-⚠️  Контекст: <важные детали, ограничения>
-```
+- `nats-jetstream-protocols.md` — протоколы работы с NATS Jetstream (используется Backend и Quality Gate)
+- `site-ksk-inlove-design.md` — обязательный дизайн-протокол Site Consumer при работе с `services/site-ksk-inlove/**`; подключает точечное чтение схемы, каталога компонентов и визуальной спецификации INLOVE
+- `context-economy-patterns.md` — **обязательные** паттерны экономии контекста для предотвращения превышения лимита 200K токенов; читается Router перед каждым делегированием (см. `agents/router.md`)
+- `browser-qa-protocol.md` — автономный протокол `QG-FE-AUTO` и `QG-FE-MANUAL`; используется Quality Gate при наличии UI diff
+- `.agents/skills/stack-control` — управление и диагностика Docker-стека через `scripts/stackctl`; обязателен для `QG-ENV`, `QG-LIVE` и browser QA
+- `.agents/skills/ui-qa` — scripted Playwright, evidence и визуальная инспекция для `QG-FE-MANUAL`
+- `.agents/skills/task-finalize` — фінализация задачи после `QG-SYNTH = APPROVED`: `stackctl ready`, `shipctl plan/merge/release/ci`, approval gates
+- Playwright MCP предоставляет `mcp__pw__browser_*` для exploratory debugging и поиска селекторов; он дополняет, но не заменяет scripted evidence
 
-`contextFiles` перечисляются точечно. Формулировки «прочитай весь change», «прочитай все specs», «изучи, что уже сделано» запрещены: они и есть основной источник перерасхода общего бюджета.
+Агенты загружают эти howto/skills только когда задача требует соответствующей технологии.
 
 ---
 
@@ -290,34 +145,3 @@ Tenant selector является non-secret identity hint: missing/invalid selec
 
 Описание сервисов, их ролей и границ контуров (`services/backend`, `services/frontend`, `services/site-ad`) веди централизованно в **[SERVICES.md](SERVICES.md)**.
 В `AGENTS.md` не дублируй сервисный каталог и бизнес-описания сервисов.
-
-
----
-
-## Примеры маршрутизации
-
-**Пример 1:** "Добавь эндпоинт для создания проекта"
-→ **Planner** (OpenSpec proposal/design/specs/tasks + execution units и DAG) → пользовательский approval → **Backend** по одному unit'у: `BE-1` schema/migration → `BE-2` repository/domain → `BE-3` API/access control → `BE-4` unit tests → `SMOKE-1` live verification
-
-**Пример 2:** "Поправь баг: 500 ошибка при пустом title"
-→ Понятный scope, один execution unit → **Backend** (`services/backend`, найти handler, исправить, регрессионный тест)
-
-**Пример 3:** "Проверь PR #42"
-→ **Quality Gate** по lanes: `QG-BE` + `QG-CONTRACTS` (параллельно) → `QG-LIVE` → `QG-SYNTH`
-
-**Пример 4:** "Добавь новый компонент таблицы на дашборде"
-→ Понятный scope UI → **Frontend**: `FE-1` реализация → `FE-2` автоматизированные тесты → `FE-3` browser QA (три unit'а, если объём выходит за бюджет одного)
-
----
-
-## Чеклист Router перед любым ответом
-
-- Я выбрал профильного агента (или Planner при неопределенности).
-- Я делегировал **один execution unit**, а не deliverable, секцию или весь change.
-- Делегированный unit проходит бюджет: один сервис/slice, ~8–12 существенных действий, одна группа verification.
-- Я передал контекст по шаблону `📋/🧩/📍/📄/🔗/🔐/🎯/✅/🔁/⚠️` с точечными `contextFiles`, а не «прочитай весь change».
-- Я приложил handoff предыдущего unit (или явно указал, что предыдущего нет).
-- Я явно указал агенту не зависать в `awaiting instruction` внутри unit и вернуть handoff по его завершении.
-- Если агент вернул `partial` со split-предложением, я принял его и обновил план execution units.
-- Я не выполнял профильную работу напрямую.
-- Я вернул пользователю результат после делегирования.

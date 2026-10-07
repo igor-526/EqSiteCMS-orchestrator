@@ -158,7 +158,7 @@ Gate остаётся логически одним (один отчёт, оди
 
 1. **Открытое противоречие в main specs.** `openspec/specs/notification-settings-api/spec.md:98,103` по-прежнему требует «не менее 30 unit scenarios» и «не менее 30 smoke scenarios». Это утверждённый main spec, он вне scope задачи 062 (`AGENTS.md` + `agents/`) и меняется только через OpenSpec workflow. До правки он перекрывает новое risk-based правило для этой capability. Рекомендация: отдельный change, заменяющий квоту на требование покрытия применимых осей test matrix.
 2. **Legacy `docs/plans/**`** содержит старую квоту (`003`, `004`, `007`, `009`, `010`, `014`). Файлы read-only и на новые change'и не влияют — правка не требуется.
-3. **`orchestrator/AGENTS.md`** фиксирует для `plan_parser` плоские секции `### Backend` / `### Frontend` / `### Quality Gate`. Противоречия нет: парсер читает `docs/plans/<TICKET>.md` (legacy), а плоские секции явно сохранены в rework-чеклистах `docs/reports/`. В OpenSpec `tasks.md` структура — по execution units.
+3. **Legacy `docs/reports/**`** может содержать плоские rework-секции `### Backend` / `### Frontend` / `### Quality Gate`. Они сохраняются как исторический формат отчётов и не меняют структуру OpenSpec `tasks.md` по execution units.
 4. **Числа бюджета (8–12 действий, ~25 сценариев) — эвристики.** Их стоит откалибровать по фактическому расходу на первых двух-трёх change'ах после внедрения.
 5. **Проверка на практике не проводилась.** Изменены только инструкции; реальный выигрыш по бюджету подтвердится на следующем change, прошедшем полный цикл Planner → units → QG lanes.
 

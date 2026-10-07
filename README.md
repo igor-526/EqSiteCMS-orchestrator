@@ -51,9 +51,34 @@ make fe            # Frontend (Next.js)
 - `make fix` — отдельный mutating autofix/format gate.
 - `make build` / `make build-nc` — сборка backend, notification, email и CMS frontend.
 - `make compose-check` / `make secret-scan` — статические release-проверки.
-- Release/recreate/migration/readiness/rollback workflow: `docs/operations/core-release.md`.
 - `make update` — алиас для `make sync`, обновляет код во всех репозиториях (`git pull`).
 - `make test` / `make lint` — совместимые алиасы non-mutating `make check`.
+- `make ship-test` — unit-тесты инструментов финализации (`scripts/shipctl`).
+
+### Инструменты процесса
+
+- **`scripts/stackctl`** — управление Docker-стеком (`up`, `rebuild`, `migrate`, `ready`, `status`, `logs`, `doctor`). См. `.agents/skills/stack-control/SKILL.md`.
+- **`scripts/shipctl`** — детерминированная финализация задач (`status`, `plan`, `merge`, `release`, `ci`). JSON stdout, exit 0/1/2/3, `flock`. См. `.agents/skills/task-finalize/SKILL.md`.
+
+```bash
+# Синхронизация клонов manifest (строгий режим: ff-only, включая корень)
+make sync SYNC_FLAGS="--strict --include-root --report .qa/ship/<c>/sync.json"
+
+# Пересборка и health-check runtime-сервисов
+scripts/stackctl ready app frontend site-ad site-ksk-inlove
+
+# План слияния change (пофайловая классификация, имя ветки, блокеры)
+scripts/shipctl plan --change <id> --summary "<text>" --paths-file paths.txt
+
+# Merge в main (feature-ветки, commit, push; конфликт → --resume)
+scripts/shipctl merge --plan .qa/ship/<c>/plan.json
+
+# Dry-run без мутаций
+scripts/shipctl merge --plan <f> --dry-run
+scripts/stackctl ready <aliases> --dry-run
+```
+
+Release/recreate/migration/readiness/rollback workflow: `WORKFLOW.md`, `docs/operations/core-release.md`.
 
 ## Разработка
 

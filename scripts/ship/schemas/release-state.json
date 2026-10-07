@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Release State Schema",
+  "description": "JSON schema for shipctl release-state.json output",
+  "type": "object",
+  "required": ["change", "repos"],
+  "additionalProperties": false,
+  "properties": {
+    "change": {
+      "type": "string",
+      "description": "Change name"
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["repo", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "ownerRepo": {
+            "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ],
+            "description": "GitHub owner/repo"
+          },
+          "sha": {
+            "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ],
+            "description": "SHA pushed to release"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pushed", "not-applicable", "skipped", "no-release-branch", "noop", "push_failed"],
+            "description": "Release status for this repository"
+          },
+          "reason": {
+            "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ],
+            "description": "Human-readable reason for status"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message if status is push_failed"
+          }
+        }
+      }
+    },
+    "stopped": {
+      "type": "boolean",
+      "description": "True if release stopped due to push failure"
+    }
+  }
+}

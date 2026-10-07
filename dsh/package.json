@@ -1,0 +1,14 @@
+{
+  "name": "eqsitecms-dsh-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Project-local DeepSeek Harness runtime for EqSiteCMS",
+  "scripts": {
+    "dsh": "DSH_HOME=./home dsh",
+    "web": "DSH_HOME=./home dsh web",
+    "web:no-open": "DSH_HOME=./home dsh web --no-open"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.2.0-rc.2"
+  }
+}

@@ -6,16 +6,18 @@
             "name": "App",
             "type": "debugpy",
             "request": "launch",
-            "python": "${workspaceFolder}/backend/.venv/bin/python",
+            "python": "${workspaceFolder}/services/backend/.venv/bin/python",
             "module": "uvicorn",
             "args": [
                 "src.main:app",
-                "--reload"
+                "--reload",
+                "--reload-dir",
+                "${workspaceFolder}/services/backend/src"
             ],
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/backend",
+            "cwd": "${workspaceFolder}/services/backend",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/backend/src",
+                "PYTHONPATH": "${workspaceFolder}/services/backend/src",
                 "DEBUG": "True",
                 "SWAGGER_TITLE": "Equestrian Site CMS Manager",
                 "SECRET_KEY": "qwoiejcqwecdfvfdviq123128cu31",
@@ -26,20 +28,20 @@
                 "POSTGRES_PASSWORD": "eqsitecms",
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_DB": "eqsitecms",
-                "POSTGRES_PORT": "5433",
+                "POSTGRES_PORT": "5433"
             }
         },
         {
             "name": "Seed Dev Horse Data",
             "type": "debugpy",
             "request": "launch",
-            "python": "${workspaceFolder}/backend/.venv/bin/python",
-            "program": "${workspaceFolder}/backend/maintain/horse_generator/seed_dev_horse_data.py",
+            "python": "${workspaceFolder}/services/backend/.venv/bin/python",
+            "program": "${workspaceFolder}/services/backend/maintain/horse_generator/seed_dev_horse_data.py",
             "args": [],
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/backend",
+            "cwd": "${workspaceFolder}/services/backend",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/backend/src",
+                "PYTHONPATH": "${workspaceFolder}/services/backend/src",
                 "DEBUG": "True",
                 "SWAGGER_TITLE": "Equestrian Site CMS Manager",
                 "SECRET_KEY": "qwoiejcqwecdfvfdviq123128cu31",
@@ -50,20 +52,20 @@
                 "POSTGRES_PASSWORD": "eqsitecms",
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_DB": "eqsitecms",
-                "POSTGRES_PORT": "5433",
+                "POSTGRES_PORT": "5433"
             }
         },
         {
             "name": "Generate Horses",
             "type": "debugpy",
             "request": "launch",
-            "python": "${workspaceFolder}/backend/.venv/bin/python",
-            "program": "${workspaceFolder}/backend/maintain/horse_generator/generate_horses.py",
+            "python": "${workspaceFolder}/services/backend/.venv/bin/python",
+            "program": "${workspaceFolder}/services/backend/maintain/horse_generator/generate_horses.py",
             "args": [],
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/backend",
+            "cwd": "${workspaceFolder}/services/backend",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/backend/src",
+                "PYTHONPATH": "${workspaceFolder}/services/backend/src",
                 "DEBUG": "True",
                 "SWAGGER_TITLE": "Equestrian Site CMS Manager",
                 "SECRET_KEY": "qwoiejcqwecdfvfdviq123128cu31",
@@ -74,20 +76,20 @@
                 "POSTGRES_PASSWORD": "eqsitecms",
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_DB": "eqsitecms",
-                "POSTGRES_PORT": "5433",
+                "POSTGRES_PORT": "5433"
             }
         },
         {
             "name": "Generate Horses Pedigree",
             "type": "debugpy",
             "request": "launch",
-            "python": "${workspaceFolder}/backend/.venv/bin/python",
-            "program": "${workspaceFolder}/backend/maintain/horse_generator/generate_horses_pedigree.py",
+            "python": "${workspaceFolder}/services/backend/.venv/bin/python",
+            "program": "${workspaceFolder}/services/backend/maintain/horse_generator/generate_horses_pedigree.py",
             "args": [],
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/backend",
+            "cwd": "${workspaceFolder}/services/backend",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/backend/src",
+                "PYTHONPATH": "${workspaceFolder}/services/backend/src",
                 "DEBUG": "True",
                 "SWAGGER_TITLE": "Equestrian Site CMS Manager",
                 "SECRET_KEY": "qwoiejcqwecdfvfdviq123128cu31",
@@ -98,7 +100,7 @@
                 "POSTGRES_PASSWORD": "eqsitecms",
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_DB": "eqsitecms",
-                "POSTGRES_PORT": "5433",
+                "POSTGRES_PORT": "5433"
             }
         }
     ]

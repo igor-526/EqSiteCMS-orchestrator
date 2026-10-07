@@ -1,1 +1,0 @@
-# QG disposable git subprocess loop smoke\n\nControlled disposable task for SM-OGS-02/03. No production work.\n

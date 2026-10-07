@@ -1,0 +1,11 @@
+{
+  "name": "@eqsite/playwright-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Playwright MCP connection for browser automation in Quality Gate",
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "dependencies": {
+    "@playwright/mcp": "0.0.83"
+  }
+}

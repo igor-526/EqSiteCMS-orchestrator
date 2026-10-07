@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Plan Schema",
+  "description": "JSON schema for shipctl plan.json output",
+  "type": "object",
+  "required": ["change", "kind", "branchName", "commitMessage", "repos", "hasBlockers"],
+  "additionalProperties": false,
+  "properties": {
+    "change": {
+      "type": "string",
+      "description": "Change name"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["feature", "bug"],
+      "description": "Branch kind"
+    },
+    "branchName": {
+      "type": "string",
+      "description": "Selected branch name"
+    },
+    "skippedBranches": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Branch names that were already taken"
+    },
+    "commitMessage": {
+      "type": "object",
+      "required": ["subject", "trailers"],
+      "additionalProperties": false,
+      "properties": {
+        "subject": {
+          "type": "string",
+          "description": "Commit subject line"
+        },
+        "trailers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Git commit trailers"
+        }
+      }
+    },
+    "repos": {
+      "type": "object",
+      "description": "Map of repository name to repository metadata",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["status"],
+            "additionalProperties": false,
+            "properties": {
+              "status": { "const": "untouched" },
+              "branch": { "type": "string" },
+              "head": { "type": "string" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["status", "path", "branch", "head", "included", "foreign", "blockers", "hasRelease", "fingerprint", "runtimeAliases"],
+            "additionalProperties": false,
+            "properties": {
+              "status": { "const": "changed" },
+              "path": { "type": "string" },
+              "branch": { "type": "string" },
+              "head": { "type": "string" },
+              "included": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "status"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "path": { "type": "string" },
+                    "status": { "type": "string" },
+                    "blobHash": { "type": "string", "description": "Optional git blob hash for validation" }
+                  }
+                }
+              },
+              "foreign": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "status"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "path": { "type": "string" },
+                    "status": { "type": "string" },
+                    "blobHash": { "type": "string", "description": "Optional git blob hash" }
+                  }
+                }
+              },
+              "blockers": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "hasRelease": { "type": "boolean" },
+              "ownerRepo": {
+                "oneOf": [
+                  { "type": "null" },
+                  {
+                    "type": "object",
+                    "required": ["owner", "repo"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "owner": { "type": "string" },
+                      "repo": { "type": "string" }
+                    }
+                  }
+                ]
+              },
+              "fingerprint": { "type": "string" },
+              "runtimeAliases": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Flat list of all blockers from all repos"
+    },
+    "hasBlockers": {
+      "type": "boolean",
+      "description": "Whether any blockers exist"
+    }
+  }
+}

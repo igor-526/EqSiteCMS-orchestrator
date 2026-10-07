@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Merge State Schema",
+  "description": "JSON schema for shipctl merge-state.json output",
+  "type": "object",
+  "required": ["phase", "change", "branchName", "repos"],
+  "additionalProperties": false,
+  "properties": {
+    "phase": {
+      "type": "string",
+      "enum": ["phase1", "sync-failed", "phase2-partial", "phase2-complete"],
+      "description": "Current merge phase"
+    },
+    "change": {
+      "type": "string",
+      "description": "Change name"
+    },
+    "branchName": {
+      "type": "string",
+      "description": "Feature branch name"
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "stage", "head", "included", "foreign"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "stage": {
+            "type": "string",
+            "enum": ["planned", "branch-pushed", "failed", "synced", "conflict", "merged", "pushed"],
+            "description": "Current stage of this repository"
+          },
+          "head": {
+            "type": "string",
+            "description": "Original HEAD SHA before merge"
+          },
+          "included": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path", "status"],
+              "additionalProperties": false,
+              "properties": {
+                "path": { "type": "string" },
+                "status": { "type": "string" },
+                "blobHash": { "type": "string", "description": "Optional git blob hash" }
+              }
+            }
+          },
+          "foreign": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path", "status"],
+              "additionalProperties": false,
+              "properties": {
+                "path": { "type": "string" },
+                "status": { "type": "string" },
+                "blobHash": { "type": "string", "description": "Optional git blob hash" }
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message if stage is failed"
+          },
+          "preMergeMain": {
+            "type": "string",
+            "description": "SHA of main before merge"
+          },
+          "conflictFiles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of conflicted files"
+          },
+          "mergedSha": {
+            "type": "string",
+            "description": "SHA after merge commit (for conflict resolution)"
+          },
+          "pushedSha": {
+            "type": "string",
+            "description": "SHA of main after push"
+          }
+        }
+      }
+    }
+  }
+}

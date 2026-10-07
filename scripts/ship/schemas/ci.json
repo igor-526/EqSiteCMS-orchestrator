@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CI State Schema",
+  "description": "JSON schema for shipctl ci.json output",
+  "type": "object",
+  "required": ["repos"],
+  "additionalProperties": false,
+  "properties": {
+    "repos": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["status"],
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["error"],
+                "description": "Error status"
+              },
+              "error": {
+                "type": "string",
+                "description": "Error message"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["status", "runs"],
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["success", "failure", "cancelled", "pending", "no_run", "timed_out"],
+                "description": "Overall CI status for this repository"
+              },
+              "runs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "workflow", "status", "conclusion", "url"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "description": "GitHub Actions run database ID"
+                    },
+                    "workflow": {
+                      "type": "string",
+                      "description": "Workflow name"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "GitHub run status (queued, in_progress, completed)"
+                    },
+                    "conclusion": {
+                      "oneOf": [
+                        { "type": "null" },
+                        { "type": "string" }
+                      ],
+                      "description": "GitHub run conclusion (success, failure, cancelled, etc.)"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "GitHub Actions run URL"
+                    },
+                    "excerpt": {
+                      "type": "string",
+                      "description": "Last 60 lines of failed log (if fetched)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

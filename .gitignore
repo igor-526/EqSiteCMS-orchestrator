@@ -3,6 +3,17 @@
 *.log
 .DS_Store
 node_modules/
+/dsh/node_modules/
+/dsh/home/attachments/
+/dsh/home/cache/
+/dsh/home/logs/
+/dsh/home/sessions/
+/dsh/home/.anonymous-user-id
+/dsh/home/.credentials.yaml
+/dsh/home/**/*.db
+/dsh/home/**/*.db-*
+/dsh/home/**/credentials.json
+/dsh/home/**/.env
 __pycache__/
 *.pyc
 .venv/
@@ -15,6 +26,11 @@ htmlcov/
 *.egg-info/
 .env
 .env.*
+
+# QA artifacts и кэши внутри проекта
+/.qa/
+/.cache/
+
 # Исходники сервисов — отдельные git-репозитории (см. services.manifest)
 /services/
 # Оркестратор — отдельный git-репозиторий, не часть eqSiteCMS (см. docs/tasks/agent_orchestration)
@@ -24,3 +40,19 @@ htmlcov/
 .kube/
 .directory
 /docs/parsings/
+# Playwright E2E
+/test-results/
+/e2e-report/
+/e2e-results.json
+/playwright/.cache/
+
+# DSH additional runtime data
+/dsh/home/storages/
+/dsh/home/.openai-codex-auth.json
+/dsh/.qa/
+/.playwright-mcp/
+/dsh/.playwright-mcp/
+
+# Local IDE and tool settings
+/.claude/settings.local.json
+/.agents/skills/**/credentials.json

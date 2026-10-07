@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+
+/**
+ * shipctl — deterministic task finalization tooling for EqSiteCMS monorepo.
+ *
+ * stdout is reserved for JSON results. Progress and human-readable output go
+ * to stderr so callers can parse stdout without stripping log lines.
+ *
+ * Exit codes:
+ *   0 — success
+ *   1 — operation stopped (conflict, push failure, sync failure, CI failure)
+ *   2 — environment unavailable (git/gh/flock missing, gh not authorized, lock held)
+ *   3 — precondition violated or plan stale (no mutations in this run)
+ */
+
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const SCRIPT_PATH = fileURLToPath(import.meta.url);
+
+// Environment configuration for testing
+const ROOT = process.env.SHIPCTL_ROOT || '/home/igor/projects/eqSiteCMS';
+const GH_BIN = process.env.SHIPCTL_GH_BIN || 'gh';
+const MAKE_BIN = process.env.SHIPCTL_MAKE_BIN || 'make';
+const LOCK_FILE = `${ROOT}/.qa/ship/shipctl.lock`;
+
+const KNOWN_COMMANDS = new Set(['status', 'plan', 'merge', 'release', 'ci']);
+const READ_ONLY_COMMANDS = new Set(['status', 'plan']);
+
+/**
+ * Check if command invocation is read-only (including --dry-run).
+ */
+function isReadOnly(command, args) {
+  if (READ_ONLY_COMMANDS.has(command)) return true;
+  if (args.includes('--dry-run')) return true;
+  // ci with --repo (no --change) is read-only
+  if (command === 'ci' && args.includes('--repo') && !args.includes('--change')) return true;
+  return false;
+}
+
+function output(payload) {
+  process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function failure(error, extra = {}, code = 1) {
+  return { code, payload: { ok: false, ...extra, error } };
+}
+
+function success(payload = {}) {
+  return { code: 0, payload: { ok: true, ...payload } };
+}
+
+async function main(argv) {
+  const args = argv.slice(2);
+  const command = args[0];
+
+  if (!command || !KNOWN_COMMANDS.has(command)) {
+    const { code, payload } = failure(
+      `Unknown command: ${command ?? '(missing)'}. Available: ${[...KNOWN_COMMANDS].join(', ')}`,
+      {},
+      2
+    );
+    output(payload);
+    return code;
+  }
+
+  // Lock for mutating commands
+  if (!isReadOnly(command, args) && process.env.SHIPCTL_LOCKED !== '1') {
+    const child = spawnSync('flock', [
+      '-E', '75', '-n', LOCK_FILE,
+      'node', SCRIPT_PATH, ...args
+    ], {
+      stdio: 'inherit',
+      env: { ...process.env, SHIPCTL_LOCKED: '1' }
+    });
+
+    if (child.error) {
+      const { code, payload } = failure(`Could not invoke flock: ${child.error.message}`, {}, 2);
+      output(payload);
+      process.exit(code);
+    }
+
+    if (child.status === 75) {
+      const { code, payload } = failure('Lock is held by another process', {}, 2);
+      output(payload);
+      process.exit(code);
+    }
+
+    process.exit(child.status ?? 2);
+  }
+
+  // Dispatch to command modules (async)
+  await dispatch(command, args.slice(1), { ROOT, GH_BIN, MAKE_BIN });
+}
+
+async function dispatch(command, args, context) {
+  let result;
+  try {
+    switch (command) {
+      case 'status': {
+        const { status } = await import('./ship/status.mjs');
+        result = await status(args, context);
+        break;
+      }
+      case 'plan': {
+        const { plan } = await import('./ship/plan.mjs');
+        result = await plan(args, context);
+        break;
+      }
+      case 'merge': {
+        const { merge } = await import('./ship/merge.mjs');
+        result = await merge(args, context);
+        break;
+      }
+      case 'release': {
+        const { release } = await import('./ship/release.mjs');
+        result = await release(args, context);
+        break;
+      }
+      case 'ci': {
+        const { ci } = await import('./ship/ci.mjs');
+        result = await ci(args, context);
+        break;
+      }
+      default:
+        result = failure(`Command ${command} not implemented`, {}, 2);
+    }
+  } catch (error) {
+    result = failure(error.message, { stack: error.stack }, 2);
+  }
+
+  const { code, payload } = result;
+  output(payload);
+  process.exit(code);
+}
+
+main(process.argv).catch(err => {
+  console.error('Fatal error:', err);
+  process.exit(2);
+});

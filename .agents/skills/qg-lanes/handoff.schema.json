@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "lane": {
+      "type": "string",
+      "enum": [
+        "QG-ENV",
+        "QG-BE",
+        "QG-FE-AUTO",
+        "QG-FE-MANUAL",
+        "QG-LIVE",
+        "QG-CONTRACTS",
+        "QG-SYNTH"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "failed", "blocked", "not_applicable"]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "major", "minor", "note"]
+          },
+          "owner_profile": {
+            "type": "string",
+            "enum": ["Planner", "Backend", "Frontend", "Site Consumer", "Quality Gate"]
+          },
+          "path": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "suggested_unit": {
+            "type": "string"
+          }
+        },
+        "required": ["severity", "owner_profile", "summary"],
+        "additionalProperties": false
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cmd": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": ["cmd", "result"],
+        "additionalProperties": false
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": ["lane", "status"],
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "properties": {
+        "lane": {
+          "const": "QG-SYNTH"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["APPROVED", "REWORK", "BLOCKED"]
+        },
+        "report_path": {
+          "type": "string"
+        }
+      },
+      "required": ["verdict", "report_path"]
+    },
+    {
+      "properties": {
+        "lane": {
+          "enum": ["QG-ENV", "QG-BE", "QG-FE-AUTO", "QG-FE-MANUAL", "QG-LIVE", "QG-CONTRACTS"]
+        }
+      }
+    }
+  ]
+}

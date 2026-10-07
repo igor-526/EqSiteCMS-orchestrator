@@ -1,0 +1,779 @@
+#!/usr/bin/env node
+
+/**
+ * stackctl — machine-readable Docker stack control for EqSiteCMS.
+ *
+ * stdout is reserved for JSON results. Progress and human-readable tables go
+ * to stderr so agents can parse stdout without stripping log lines.
+ */
+
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
+
+const PROJECT_ROOT = '/home/igor/projects/eqSiteCMS';
+const COMPOSE_DIR = join(PROJECT_ROOT, '.docker-compose');
+const LOCK_FILE = '/tmp/stackctl.lock';
+const SCRIPT_PATH = fileURLToPath(import.meta.url);
+
+// These definitions intentionally mirror the Makefile commands.
+const PROFILES = {
+  core: {
+    project: 'eqsitecms-core',
+    files: ['infra', 'be', 'notification', 'email', 'fe'],
+    envFiles: [join(COMPOSE_DIR, '.env')],
+    serviceKeys: [
+      'db', 'db-notifications', 'db-email', 'db-vk', 'minio', 'nats', 'redis',
+      'backend', 'notification-service', 'notification-migration',
+      'email-service', 'email-migration', 'celery-worker', 'frontend',
+    ],
+  },
+  be: {
+    project: 'eqsitecms-be',
+    files: ['be'],
+    envFiles: [join(COMPOSE_DIR, '.env')],
+    serviceKeys: ['backend'],
+  },
+  fe: {
+    project: 'eqsitecms-fe',
+    files: ['fe'],
+    envFiles: [join(PROJECT_ROOT, 'services/frontend/.env')],
+    serviceKeys: ['frontend'],
+  },
+  notification: {
+    project: 'eqsitecms-notification',
+    files: ['notification'],
+    envFiles: [join(PROJECT_ROOT, 'services/notification-service/.env')],
+    serviceKeys: ['notification-service', 'notification-migration'],
+  },
+  email: {
+    project: 'eqsitecms-email',
+    files: ['infra', 'email'],
+    envFiles: [join(PROJECT_ROOT, 'services/email-service/.env')],
+    serviceKeys: [
+      'db', 'db-notifications', 'db-email', 'db-vk', 'minio', 'nats', 'redis',
+      'email-service', 'email-migration', 'celery-worker',
+    ],
+  },
+  vk: {
+    project: 'eqsitecms-vk',
+    files: ['infra', 'vk'],
+    envFiles: [
+      join(COMPOSE_DIR, '.env'),
+      join(PROJECT_ROOT, 'services/vk-service/.env'),
+    ],
+    serviceKeys: ['db-vk', 'vk-migration', 'vk-service', 'vk-celery-worker', 'vk-bot'],
+  },
+  'site-ad': {
+    project: 'eqsitecms-site-ad',
+    composeFile: join(PROJECT_ROOT, 'services/site-ad/docker-compose.yaml'),
+    envFiles: [join(PROJECT_ROOT, 'services/site-ad/.env')],
+    serviceKeys: ['ad-site'],
+  },
+  'site-ksk-inlove': {
+    project: 'eqsitecms-site-ksk-inlove',
+    composeFile: join(PROJECT_ROOT, 'services/site-ksk-inlove/docker-compose.yaml'),
+    envFiles: [join(PROJECT_ROOT, 'services/site-ksk-inlove/.env')],
+    serviceKeys: ['site-ksk-inlove'],
+  },
+};
+
+// alias -> actual Compose key and deterministic container name.
+const SERVICES = {
+  app: { container: 'eqsitecms-app', composeKey: 'backend', fallbackProfile: 'be', buildable: true },
+  frontend: { container: 'eqsitecms-frontend', composeKey: 'frontend', fallbackProfile: 'fe', buildable: true },
+  'notification-service': { container: 'eqsitecms-notification-service', composeKey: 'notification-service', fallbackProfile: 'notification', buildable: true },
+  'email-service': { container: 'eqsitecms-email-service', composeKey: 'email-service', fallbackProfile: 'email', buildable: true },
+  'email-celery-worker': { container: 'eqsitecms-email-celery-worker', composeKey: 'celery-worker', fallbackProfile: 'email', buildable: true },
+  'vk-service': { container: 'eqsitecms-vk-service', composeKey: 'vk-service', fallbackProfile: 'vk', buildable: true },
+  'vk-celery-worker': { container: 'eqsitecms-vk-celery-worker', composeKey: 'vk-celery-worker', fallbackProfile: 'vk', buildable: true },
+  'vk-bot': { container: 'eqsitecms-vk-bot', composeKey: 'vk-bot', fallbackProfile: 'vk', buildable: true },
+  db: { container: 'eqsitecms-db', composeKey: 'db', fallbackProfile: 'core', buildable: false },
+  'db-notifications': { container: 'eqsitecms-db-notifications', composeKey: 'db-notifications', fallbackProfile: 'core', buildable: false },
+  'db-email': { container: 'eqsitecms-db-email', composeKey: 'db-email', fallbackProfile: 'core', buildable: false },
+  'db-vk': { container: 'eqsitecms-db-vk', composeKey: 'db-vk', fallbackProfile: 'vk', buildable: false },
+  redis: { container: 'eqsitecms-redis', composeKey: 'redis', fallbackProfile: 'core', buildable: false },
+  nats: { container: 'eqsitecms-nats', composeKey: 'nats', fallbackProfile: 'core', buildable: false },
+  minio: { container: 'eqsitecms-minio', composeKey: 'minio', fallbackProfile: 'core', buildable: false },
+  'site-ad': { container: 'ad-site', composeKey: 'ad-site', fallbackProfile: 'site-ad', buildable: true },
+  'site-ksk-inlove': { container: 'site-ksk-inlove', composeKey: 'site-ksk-inlove', fallbackProfile: 'site-ksk-inlove', buildable: true },
+};
+
+const CONTAINER_BY_COMPOSE_KEY = new Map(
+  Object.values(SERVICES).map((service) => [service.composeKey, service.container]),
+);
+
+const DB_CONFIG = {
+  db: { userEnv: 'POSTGRES_USER', nameEnv: 'POSTGRES_NAME' },
+  'db-notifications': { userEnv: 'POSTGRES_NOTIFICATIONS_USER', nameEnv: 'POSTGRES_NOTIFICATIONS_NAME' },
+  'db-email': { userEnv: 'POSTGRES_EMAIL_USER', nameEnv: 'POSTGRES_EMAIL_NAME' },
+  'db-vk': { userEnv: 'POSTGRES_VK_USER', nameEnv: 'POSTGRES_VK_NAME' },
+};
+
+const READ_ONLY_COMMANDS = new Set(['status', 'logs', 'doctor']);
+const KNOWN_COMMANDS = new Set([
+  'status', 'up', 'rebuild', 'restart', 'logs', 'exec', 'psql', 'migrate', 'seed', 'doctor', 'ready',
+]);
+
+const PROFILES_WITH_MIGRATIONS = new Set(['be', 'notification', 'email', 'vk']);
+
+function run(command, args, { progress = false, env = process.env } = {}) {
+  const result = spawnSync(command, args, {
+    cwd: PROJECT_ROOT,
+    encoding: 'utf8',
+    env,
+    stdio: 'pipe',
+  });
+  const stdout = result.stdout ?? '';
+  const stderr = result.stderr ?? '';
+  if (progress) {
+    if (stdout) process.stderr.write(stdout);
+    if (stderr) process.stderr.write(stderr);
+  }
+  return {
+    status: result.status,
+    signal: result.signal,
+    error: result.error,
+    stdout,
+    stderr,
+  };
+}
+
+function output(payload) {
+  process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function failure(error, extra = {}, code = 1) {
+  return { code, payload: { ok: false, ...extra, error } };
+}
+
+function success(payload = {}) {
+  return { code: 0, payload: { ok: true, ...payload } };
+}
+
+function dockerDaemonAvailable() {
+  const result = run('docker', ['info', '--format', '{{.ServerVersion}}']);
+  return result.status === 0;
+}
+
+function validateProfile(profile) {
+  if (!profile || !PROFILES[profile]) {
+    throw new Error(`Unknown profile: ${profile ?? '(missing)'}. Available: ${Object.keys(PROFILES).join(', ')}`);
+  }
+  return PROFILES[profile];
+}
+
+function validateService(alias) {
+  const service = SERVICES[alias];
+  if (!service) {
+    throw new Error(`Unknown service: ${alias ?? '(missing)'}. Available: ${Object.keys(SERVICES).join(', ')}`);
+  }
+  // Explicit allowlist: eqsitecms-* and site containers ad-site, site-ksk-inlove
+  const allowed = service.container.startsWith('eqsitecms-') 
+    || service.container === 'ad-site' 
+    || service.container === 'site-ksk-inlove';
+  if (!allowed) {
+    throw new Error(`Refusing container outside EqSiteCMS namespace: ${service.container}`);
+  }
+  return service;
+}
+
+function composeArgs(profileName, extraArgs = []) {
+  const profile = validateProfile(profileName);
+  const args = ['compose'];
+  for (const envFile of profile.envFiles) args.push('--env-file', envFile);
+  args.push('-p', profile.project);
+  if (profile.composeFile) {
+    // Absolute compose file for site profiles
+    args.push('-f', profile.composeFile);
+  } else {
+    // Multiple files from COMPOSE_DIR for standard profiles
+    for (const file of profile.files) {
+      args.push('-f', join(COMPOSE_DIR, `docker-compose.${file}.yml`));
+    }
+  }
+  return [...args, ...extraArgs];
+}
+
+function inspectContainer(container) {
+  const result = run('docker', ['inspect', container]);
+  if (result.status !== 0) return null;
+  try {
+    return JSON.parse(result.stdout)[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function composeProject(container) {
+  const inspect = inspectContainer(container);
+  return inspect?.Config?.Labels?.['com.docker.compose.project'] ?? null;
+}
+
+function profileForService(service) {
+  const project = composeProject(service.container);
+  const existingProfile = Object.entries(PROFILES)
+    .find(([, profile]) => profile.project === project)?.[0];
+  return { profile: existingProfile ?? service.fallbackProfile, project };
+}
+
+function stateForInspect(inspect) {
+  if (!inspect) return { status: 'missing', health: 'none' };
+  return {
+    status: inspect.State?.Status ?? 'unknown',
+    health: inspect.State?.Health?.Status ?? 'none',
+  };
+}
+
+async function waitForHealth(container, timeoutSeconds = 30) {
+  const deadline = Date.now() + timeoutSeconds * 1000;
+  while (Date.now() < deadline) {
+    const state = stateForInspect(inspectContainer(container));
+    if (state.health === 'healthy' || (state.health === 'none' && state.status === 'running')) {
+      return state;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  return stateForInspect(inspectContainer(container));
+}
+
+function parseEnvFile(path) {
+  const values = {};
+  for (const rawLine of readFileSync(path, 'utf8').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const separator = line.indexOf('=');
+    if (separator < 1) continue;
+    values[line.slice(0, separator)] = line.slice(separator + 1);
+  }
+  return values;
+}
+
+function existingProjectConflicts(profileName) {
+  const profile = validateProfile(profileName);
+  const conflicts = [];
+  for (const composeKey of profile.serviceKeys) {
+    const container = CONTAINER_BY_COMPOSE_KEY.get(composeKey);
+    if (!container) continue; // migration containers are intentionally ephemeral.
+    const currentProject = composeProject(container);
+    if (currentProject && currentProject !== profile.project) {
+      conflicts.push({ container, currentProject, requestedProject: profile.project });
+    }
+  }
+  return conflicts;
+}
+
+function statusRows() {
+  // A tab-separated template is stable across Docker CLI versions, unlike
+  // `docker ps --format json`, whose shape varies.
+  const result = run('docker', [
+    'ps', '-a', '--filter', 'name=eqsitecms-',
+    '--format', '{{.Names}}\t{{.Ports}}\t{{.Label "com.docker.compose.project"}}',
+  ]);
+  if (result.status !== 0) throw new Error(result.stderr.trim() || 'docker ps failed');
+
+  return result.stdout.trim().split('\n').filter(Boolean).map((line) => {
+    const [name, ports = '', project = ''] = line.split('\t');
+    const inspect = inspectContainer(name);
+    const state = stateForInspect(inspect);
+    return {
+      name,
+      status: state.status,
+      health: state.health,
+      ports,
+      project,
+    };
+  }).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function cmdStatus(args) {
+  const rows = statusRows();
+  if (args.includes('--json')) {
+    // Contract: --json emits a stable JSON array directly.
+    return { code: 0, rawPayload: rows };
+  }
+  const headers = ['NAME', 'STATUS', 'HEALTH', 'PORTS', 'PROJECT'];
+  const values = rows.map((row) => [row.name, row.status, row.health, row.ports || '-', row.project || '-']);
+  const widths = headers.map((header, index) => Math.max(header.length, ...values.map((row) => row[index].length)));
+  const format = (row) => row.map((value, index) => value.padEnd(widths[index])).join('  ');
+  process.stderr.write(`${format(headers)}\n${values.map(format).join('\n')}\n`);
+  return success({ containers: rows });
+}
+
+async function cmdUp(profileName) {
+  const profile = validateProfile(profileName);
+  const conflicts = existingProjectConflicts(profileName);
+  if (conflicts.length) {
+    return failure(
+      `Refusing to start ${profile.project}: existing EqSiteCMS containers belong to other Compose projects`,
+      { profile: profileName, conflicts },
+    );
+  }
+
+  process.stderr.write(`Starting profile ${profileName} (${profile.project})...\n`);
+  let result;
+  if (profileName === 'vk') {
+    const network = run('docker', ['network', 'inspect', 'eqsitecms_network']);
+    if (network.status !== 0) {
+      const created = run('docker', ['network', 'create', 'eqsitecms_network'], { progress: true });
+      if (created.status !== 0) return failure('Could not create eqsitecms_network', { profile: profileName });
+    }
+    if (!inspectContainer('eqsitecms-redis')) {
+      const redis = run('docker', composeArgs('vk', ['up', '-d', 'redis']), { progress: true });
+      if (redis.status !== 0) return failure('Could not start shared Redis', { profile: profileName });
+    }
+    result = run('docker', composeArgs('vk', [
+      'up', '-d', '--no-deps', 'db-vk', 'vk-migration', 'vk-service', 'vk-celery-worker', 'vk-bot',
+    ]), { progress: true });
+  } else {
+    result = run('docker', composeArgs(profileName, ['up', '-d']), { progress: true });
+  }
+  if (result.status !== 0) return failure('docker compose up failed', { profile: profileName });
+
+  const containers = statusRows().filter((row) => row.project === profile.project);
+  const states = [];
+  for (const container of containers) {
+    states.push({ name: container.name, ...(await waitForHealth(container.name)) });
+  }
+  const healthy = states.every((state) => state.health === 'healthy' || (state.health === 'none' && state.status === 'running'));
+  return healthy
+    ? success({ profile: profileName, status: states })
+    : failure('One or more containers did not become healthy within 30 seconds', { profile: profileName, status: states });
+}
+
+async function cmdRebuild(alias) {
+  const service = validateService(alias);
+  if (!service.buildable) return failure(`Service ${alias} has no build definition`, { service: alias });
+  const resolved = profileForService(service);
+  process.stderr.write(`Rebuilding ${alias} as Compose service ${service.composeKey} in ${resolved.profile}...\n`);
+
+  const build = run('docker', composeArgs(resolved.profile, ['build', service.composeKey]), { progress: true });
+  if (build.status !== 0) return failure('Build failed', { service: alias, profile: resolved.profile });
+  const recreate = run('docker', composeArgs(resolved.profile, [
+    'up', '-d', '--no-deps', '--force-recreate', service.composeKey,
+  ]), { progress: true });
+  if (recreate.status !== 0) return failure('Container recreation failed', { service: alias, profile: resolved.profile });
+  const state = await waitForHealth(service.container);
+  const ok = state.health === 'healthy' || (state.health === 'none' && state.status === 'running');
+  return ok
+    ? success({ service: alias, composeService: service.composeKey, profile: resolved.profile, status: state })
+    : failure('Container did not become healthy within 30 seconds', { service: alias, profile: resolved.profile, status: state });
+}
+
+async function cmdRestart(alias) {
+  const service = validateService(alias);
+  const restarted = run('docker', ['restart', service.container], { progress: true });
+  if (restarted.status !== 0) return failure('Restart failed', { service: alias });
+  const state = await waitForHealth(service.container);
+  const ok = state.health === 'healthy' || (state.health === 'none' && state.status === 'running');
+  return ok
+    ? success({ service: alias, status: state })
+    : failure('Container did not become healthy within 30 seconds', { service: alias, status: state });
+}
+
+async function cmdLogs(alias, args) {
+  const service = validateService(alias);
+  const sinceIndex = args.indexOf('--since');
+  const since = sinceIndex >= 0 ? args[sinceIndex + 1] : '10m';
+  if (!since) return failure('logs requires a value after --since', { service: alias });
+  const result = run('docker', ['logs', '--since', since, service.container]);
+  const logs = [result.stdout, result.stderr].filter(Boolean).join('');
+  if (result.status !== 0) return failure('docker logs failed', { service: alias, logs });
+  return success({ service: alias, since, logs });
+}
+
+async function cmdExec(alias, args) {
+  const service = validateService(alias);
+  if (!args.length) return failure('exec requires a non-interactive command', { service: alias });
+  const result = run('docker', ['exec', service.container, ...args]);
+  if (result.status !== 0) {
+    return failure('docker exec failed', { service: alias, command: args, stdout: result.stdout, stderr: result.stderr, exitCode: result.status });
+  }
+  return success({ service: alias, command: args, stdout: result.stdout, stderr: result.stderr, exitCode: 0 });
+}
+
+async function cmdPsql(dbAlias, args) {
+  const db = DB_CONFIG[dbAlias];
+  if (!db) return failure(`Unknown database: ${dbAlias ?? '(missing)'}. Available: ${Object.keys(DB_CONFIG).join(', ')}`);
+  const sqlIndex = args.indexOf('-c');
+  if (sqlIndex < 0 || !args[sqlIndex + 1]) {
+    return failure('Non-interactive agents must provide SQL with: psql <db> -c "SQL"', { database: dbAlias });
+  }
+  const service = validateService(dbAlias);
+  const env = parseEnvFile(join(COMPOSE_DIR, '.env'));
+  const user = env[db.userEnv];
+  const database = env[db.nameEnv];
+  const result = run('docker', [
+    'exec', service.container, 'psql', '-U', user, '-d', database, '-c', args[sqlIndex + 1],
+  ]);
+  if (result.status !== 0) {
+    return failure('psql command failed', { database: dbAlias, stdout: result.stdout, stderr: result.stderr, exitCode: result.status });
+  }
+  return success({ database: dbAlias, stdout: result.stdout, stderr: result.stderr, exitCode: 0 });
+}
+
+async function cmdMigrate(profileName) {
+  validateProfile(profileName);
+  const steps = [];
+  if (profileName === 'core') {
+    steps.push(
+      { profile: 'core', args: ['up', '-d', 'db', 'db-notifications', 'db-email', 'nats', 'redis'] },
+      { profile: 'core', args: ['run', '--rm', 'notification-migration'] },
+      { profile: 'core', args: ['run', '--rm', 'email-migration'] },
+      { profile: 'core', args: ['run', '--rm', 'backend', 'sh', '-c', 'cd /eqsitecms/src && uv run alembic -c alembic.ini upgrade head'] },
+    );
+  } else if (profileName === 'be') {
+    steps.push({ profile: 'be', args: ['run', '--rm', 'backend', 'sh', '-c', 'cd /eqsitecms/src && uv run alembic -c alembic.ini upgrade head'] });
+  } else if (profileName === 'notification') {
+    steps.push({ profile: 'notification', args: ['run', '--rm', 'notification-migration'] });
+  } else if (profileName === 'email') {
+    steps.push({ profile: 'email', args: ['run', '--rm', 'email-migration'] });
+  } else if (profileName === 'vk') {
+    steps.push({ profile: 'vk', args: ['run', '--rm', 'vk-migration'] });
+  } else {
+    return failure(`Profile ${profileName} has no migrations`, { profile: profileName });
+  }
+
+  for (const step of steps) {
+    const result = run('docker', composeArgs(step.profile, step.args), { progress: true });
+    if (result.status !== 0) return failure('Migration step failed', { profile: profileName, step: step.args });
+  }
+  return success({ profile: profileName, status: 'migrations applied' });
+}
+
+async function cmdSeed(profileName, dataset) {
+  validateProfile(profileName);
+  if (!['qa', 'demo', 'clean'].includes(dataset)) {
+    return failure(`Unknown dataset: ${dataset ?? '(missing)'}. Available names: qa, demo, clean`, { profile: profileName });
+  }
+  // Existing application seeders only initialize static registries on startup.
+  // There is no safe explicit qa/demo/clean dataset command in the repository.
+  return failure(
+    `Dataset '${dataset}' is not implemented by an existing safe repository command; refusing to report a fictitious seed success`,
+    { profile: profileName, dataset },
+  );
+}
+
+async function cmdDoctor(alias) {
+  const service = validateService(alias);
+  const inspect = inspectContainer(service.container);
+  if (!inspect) return failure('Container not found', { service: alias });
+
+  const logsResult = run('docker', ['logs', '--tail', '50', service.container]);
+  const recentLogs = [logsResult.stdout, logsResult.stderr].filter(Boolean).join('').split(/\r?\n/).filter(Boolean);
+  const healthLog = (inspect.State?.Health?.Log ?? []).map((entry) => ({
+    start: entry.Start,
+    end: entry.End,
+    exitCode: entry.ExitCode,
+    output: entry.Output,
+  }));
+  const ports = inspect.NetworkSettings?.Ports ?? {};
+  const project = inspect.Config?.Labels?.['com.docker.compose.project'] ?? null;
+  const state = {
+    status: inspect.State?.Status ?? 'unknown',
+    health: inspect.State?.Health?.Status ?? 'none',
+    exitCode: inspect.State?.ExitCode ?? null,
+    oomKilled: inspect.State?.OOMKilled ?? false,
+    error: inspect.State?.Error ?? '',
+  };
+
+  const recommendations = [];
+  if (state.oomKilled) recommendations.push('Increase memory limit or reduce service memory usage.');
+  if (state.status !== 'running') recommendations.push('Inspect recentLogs, then use restart only if the failure is infrastructure-related.');
+  if (state.health === 'unhealthy') recommendations.push('Inspect healthLog and recentLogs before retrying; do not retry more than twice.');
+
+  return success({
+    service: alias,
+    diagnosis: { container: service.container, project, state, ports, healthLog, recentLogs, recommendations },
+  });
+}
+
+function checkPortAvailable(port) {
+  const result = run('bash', ['-c', `netstat -tuln 2>/dev/null | grep -q ":${port} " && echo busy || echo free`]);
+  return result.stdout.trim() === 'free';
+}
+
+function checkEnvFileExists(path) {
+  try {
+    readFileSync(path, 'utf8');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function probeHttpEndpoint(port, timeoutSeconds = 60) {
+  const deadline = Date.now() + timeoutSeconds * 1000;
+  while (Date.now() < deadline) {
+    try {
+      const result = run('bash', ['-c', `curl -s -o /dev/null -w "%{http_code}" http://localhost:${port} 2>/dev/null || echo 000`]);
+      const statusCode = parseInt(result.stdout.trim(), 10);
+      if (statusCode > 0 && statusCode < 500) {
+        return { ok: true, statusCode };
+      }
+    } catch {
+      // Continue waiting
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  return { ok: false, reason: 'timeout' };
+}
+
+function getPublishedPorts(container) {
+  const inspect = inspectContainer(container);
+  if (!inspect?.NetworkSettings?.Ports) return [];
+  const ports = [];
+  for (const [containerPort, bindings] of Object.entries(inspect.NetworkSettings.Ports)) {
+    if (bindings) {
+      for (const binding of bindings) {
+        if (binding.HostPort) {
+          ports.push(parseInt(binding.HostPort, 10));
+        }
+      }
+    }
+  }
+  return ports;
+}
+
+async function cmdReady(aliases, flags) {
+  const dryRun = flags.includes('--dry-run');
+  const noMigrate = flags.includes('--no-migrate');
+  
+  if (!aliases.length) {
+    return success({ message: 'No runtime changes (empty alias list)', services: [] });
+  }
+
+  // Preflight checks
+  const siteEnvDir = process.env.STACKCTL_SITE_ENV_DIR;
+  const preflightErrors = [];
+  const services = [];
+
+  for (const alias of aliases) {
+    const service = validateService(alias);
+    const resolved = profileForService(service);
+    const profileName = resolved.profile;
+    const profile = PROFILES[profileName];
+    
+    if (!profile) {
+      preflightErrors.push({ alias, reason: 'unknown_profile', profile: profileName });
+      services.push({ alias, profile: profileName, error: 'unknown_profile' });
+      continue;
+    }
+    
+    const serviceState = { alias, profile: profileName };
+    
+    // Check .env files for site profiles
+    if (profile.composeFile && siteEnvDir) {
+      const envPath = join(siteEnvDir, `${alias}/.env`);
+      if (!checkEnvFileExists(envPath)) {
+        preflightErrors.push({ alias, reason: 'env_missing', path: envPath });
+        serviceState.error = 'env_missing';
+      }
+    } else if (profile.composeFile) {
+      // Use actual env path from profile
+      for (const envPath of profile.envFiles) {
+        if (!checkEnvFileExists(envPath)) {
+          preflightErrors.push({ alias, reason: 'env_missing', path: envPath });
+          serviceState.error = 'env_missing';
+        }
+      }
+    }
+    
+    // Check port availability for sites (only when PORT is defined)
+    if (profile.composeFile && profile.envFiles.length > 0) {
+      try {
+        const env = parseEnvFile(profile.envFiles[0]);
+        if (env.PORT) {
+          const port = parseInt(env.PORT, 10);
+          const currentInspect = inspectContainer(service.container);
+          const publishedPorts = getPublishedPorts(service.container);
+          const portUsedByThis = publishedPorts.includes(port);
+          
+          if (!portUsedByThis && !checkPortAvailable(port)) {
+            preflightErrors.push({ alias, reason: 'port_busy', port });
+            serviceState.error = 'port_busy';
+          }
+        }
+      } catch (err) {
+        // Env file issues already caught above
+      }
+    }
+    
+    services.push(serviceState);
+  }
+
+  if (preflightErrors.length > 0) {
+    return failure('Preflight checks failed', { errors: preflightErrors, services });
+  }
+
+  if (dryRun) {
+    const plan = [];
+    for (const alias of aliases) {
+      const service = validateService(alias);
+      const resolved = profileForService(service);
+      plan.push({
+        alias,
+        profile: resolved.profile,
+        rebuild: true,
+        migrate: !noMigrate && PROFILES_WITH_MIGRATIONS.has(resolved.profile),
+      });
+    }
+    return success({ dryRun: true, plan });
+  }
+
+  // Execute: rebuild each alias
+  const results = [];
+  for (const alias of aliases) {
+    process.stderr.write(`\n=== Ready: ${alias} ===\n`);
+    
+    const rebuildResult = await cmdRebuild(alias);
+    const serviceState = { alias, rebuilt: rebuildResult.payload.ok };
+    
+    if (!rebuildResult.payload.ok) {
+      serviceState.error = rebuildResult.payload.error;
+      results.push(serviceState);
+      continue;
+    }
+    
+    serviceState.status = rebuildResult.payload.status?.status;
+    serviceState.health = rebuildResult.payload.status?.health;
+    results.push(serviceState);
+  }
+
+  // Migrate profiles with migrations
+  if (!noMigrate) {
+    const profilesToMigrate = new Set();
+    for (const alias of aliases) {
+      const service = SERVICES[alias];
+      const resolved = profileForService(service);
+      if (PROFILES_WITH_MIGRATIONS.has(resolved.profile)) {
+        profilesToMigrate.add(resolved.profile);
+      }
+    }
+
+    for (const profile of profilesToMigrate) {
+      process.stderr.write(`\n=== Migrate: ${profile} ===\n`);
+      const migrateResult = await cmdMigrate(profile);
+      
+      // Mark which services got migrated
+      for (const serviceState of results) {
+        if (serviceState.profile === profile) {
+          serviceState.migrated = migrateResult.payload.ok;
+        }
+      }
+    }
+  }
+
+  // Health checks and URL collection
+  for (const serviceState of results) {
+    if (!serviceState.rebuilt) continue;
+    
+    const service = SERVICES[serviceState.alias];
+    const inspect = inspectContainer(service.container);
+    
+    if (!inspect) {
+      serviceState.error = 'container_missing';
+      continue;
+    }
+
+    const state = stateForInspect(inspect);
+    serviceState.status = state.status;
+    serviceState.health = state.health;
+
+    // For sites without healthcheck, probe HTTP endpoint
+    const profile = PROFILES[serviceState.profile];
+    if (profile && profile.composeFile && state.health === 'none' && state.status === 'running') {
+      const ports = getPublishedPorts(service.container);
+      if (ports.length > 0) {
+        const port = ports[0];
+        const probeResult = await probeHttpEndpoint(port);
+        serviceState.httpProbe = probeResult.ok ? 'success' : 'timeout';
+        if (probeResult.statusCode) {
+          serviceState.httpStatus = probeResult.statusCode;
+        }
+      }
+    }
+
+    // Collect URLs
+    const ports = getPublishedPorts(service.container);
+    if (ports.length > 0) {
+      serviceState.urls = ports.map((port) => `http://localhost:${port}`);
+    } else {
+      serviceState.urls = ['internal service'];
+    }
+  }
+
+  const allOk = results.every((r) => r.rebuilt && !r.error && (r.health === 'healthy' || r.httpProbe === 'success' || (r.health === 'none' && r.status === 'running')));
+  
+  if (!allOk) {
+    return failure('One or more services failed to become ready', { services: results });
+  }
+
+  return success({ services: results });
+}
+
+function usageResult() {
+  return failure('Usage: stackctl <status|up|rebuild|restart|logs|exec|psql|migrate|seed|doctor|ready> [args...]');
+}
+
+async function dispatch(command, args) {
+  switch (command) {
+    case 'status': return cmdStatus(args);
+    case 'up': return cmdUp(args[0]);
+    case 'rebuild': return cmdRebuild(args[0]);
+    case 'restart': return cmdRestart(args[0]);
+    case 'logs': return cmdLogs(args[0], args.slice(1));
+    case 'exec': return cmdExec(args[0], args.slice(1));
+    case 'psql': return cmdPsql(args[0], args.slice(1));
+    case 'migrate': return cmdMigrate(args[0]);
+    case 'seed': return cmdSeed(args[0], args[1]);
+    case 'doctor': return cmdDoctor(args[0]);
+    case 'ready': {
+      const flags = args.filter((arg) => arg.startsWith('--'));
+      const aliases = args.filter((arg) => !arg.startsWith('--'));
+      return cmdReady(aliases, flags);
+    }
+    default: return failure(`Unknown command: ${command}`);
+  }
+}
+
+async function main() {
+  const [command, ...args] = process.argv.slice(2);
+  if (!command) return usageResult();
+  if (!KNOWN_COMMANDS.has(command)) return failure(`Unknown command: ${command}`);
+
+  // Real advisory lock. flock owns and releases the lock for the complete child
+  // process lifetime, including awaited async health checks.
+  if (!READ_ONLY_COMMANDS.has(command) && process.env.STACKCTL_LOCKED !== '1') {
+    const child = spawnSync('flock', [
+      '-E', '75', '-n', LOCK_FILE,
+      process.execPath, SCRIPT_PATH, command, ...args,
+    ], {
+      cwd: PROJECT_ROOT,
+      stdio: 'inherit',
+      env: { ...process.env, STACKCTL_LOCKED: '1' },
+    });
+    if (child.error) return failure(`Could not invoke flock: ${child.error.message}`, {}, 2);
+    if (child.status === 75) return failure('Another mutating stackctl operation holds the lock', {}, 2);
+    return { code: child.status ?? 1, alreadyOutput: true };
+  }
+
+  if (!dockerDaemonAvailable()) {
+    return failure('Docker daemon is unavailable', {}, 2);
+  }
+  return dispatch(command, args);
+}
+
+let result;
+try {
+  result = await main();
+} catch (error) {
+  result = failure(error instanceof Error ? error.message : String(error));
+}
+
+if (!result.alreadyOutput) {
+  if (Object.hasOwn(result, 'rawPayload')) output(result.rawPayload);
+  else output(result.payload);
+}
+process.exitCode = result.code;

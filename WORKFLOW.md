@@ -1,30 +1,29 @@
 # Workflow разработки (EqSiteCMS)
 
-Этот документ описывает **мануальный пайплайн** работы команды с агентами.
-В будущем пайплайн будет автоматизирован через `orchestrator/` — см. [`orchestrator/AGENTS.md`](orchestrator/AGENTS.md).
+Этот документ описывает **пайплайн** работы команды с агентами и OpenSpec.
 
 ---
 
 ## Обзор пайплайна
 
 ```
-[Команда] → задача
+[Задача] → Router
      ↓
-[Planner] → docs/plans/NEX-XXX.md
+[Planner] → OpenSpec proposal/design/specs/tasks
      ↓
-[Человек] → ревью плана, правки
+[Человек] → approval
      ↓
-[Backend / Frontend] → код на feature-ветке
+[Backend/Frontend/Site Consumer] → код (execution units)
      ↓
-[Человек] → git diff, проверка
+[Quality Gate] → lanes (QG-ENV, QG-BE, QG-FE-AUTO, QG-FE-MANUAL, QG-CONTRACTS, QG-LIVE)
      ↓
-[Quality Gate] → docs/plans/NEX-XXX-review.md
+[QG-SYNTH] → APPROVED / REWORK
      ↓
-[Человек] → принять / вернуть на доработку
+[OPS-READY] → stackctl ready
      ↓
-[Backend / Frontend] → доработка по rework-плану
+[OPS-SYNC/ARCHIVE] → specs синхронизированы
      ↓
-[Человек] → merge
+[task-finalize skill] → merge → release → CI → итоговый отчёт
 ```
 
 ---
@@ -32,167 +31,148 @@
 ## Шаг 0. Подготовка
 
 ```bash
-# Убедиться, что находишься на свежей ветке
+# Убедиться что находишься на main
 git checkout main && git pull
-git checkout -b feature/NEX-XXX-short-description
 ```
 
-Или использовать оркестратор, который создаёт ветку автоматически:
-```bash
-make task NEX-XXX "краткое описание задачи"
-```
+Никаких feature-веток вручную: `shipctl merge` создаёт их автоматически.
 
 ---
 
-## Шаг 1. Planner — генерация плана
+## Шаг 1. Router → Planner → OpenSpec
 
-**Открыть Cursor**, убедиться что контекст = корень репозитория (`AGENTS.md` читается автоматически как правило).
-
-Дать задачу Planner-агенту:
+Дать задачу Router (он направит Planner при необходимости):
 
 ```
-@agents/planner.md
-
-Задача: NEX-XXX — <описание>
-Контекст: <дополнительный контекст если нужен>
+Задача: <описание>
+Контекст: <дополнительный контекст>
 ```
 
-**Ожидаемый результат:** файл `docs/plans/NEX-XXX.md` по формату [`docs/plans/TEMPLATE.md`](docs/plans/TEMPLATE.md).
+**Ожидаемый результат:** OpenSpec change в `openspec/changes/<id>/` с файлами:
+- `proposal.md` — краткий summary
+- `design.md` — решения, DAG, test matrix
+- `specs/<capability>/spec.md` — delta specs
+- `tasks.md` — execution units с ownership и verification
+
+Router показывает артефакты и **останавливается** до явного approval.
 
 ---
 
-## Шаг 2. Ревью плана (человек)
+## Шаг 2. Approval (человек)
 
-1. Открыть `docs/plans/NEX-XXX.md`
-2. Проверить:
-   - Правильно ли декомпозированы задачи?
-   - Не нарушает ли план архитектуру?
-   - Указаны ли конкретные файлы?
-   - Есть ли чеклист для каждого агента?
-3. Внести правки если нужно
-4. Можно добавить/убрать пункты из чеклиста — агенты ориентируются именно по нему
+Проверить:
+- Правильно ли декомпозированы execution units?
+- Не нарушает ли план архитектуру?
+- Указаны ли ownership paths?
+- Есть ли verification для каждого unit?
 
----
-
-## Шаг 3. Раздача задач агентам (человек)
-
-Открыть нужного агента в Cursor, дать ему план:
-
-### Backend-агент:
-```
-@agents/backend.md
-
-Выполни Backend-задачи из плана:
-@docs/plans/NEX-XXX.md
-
-Сервис: services/be
-```
-
-### Frontend-агент:
-```
-@agents/frontend.md
-
-Выполни Frontend-задачи из плана:
-@docs/plans/NEX-XXX.md
-
-Сервис: services/fe
-```
-
-**Агенты обязаны отмечать выполненные пункты как `[x]` в чеклисте плана.**
+После подтверждения Router запускает реализацию по execution units.
 
 ---
 
-## Шаг 4. Проверка diff (человек)
+## Шаг 3. Реализация (агенты)
 
-```bash
-# Смотрим что изменилось
-git diff main
+Router делегирует **по одному execution unit** профильному агенту. Агент:
+- Читает только свои `contextFiles` из `tasks.md`
+- Реализует назначенные task IDs
+- Запускает verification этого unit
+- Отмечает выполненные tasks
+- Возвращает handoff
 
-# Или красиво через make (если настроено)
-make diff
-```
+Handoff содержит:
+- Unit ID, статус (done/partial/blocked)
+- Изменённые файлы (пути от корня монорепы)
+- Verification результат
+- Отмеченные task IDs
+- Решения, влияющие на следующие units
 
-Беглый просмотр:
-- Нет ли лишних файлов?
-- Нет ли изменений вне scope задачи?
-- Файлы в правильных директориях?
-
----
-
-## Шаг 5. Quality Gate
-
-Запустить Quality Gate агент:
-
-```
-@agents/quality_gate.md
-
-Проверь diff для задачи NEX-XXX:
-@docs/plans/NEX-XXX.md
-
-git diff: [вставить вывод git diff или указать файлы]
-```
-
-Или через make (запускает QG с текущим diff):
-```bash
-make review TASK=NEX-XXX
-```
-
-**Ожидаемый результат:** файл `docs/plans/NEX-XXX-review.md` с одним из итогов:
-- ✅ `APPROVED` — можно мержить
-- ❌ `REWORK` — список проблем + микро-план доработки
+Router ждёт handoff и запускает следующий unit.
 
 ---
 
-## Шаг 6. Доработка (если REWORK)
+## Шаг 4. Quality Gate
 
-Вернуть план доработки агенту:
+После завершения всех execution units Router запускает Quality Gate по lanes:
 
-```
-@agents/backend.md
+- `QG-ENV` — подготовка runtime (rebuild, migrate, health)
+- `QG-BE` — backend review (Clean Arch, тесты, миграции, access policy)
+- `QG-FE-AUTO` — frontend automated (`npm test`, lint, tsc, build, E2E)
+- `QG-FE-MANUAL` — browser QA агентом (Playwright, screenshots, console/network/axe)
+- `QG-CONTRACTS` — архитектура и контракты (AsyncAPI, access matrix, specs)
+- `QG-LIVE` — live verification (SMOKE, PostgreSQL/NATS)
+- `QG-SYNTH` — synthesis (findings всех lanes, один вердикт, отчёт в `docs/reports/`)
 
-Доработай по результатам ревью:
-@docs/plans/NEX-XXX-review.md
-```
+Неприменимые lanes помечаются `неприменимо` с обоснованием.
 
-Повторить шаги 4–5 до получения `APPROVED`.
+Вердикт:
+- ✅ `APPROVED` — можно финализировать
+- ❌ `REWORK` — findings → владельцам как новые execution units
 
 ---
 
-## Шаг 7. Merge
+## Шаг 5. Доработка (если REWORK)
 
-```bash
-git add .
-git commit -m "feat(NEX-XXX): краткое описание"
-```
+Router возвращает findings владельцам как новые execution units.
 
-Создать PR через gh:
-```bash
-gh pr create --title "feat(NEX-XXX): описание" --body "Closes NEX-XXX"
-```
+После исправлений повторяются **только затронутые lanes** и `QG-SYNTH`.
+
+---
+
+## Шаг 6. Финализация (skill task-finalize)
+
+После `QG-SYNTH = APPROVED`:
+
+1. **OPS-READY:** `stackctl ready <aliases>` (ожидаемо «нет runtime-изменений»)
+2. **OPS-SYNC:** синхронизация delta specs в main specs
+3. **OPS-ARCHIVE:** архивирование change
+4. **OPS-PLAN:** финальный `shipctl plan` с путями archive
+5. **Gate «Слить в main?»** — показывает план, варианты «Слить» / «Не сливать»
+6. **OPS-MERGE:** `shipctl merge` — создание feature-веток, commit included-файлов, push веток и main
+7. **Gate «Релизить?»** (только при успехе merge и наличии release-репозиториев)
+8. **OPS-RELEASE:** fast-forward `main → release` (пока не реализован)
+9. **OPS-CI:** контроль CI через `gh` (пока не реализован)
+10. **Итоговый отчёт**
+
+См. `.agents/skills/task-finalize/SKILL.md`.
 
 ---
 
 ## Соглашения
 
 ### Имена веток
+
+Создаются автоматически `shipctl merge`:
 ```
-feature/NEX-XXX-short-slug
-fix/NEX-XXX-short-slug
-refactor/NEX-XXX-short-slug
+feature/<change-id>
+bug/<change-id>
 ```
+
+Автосуффикс `-2`, `-3` при занятости.
 
 ### Коммит-сообщения
+
 ```
-feat(NEX-XXX): добавлена сущность Job
-fix(NEX-XXX): исправлен 500 при пустом title
-refactor(NEX-XXX): перенесена логика из роутера в JobService
+feat(<change-id>): <summary>
+fix(<change-id>): <summary>
+
+OpenSpec: <change-id>
+Task: docs/tasks/<file>
 ```
 
-### Файлы планов
+### Файлы OpenSpec
+
 ```
-docs/plans/NEX-XXX.md          # план задачи (генерирует Planner)
-docs/plans/NEX-XXX-review.md   # отчёт ревью (генерирует Quality Gate)
-docs/plans/NEX-XXX-report.md   # итоговый отчёт (генерирует Orchestrator)
+openspec/changes/<id>/proposal.md
+openspec/changes/<id>/design.md
+openspec/changes/<id>/specs/<capability>/spec.md
+openspec/changes/<id>/tasks.md
+openspec/changes/archive/YYYY-MM-DD-<id>/  # после архивирования
+```
+
+### Отчёты Quality Gate
+
+```
+docs/reports/<id>-<name>-review.md
 ```
 
 ---
@@ -200,23 +180,37 @@ docs/plans/NEX-XXX-report.md   # итоговый отчёт (генерируе
 ## Быстрый старт (TL;DR)
 
 ```bash
-# 1. Ветка
-git checkout -b feature/NEX-XXX-slug
+# 1. Задача → Router
+# (Router → Planner → OpenSpec proposal/design/specs/tasks)
 
-# 2. Planner → план
-# (в Cursor: @agents/planner.md + описание задачи)
+# 2. Approval artifacts
 
-# 3. Ревью плана руками
+# 3. Router делегирует execution units
+# (Агенты возвращают handoff после каждого unit)
 
-# 4. Раздать агентам
-# (в Cursor: @agents/backend.md + @docs/plans/NEX-XXX.md)
+# 4. Quality Gate lanes → QG-SYNTH
 
-# 5. Проверить diff
-git diff main
+# 5. Если APPROVED:
+#    stackctl ready → sync/archive → shipctl plan
+#    Gate «Слить?» → shipctl merge
+#    Gate «Релизить?» → shipctl release → CI
 
-# 6. Quality Gate
-# (в Cursor: @agents/quality_gate.md + @docs/plans/NEX-XXX.md)
-
-# 7. Если APPROVED → merge
-gh pr create ...
+# Итоговый отчёт
 ```
+
+---
+
+## Sync и ship
+
+```bash
+# Синхронизация клонов manifest
+make sync
+
+# Строгий режим (ff-only, включая корень, JSON-report)
+make sync SYNC_FLAGS="--strict --include-root --report .qa/ship/<c>/sync.json"
+
+# Unit-тесты shipctl
+make ship-test
+```
+
+См. `scripts/shipctl --help`, `scripts/stackctl --help`, `.agents/skills/task-finalize/SKILL.md`.

@@ -19,6 +19,20 @@ EqSiteCMS поддерживает два контура доступа к API:
 
 ---
 
+## 🌿 Git-workflow сервисных репозиториев (обязательно)
+
+Каждый `services/<name>` — отдельный git-репозиторий со своим `origin` (см. `services.manifest`); корневой репозиторий их не отслеживает (`/services/` в `.gitignore`).
+
+Когда задача требует изменений внутри любого `services/<name>`:
+
+- **Никогда** не коммитить и не пушить напрямую в `main` или `dev` сервисного репозитория; `dev` — самая актуальная ветка (разработка идёт в ней, из `dev` операторы льют в `main`).
+- Создать в сервисном репозитории отдельную feature-ветку от актуального `dev`; для связанной работы во всех репозиториях использовать одинаковое имя ветки, если оператор не указал иное.
+- Не делать `git push` и не сливать feature-ветку в `dev` самостоятельно. После успешного Quality Gate локальное слияние и последующий push выполняет оператор.
+- Перед слиянием оператор проверяет staged-изменения, пересечения локального diff и возможные конфликты.
+- Локальная ветка `dev` сервисного репозитория создаётся и обновляется оператором; агент её напрямую не изменяет.
+
+---
+
 ## 🏗 Инфраструктура (Databases / Brokers)
 
 - **PostgreSQL**: Основная транзакционная БД. Хранит пользователей, проекты, балансы, настройки сущностей.
@@ -202,7 +216,7 @@ EXPOSE_VK_DB_PORT=5436
 
 - Публичные данные читаются через `GET` без CMS cookie, `Authorization` и иных admin credentials; tenant-bound маршруты требуют явно настроенный `NEXT_PUBLIC_EQUESTRIAN_SERVICE_KEY` и не имеют fallback на чужой tenant.
 - Единственное сохранённое write-исключение — anonymous `POST /api/callback_requests` с tenant selector; формы и другого пользовательского UI в starter нет. CMS-only endpoint'ы и остальные write-операции запрещены.
-- Stand domain `inlove-stand.eqcms.ru` является только deployment/configuration value, не runtime fallback. Git, remote и включение в `services.manifest`/orchestration выполняются пользователем отдельно.
+- Stand domain `inlove-stand.eqcms.ru` является только deployment/configuration value, не runtime fallback. Git, remote и включение в `services.manifest` выполняются пользователем отдельно.
 - `.helm/**` и `.github/**` неизменно унаследованы от `site-ad` и сохраняют его deployment identity. **Запускать Helm/Actions и развёртывать `site-ksk-inlove` запрещено** до отдельного deployment change.
 
 ---

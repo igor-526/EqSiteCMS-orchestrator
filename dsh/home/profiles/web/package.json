@@ -1,0 +1,20 @@
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "@eqsite/dsh-agents": "link:./bundles/eqsite-agents",
+    "@eqsite/playwright-mcp": "link:./bundles/playwright-mcp",
+    "dsh-codex-connect": "github:franksong2702/dsh-codex-connect"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-codex-connect",
+        "@eqsite/playwright-mcp",
+        "@eqsite/dsh-agents"
+      ]
+    }
+  }
+}
