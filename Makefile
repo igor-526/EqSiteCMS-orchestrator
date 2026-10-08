@@ -8,6 +8,7 @@ COMPOSE_NOTIFICATION = $(COMPOSE_DIR)/docker-compose.notification.yml
 COMPOSE_EMAIL = $(COMPOSE_DIR)/docker-compose.email.yml
 COMPOSE_VK = $(COMPOSE_DIR)/docker-compose.vk.yml
 COMPOSE_SEO = $(COMPOSE_DIR)/docker-compose.seo.yml
+COMPOSE_YANDEX = $(COMPOSE_DIR)/docker-compose.yandex.yml
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 
@@ -19,9 +20,13 @@ DC_VK = docker compose -f $(COMPOSE_VK)
 DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
 DC_INFRA = docker compose -f $(COMPOSE_INFRA)
 DC_SEO = docker compose -f $(COMPOSE_SEO)
+DC_YANDEX = docker compose -f $(COMPOSE_YANDEX)
 # seo-service: инфраструктурные переменные берутся из .docker-compose/.env,
 # переменные приложения — из services/seo-service/.env
 ENV_FILES_SEO = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/seo-service/.env
+# yandex-service: инфраструктурные переменные берутся из .docker-compose/.env,
+# переменные приложения — из services/yandex-service/.env
+ENV_FILES_YANDEX = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/yandex-service/.env
 
 DC_CORE = docker compose --env-file $(COMPOSE_DIR)/.env -p eqsitecms-core \
 	-f $(COMPOSE_INFRA) -f $(COMPOSE_BE) -f $(COMPOSE_NOTIFICATION) \
@@ -39,6 +44,7 @@ HARNESS_PORT ?= 3080
 		fe-build fe-build-nc fe fe-attach \
 		vk-build vk-build-nc vk vk-attach vk-bot-logs vk-bot-restart check-vk fix-vk \
 		seo-build seo-build-nc seo seo-attach seo-migrate check-seo fix-seo \
+		yandex-build yandex-build-nc yandex yandex-attach yandex-migrate check-yandex fix-yandex \
 		infra \
 		e2e-install e2e e2e-ui e2e-headed e2e-frontend e2e-report \
 		ship-test
@@ -157,6 +163,14 @@ seo-build-nc:
 	@echo "Building seo service images without build cache..."
 	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) build --no-cache seo-service seo-migration seo-celery-worker seo-celery-beat
 
+yandex-build:
+	@echo "Building yandex service images..."
+	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) build yandex-service yandex-migration
+
+yandex-build-nc:
+	@echo "Building yandex service images without build cache..."
+	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) build --no-cache yandex-service yandex-migration
+
 # =====RUN COMMANDS=====
 
 # Infrastructure
@@ -212,9 +226,16 @@ seo:
 seo-attach:
 	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up
 
+# Yandex Service
+yandex:
+	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) up -d
+
+yandex-attach:
+	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) up
+
 # =====CHECKS (NON-MUTATING) / FIXES=====
 
-check: check-backend check-email check-notification check-seo check-frontend compose-check asyncapi-validate contracts-check secret-scan
+check: check-backend check-email check-notification check-seo check-yandex check-frontend compose-check asyncapi-validate contracts-check secret-scan
 
 check-backend:
 	cd services/backend && uv run mypy src tests && uv run ruff check src tests && uv run ruff format --check src tests && uv run flake8 src tests && uv run pytest
@@ -230,6 +251,9 @@ check-vk:
 
 check-seo:
 	cd services/seo-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
+
+check-yandex:
+	cd services/yandex-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
 
 check-frontend:
 	cd services/frontend && npm test && npm run lint && npm run typecheck && npm run build
@@ -250,6 +274,9 @@ fix-vk:
 
 fix-seo:
 	$(MAKE) -C services/seo-service format
+
+fix-yandex:
+	$(MAKE) -C services/yandex-service format
 
 fix-frontend:
 	cd services/frontend && npx eslint src --fix
@@ -329,6 +356,7 @@ test:
 	$(MAKE) -C services/notification-service test
 	$(MAKE) -C services/email-service test
 	$(MAKE) -C services/seo-service test
+	$(MAKE) -C services/yandex-service test
 	$(MAKE) -C services/frontend test
 
 lint:
@@ -336,6 +364,7 @@ lint:
 	$(MAKE) -C services/notification-service lint
 	$(MAKE) -C services/email-service lint
 	$(MAKE) -C services/seo-service lint
+	$(MAKE) -C services/yandex-service lint
 	$(MAKE) -C services/frontend lint
 
 format:
@@ -343,6 +372,7 @@ format:
 	$(MAKE) -C services/notification-service format
 	$(MAKE) -C services/email-service format
 	$(MAKE) -C services/seo-service format
+	$(MAKE) -C services/yandex-service format
 	$(MAKE) -C services/frontend format
 
 # =====BACKEND MANAGEMENT=====
@@ -357,6 +387,11 @@ seo-migrate:
 	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
 	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up -d db-seo
 	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) run --rm seo-migration
+
+yandex-migrate:
+	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
+	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) up -d db-yandex
+	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) run --rm yandex-migration
 
 # =====E2E TESTS (PLAYWRIGHT)=====
 
