@@ -136,18 +136,18 @@ BE-5 (Encryption)  →  BE-6 (Health check)
 
 ## 6. Health Check Endpoint
 
-- [ ] 6.1 Реализовать `GET /health` endpoint в `app/api/v1/health.py`
-- [ ] 6.2 Проверять доступность БД (connection pool check)
-- [ ] 6.3 Возвращать `200 OK` с JSON `{"status": "healthy", "timestamp": "..."}` если БД доступна
-- [ ] 6.4 Возвращать `503 Service Unavailable` с JSON `{"status": "unhealthy", "error": "...", "timestamp": "..."}` если БД недоступна
-- [ ] 6.5 Добавить endpoint в router
+- [x] 6.1 Реализовать `GET /health` endpoint в `app/api/v1/health.py`
+- [x] 6.2 Проверять доступность БД (connection pool check)
+- [x] 6.3 Возвращать `200 OK` с JSON `{"status": "healthy", "timestamp": "..."}` если БД доступна
+- [x] 6.4 Возвращать `503 Service Unavailable` с JSON `{"status": "unhealthy", "error": "...", "timestamp": "..."}` если БД недоступна
+- [x] 6.5 Добавить endpoint в router
 
 ## 7. Unit Tests
 
-- [ ] 7.1 Создать `tests/unit/test_encryption.py`
-- [ ] 7.2 Test: encrypt/decrypt roundtrip (проверить, что `decrypt(encrypt(text)) == text`)
-- [ ] 7.3 Test: decrypt с неверным ключом выбрасывает исключение
-- [ ] 7.4 Запустить unit tests: `make test SERVICE=yandex-service`
+- [x] 7.1 Создать `tests/unit/test_encryption.py`
+- [x] 7.2 Test: encrypt/decrypt roundtrip (проверить, что `decrypt(encrypt(text)) == text`)
+- [x] 7.3 Test: decrypt с неверным ключом выбрасывает исключение
+- [x] 7.4 Запустить unit tests: `make test SERVICE=yandex-service`
 
 ## 8. Integration Tests
 
