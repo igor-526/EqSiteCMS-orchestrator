@@ -21,6 +21,7 @@ QG-SYNTH = APPROVED
   → OPS-MERGE       (shipctl merge; конфликт → ручное разрешение → merge --resume)
   → Gate «Релиз?»   (только при успехе merge и наличии release-репозиториев)
   → OPS-RELEASE     (shipctl release)
+  → OPS-CHECKOUT-MAIN (переключение всех затронутых репозиториев на main)
   → OPS-CI          (shipctl ci --wait фоном)
   → Итоговый отчёт
 ```
@@ -118,6 +119,33 @@ Exit: `0` — успех (все ff или noop), `1` — push failure, `3` — 
 
 ---
 
+## OPS-CHECKOUT-MAIN — переключение на main
+
+**Обязательный шаг** после release для гарантии, что все репозитории находятся на ветке main.
+
+Прочитай `.qa/ship/<change>/plan.json` и выполни `git switch main` для каждого репозитория в `repos`, у которого есть `included` файлы (кроме `declaredClean: true`), а также для корневого репозитория:
+
+```bash
+# Для каждого repo.name из plan.json (кроме declaredClean):
+cd services/<repo.name> && git switch main
+
+# Для корневого репозитория:
+cd /home/igor/projects/eqSiteCMS && git switch main
+```
+
+**Обработка ошибок:**
+- Если `git switch main` не удаётся (exit code ≠ 0), проверь причину:
+  - `dirty worktree` — покажи `git status` и останови с отчётом
+  - `branch doesn't exist` — создай командой `git switch -c main origin/main`
+  - Другая ошибка — останови с отчётом
+
+**Отчёт:**
+- Список репозиториев, переключённых на main
+- Репозитории, которые уже были на main (информационно)
+- Репозитории с ошибками (если есть)
+
+---
+
 ## OPS-CI — контроль CI
 
 ```bash
@@ -142,6 +170,7 @@ READY: <aliases> + URLs
 SYNC/ARCHIVE: ok
 MERGE: ветка <b>, слиты <repos + SHA>, feature-ветки запушены
 RELEASE: [skip] или зарелизены <repos + SHA>, noop <list>
+CHECKOUT: все репозитории переключены на main
 CI: [skip] или success/failure
 Итог: SUCCESS / PARTIAL / BLOCKED
 ```
@@ -155,9 +184,11 @@ CI: [skip] или success/failure
 - `scripts/stackctl ready|doctor|status|logs`
 - `openspec sync|archive|validate`
 - Чтение JSON-файлов `.qa/ship/<change>/*.json`
+- `git switch main` и `git switch -c main origin/main` для OPS-CHECKOUT-MAIN
+- `git status` и `git branch --show-current` для диагностики
 
 **Запрещены:**
-- Произвольные git-команды вне shipctl
+- Произвольные git-команды вне shipctl и OPS-CHECKOUT-MAIN
 - Правка файлов сервисов/specs
 - Разрешение конфликтов автоматически
 - `gh run rerun|cancel`
