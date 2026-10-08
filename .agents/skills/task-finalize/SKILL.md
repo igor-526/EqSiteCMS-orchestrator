@@ -35,7 +35,7 @@ QG-SYNTH = APPROVED
 scripts/shipctl plan --change <id> --summary "<text>" --paths-file paths.txt
 ```
 
-Exit: `0` — ok, `2` — окружение, `3` — блокеры (`detached_head`, `not_on_main`, `foreign_staged`, `main_ahead`, `MERGE_HEAD`). При `3` — останови.
+Exit: `0` — ok, `2` — окружение, `3` — блокеры (`detached_head`, `not_on_main`, `foreign_staged`, `main_ahead`, `MERGE_HEAD`, `dirty_worktree`). При `3` — останови.
 
 План содержит `included`/`foreign`/`declaredClean`/`runtimeAliases`. Если `runtimeAliases` пуст — пропусти ready.
 
@@ -106,22 +106,31 @@ Exit: `0` — все `pushed`, `1` — stop (конфликт/push/sync), `2` �
 
 ## OPS-RELEASE — fast-forward main → release
 
-**ВНИМАНИЕ:** `shipctl release` пока не реализован. Skip и отметь в итоговом отчёте.
-
-Когда готов:
 ```bash
 scripts/shipctl release --change <c> [--repos <list>]
 ```
 
-Exit аналогичны merge. Стадии: `ff`, `noop`, `not-applicable`, `no-release-branch`, `skipped`, `release_diverged`, `main_moved`. При `release_diverged` — покажи коммиты, останови.
+Exit: `0` — успех (все ff или noop), `1` — push failure, `3` — blocker (release_diverged, main_moved).
+
+Стадии: `pushed` (ff успешен), `noop` (release уже на main), `not-applicable` (корень), `no-release-branch`, `skipped` (по --repos), `release_diverged`, `main_moved`.
+
+При `release_diverged` — покажи коммиты в release, которых нет в main, и останови. При `main_moved` — origin/main изменился после merge, останови.
 
 ---
 
 ## OPS-CI — контроль CI
 
-**ВНИМАНИЕ:** `shipctl ci` не реализован. Skip и отметь в отчёте.
+```bash
+scripts/shipctl ci --change <c> --wait
+```
 
-Когда готов: `scripts/shipctl ci --change <c> --wait` фоном через `run_in_background`, не опрашивай вручную. Exit: `0` — success, `1` — failure/cancelled/timed_out/no_run, `2` — gh недоступен. Логи в `.qa/ship/<c>/ci/`.
+Запускай **фоном** через bash tool с `run_in_background: true`, не опрашивай вручную. По завершении собери результат через `job_output`.
+
+Exit: `0` — все runs успешны, `1` — failure/cancelled/timed_out/no_run, `2` — gh недоступен или не авторизован.
+
+Логи неудачных runs в `.qa/ship/<c>/ci/<repo>-<runId>.log`. JSON-отчёт в `.qa/ship/<c>/ci.json`.
+
+Timeout по умолчанию: 30 минут общий, 3 минуты на появление run. При `no_run` или `timed_out` — exit 1.
 
 ---
 

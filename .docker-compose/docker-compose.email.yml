@@ -60,9 +60,6 @@ services:
       - ../services/email-service/src:/app/src:${DEV_MOUNT:-ro}
     working_dir: /app/
     hostname: email-worker
-    depends_on:
-      redis:
-        condition: service_healthy
     command: >-
       uv run --no-sync celery -A workers.celery_app worker -Q email -l info
       --hostname email-worker@%h

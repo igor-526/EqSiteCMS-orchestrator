@@ -7,25 +7,22 @@ COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
 COMPOSE_NOTIFICATION = $(COMPOSE_DIR)/docker-compose.notification.yml
 COMPOSE_EMAIL = $(COMPOSE_DIR)/docker-compose.email.yml
 COMPOSE_VK = $(COMPOSE_DIR)/docker-compose.vk.yml
-
+COMPOSE_SEO = $(COMPOSE_DIR)/docker-compose.seo.yml
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 
 # Docker compose commands (base, без -p — добавляется в таргетах)
 DC_BE = docker compose -f $(COMPOSE_BE)
 DC_NOTIFICATION = docker compose -f $(COMPOSE_NOTIFICATION)
-DC_EMAIL = docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_EMAIL)
-DC_VK = docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK)
-# vk-service: инфраструктурные переменные берутся из .docker-compose/.env,
-# переменные приложения — из services/vk-service/.env
-ENV_FILES_VK = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/vk-service/.env
-# Собственные сервисы проекта eqsitecms-vk
-VK_SERVICES = db-vk vk-migration vk-service vk-celery-worker vk-bot
-# Bots Long Poll допускает одного слушателя на группу: контейнер бота единственный
-VK_BOT_CONTAINER = eqsitecms-vk-bot
-
+DC_EMAIL = docker compose -f $(COMPOSE_EMAIL)
+DC_VK = docker compose -f $(COMPOSE_VK)
 DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
 DC_INFRA = docker compose -f $(COMPOSE_INFRA)
+DC_SEO = docker compose -f $(COMPOSE_SEO)
+# seo-service: инфраструктурные переменные берутся из .docker-compose/.env,
+# переменные приложения — из services/seo-service/.env
+ENV_FILES_SEO = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/seo-service/.env
+
 DC_CORE = docker compose --env-file $(COMPOSE_DIR)/.env -p eqsitecms-core \
 	-f $(COMPOSE_INFRA) -f $(COMPOSE_BE) -f $(COMPOSE_NOTIFICATION) \
 	-f $(COMPOSE_EMAIL) -f $(COMPOSE_FE)
@@ -41,6 +38,7 @@ HARNESS_PORT ?= 3080
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
 		vk-build vk-build-nc vk vk-attach vk-bot-logs vk-bot-restart check-vk fix-vk \
+		seo-build seo-build-nc seo seo-attach seo-migrate check-seo fix-seo \
 		infra \
 		e2e-install e2e e2e-ui e2e-headed e2e-frontend e2e-report \
 		ship-test
@@ -145,11 +143,19 @@ fe-build-nc:
 
 vk-build:
 	@echo "Building vk service images..."
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build vk-service vk-migration vk-celery-worker vk-bot
+	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env build vk-service vk-migration vk-celery-worker vk-bot
 
 vk-build-nc:
 	@echo "Building vk service images without build cache..."
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) build --no-cache vk-service vk-migration vk-celery-worker vk-bot
+	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env build --no-cache vk-service vk-migration vk-celery-worker vk-bot
+
+seo-build:
+	@echo "Building seo service images..."
+	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) build seo-service seo-migration seo-celery-worker seo-celery-beat
+
+seo-build-nc:
+	@echo "Building seo service images without build cache..."
+	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) build --no-cache seo-service seo-migration seo-celery-worker seo-celery-beat
 
 # =====RUN COMMANDS=====
 
@@ -178,29 +184,19 @@ email:
 email-attach:
 	$(DC_EMAIL) -p eqsitecms-email --env-file $(SERVICES_DIR)/email-service/.env up
 
-# VK Service (автономный проект eqsitecms-vk, вне core release scope).
-# Общая инфраструктура (redis, nats, minio) принадлежит core-стеку и здесь не
-# пересоздаётся: поднимаются только собственные контейнеры сервиса и его БД.
-# redis стартует в проекте eqsitecms-vk только если его контейнера ещё нет.
+# VK Service
 vk:
-	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
-	@docker inspect eqsitecms-redis >/dev/null 2>&1 || $(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d redis
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d --no-deps $(VK_SERVICES)
+	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env up -d
 
 vk-attach:
-	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
-	@docker inspect eqsitecms-redis >/dev/null 2>&1 || $(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d redis
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up --no-deps $(VK_SERVICES)
+	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env up
 
 # Long-poll runtime бота: логи и перезапуск только этого контейнера.
 vk-bot-logs:
-	docker logs -f --tail 200 $(VK_BOT_CONTAINER)
+	docker logs -f --tail 200 eqsitecms-vk-bot
 
-# Пересоздание, а не docker restart: переменные из env_file фиксируются при
-# создании контейнера, поэтому после правки services/vk-service/.env (например
-# нового VK_GROUP_TOKEN) простой restart поднимет процесс со старым окружением.
 vk-bot-restart:
-	$(DC_VK) -p eqsitecms-vk $(ENV_FILES_VK) up -d --no-deps --force-recreate vk-bot
+	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env up -d --no-deps --force-recreate vk-bot
 
 # Frontend
 fe:
@@ -209,9 +205,16 @@ fe:
 fe-attach:
 	$(DC_FE) -p eqsitecms-fe up
 
+# SEO Service
+seo:
+	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up -d
+
+seo-attach:
+	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up
+
 # =====CHECKS (NON-MUTATING) / FIXES=====
 
-check: check-backend check-email check-notification check-frontend compose-check asyncapi-validate contracts-check secret-scan
+check: check-backend check-email check-notification check-seo check-frontend compose-check asyncapi-validate contracts-check secret-scan
 
 check-backend:
 	cd services/backend && uv run mypy src tests && uv run ruff check src tests && uv run ruff format --check src tests && uv run flake8 src tests && uv run pytest
@@ -225,10 +228,13 @@ check-notification:
 check-vk:
 	cd services/vk-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
 
+check-seo:
+	cd services/seo-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
+
 check-frontend:
 	cd services/frontend && npm test && npm run lint && npm run typecheck && npm run build
 
-fix: fix-backend fix-email fix-notification fix-frontend
+fix: fix-backend fix-email fix-notification fix-seo fix-frontend
 
 fix-backend:
 	cd services/backend && uv run ruff check --fix src tests && uv run ruff format src tests
@@ -242,6 +248,9 @@ fix-notification:
 fix-vk:
 	$(MAKE) -C services/vk-service format
 
+fix-seo:
+	$(MAKE) -C services/seo-service format
+
 fix-frontend:
 	cd services/frontend && npx eslint src --fix
 
@@ -251,6 +260,7 @@ compose-check:
 	docker compose -f $(COMPOSE_NOTIFICATION) config --quiet
 	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_EMAIL) config --quiet
 	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK) config --quiet
+	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_SEO) config --quiet
 	$(DC_FE) config --quiet
 	$(DC_CORE) config --quiet
 
@@ -318,18 +328,21 @@ test:
 	$(MAKE) -C services/backend test
 	$(MAKE) -C services/notification-service test
 	$(MAKE) -C services/email-service test
+	$(MAKE) -C services/seo-service test
 	$(MAKE) -C services/frontend test
 
 lint:
 	$(MAKE) -C services/backend lint
 	$(MAKE) -C services/notification-service lint
 	$(MAKE) -C services/email-service lint
+	$(MAKE) -C services/seo-service lint
 	$(MAKE) -C services/frontend lint
 
 format:
 	$(MAKE) -C services/backend format
 	$(MAKE) -C services/notification-service format
 	$(MAKE) -C services/email-service format
+	$(MAKE) -C services/seo-service format
 	$(MAKE) -C services/frontend format
 
 # =====BACKEND MANAGEMENT=====
@@ -339,6 +352,11 @@ be-makemigrations:
 
 be-migrate:
 	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic upgrade head"
+
+seo-migrate:
+	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
+	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up -d db-seo
+	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) run --rm seo-migration
 
 # =====E2E TESTS (PLAYWRIGHT)=====
 

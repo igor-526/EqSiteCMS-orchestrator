@@ -135,6 +135,36 @@ Tenant selector является non-secret identity hint: missing/invalid selec
 
 ---
 
+## SEO Services
+
+Модуль SEO-аналитики строится на архитектуре с разделением ответственности между оркестратором и специализированными парсерами. Все сервисы взаимодействуют через NATS Jetstream и Celery.
+
+### Правило для Backend-агента
+
+При работе с `services/seo-service/**` Backend-агент обязан:
+
+- Прочитать **[docs/seo/](docs/seo/)** для понимания архитектуры, ролей сервисов и протоколов взаимодействия.
+- Следовать контрактам NATS stream `SEO_TASKS` и Celery задач, описанным в **[docs/seo/protocols.md](docs/seo/protocols.md)**.
+- Соблюдать границы ответственности: `seo-service` отвечает **только** за постановку задач; результаты парсинга остаются в парсерах и не возвращаются обратно в оркестратор.
+- Использовать **[agents/howto/nats-jetstream-protocols.md](agents/howto/nats-jetstream-protocols.md)** и **[agents/howto/celery-protocols.md](agents/howto/celery-protocols.md)** для правильной реализации интеграций.
+
+### Правило для Quality Gate
+
+При проверке изменений в SEO-сервисах Quality Gate обязан:
+
+- Проверить соответствие NATS/Celery протоколам из **[agents/howto/nats-jetstream-protocols.md](agents/howto/nats-jetstream-protocols.md)** и **[agents/howto/celery-protocols.md](agents/howto/celery-protocols.md)**.
+- Убедиться, что NATS messages соответствуют формату из **[docs/seo/protocols.md](docs/seo/protocols.md)** (обязательные поля: `task_id`, `site_id`, `params`, `trace_id`).
+- Запустить smoke-тесты NATS и Celery интеграций для проверки корректности подключения и обработки сообщений.
+- Проверить, что границы ответственности соблюдены: `seo-service` публикует задачи в NATS, но **не** получает результаты обратно.
+
+### Архитектурные документы
+
+- **[docs/seo/architecture.md](docs/seo/architecture.md)** — общая архитектура SEO-модуля, диаграммы взаимодействия
+- **[docs/seo/services.md](docs/seo/services.md)** — описание seo-service как оркестратора и будущих парсеров
+- **[docs/seo/protocols.md](docs/seo/protocols.md)** — контракты NATS и Celery, примеры JSON payloads
+
+---
+
 ## Контекст проекта
 
 Перед маршрутизацией убедись, что понимаешь задачу. Ключевые документы:
