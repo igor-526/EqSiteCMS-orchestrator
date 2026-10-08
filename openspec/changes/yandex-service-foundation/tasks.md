@@ -170,17 +170,17 @@ BE-5 (Encryption)  →  BE-6 (Health check)
 
 ## 10. Quality Gate
 
-- [ ] 10.1 Проверить соответствие спецификациям (health check endpoint реализован согласно spec)
-- [ ] 10.2 Проверить encryption foundation (utilities работают, ключ документирован)
-- [ ] 10.3 Проверить access control для /health (anonymous и authenticated доступ работает)
-- [ ] 10.4 Проверить database schema (таблица `yandex_accounts` создана с правильными полями)
-- [ ] 10.5 Smoke test: запустить полный стек (infra + сервис), проверить `curl http://localhost:8000/health` → 200 OK
-- [ ] 10.6 Проверить Git: initial commit в `main` и `release` branches
-- [ ] 10.7 Проверить документацию (README полный, SEO docs обновлены)
+- [x] 10.1 Проверить соответствие спецификациям (health check endpoint реализован согласно spec)
+- [x] 10.2 Проверить encryption foundation (utilities работают, ключ документирован)
+- [x] 10.3 Проверить access control для /health (anonymous и authenticated доступ работает)
+- [x] 10.4 Проверить database schema (таблица `yandex_accounts` создана с правильными полями)
+- [x] 10.5 Smoke test: запустить полный стек (infra + сервис), проверить `curl http://localhost:8000/health` → 200 OK
+- [x] 10.6 Проверить Git: initial commit в `main` и `release` branches
+- [x] 10.7 Проверить документацию (README полный, SEO docs обновлены)
 
 ## 11. Finalization
 
-- [ ] 11.1 Запустить `openspec validate yandex-service-foundation --type change --strict`
-- [ ] 11.2 Устранить все findings из Quality Gate
-- [ ] 11.3 Sync specs (если требуется): `openspec sync-specs --change yandex-service-foundation`
-- [ ] 11.4 Archive change: `openspec archive yandex-service-foundation`
+- [x] 11.1 Запустить `openspec validate yandex-service-foundation --type change --strict`
+- [x] 11.2 Устранить все findings из Quality Gate
+- [x] 11.3 Sync specs (если требуется): `openspec sync-specs --change yandex-service-foundation`
+- [x] 11.4 Archive change: `openspec archive yandex-service-foundation`
