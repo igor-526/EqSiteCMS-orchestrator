@@ -137,9 +137,11 @@ function classifyFile(filePath, repoPrefix, declared) {
 /**
  * Checks repository preconditions.
  * @param {string} repoPath
+ * @param {Array<Object>} included - Array of { path, status }
+ * @param {Array<Object>} foreign - Array of { path, status }
  * @returns {Array<string>} Blockers
  */
-function checkPreconditions(repoPath) {
+function checkPreconditions(repoPath, included, foreign) {
   const blockers = [];
   
   const branch = currentBranch(repoPath);
@@ -175,6 +177,31 @@ function checkPreconditions(repoPath) {
         blockers.push('main_ahead');
       }
     }
+  }
+  
+  // Check for dirty worktree: any included or foreign files with working tree changes
+  const hasDirty = [...included, ...foreign].some(entry => {
+    // Status format: XY path
+    // X = index, Y = working tree
+    // ' M' = modified in working tree but not staged
+    // 'M ' = staged modification
+    // 'MM' = staged + working tree modification
+    // '??' = untracked
+    // 'A ' = added to index
+    // ' D' = deleted in working tree
+    const status = entry.status;
+    const indexStatus = status[0];
+    const wtStatus = status[1];
+    
+    // Dirty if:
+    // - untracked files (??)
+    // - working tree modifications (Y != ' ')
+    // - staged changes (X != ' ' and X != '?')
+    return status === '??' || wtStatus !== ' ' || (indexStatus !== ' ' && indexStatus !== '?');
+  });
+  
+  if (hasDirty) {
+    blockers.push('dirty_worktree');
   }
   
   return blockers;
@@ -500,7 +527,7 @@ export async function plan(args, context) {
         }
       }
       
-      if (included.length === 0) {
+      if (included.length === 0 && foreign.length === 0) {
         repoData[name] = {
           status: 'untouched',
           branch: currentBranch(repoPath),
@@ -510,7 +537,7 @@ export async function plan(args, context) {
       }
       
       // Check preconditions
-      const blockers = checkPreconditions(repoPath);
+      const blockers = checkPreconditions(repoPath, included, foreign);
       
       // Check for foreign staged
       if (hasForeignStaged(repoPath, included.map(i => i.path))) {

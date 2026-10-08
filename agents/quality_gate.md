@@ -21,12 +21,13 @@ Quality Gate — **логически один** gate с одним отчёто
 | `QG-FE-MANUAL` | browser QA агентом: scripted Playwright, desktop/tablet/mobile, screenshots, console/network/axe и визуальная инспекция | есть UI/UX behavior diff |
 | `QG-CONTRACTS` | архитектура и контракты между сервисами: AsyncAPI, access matrix, ownership, Makefile-контракт, соответствие diff утверждённым specs/tasks | всегда |
 | `QG-LIVE` | live verification: SMOKE через `.agents/skills/api-smoke-test`, реальные PostgreSQL/NATS, endpoint timings | есть runtime API diff |
+| `QG-FORMAT` | финальный format/lint/test: `make format`, `make lint`, `make test` из корня монорепозитория на чистом worktree перед сдачей задачи | всегда |
 | `QG-SYNTH` | synthesis: сведение findings всех lanes, единый вердикт, один отчёт в `docs/reports/` | всегда |
 
 ### Правила lane-модели
 
 1. Начинай gate только после завершения всех профильных execution units подтверждённого change; промежуточные формальные reviews не создавай. Router до пайплайна один раз сообщает о prerequisite **Full Access**; дочерние агенты наследуют режим и не запрашивают approval внутри unit. Workspace-local caches остаются fallback.
-2. DAG: `QG-ENV` готовит runtime. После его успеха `QG-BE`, `QG-FE-AUTO` и `QG-CONTRACTS` идут параллельно. Затем выполняются применимые `QG-LIVE` и `QG-FE-MANUAL`; `QG-SYNTH` — последним.
+2. DAG: `QG-ENV` готовит runtime. После его успеха `QG-BE`, `QG-FE-AUTO` и `QG-CONTRACTS` идут параллельно. Затем выполняются применимые `QG-LIVE` и `QG-FE-MANUAL`. После всех lanes выполняется обязательный `QG-FORMAT`. `QG-SYNTH` — последним.
 3. В своём lane читай только относящийся к нему срез: path-scoped diff по своим путям, `design.md` → `## Test matrix` и `## Execution units`, соответствующие `specs/<capability>/spec.md`, handoff'ы исполнителей. Не перечитывай весь change в каждом lane.
 4. Каждый lane возвращает Router handoff по формату `AGENTS.md` со списком findings и статусом; отдельный файл-отчёт lane **не** создаёт.
 5. Неприменимый lane, включая `QG-ENV`, явно фиксируется как `неприменимо` с обоснованием и evidence отсутствия соответствующего diff. Молча пропускать lane запрещено.
@@ -399,6 +400,72 @@ Findings оформляются как **новые execution units** с про�
 ```
 
 > **Важно:** плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в rework-файлах `docs/reports/` для совместимости с оркестратором. В OpenSpec `tasks.md` структура — по execution units. Findings передаются Router, который маршрутизирует их владельцам по одному unit'у; отдельным планом они не становятся.
+
+---
+
+## Финальная проверка форматирования и тестов — lane `QG-FORMAT`
+
+**Применимость:** всегда, выполняется после всех других lanes и перед `QG-SYNTH`.
+
+**Цель:** убедиться, что задача сдаётся с чистым отформатированным кодом, проходящим все линтеры и тесты.
+
+### Предусловия
+
+1. **Чистый worktree обязателен.** Перед запуском `QG-FORMAT` убедись, что:
+   - Корневой репозиторий не имеет uncommitted/unstaged изменений
+   - Все сервисные репозитории не имеют dirty changes
+   - `git status --porcelain` пуст в корне и во всех `services/*`
+
+2. Если worktree грязный — это **blocking finding** для Router с требованием:
+   - Закоммитить незапланированные изменения в feature-ветку
+   - Или исключить их из текущего change через `git restore`
+   - Или пересобрать план через `shipctl plan` с новыми путями
+
+### Процедура
+
+Выполни из корня монорепозитория:
+
+```bash
+make format
+```
+
+**После `make format`:**
+
+1. Проверь `git status --porcelain` в корне и во всех `services/*`
+2. Если появились изменения — это **blocking finding**:
+   - Код был неправильно отформатирован
+   - Разработчик не запустил `make format` перед сдачей
+   - Верни Router требование: закоммитить форматированный код в feature-ветку
+
+3. Если worktree чистый — продолжай:
+
+```bash
+make lint
+make test
+```
+
+**Критерии PASS:**
+
+- `make format` не создал diff
+- `make lint` вернул `exit code 0` без warnings
+- `make test` прошёл все тесты core-сервисов (backend, notification-service, email-service, frontend)
+- `services/site-*` не входят в корневую агрегацию
+
+**Критерии FAIL/REWORK:**
+
+- `make format` создал diff → finding владельцу с требованием закоммитить
+- `make lint` вернул ошибки → finding владельцу с перечнем нарушений
+- `make test` упал → finding владельцу с указанием упавших тестов
+
+### Handoff
+
+```text
+Unit: QG-FORMAT | Профіль: Quality Gate | Статус: done / rework
+make format: чистый worktree | создан diff <paths>
+make lint: exit 0 | errors <count>
+make test: passed <count> | failed <count>
+Findings: <список или нет>
+```
 
 ---
 

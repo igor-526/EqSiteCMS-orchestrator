@@ -11,7 +11,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              complete: !!js |
+              prefix: !!js |
                 (() => {
                   const fs = process.getBuiltinModule('node:fs');
                   const path = process.getBuiltinModule('node:path');
@@ -20,9 +20,10 @@
                     throw new Error('agents/router.md not found at ' + file);
                   }
                   const content = fs.readFileSync(file, 'utf8');
-                  return 'Ты — Router проекта EqSiteCMS. Твоя роль определена составом preset eqsite-router.\n\n' + content;
+                  return 'Ты — Router проекта EqSiteCMS. Твоя роль определена составом preset eqsite-router.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке. Все ответы, вопросы, отчёты и комментарии должны быть на русском.\n\n' + content;
                 })()
               suffix: Your working directory is {{cwd}}.
+              complete: true
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -134,7 +135,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/planner.md');
                       }
-                      return 'Ты — агент Planner проекта EqSiteCMS; роль назначена Router через delegate_planner. agents/router.md не читай.\n\n' + match[1].trim();
+                      return 'Ты — агент Planner проекта EqSiteCMS; роль назначена Router через delegate_planner. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
                     })()
               - id: delegate-backend
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -167,7 +168,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/backend.md');
                       }
-                      return 'Ты — агент Backend проекта EqSiteCMS; роль назначена Router через delegate_backend. agents/router.md не читай.\n\n' + match[1].trim();
+                      return 'Ты — агент Backend проекта EqSiteCMS; роль назначена Router через delegate_backend. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
                     })()
               - id: delegate-frontend
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -200,7 +201,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/frontend.md');
                       }
-                      return 'Ты — агент Frontend проекта EqSiteCMS; роль назначена Router через delegate_frontend. agents/router.md не читай.\n\n' + match[1].trim();
+                      return 'Ты — агент Frontend проекта EqSiteCMS; роль назначена Router через delegate_frontend. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
                     })()
               - id: delegate-site-consumer
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -233,7 +234,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/site_consumer.md');
                       }
-                      return 'Ты — агент Site Consumer проекта EqSiteCMS; роль назначена Router через delegate_site_consumer. agents/router.md не читай.\n\n' + match[1].trim();
+                      return 'Ты — агент Site Consumer проекта EqSiteCMS; роль назначена Router через delegate_site_consumer. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
                     })()
               - id: delegate-quality-gate
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -266,7 +267,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/quality_gate.md');
                       }
-                      return 'Ты — агент Quality Gate проекта EqSiteCMS; роль назначена Router через delegate_quality_gate. agents/router.md не читай.\n\n' + match[1].trim();
+                      return 'Ты — агент Quality Gate проекта EqSiteCMS; роль назначена Router через delegate_quality_gate. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
                     })()
               - id: workflow-ptc
                 name: '@deepseek-ai/dsh-workflow-ptc'

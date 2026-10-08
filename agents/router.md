@@ -100,12 +100,13 @@ Quality Gate остаётся **логически одним** gate с одни
 | `QG-FE-MANUAL` | browser QA агентом: сценарии Playwright, desktop/tablet/mobile, screenshots, console/network/axe и визуальная инспекция | есть UI/UX behavior diff |
 | `QG-CONTRACTS` | архитектура и контракты: AsyncAPI, access matrix, ownership, соответствие diff утверждённым specs/tasks | всегда |
 | `QG-LIVE` | live verification: SMOKE через `.agents/skills/api-smoke-test`, реальные PostgreSQL/NATS | есть runtime API diff |
+| `QG-FORMAT` | финальный format/lint/test: `make format`, `make lint`, `make test` из корня монорепозитория на чистом worktree | всегда |
 | `QG-SYNTH` | synthesis: сведение findings всех lanes, единый вердикт, один отчёт в `docs/reports/` | всегда |
 
 Правила:
 
 - До запуска пайплайна Router один раз сообщает, что требуется режим **Full Access**; дочерние агенты наследуют его и не запрашивают approval внутри execution unit. Кэши npm/uv/Playwright всё равно направляются в workspace как fallback.
-- DAG: `QG-ENV` подготавливает runtime. После его успеха `QG-BE`, `QG-FE-AUTO` и `QG-CONTRACTS` идут параллельно; затем `QG-LIVE` и, при UI diff, `QG-FE-MANUAL`; последним — `QG-SYNTH`.
+- DAG: `QG-ENV` подготавливает runtime. После его успеха `QG-BE`, `QG-FE-AUTO` и `QG-CONTRACTS` идут параллельно; затем `QG-LIVE` и, при UI diff, `QG-FE-MANUAL`. После всех lanes выполняется обязательный `QG-FORMAT`. Последним — `QG-SYNTH`.
 - Неприменимый lane помечается `неприменимо` с обоснованием, а не пропускается молча. `QG-ENV` также отражается в synthesis report.
 - `QG-FE-MANUAL` загружает skills `stack-control` и `ui-qa`, использует scripted Playwright и Playwright MCP (`mcp__pw__browser_*`); отсутствие браузера или evidence — infrastructure failure, а не разрешение пропустить проверку.
 - Инфраструктурный сбой диагностируется через `stackctl doctor` и logs; допускается не более двух repair/restart/rebuild попыток. Startup crash или тестовая регрессия из кода сразу становится finding владельцу, без бесконечного ремонта окружения.
