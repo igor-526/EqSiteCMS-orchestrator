@@ -9,6 +9,7 @@
 | Сервис | Статус | Роль | Технологии |
 |--------|--------|------|-----------|
 | `seo-service` | ✅ Реализован | Оркестратор расписаний и общих сущностей | Python, FastAPI, PostgreSQL, NATS, Celery |
+| `yandex-service` | 🏗️ Foundation only | Хранение OAuth credentials для Яндекс.Метрика/Вебмастер | Python, FastAPI, PostgreSQL, Fernet encryption |
 | `yandex-metrics-parser-service` | 🔜 Планируется | Парсинг метрик Яндекс.Метрики | Python, FastAPI, PostgreSQL, NATS |
 | `yandex-auth-service` | 🔜 Планируется | Авторизация для Яндекс.Метрики | Python, FastAPI, PostgreSQL, OAuth 2.0 |
 
@@ -126,6 +127,248 @@ services/seo-service/
 - [Архитектура SEO-модуля](./architecture.md)
 - [Протоколы NATS и Celery](./protocols.md)
 - [README сервиса](../../services/seo-service/README.md)
+
+---
+
+## 🏗️ yandex-service
+
+**Статус:** Foundation only (v0.1)  
+**Git:** `git@github.com:igor-526/EqSiteCMS-yandex-service.git`  
+**Путь:** `services/yandex-service/`
+
+### Назначение
+
+Централизованное хранение OAuth credentials для интеграций с Яндекс.Метрика и Яндекс.Вебмастер. Предоставляет безопасное хранение токенов с шифрованием и управление доступом к ним для парсеров.
+
+### Текущее состояние (Foundation only)
+
+**Реализовано (BE-2 — BE-9):**
+- ✅ Infrastructure foundation (PostgreSQL БД `yandex_service`, Docker, Alembic migrations)
+- ✅ Encryption utilities (Fernet для шифрования access/refresh токенов)
+- ✅ Database schema (`yandex_accounts` с зашифрованными токенами)
+- ✅ Health check endpoint (`GET /health`)
+- ✅ Unit tests (encryption utilities, 10 tests)
+- ✅ Integration tests (health check, 4 tests)
+- ✅ Documentation (README, SEO docs)
+
+**Ещё не реализовано (future work):**
+- ⏳ OAuth 2.0 authorization flow (получение access/refresh токенов от Яндекса)
+- ⏳ Token refresh mechanism (автоматическое обновление истёкших токенов)
+- ⏳ Accounts API (CRUD операции для OAuth аккаунтов)
+- ⏳ Яндекс.Метрика counters management (управление счётчиками)
+- ⏳ Яндекс.Вебмастер hosts management (управление хостами)
+- ⏳ Internal credentials API для парсеров (аутентифицированный доступ к токенам)
+- ⏳ NATS integration для обработки событий удаления аккаунтов (`accounts.deleted`)
+
+### Технологический стек
+
+- **Python 3.13+**
+- **FastAPI** — веб-фреймворк для API
+- **PostgreSQL 16+** — хранение зашифрованных токенов (БД `yandex_service`)
+- **Cryptography (Fernet)** — AES-128 CBC + HMAC-SHA256 шифрование для токенов
+- **Alembic** — миграции схемы БД
+- **SQLAlchemy Core** — низкоуровневый доступ к БД
+- **Docker** — контейнеризация сервиса
+
+### Архитектура
+
+Следует **Clean Architecture**:
+
+```
+services/yandex-service/
+├── src/
+│   ├── core/            # Бизнес-логика (entities, protocols, schemas, services)
+│   │   ├── encryption/  # Fernet encryption utilities
+│   │   ├── entities/    # Pydantic domain models
+│   │   ├── protocols/   # Repository interfaces
+│   │   ├── schemas/     # DTO для API
+│   │   └── services/    # Use cases (пока не используется)
+│   ├── models/          # SQLAlchemy Core tables
+│   ├── repositories/    # Реализации репозиториев (пока не используется)
+│   ├── api/             # FastAPI routers
+│   ├── depends/         # DI factories
+│   └── utils/           # Инфраструктурные утилиты
+├── migrations/          # Alembic миграции
+├── tests/               # Тесты (unit, integration)
+└── pyproject.toml       # uv project config
+```
+
+### Database Schema
+
+#### Таблица: `yandex_accounts`
+
+Хранит OAuth credentials для Яндекс аккаунтов (токены зашифрованы).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `user_id` | UUID | Связь с пользователем CMS (`backend-service`) |
+| `encrypted_access_token` | TEXT | Зашифрованный access token |
+| `encrypted_refresh_token` | TEXT | Зашифрованный refresh token |
+| `expires_at` | TIMESTAMP | Время истечения access token |
+| `requires_reauth` | BOOLEAN | Флаг: требуется повторная авторизация (истёк refresh token) |
+| `deleted_at` | TIMESTAMP | Soft delete (для обработки событий удаления) |
+| `created_at` | TIMESTAMP | Время создания записи |
+
+**Индексы:**
+- `idx_yandex_accounts_user_id` — быстрый поиск по `user_id`
+- `idx_yandex_accounts_deleted_at` — для фильтрации активных аккаунтов
+
+### API Endpoints
+
+#### Current (Foundation)
+
+**GET /health**
+
+Проверка состояния сервиса и доступности БД.
+
+**Access:** Public (anonymous и authenticated доступ разрешён)
+
+**Response (200 OK):**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T12:00:00Z"
+}
+```
+
+**Response (503 Service Unavailable):**
+```json
+{
+  "status": "unhealthy",
+  "error": "Database connection failed",
+  "timestamp": "2024-01-01T12:00:00Z"
+}
+```
+
+#### Future (Not Implemented)
+
+**OAuth Flow:**
+- `POST /api/v1/auth/authorize` — начать OAuth 2.0 flow (protected)
+- `GET /api/v1/auth/callback` — обработка OAuth callback от Яндекса (public)
+
+**Accounts Management:**
+- `GET /api/v1/accounts` — список OAuth аккаунтов пользователя (protected)
+- `GET /api/v1/accounts/{id}` — детали аккаунта (protected)
+- `DELETE /api/v1/accounts/{id}` — удалить аккаунт (protected)
+
+**Credentials API (для парсеров):**
+- `GET /api/v1/credentials/{user_id}` — получить access token для парсера (protected, service-to-service)
+
+**Counters/Hosts Management:**
+- `GET /api/v1/counters` — список счётчиков Яндекс.Метрики (protected)
+- `GET /api/v1/hosts` — список хостов Яндекс.Вебмастер (protected)
+
+### Encryption
+
+**Algorithm:** Fernet (AES-128 CBC + HMAC-SHA256)
+
+**Key Generation:**
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+**Usage Example:**
+```python
+from src.core.encryption import FernetEncryption
+from src.settings import yandex_settings
+
+encryptor = FernetEncryption(yandex_settings.encryption_key)
+
+# Encrypt
+encrypted = encryptor.encrypt("ya29.a0AfH6SMC...")
+
+# Decrypt
+plaintext = encryptor.decrypt(encrypted)
+```
+
+**Security:**
+- ⚠️ Ключ должен быть **32 байта** в формате base64 (44 символа)
+- ⚠️ Сохрани ключ в безопасном месте! Утрата ключа = утрата всех токенов
+- ⚠️ В production используй secrets manager (Vault, AWS Secrets Manager)
+
+### Testing
+
+**Unit Tests (10 tests):**
+- Encryption/decryption базового текста
+- Encryption/decryption пустой строки
+- Deterministic encryption (каждый раз новый ciphertext)
+- Decryption с неверным ключом
+- Decryption повреждённого ciphertext
+
+**Integration Tests (4 tests):**
+- Health check: БД доступна → 200 OK
+- Health check: БД недоступна → 503 Service Unavailable
+- Health check: структура JSON-ответа
+- Health check: timestamp format ISO 8601
+
+**Run Tests:**
+```bash
+# В корне монорепозитория
+make test
+
+# Или локально
+cd services/yandex-service
+uv run pytest
+```
+
+### Что НЕ делает yandex-service
+
+- ❌ Не выполняет парсинг метрик сам (это делают парсеры)
+- ❌ Не хранит результаты парсинга (хранятся в БД парсеров)
+- ❌ Не управляет расписаниями парсингов (это делает `seo-service`)
+- ❌ Не предоставляет публичный API для получения credentials (только service-to-service)
+
+### Зависимости
+
+**Runtime:**
+- PostgreSQL 16+ (БД `yandex_service`, порт `5438`)
+- Environment variable: `YANDEX_ENCRYPTION_KEY`
+
+**Future (not yet implemented):**
+- NATS JetStream (для обработки событий `accounts.deleted`)
+- `backend-service` (для валидации `user_id` при создании аккаунтов)
+
+### Взаимодействие с другими сервисами (future)
+
+```
+backend-service → NATS accounts.deleted → yandex-service
+                                            ↓
+                                   CASCADE DELETE:
+                                   - yandex_accounts
+                                   - counters
+                                   - hosts
+
+yandex-metrics-parser-service → yandex-service (GET /api/v1/credentials/{user_id})
+                                        ↓
+                                Decrypted access token
+```
+
+### Setup
+
+**Quick Start:**
+```bash
+# 1. Запустить PostgreSQL
+make infra
+
+# 2. Сгенерировать encryption key (см. README)
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+# 3. Применить миграции
+make yandex-migrate
+
+# 4. Запустить сервис
+make yandex
+```
+
+Сервис доступен на `http://localhost:8006`
+
+### Документация
+
+- [README сервиса](../../services/yandex-service/README.md)
+- [Alembic migrations](../../services/yandex-service/migrations/versions/)
+- [Архитектура SEO-модуля](./architecture.md) (общий контекст)
+- [NATS JetStream протоколы](../../agents/howto/nats-jetstream-protocols.md) (для future NATS integration)
 
 ---
 

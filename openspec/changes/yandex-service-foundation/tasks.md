@@ -151,22 +151,22 @@ BE-5 (Encryption)  →  BE-6 (Health check)
 
 ## 8. Integration Tests
 
-- [ ] 8.1 Создать `tests/integration/test_health.py`
-- [ ] 8.2 Test: Anonymous GET /health → 200 OK (если сервис здоров)
-- [ ] 8.3 Test: Authenticated GET /health → 200 OK (если сервис здоров)
-- [ ] 8.4 Test: GET /health → 503 (если БД недоступна, mock connection failure)
-- [ ] 8.5 Запустить integration tests: `make test-integration SERVICE=yandex-service`
+- [x] 8.1 Создать `tests/integration/test_health.py`
+- [x] 8.2 Test: Anonymous GET /health → 200 OK (если сервис здоров)
+- [x] 8.3 Test: Authenticated GET /health → 200 OK (если сервис здоров)
+- [x] 8.4 Test: GET /health → 503 (если БД недоступна, mock connection failure)
+- [x] 8.5 Запустить integration tests: `make test-integration SERVICE=yandex-service`
 
 ## 9. Documentation Foundation
 
-- [ ] 9.1 Создать `services/yandex-service/README.md` с секциями:
+- [x] 9.1 Создать `services/yandex-service/README.md` с секциями:
   - Overview (назначение сервиса)
   - Setup (как запустить локально)
   - Encryption key generation
   - Environment variables
   - API endpoints (только /health на данном этапе)
   - Future work (OAuth, счётчики, хосты)
-- [ ] 9.2 Обновить `docs/seo/services.md`: добавить placeholder для yandex-service (название, статус: "foundation only", future work)
+- [x] 9.2 Обновить `docs/seo/services.md`: добавить placeholder для yandex-service (название, статус: "foundation only", future work)
 
 ## 10. Quality Gate
 
