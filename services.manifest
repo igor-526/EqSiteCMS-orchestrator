@@ -5,9 +5,10 @@
 backend git@github.com:igor-526/EqSiteCMS-backend.git
 notification-service git@github.com:igor-526/EqSiteCMS-notification-service.git
 email-service git@github.com:igor-526/EqSiteCMS-email-service.git
-seo-service git@github.com:igor-526/EqSiteCMS-seo-service.git
-yandex-service git@github.com:igor-526/EqSiteCMS-yandex-service.git
 frontend git@github.com:igor-526/EqSiteCMS-frontend.git
 vk-service git@github.com:igor-526/EqSiteCMS-vk-service.git
 site-ad git@github.com:igor-526/aleksandrova-dacha-site.git
 site-ksk-inlove https://github.com/igor-526/inlove-site
+seo-service git@github.com:igor-526/EqSiteCMS-seo-service.git
+yandex-service git@github.com:igor-526/EqSiteCMS-yandex-service.git
+ya-metrica-service git@github.com:igor-526/EqSiteCMS-ya-metrica-service.git

@@ -1,0 +1,55 @@
+
+=== Ready: app ===
+Rebuilding app as Compose service backend in be...
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  2.098MBSending build context to Docker daemon  3.672MBSending build context to Docker daemon  4.196MBSending build context to Docker daemon  4.721MBSending build context to Docker daemon  5.245MBSending build context to Docker daemon   5.77MBSending build context to Docker daemon  6.294MBSending build context to Docker daemon  6.819MBSending build context to Docker daemon  7.868MBSending build context to Docker daemon  8.392MBSending build context to Docker daemon  9.965MBSending build context to Docker daemon  12.59MBSending build context to Docker daemon  14.69MBSending build context to Docker daemon  16.78MBSending build context to Docker daemon  18.88MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon  22.03MBSending build context to Docker daemon  22.55MBSending build context to Docker daemon  23.08MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon  25.17MBSending build context to Docker daemon  26.22MBSending build context to Docker daemon  28.32MBSending build context to Docker daemon  29.37MBSending build context to Docker daemon  30.42MBSending build context to Docker daemon  31.47MBSending build context to Docker daemon  32.52MBSending build context to Docker daemon  33.57MBSending build context to Docker daemon  34.62MBSending build context to Docker daemon  36.19MBSending build context to Docker daemon  37.76MBSending build context to Docker daemon  39.34MBSending build context to Docker daemon  40.38MBSending build context to Docker daemon  42.48MBSending build context to Docker daemon  45.11MBSending build context to Docker daemon  47.74MBSending build context to Docker daemon  50.36MBSending build context to Docker daemon  52.98MBSending build context to Docker daemon  54.56MBSending build context to Docker daemon  56.13MBSending build context to Docker daemon  57.18MBSending build context to Docker daemon  58.75MBSending build context to Docker daemon   59.8MBSending build context to Docker daemon  61.37MBSending build context to Docker daemon  62.95MBSending build context to Docker daemon  65.05MBSending build context to Docker daemon  67.14MBSending build context to Docker daemon  68.72MBSending build context to Docker daemon  70.81MBSending build context to Docker daemon  72.39MBSending build context to Docker daemon  73.44MBSending build context to Docker daemon  73.96MBSending build context to Docker daemon  74.49MBSending build context to Docker daemon  75.01MBSending build context to Docker daemon  76.07MBSending build context to Docker daemon  77.64MBSending build context to Docker daemon  79.22MBSending build context to Docker daemon  80.79MBSending build context to Docker daemon  82.89MBSending build context to Docker daemon  83.94MBSending build context to Docker daemon  84.46MBSending build context to Docker daemon  84.99MBSending build context to Docker daemon  85.51MBSending build context to Docker daemon  86.56MBSending build context to Docker daemon  88.13MBSending build context to Docker daemon  89.71MBSending build context to Docker daemon  91.28MBSending build context to Docker daemon  92.85MBSending build context to Docker daemon   93.9MBSending build context to Docker daemon  94.95MBSending build context to Docker daemon  96.52MBSending build context to Docker daemon  98.62MBSending build context to Docker daemon  100.2MBSending build context to Docker daemon  102.3MBSending build context to Docker daemon  104.4MBSending build context to Docker daemon  105.4MBSending build context to Docker daemon  106.5MBSending build context to Docker daemon  108.1MBSending build context to Docker daemon  109.1MBSending build context to Docker daemon  110.7MBSending build context to Docker daemon  112.8MBSending build context to Docker daemon  114.9MBSending build context to Docker daemon    117MBSending build context to Docker daemon  118.6MBSending build context to Docker daemon  120.6MBSending build context to Docker daemon  122.7MBSending build context to Docker daemon  124.3MBSending build context to Docker daemon  125.9MBSending build context to Docker daemon  126.9MBSending build context to Docker daemon    128MBSending build context to Docker daemon    129MBSending build context to Docker daemon  130.1MBSending build context to Docker daemon  131.1MBSending build context to Docker daemon  133.2MBSending build context to Docker daemon  134.8MBSending build context to Docker daemon  136.9MBSending build context to Docker daemon    138MBSending build context to Docker daemon    139MBSending build context to Docker daemon  140.1MBSending build context to Docker daemon  141.1MBSending build context to Docker daemon  142.7MBSending build context to Docker daemon  143.7MBSending build context to Docker daemon  144.8MBSending build context to Docker daemon  145.8MBSending build context to Docker daemon  147.4MBSending build context to Docker daemon  148.4MBSending build context to Docker daemon    150MBSending build context to Docker daemon  152.1MBSending build context to Docker daemon  153.2MBSending build context to Docker daemon  153.4MB
+Step 1/13 : FROM python:3.13
+ ---> 4c822f0fadfe
+Step 2/13 : ENV PYTHONDONTWRITEBYTECODE=1
+ ---> Using cache
+ ---> 2838c06e6ac4
+Step 3/13 : RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+ ---> Using cache
+ ---> 64b09b566020
+Step 4/13 : RUN apt-get update && apt-get install -y     gcc     libpq-dev     python3-dev     && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> e030047b9979
+Step 5/13 : ADD https://astral.sh/uv/0.8.15/install.sh /uv-installer.sh
+[2KDownloading [======>                                            ]  8.192kB/65.99kB[2KDownloading [===============================>                   ]  40.96kB/65.99kB[2KDownloading [==================================================>]  65.99kB/65.99kB[2KDownloading [==================================================>]  65.99kB/65.99kB
+
+ ---> Using cache
+ ---> bf8cf00d3f2e
+Step 6/13 : RUN sh /uv-installer.sh && rm /uv-installer.sh
+ ---> Using cache
+ ---> 07a1eb820c09
+Step 7/13 : ENV PATH="/root/.local/bin/:$PATH"
+ ---> Using cache
+ ---> 0e3ec46f8829
+Step 8/13 : WORKDIR /eqsitecms
+ ---> Using cache
+ ---> 0b36640b9e0e
+Step 9/13 : COPY pyproject.toml uv.lock .python-version ./
+ ---> Using cache
+ ---> 0089073c3399
+Step 10/13 : RUN uv sync --locked
+ ---> Using cache
+ ---> c42ffc6406c2
+Step 11/13 : COPY src/ ./src
+ ---> Using cache
+ ---> 20273723ddd6
+Step 12/13 : CMD ["uv", "run", "src/main.py"]
+ ---> Using cache
+ ---> 6da91ce62edc
+Step 13/13 : LABEL com.docker.compose.image.builder=classic
+ ---> Using cache
+ ---> 6f0f6dfd78e0
+Successfully built 6f0f6dfd78e0
+Successfully tagged eqsitecms-backend:latest
+time="2026-10-12T20:49:06+08:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image eqsitecms-backend:latest Building 
+ Image eqsitecms-backend:latest Building 
+ Image eqsitecms-backend:latest Built 
+ Image eqsitecms-backend:latest Built 
+ Container eqsitecms-app Recreate 
+ Container eqsitecms-app Recreated 
+ Container eqsitecms-app Starting 
+ Container eqsitecms-app Started 

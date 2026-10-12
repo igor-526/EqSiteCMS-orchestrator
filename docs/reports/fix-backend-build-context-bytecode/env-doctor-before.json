@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "service": "app",
+  "diagnosis": {
+    "container": "eqsitecms-app",
+    "project": "eqsitecms-be",
+    "state": {
+      "status": "running",
+      "health": "unhealthy",
+      "exitCode": 0,
+      "oomKilled": false,
+      "error": ""
+    },
+    "ports": {
+      "8000/tcp": [
+        {
+          "HostIp": "0.0.0.0",
+          "HostPort": "8001"
+        },
+        {
+          "HostIp": "::",
+          "HostPort": "8001"
+        }
+      ]
+    },
+    "healthLog": [
+      {
+        "start": "2026-10-12T20:42:15.084656113+08:00",
+        "end": "2026-10-12T20:42:25.123925727+08:00",
+        "exitCode": -1,
+        "output": "Health check exceeded timeout (10s)"
+      },
+      {
+        "start": "2026-10-12T20:42:55.124884091+08:00",
+        "end": "2026-10-12T20:43:05.159289289+08:00",
+        "exitCode": -1,
+        "output": "Health check exceeded timeout (10s)"
+      },
+      {
+        "start": "2026-10-12T20:43:35.160472956+08:00",
+        "end": "2026-10-12T20:43:45.194782707+08:00",
+        "exitCode": -1,
+        "output": "Health check exceeded timeout (10s)"
+      },
+      {
+        "start": "2026-10-12T20:44:15.195938953+08:00",
+        "end": "2026-10-12T20:44:25.234301356+08:00",
+        "exitCode": -1,
+        "output": "Health check exceeded timeout (10s)"
+      },
+      {
+        "start": "2026-10-12T20:44:55.238065935+08:00",
+        "end": "2026-10-12T20:45:05.273024608+08:00",
+        "exitCode": -1,
+        "output": "Health check exceeded timeout (10s)"
+      }
+    ],
+    "recentLogs": [
+      "           ~~~~~~~~~~^^^^^^",
+      "  File \"/usr/lib/python3.13/asyncio/runners.py\", line 118, in run",
+      "    return self._loop.run_until_complete(task)",
+      "           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^",
+      "  File \"/usr/lib/python3.13/asyncio/base_events.py\", line 725, in run_until_complete",
+      "    return future.result()",
+      "           ~~~~~~~~~~~~~^^",
+      "  File \"/eqsitecms/src/migration/env.py\", line 81, in run_async_migrations",
+      "    await connection.run_sync(do_run_migrations)",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py\", line 887, in run_sync",
+      "    return await greenlet_spawn(",
+      "           ^^^^^^^^^^^^^^^^^^^^^",
+      "        fn, self._proxied, *arg, _require_await=False, **kw",
+      "        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "    )",
+      "    ^",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py\", line 203, in greenlet_spawn",
+      "    result = context.switch(value)",
+      "  File \"/eqsitecms/src/migration/env.py\", line 65, in do_run_migrations",
+      "    context.run_migrations()",
+      "    ~~~~~~~~~~~~~~~~~~~~~~^^",
+      "  File \"<string>\", line 8, in run_migrations",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/alembic/runtime/environment.py\", line 946, in run_migrations",
+      "    self.get_context().run_migrations(**kw)",
+      "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/alembic/runtime/migration.py\", line 615, in run_migrations",
+      "    for step in self._migrations_fn(heads, self):",
+      "                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/alembic/command.py\", line 472, in upgrade",
+      "    return script._upgrade_revs(revision, rev)",
+      "           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/alembic/script/base.py\", line 413, in _upgrade_revs",
+      "    with self._catch_revision_errors(",
+      "         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^",
+      "        ancestor=\"Destination %(end)s is not a valid upgrade \"",
+      "        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "        \"target from current head(s)\",",
+      "        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "        end=destination,",
+      "        ^^^^^^^^^^^^^^^^",
+      "    ):",
+      "    ^",
+      "  File \"/usr/lib/python3.13/contextlib.py\", line 162, in __exit__",
+      "    self.gen.throw(value)",
+      "    ~~~~~~~~~~~~~~^^^^^^^",
+      "  File \"/eqsitecms/.venv/lib/python3.13/site-packages/alembic/script/base.py\", line 249, in _catch_revision_errors",
+      "    raise util.CommandError(resolution) from re",
+      "alembic.util.exc.CommandError: Can't locate revision identified by 'd1e2f3a4b5c6'",
+      "ERROR:    Application startup failed. Exiting."
+    ],
+    "recommendations": [
+      "Inspect healthLog and recentLogs before retrying; do not retry more than twice."
+    ]
+  }
+}

@@ -1,0 +1,417 @@
+make[1]: вход в каталог «/home/igor/projects/eqSiteCMS»
+Building backend image without build cache...
+docker compose -f .docker-compose/docker-compose.be.yml -p eqsitecms-be build --no-cache
+Sending build context to Docker daemon  524.4kBSending build context to Docker daemon  3.147MBSending build context to Docker daemon  3.672MBSending build context to Docker daemon  4.196MBSending build context to Docker daemon  4.721MBSending build context to Docker daemon  5.245MBSending build context to Docker daemon   5.77MBSending build context to Docker daemon  6.294MBSending build context to Docker daemon  6.819MBSending build context to Docker daemon  7.868MBSending build context to Docker daemon  8.392MBSending build context to Docker daemon  9.965MBSending build context to Docker daemon  12.59MBSending build context to Docker daemon  14.69MBSending build context to Docker daemon  16.26MBSending build context to Docker daemon  18.36MBSending build context to Docker daemon  20.45MBSending build context to Docker daemon  22.03MBSending build context to Docker daemon  23.08MBSending build context to Docker daemon  24.65MBSending build context to Docker daemon   25.7MBSending build context to Docker daemon   27.8MBSending build context to Docker daemon  29.37MBSending build context to Docker daemon  30.94MBSending build context to Docker daemon  31.99MBSending build context to Docker daemon  33.57MBSending build context to Docker daemon  35.14MBSending build context to Docker daemon  36.71MBSending build context to Docker daemon  38.29MBSending build context to Docker daemon  39.86MBSending build context to Docker daemon  40.91MBSending build context to Docker daemon  43.53MBSending build context to Docker daemon  46.69MBSending build context to Docker daemon  49.31MBSending build context to Docker daemon  51.93MBSending build context to Docker daemon  54.03MBSending build context to Docker daemon   55.6MBSending build context to Docker daemon  57.18MBSending build context to Docker daemon  58.75MBSending build context to Docker daemon   59.8MBSending build context to Docker daemon  61.37MBSending build context to Docker daemon  62.95MBSending build context to Docker daemon  65.05MBSending build context to Docker daemon  67.14MBSending build context to Docker daemon  69.24MBSending build context to Docker daemon  71.34MBSending build context to Docker daemon  72.39MBSending build context to Docker daemon  73.44MBSending build context to Docker daemon  73.96MBSending build context to Docker daemon  74.49MBSending build context to Docker daemon  75.01MBSending build context to Docker daemon  76.07MBSending build context to Docker daemon  77.64MBSending build context to Docker daemon  79.22MBSending build context to Docker daemon  80.79MBSending build context to Docker daemon  82.36MBSending build context to Docker daemon  83.41MBSending build context to Docker daemon  83.94MBSending build context to Docker daemon  84.46MBSending build context to Docker daemon  84.99MBSending build context to Docker daemon  85.51MBSending build context to Docker daemon  87.08MBSending build context to Docker daemon  88.66MBSending build context to Docker daemon  90.23MBSending build context to Docker daemon   91.8MBSending build context to Docker daemon  93.38MBSending build context to Docker daemon  94.43MBSending build context to Docker daemon     96MBSending build context to Docker daemon  97.57MBSending build context to Docker daemon  99.15MBSending build context to Docker daemon  100.7MBSending build context to Docker daemon  102.8MBSending build context to Docker daemon  104.9MBSending build context to Docker daemon    106MBSending build context to Docker daemon    107MBSending build context to Docker daemon  108.6MBSending build context to Docker daemon  110.2MBSending build context to Docker daemon  111.7MBSending build context to Docker daemon  113.8MBSending build context to Docker daemon  115.9MBSending build context to Docker daemon  117.5MBSending build context to Docker daemon  119.6MBSending build context to Docker daemon  121.7MBSending build context to Docker daemon  123.8MBSending build context to Docker daemon  125.4MBSending build context to Docker daemon  126.4MBSending build context to Docker daemon  127.5MBSending build context to Docker daemon  128.5MBSending build context to Docker daemon    129MBSending build context to Docker daemon  130.1MBSending build context to Docker daemon  131.1MBSending build context to Docker daemon  133.8MBSending build context to Docker daemon  134.8MBSending build context to Docker daemon  136.9MBSending build context to Docker daemon    138MBSending build context to Docker daemon  138.5MBSending build context to Docker daemon  140.1MBSending build context to Docker daemon  141.1MBSending build context to Docker daemon  142.7MBSending build context to Docker daemon  143.7MBSending build context to Docker daemon  144.8MBSending build context to Docker daemon  145.8MBSending build context to Docker daemon  147.4MBSending build context to Docker daemon    149MBSending build context to Docker daemon  150.5MBSending build context to Docker daemon  152.6MBSending build context to Docker daemon  153.4MB
+Step 1/13 : FROM python:3.13
+ ---> 4c822f0fadfe
+Step 2/13 : ENV PYTHONDONTWRITEBYTECODE=1
+ ---> Running in a0aa04aae25a
+ ---> Removed intermediate container a0aa04aae25a
+ ---> 2838c06e6ac4
+Step 3/13 : RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+ ---> Running in f01cb998ce0a
+Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9678 kB]
+Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [4412 B]
+Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [266 kB]
+Fetched 10.2 MB in 3s (3607 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+ca-certificates is already the newest version (20250419).
+The following additional packages will be installed:
+  libcurl3t64-gnutls libcurl4-openssl-dev libcurl4t64
+The following packages will be upgraded:
+  curl libcurl3t64-gnutls libcurl4-openssl-dev libcurl4t64
+4 upgraded, 0 newly installed, 0 to remove and 108 not upgraded.
+Need to get 1557 kB of archives.
+After this operation, 6144 B of additional disk space will be used.
+Get:1 http://deb.debian.org/debian trixie/main amd64 libcurl4-openssl-dev amd64 8.14.1-2+deb13u5 [511 kB]
+Get:2 http://deb.debian.org/debian trixie/main amd64 curl amd64 8.14.1-2+deb13u5 [270 kB]
+Get:3 http://deb.debian.org/debian trixie/main amd64 libcurl4t64 amd64 8.14.1-2+deb13u5 [391 kB]
+Get:4 http://deb.debian.org/debian trixie/main amd64 libcurl3t64-gnutls amd64 8.14.1-2+deb13u5 [384 kB]
+[91mdebconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+[0m[91mdebconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+[0m[91mdebconf: unable to initialize frontend: Teletype
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Noninteractive
+[0mFetched 1557 kB in 1s (1730 kB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 26755 files and directories currently installed.)
+Preparing to unpack .../libcurl4-openssl-dev_8.14.1-2+deb13u5_amd64.deb ...
+Unpacking libcurl4-openssl-dev:amd64 (8.14.1-2+deb13u5) over (8.14.1-2+deb13u3) ...
+Preparing to unpack .../curl_8.14.1-2+deb13u5_amd64.deb ...
+Unpacking curl (8.14.1-2+deb13u5) over (8.14.1-2+deb13u3) ...
+Preparing to unpack .../libcurl4t64_8.14.1-2+deb13u5_amd64.deb ...
+Unpacking libcurl4t64:amd64 (8.14.1-2+deb13u5) over (8.14.1-2+deb13u3) ...
+Preparing to unpack .../libcurl3t64-gnutls_8.14.1-2+deb13u5_amd64.deb ...
+Unpacking libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u5) over (8.14.1-2+deb13u3) ...
+Setting up libcurl4t64:amd64 (8.14.1-2+deb13u5) ...
+Setting up libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u5) ...
+Setting up libcurl4-openssl-dev:amd64 (8.14.1-2+deb13u5) ...
+Setting up curl (8.14.1-2+deb13u5) ...
+Processing triggers for libc-bin (2.41-12+deb13u3) ...
+ ---> Removed intermediate container f01cb998ce0a
+ ---> 64b09b566020
+Step 4/13 : RUN apt-get update && apt-get install -y     gcc     libpq-dev     python3-dev     && rm -rf /var/lib/apt/lists/*
+ ---> Running in ed918626f09a
+Hit:1 http://deb.debian.org/debian trixie InRelease
+Hit:2 http://deb.debian.org/debian trixie-updates InRelease
+Hit:3 http://deb.debian.org/debian-security trixie-security InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+gcc is already the newest version (4:14.2.0-1).
+The following additional packages will be installed:
+  javascript-common libjs-jquery libjs-sphinxdoc libjs-underscore libpq5
+  libpython3-dev libpython3.13 libpython3.13-dev libpython3.13-minimal
+  libpython3.13-stdlib python3.13 python3.13-dev python3.13-minimal
+Suggested packages:
+  apache2 | lighttpd | httpd
+The following NEW packages will be installed:
+  javascript-common libjs-jquery libjs-sphinxdoc libjs-underscore
+  libpython3-dev libpython3.13 libpython3.13-dev python3-dev python3.13-dev
+The following packages will be upgraded:
+  libpq-dev libpq5 libpython3.13-minimal libpython3.13-stdlib python3.13
+  python3.13-minimal
+6 upgraded, 9 newly installed, 0 to remove and 102 not upgraded.
+Need to get 14.7 MB of archives.
+After this operation, 37.0 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian trixie/main amd64 python3.13 amd64 3.13.5-2+deb13u5 [757 kB]
+Get:2 http://deb.debian.org/debian trixie/main amd64 libpython3.13-stdlib amd64 3.13.5-2+deb13u5 [1959 kB]
+Get:3 http://deb.debian.org/debian trixie/main amd64 python3.13-minimal amd64 3.13.5-2+deb13u5 [2225 kB]
+Get:4 http://deb.debian.org/debian trixie/main amd64 libpython3.13-minimal amd64 3.13.5-2+deb13u5 [863 kB]
+Get:5 http://deb.debian.org/debian trixie/main amd64 javascript-common all 12+nmu1 [4864 B]
+Get:6 http://deb.debian.org/debian trixie/main amd64 libjs-jquery all 3.6.1+dfsg+~3.5.14-1 [326 kB]
+Get:7 http://deb.debian.org/debian trixie/main amd64 libjs-underscore all 1.13.4~dfsg+~1.11.4-3 [116 kB]
+Get:8 http://deb.debian.org/debian trixie/main amd64 libjs-sphinxdoc all 8.1.3-5 [30.5 kB]
+Get:9 http://deb.debian.org/debian trixie/main amd64 libpq-dev amd64 17.11-0+deb13u1 [159 kB]
+Get:10 http://deb.debian.org/debian trixie/main amd64 libpq5 amd64 17.11-0+deb13u1 [237 kB]
+Get:11 http://deb.debian.org/debian trixie/main amd64 libpython3.13 amd64 3.13.5-2+deb13u5 [2160 kB]
+Get:12 http://deb.debian.org/debian trixie/main amd64 libpython3.13-dev amd64 3.13.5-2+deb13u5 [5286 kB]
+Get:13 http://deb.debian.org/debian trixie/main amd64 libpython3-dev amd64 3.13.5-1 [10.4 kB]
+Get:14 http://deb.debian.org/debian trixie/main amd64 python3.13-dev amd64 3.13.5-2+deb13u5 [504 kB]
+Get:15 http://deb.debian.org/debian trixie/main amd64 python3-dev amd64 3.13.5-1 [26.1 kB]
+[91mdebconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+[0m[91mdebconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+[0m[91mdebconf: unable to initialize frontend: Teletype
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Noninteractive
+[0mFetched 14.7 MB in 2s (7229 kB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 26755 files and directories currently installed.)
+Preparing to unpack .../00-python3.13_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking python3.13 (3.13.5-2+deb13u5) over (3.13.5-2+deb13u2) ...
+Preparing to unpack .../01-libpython3.13-stdlib_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking libpython3.13-stdlib:amd64 (3.13.5-2+deb13u5) over (3.13.5-2+deb13u2) ...
+Preparing to unpack .../02-python3.13-minimal_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking python3.13-minimal (3.13.5-2+deb13u5) over (3.13.5-2+deb13u2) ...
+Preparing to unpack .../03-libpython3.13-minimal_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking libpython3.13-minimal:amd64 (3.13.5-2+deb13u5) over (3.13.5-2+deb13u2) ...
+Selecting previously unselected package javascript-common.
+Preparing to unpack .../04-javascript-common_12+nmu1_all.deb ...
+Unpacking javascript-common (12+nmu1) ...
+Selecting previously unselected package libjs-jquery.
+Preparing to unpack .../05-libjs-jquery_3.6.1+dfsg+~3.5.14-1_all.deb ...
+Unpacking libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Selecting previously unselected package libjs-underscore.
+Preparing to unpack .../06-libjs-underscore_1.13.4~dfsg+~1.11.4-3_all.deb ...
+Unpacking libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Selecting previously unselected package libjs-sphinxdoc.
+Preparing to unpack .../07-libjs-sphinxdoc_8.1.3-5_all.deb ...
+Unpacking libjs-sphinxdoc (8.1.3-5) ...
+Preparing to unpack .../08-libpq-dev_17.11-0+deb13u1_amd64.deb ...
+Unpacking libpq-dev (17.11-0+deb13u1) over (17.10-0+deb13u1) ...
+Preparing to unpack .../09-libpq5_17.11-0+deb13u1_amd64.deb ...
+Unpacking libpq5:amd64 (17.11-0+deb13u1) over (17.10-0+deb13u1) ...
+Selecting previously unselected package libpython3.13:amd64.
+Preparing to unpack .../10-libpython3.13_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking libpython3.13:amd64 (3.13.5-2+deb13u5) ...
+Selecting previously unselected package libpython3.13-dev:amd64.
+Preparing to unpack .../11-libpython3.13-dev_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking libpython3.13-dev:amd64 (3.13.5-2+deb13u5) ...
+Selecting previously unselected package libpython3-dev:amd64.
+Preparing to unpack .../12-libpython3-dev_3.13.5-1_amd64.deb ...
+Unpacking libpython3-dev:amd64 (3.13.5-1) ...
+Selecting previously unselected package python3.13-dev.
+Preparing to unpack .../13-python3.13-dev_3.13.5-2+deb13u5_amd64.deb ...
+Unpacking python3.13-dev (3.13.5-2+deb13u5) ...
+Selecting previously unselected package python3-dev.
+Preparing to unpack .../14-python3-dev_3.13.5-1_amd64.deb ...
+Unpacking python3-dev (3.13.5-1) ...
+Setting up javascript-common (12+nmu1) ...
+Setting up libpq5:amd64 (17.11-0+deb13u1) ...
+Setting up libpq-dev (17.11-0+deb13u1) ...
+Setting up libpython3.13-minimal:amd64 (3.13.5-2+deb13u5) ...
+Setting up python3.13-minimal (3.13.5-2+deb13u5) ...
+Setting up libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Setting up libpython3.13-stdlib:amd64 (3.13.5-2+deb13u5) ...
+Setting up libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Setting up libpython3.13:amd64 (3.13.5-2+deb13u5) ...
+Setting up python3.13 (3.13.5-2+deb13u5) ...
+Setting up libpython3.13-dev:amd64 (3.13.5-2+deb13u5) ...
+Setting up libjs-sphinxdoc (8.1.3-5) ...
+Setting up libpython3-dev:amd64 (3.13.5-1) ...
+Setting up python3.13-dev (3.13.5-2+deb13u5) ...
+Setting up python3-dev (3.13.5-1) ...
+Processing triggers for libc-bin (2.41-12+deb13u3) ...
+ ---> Removed intermediate container ed918626f09a
+ ---> e030047b9979
+Step 5/13 : ADD https://astral.sh/uv/0.8.15/install.sh /uv-installer.sh
+[2KDownloading [======>                                            ]  8.192kB/65.99kB[2KDownloading [===========================================>       ]  57.34kB/65.99kB[2KDownloading [==================================================>]  65.99kB/65.99kB[2KDownloading [==================================================>]  65.99kB/65.99kB
+
+ ---> bf8cf00d3f2e
+Step 6/13 : RUN sh /uv-installer.sh && rm /uv-installer.sh
+ ---> Running in a65714ff64f8
+[91mdownloading uv 0.8.15 x86_64-unknown-linux-gnu
+[0mno checksums to verify
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+ ---> Removed intermediate container a65714ff64f8
+ ---> 07a1eb820c09
+Step 7/13 : ENV PATH="/root/.local/bin/:$PATH"
+ ---> Running in 443dbaf12d00
+ ---> Removed intermediate container 443dbaf12d00
+ ---> 0e3ec46f8829
+Step 8/13 : WORKDIR /eqsitecms
+ ---> Running in 46f91f02b677
+ ---> Removed intermediate container 46f91f02b677
+ ---> 0b36640b9e0e
+Step 9/13 : COPY pyproject.toml uv.lock .python-version ./
+ ---> 0089073c3399
+Step 10/13 : RUN uv sync --locked
+ ---> Running in 54741d094cda
+[91mUsing CPython 3.13.5 interpreter at: /usr/bin/python3.13
+Creating virtual environment at: .venv
+[0m[91mResolved 164 packages in 0.85ms
+[0m[91mDownloading pygments (1.2MiB)
+[0m[91mDownloading jupyterlab (11.7MiB)
+[0m[91mDownloading dependency-injector (1.8MiB)
+[0m[91mDownloading psycopg2-binary (2.9MiB)
+[0m[91mDownloading notebook (13.7MiB)
+[0m[91mDownloading sqlalchemy (3.1MiB)
+[0m[91mDownloading debugpy (4.1MiB)
+[0m[91mDownloading black (1.7MiB)
+[0m[91mDownloading mypy (12.2MiB)
+[0m[91mDownloading ruff (10.8MiB)
+[0m[91mDownloading jedi (1.5MiB)
+[0m[91mDownloading botocore (13.4MiB)
+[0m[91mDownloading pydantic-core (1.9MiB)
+[0m[91mDownloading asyncpg (3.4MiB)
+[0m[91mDownloading babel (9.7MiB)
+[0m[91mDownloading aiohttp (1.6MiB)
+[0m[91mDownloading pandas (11.5MiB)
+[0m[91mDownloading setuptools (1.1MiB)
+[0m[91mDownloading numpy (15.9MiB)
+[0m[91m Downloading setuptools
+[0m[91m Downloading pygments
+[0m[91m Downloading jedi
+[0m[91m Downloading aiohttp
+[0m[91m Downloading dependency-injector
+[0m[91m Downloading black
+[0m[91m Downloading pydantic-core
+[0m[91m Downloading psycopg2-binary
+[0m[91m Downloading sqlalchemy
+[0m[91m Downloading asyncpg
+[0m[91m Downloading debugpy
+[0m[91m Downloading babel
+[0m[91m Downloading ruff
+[0m[91m Downloading pandas
+[0m[91m Downloading jupyterlab
+[0m[91m Downloading mypy
+[0m[91m Downloading botocore
+[0m[91m Downloading notebook
+[0m[91m Downloading numpy
+[0m[91mPrepared 159 packages in 15.98s
+[0m[91mInstalled 159 packages in 511ms
+ + aioboto3==15.5.0
+ + aiobotocore==2.25.1
+ + aiofiles==25.1.0
+ + aiohappyeyeballs==2.6.1
+ + aiohttp==3.12.15
+ + aioitertools==0.13.0
+ + aiolimiter==1.2.1
+ + aiosignal==1.4.0
+ + aiosqlite==0.21.0
+ + alembic==1.16.5
+ + annotated-types==0.7.0
+ + anyio==4.10.0
+ + argon2-cffi==25.1.0
+ + argon2-cffi-bindings==25.1.0
+ + arrow==1.3.0
+ + asttokens==3.0.0
+ + async-lru==2.0.5
+ + asyncpg==0.30.0
+ + attrs==25.3.0
+ + babel==2.17.0
+ + bcrypt==4.0.1
+ + beautifulsoup4==4.14.2
+ + black==25.1.0
+ + bleach==6.2.0
+ + boto3==1.40.61
+ + botocore==1.40.61
+ + certifi==2025.8.3
+ + cffi==2.0.0
+ + charset-normalizer==3.4.4
+ + click==8.2.1
+ + comm==0.2.3
+ + debugpy==1.8.17
+ + decorator==5.2.1
+ + defusedxml==0.7.1
+ + dependency-injector==4.49.1
+ + dnspython==2.7.0
+ + eventlet==0.40.3
+ + executing==2.2.1
+ + fastapi==0.116.1
+ + fastjsonschema==2.21.2
+ + flake8==7.3.0
+ + fqdn==1.5.1
+ + frozenlist==1.7.0
+ + greenlet==3.2.4
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.10
+ + iniconfig==2.1.0
+ + ipykernel==7.0.0
+ + ipython==9.6.0
+ + ipython-pygments-lexers==1.1.1
+ + isoduration==20.11.0
+ + isort==6.0.1
+ + jedi==0.19.2
+ + jinja2==3.1.6
+ + jmespath==1.1.0
+ + json5==0.12.1
+ + jsonpointer==3.0.0
+ + jsonschema==4.25.1
+ + jsonschema-specifications==2025.9.1
+ + jupyter-client==8.6.3
+ + jupyter-core==5.8.1
+ + jupyter-events==0.12.0
+ + jupyter-lsp==2.[0m[91m3.0
+ + jupyter-server==2.17.0
+ + jupyter-server-terminals==0.5.3
+ + jupyterlab==4.4.9
+ + jupyterlab-pygments==0.3.0
+ + jupyterlab-server==2.27.3
+ + lark==1.3.0
+ + mako==1.3.10
+ + markupsafe==3.0.2
+ + matplotlib-inline==0.1.7
+ + mccabe==0.7.0
+ + [0m[91mmistune==3.1.4
+ + multidict==6.[0m[91m6.4
+ + mypy==1.17.[0m[91m1
+ + [0m[91mmypy-extensions==1.1.[0m[91m0
+ + nats-py[0m[91m==2.15.0
+ +[0m[91m nbclient==0.10[0m[91m.2
+ + nbconvert==7.16[0m[91m.6
+ + nbformat[0m[91m==5.10.4
+[0m[91m + nest-asyncio==[0m[91m1.6.0
+ +[0m[91m notebook==7.4.7[0m[91m
+ + notebook-shim==0.2.4[0m[91m
+ + numpy==2[0m[91m.3.2
+ + [0m[91mpackaging==25.0
+ [0m[91m+ pandas==2.3[0m[91m.2
+ +[0m[91m pandocfilters==1.5.[0m[91m1
+ + [0m[91mparso==0.8.[0m[91m5
+ + passlib==1.[0m[91m7.4
+ + pathspec[0m[91m==0.12.1
+[0m[91m + pexpect==4[0m[91m.9.0
+ [0m[91m+ platformdirs==4[0m[91m.4.0
+ +[0m[91m pluggy==1.[0m[91m6.0
+ +[0m[91m prometheus-client==0.[0m[91m23.1
+ + [0m[91mprometheus-fastapi-instrumentator==7.1.[0m[91m0
+ + prompt-toolkit[0m[91m==3.0.52
+ [0m[91m+ propcache==0[0m[91m.3.2
+ [0m[91m+ psutil==7.1[0m[91m.0
+ + [0m[91mpsycopg2-binary==2.9.[0m[91m10
+ + ptyprocess[0m[91m==0.7.0
+[0m[91m + pure-eval==[0m[91m0.2.3
+ +[0m[91m pycodestyle==2.14[0m[91m.0
+ + [0m[91mpycparser==2.[0m[91m23
+ + pydantic[0m[91m==2.11.7
+ [0m[91m+ pydantic-core==2[0m[91m.33.2
+[0m[91m + pydantic-settings==2[0m[91m.10.1
+ [0m[91m+ pyflakes==3.4[0m[91m.0
+ +[0m[91m pygments==2.[0m[91m19.2
+ +[0m[91m pyjwt==2.10.1[0m[91m
+ + pytest[0m[91m==8.4.[0m[91m2
+ + pytest-asyncio[0m[91m==1.1.[0m[91m0
+ + python-dateutil[0m[91m==2.9.[0m[91m0.post0
+ [0m[91m+ python-dotenv==1[0m[91m.1.1
+ [0m[91m+ python-json-logger==4[0m[91m.0.0
+[0m[91m + python-multipart==[0m[91m0.0.20[0m[91m
+ + pytz==2025.2
+ + pyyaml==6.0[0m[91m.3
+ + [0m[91mpyzmq==27.1.0[0m[91m
+ + redis[0m[91m==6.4.0
+ + referencing==0.37.0
+ +[0m[91m requests==2.32.5[0m[91m
+ +[0m[91m rfc3339-validator==[0m[91m0.1[0m[91m.4
+ [0m[91m+[0m[91m rfc3986-validator==[0m[91m0.1.1[0m[91m
+ +[0m[91m rfc3987-syntax==[0m[91m1.1[0m[91m.0
+ [0m[91m+ [0m[91mrpds-py==[0m[91m0.27[0m[91m.1[0m[91m
+ + [0m[91mruff==0.15.[0m[91m12
+ + [0m[91ms3transfer==0.14[0m[91m.0
+ [0m[91m+ send2trash[0m[91m==1.8.[0m[91m3
+[0m[91m +[0m[91m sentry-sdk==2.68.0
+ + setuptools==80.9.0
+ + six==[0m[91m1.17.0
+ + [0m[91msniffio==1.3.1[0m[91m
+ + [0m[91msoupsieve==2.8
+ +[0m[91m sqlalchemy==2.0.43
+ [0m[91m+ sqlalchemy-utils==0.42.0
+ + stack-data==0.6.3
+ +[0m[91m starlette==0.47.3
+ + terminado==0.18.1
+ + tinycss2==1.4.0
+ + tornado==6.5[0m[91m.2
+ + traitlets==5[0m[91m.14.3
+ + [0m[91mtypes-passlib==1.7.7.20250602
+ [0m[91m+ types-python-dateutil==2.9.0[0m[91m.20251008
+ + types-pyyaml==6.0.12.20260815
+ [0m[91m+ typing-extensions==4.15.0
+ + typing-inspection==0.[0m[91m4.1
+ +[0m[91m tzdata==[0m[91m2025.2
+[0m[91m + uri-template==1.3.0[0m[91m
+ +[0m[91m urllib3[0m[91m==2.5.[0m[91m0
+[0m[91m + [0m[91muvicorn==0.35[0m[91m.0
+ [0m[91m+ wcwidth==[0m[91m0.2.13
+ + webcolors[0m[91m==24.11.[0m[91m1
+ [0m[91m+ webencodings[0m[91m==0.5[0m[91m.1
+[0m[91m +[0m[91m websocket-client[0m[91m==1.9.[0m[91m0
+ [0m[91m+ wrapt[0m[91m==1.17.3[0m[91m
+ + yarl==1.[0m[91m20.1
+[0m ---> Removed intermediate container 54741d094cda
+ ---> c42ffc6406c2
+Step 11/13 : COPY src/ ./src
+ ---> 20273723ddd6
+Step 12/13 : CMD ["uv", "run", "src/main.py"]
+ ---> Running in dc7c85c244d4
+ ---> Removed intermediate container dc7c85c244d4
+ ---> 6da91ce62edc
+Step 13/13 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in f84198987709
+ ---> Removed intermediate container f84198987709
+ ---> 6f0f6dfd78e0
+Successfully built 6f0f6dfd78e0
+Successfully tagged eqsitecms-backend:latest
+make[1]: выход из каталога «/home/igor/projects/eqSiteCMS»

@@ -46,7 +46,7 @@ services:
     networks:
       - eqsitecms_network
 
-  celery-worker:
+  email-celery-worker:
     build:
       context: ../services/email-service
       dockerfile: Dockerfile

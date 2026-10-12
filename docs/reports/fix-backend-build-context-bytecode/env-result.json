@@ -1,0 +1,56 @@
+{
+  "unit": "QG-ENV",
+  "profile": "Quality Gate",
+  "status": "blocked",
+  "lane_verdict": "BLOCKED",
+  "environment": "Локальный development стек; app = backend; проект eqsitecms-be; production не затронут",
+  "url": "http://localhost:8001/health",
+  "t02": {
+    "command": "make be-build-nc",
+    "operator_uid": 1000,
+    "exit_code": 0,
+    "context_checking": "PASS",
+    "full_build": "PASS",
+    "builder": "classic fallback: buildx отсутствует; не устанавливался",
+    "stdout": "env-t02.stdout",
+    "stderr": "env-t02.stderr",
+    "exit_evidence": "env-t02.exit",
+    "existing_unreadable_cache": "services/backend/src/api/__pycache__/yandex.cpython-313.pyc; uid=0 gid=0 mode=0600; оператору недоступен до и после сборки; проверялись только metadata/os.access, содержимое не читалось, права не менялись, cleanup не выполнялся"
+  },
+  "runtime": {
+    "command": "scripts/stackctl ready app --no-migrate",
+    "exit_code": 1,
+    "build": "PASS, использован тот же T-02 image id",
+    "recreate": "Только eqsitecms-app; --no-deps --force-recreate backend",
+    "readiness": "FAIL: не стал healthy; ready ok=false",
+    "health_observed": "starting, healthcheck exit=1 ConnectionRefusedError; /health curl exit=56, HTTP 000",
+    "image_tag": "eqsitecms-backend:latest",
+    "image_id": "sha256:6f0f6dfd78e049a732cb068b33b24c670537651f08aa88852126ccfde0b0db20",
+    "container_id": "a95bb2205afec4c0f53549bd65c3209cdb88bbc2b61979710339ad27ccc3b8ff",
+    "image_binding_evidence": ["env-image-t02.json", "env-image-runtime.json", "env-runtime-inspect.json"],
+    "migration_decision": "Нет schema/migration diff: stackctl migrations пропущены --no-migrate. Приложение само вызывает миграции при startup и падает на отсутствующей baseline ревизии. --no-migrate не отключает startup приложения.",
+    "attempts": 1,
+    "repeat_decision": "После воспроизведения baseline startup crash новые rebuild/restart не выполнялись; правка кода/схемы за пределами unit запрещена"
+  },
+  "findings": [{
+    "id": "ENV-01",
+    "classification": "baseline runtime/schema blocker, не regression Docker diff",
+    "message": "alembic.util.exc.CommandError: Can't locate revision identified by 'd1e2f3a4b5c6'; Application startup failed. Exiting.",
+    "baseline_evidence": "env-doctor-before.json",
+    "new_image_evidence": ["env-doctor-after.json", "env-logs-after.json", "env-health.stderr"],
+    "next_action": "Router должен передать владельцу backend отдельный unit диагностики согласованного development runtime/schema либо согласовать иной безопасный проверочный runtime; без ремонта production/unrelated и без неявной правки БД. Затем повторить QG-ENV readiness. BE/CONTRACTS не запускать до ENV PASS."
+  }],
+  "integrity": {
+    "backend_patch_unchanged": true,
+    "foreign_diff_unchanged": true,
+    "unrelated_containers_recreated_by_agent": false,
+    "observed_unrelated_changes": "У seo-celery-worker и seo-celery-beat увеличились RestartCount 241→245 и StartedAt: оба уже baseline restarting, id/image не изменились; это автономные Docker restarts, агент их не трогал",
+    "evidence": "env-integrity-after.json",
+    "implementation_changed_by_unit": false,
+    "secrets": "env contents/полный inspect Env не выводились; logs URL credentials и secret-like пары редактировались",
+    "workspace_cache_fallback": "не потребовался"
+  },
+  "tasks_checked": ["QG-ENV.1", "QG-ENV.V"],
+  "tasks_remaining": {"QG-ENV.2": "T-02 и rebuild выполнены, health/ready неуспешны; checkbox оставлен открытым"},
+  "other_lanes": "T-01/T-03/T-04, API, source, FORMAT, CONTRACTS и SYNTH не выполнялись"
+}

@@ -1,0 +1,51 @@
+services:
+  ya-metrica-service:
+    build:
+      context: ../services/ya-metrica-service
+      dockerfile: Dockerfile
+    image: eqsitecms-ya-metrica:latest
+    container_name: eqsitecms-ya-metrica-service
+    restart: always
+    env_file:
+      - path: ../services/ya-metrica-service/.env
+        required: true
+    expose:
+      - "8000"
+    volumes:
+      - ../services/ya-metrica-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - eqsitecms_network
+
+  ya-metrica-migration:
+    build:
+      context: ../services/ya-metrica-service
+      dockerfile: Dockerfile
+    image: eqsitecms-ya-metrica-migration:latest
+    container_name: eqsitecms-ya-metrica-service-migration
+    restart: "no"
+    env_file:
+      - path: ../services/ya-metrica-service/.env
+        required: true
+    volumes:
+      - ../services/ya-metrica-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    command: >
+      sh -c 'if [ "$$SKIP_MIGRATIONS" = "true" ]; then
+        echo "Миграции пропущены (SKIP_MIGRATIONS=true)";
+        exit 0;
+      else
+        uv run alembic -c alembic.ini upgrade head;
+      fi'
+    networks:
+      - eqsitecms_network
+
+networks:
+  eqsitecms_network:
+    external: true

@@ -1,6 +1,9 @@
 # =====VARIABLES=====
 COMPOSE_DIR = .docker-compose
 SERVICES_DIR = services
+SERVICES_MANIFEST ?= services.manifest
+HARNESS_HOST ?= 127.0.0.1
+HARNESS_PORT ?= 3080
 
 # Docker compose files
 COMPOSE_BE = $(COMPOSE_DIR)/docker-compose.be.yml
@@ -9,32 +12,22 @@ COMPOSE_EMAIL = $(COMPOSE_DIR)/docker-compose.email.yml
 COMPOSE_VK = $(COMPOSE_DIR)/docker-compose.vk.yml
 COMPOSE_SEO = $(COMPOSE_DIR)/docker-compose.seo.yml
 COMPOSE_YANDEX = $(COMPOSE_DIR)/docker-compose.yandex.yml
+COMPOSE_YA_METRICA = $(COMPOSE_DIR)/docker-compose.ya_metrica.yml
+
 COMPOSE_FE = $(COMPOSE_DIR)/docker-compose.fe.yml
 COMPOSE_INFRA = $(COMPOSE_DIR)/docker-compose.infra.yml
 
 # Docker compose commands (base, без -p — добавляется в таргетах)
-DC_BE = docker compose -f $(COMPOSE_BE)
-DC_NOTIFICATION = docker compose -f $(COMPOSE_NOTIFICATION)
-DC_EMAIL = docker compose -f $(COMPOSE_EMAIL)
-DC_VK = docker compose -f $(COMPOSE_VK)
-DC_FE = docker compose --env-file services/frontend/.env -f $(COMPOSE_FE)
-DC_INFRA = docker compose -f $(COMPOSE_INFRA)
-DC_SEO = docker compose -f $(COMPOSE_SEO)
-DC_YANDEX = docker compose -f $(COMPOSE_YANDEX)
-# seo-service: инфраструктурные переменные берутся из .docker-compose/.env,
-# переменные приложения — из services/seo-service/.env
-ENV_FILES_SEO = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/seo-service/.env
-# yandex-service: инфраструктурные переменные берутся из .docker-compose/.env,
-# переменные приложения — из services/yandex-service/.env
-ENV_FILES_YANDEX = --env-file $(COMPOSE_DIR)/.env --env-file $(SERVICES_DIR)/yandex-service/.env
+DC_BE = docker compose -p eqsitecms-be -f $(COMPOSE_BE) --env-file $(SERVICES_DIR)/backend/.env
+DC_NOTIFICATION = docker compose -p eqsitecms-notification -f $(COMPOSE_NOTIFICATION) --env-file $(SERVICES_DIR)/notification-service/.env
+DC_EMAIL = docker compose -p eqsitecms-email -f $(COMPOSE_EMAIL) --env-file $(SERVICES_DIR)/email-service/.env
+DC_VK = docker compose -p eqsitecms-vk -f $(COMPOSE_VK) --env-file $(SERVICES_DIR)/vk-service/.env
+DC_SEO = docker compose -p eqsitecms-seo -f $(COMPOSE_SEO) --env-file $(SERVICES_DIR)/seo-service/.env
+DC_YANDEX = docker compose -p eqsitecms-yandex -f $(COMPOSE_YANDEX) --env-file $(SERVICES_DIR)/yandex-service/.env
+DC_YA_METRICA = docker compose -p eqsitecms-ya-metrica -f $(COMPOSE_YA_METRICA) --env-file $(SERVICES_DIR)/ya-metrica-service/.env
 
-DC_CORE = docker compose --env-file $(COMPOSE_DIR)/.env -p eqsitecms-core \
-	-f $(COMPOSE_INFRA) -f $(COMPOSE_BE) -f $(COMPOSE_NOTIFICATION) \
-	-f $(COMPOSE_EMAIL) -f $(COMPOSE_FE)
-
-SERVICES_MANIFEST ?= services.manifest
-HARNESS_HOST ?= 127.0.0.1
-HARNESS_PORT ?= 3080
+DC_FE = docker compose -p eqsitecms-fe -f $(COMPOSE_FE) --env-file $(SERVICES_DIR)/frontend/.env
+DC_INFRA = docker compose -p eqsitecms-infra -f $(COMPOSE_INFRA) --env-file $(COMPOSE_DIR)/.env
 
 .PHONY: sync update services-branches harness build build-nc test lint format check check-backend check-email \
 		check-notification check-frontend fix fix-backend fix-email fix-notification fix-frontend \
@@ -43,8 +36,6 @@ HARNESS_PORT ?= 3080
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
 		vk-build vk-build-nc vk vk-attach vk-bot-logs vk-bot-restart check-vk fix-vk \
-		seo-build seo-build-nc seo seo-attach seo-migrate check-seo fix-seo \
-		yandex-build yandex-build-nc yandex yandex-attach yandex-migrate check-yandex fix-yandex \
 		infra \
 		e2e-install e2e e2e-ui e2e-headed e2e-frontend e2e-report \
 		ship-test
@@ -110,186 +101,175 @@ harness:
 	exit 1
 
 # =====BUILD COMMANDS=====
-
 build: be-build notification-build email-build fe-build
 
 build-nc: be-build-nc notification-build-nc email-build-nc fe-build-nc
 
+# =====INFRASTRUCTURE=====
+infra:
+	$(DC_INFRA) up -d
+
+# =====MAIN BACKEND=====
+be:
+	$(DC_BE) up -d
+
+be-attach:
+	$(DC_BE) up
+
 be-build:
 	@echo "Building backend image..."
-	$(DC_BE) -p eqsitecms-be build
+	$(DC_BE) build
 
 be-build-nc:
 	@echo "Building backend image without build cache..."
-	$(DC_BE) -p eqsitecms-be build --no-cache
+	$(DC_BE) build --no-cache
 
-notification-build:
-	@echo "Building notification service image..."
-	$(DC_NOTIFICATION) -p eqsitecms-notification build
+be-makemigrations:
+	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic revision --autogenerate -m '$(msg)'"
 
-notification-build-nc:
-	@echo "Building notification service image without build cache..."
-	$(DC_NOTIFICATION) -p eqsitecms-notification build --no-cache
+be-migrate:
+	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic upgrade head"
 
-email-build:
-	@echo "Building email service image..."
-	$(DC_EMAIL) -p eqsitecms-email build email-service email-migration celery-worker
+# =====MAIN FRONTEND=====
+fe:
+	$(DC_FE) up -d
 
-email-build-nc:
-	@echo "Building email service image without build cache..."
-	$(DC_EMAIL) -p eqsitecms-email build --no-cache email-service email-migration celery-worker
+fe-attach:
+	$(DC_FE) up
 
 fe-build:
 	@echo "Building frontend image..."
-	$(DC_FE) -p eqsitecms-fe build
+	$(DC_FE) build
 
 fe-build-nc:
 	@echo "Building frontend image without build cache..."
-	$(DC_FE) -p eqsitecms-fe build --no-cache
+	$(DC_FE) build --no-cache
+
+# =====NOTIFICATION SERVICE=====
+notification:
+	$(DC_NOTIFICATION) up -d
+
+notification-attach:
+	$(DC_NOTIFICATION) up
+
+notification-build:
+	@echo "Building notification service image..."
+	$(DC_NOTIFICATION) build
+
+notification-build-nc:
+	@echo "Building notification service image without build cache..."
+	$(DC_NOTIFICATION) build --no-cache
+
+# =====EMAIL SERVICE=====
+email:
+	$(DC_EMAIL) up -d
+
+email-attach:
+	$(DC_EMAIL) up
+
+email-build:
+	@echo "Building email service image..."
+	$(DC_EMAIL) build
+
+email-build-nc:
+	@echo "Building email service image without build cache..."
+	$(DC_EMAIL) build --no-cache
+
+# =====VK SERVICE=====
+vk:
+	$(DC_VK) up -d
+
+vk-attach:
+	$(DC_VK) up
 
 vk-build:
 	@echo "Building vk service images..."
-	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env build vk-service vk-migration vk-celery-worker vk-bot
+	$(DC_VK) build
 
 vk-build-nc:
 	@echo "Building vk service images without build cache..."
-	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env build --no-cache vk-service vk-migration vk-celery-worker vk-bot
+	$(DC_VK) build --no-cache
+
+# =====SEO SERVICE=====
+seo:
+	$(DC_SEO) up -d
+
+seo-attach:
+	$(DC_SEO) up
 
 seo-build:
 	@echo "Building seo service images..."
-	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) build seo-service seo-migration seo-celery-worker seo-celery-beat
+	$(DC_SEO) build
 
 seo-build-nc:
 	@echo "Building seo service images without build cache..."
-	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) build --no-cache seo-service seo-migration seo-celery-worker seo-celery-beat
+	$(DC_SEO) build --no-cache
+
+# =====YANDEX SERVICE=====
+yandex:
+	$(DC_YANDEX) up -d
+
+yandex-attach:
+	$(DC_YANDEX) up
 
 yandex-build:
 	@echo "Building yandex service images..."
-	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) build yandex-service yandex-migration
+	$(DC_YANDEX) build
 
 yandex-build-nc:
 	@echo "Building yandex service images without build cache..."
-	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) build --no-cache yandex-service yandex-migration
+	$(DC_YANDEX) build --no-cache
 
-# =====RUN COMMANDS=====
+# =====YANDEX METRICA SERVICE=====
+ya-metrica:
+	$(DC_YA_METRICA) up -d
 
-# Infrastructure
-infra:
-	$(DC_INFRA) -p eqsitecms-infra --env-file $(COMPOSE_DIR)/.env up -d
+ya-metrica-attach:
+	$(DC_YA_METRICA) up
 
-# Backend
-be:
-	$(DC_BE) -p eqsitecms-be --env-file $(COMPOSE_DIR)/.env up -d
+ya-metrica-build:
+	@echo "Building ya-metrica service images..."
+	$(DC_YA_METRICA) build
 
-be-attach:
-	$(DC_BE) -p eqsitecms-be --env-file $(COMPOSE_DIR)/.env up
+ya-metrica-build-nc:
+	@echo "Building ya-metrica service images without build cache..."
+	$(DC_YA_METRICA) build --no-cache
 
-# Notification Service
-notification:
-	$(DC_NOTIFICATION) -p eqsitecms-notification --env-file $(SERVICES_DIR)/notification-service/.env up -d
+# =====CONTROLLED CORE RELEASE OPERATIONS=====
+test:
+	$(MAKE) -C $(SERVICES_DIR)/backend test
+	$(MAKE) -C $(SERVICES_DIR)/frontend test
+	$(MAKE) -C $(SERVICES_DIR)/notification-service test
+	$(MAKE) -C $(SERVICES_DIR)/email-service test
+	$(MAKE) -C $(SERVICES_DIR)/vk-service test
+	$(MAKE) -C $(SERVICES_DIR)/seo-service test
+	$(MAKE) -C $(SERVICES_DIR)/yandex-service test
+	$(MAKE) -C $(SERVICES_DIR)/ya-metrica-service test
 
-notification-attach:
-	$(DC_NOTIFICATION) -p eqsitecms-notification --env-file $(SERVICES_DIR)/notification-service/.env up
 
-# Email Service
-email:
-	$(DC_EMAIL) -p eqsitecms-email --env-file $(SERVICES_DIR)/email-service/.env up -d
+lint:
+	$(MAKE) -C $(SERVICES_DIR)/backend lint
+	$(MAKE) -C $(SERVICES_DIR)/frontend lint
+	$(MAKE) -C $(SERVICES_DIR)/notification-service lint
+	$(MAKE) -C $(SERVICES_DIR)/email-service lint
+	$(MAKE) -C $(SERVICES_DIR)/vk-service lint
+	$(MAKE) -C $(SERVICES_DIR)/seo-service lint
+	$(MAKE) -C $(SERVICES_DIR)/yandex-service lint
+	$(MAKE) -C $(SERVICES_DIR)/ya-metrica-service lint
 
-email-attach:
-	$(DC_EMAIL) -p eqsitecms-email --env-file $(SERVICES_DIR)/email-service/.env up
 
-# VK Service
-vk:
-	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env up -d
+format:
+	$(MAKE) -C $(SERVICES_DIR)/backend format
+	$(MAKE) -C $(SERVICES_DIR)/frontend format
+	$(MAKE) -C $(SERVICES_DIR)/notification-service format
+	$(MAKE) -C $(SERVICES_DIR)/email-service format
+	$(MAKE) -C $(SERVICES_DIR)/vk-service format
+	$(MAKE) -C $(SERVICES_DIR)/seo-service format
+	$(MAKE) -C $(SERVICES_DIR)/yandex-service format
+	$(MAKE) -C $(SERVICES_DIR)/ya-metrica-service format
 
-vk-attach:
-	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env up
+full-check: format lint test
 
-# Long-poll runtime бота: логи и перезапуск только этого контейнера.
-vk-bot-logs:
-	docker logs -f --tail 200 eqsitecms-vk-bot
-
-vk-bot-restart:
-	$(DC_VK) -p eqsitecms-vk --env-file $(SERVICES_DIR)/vk-service/.env up -d --no-deps --force-recreate vk-bot
-
-# Frontend
-fe:
-	$(DC_FE) -p eqsitecms-fe up -d
-
-fe-attach:
-	$(DC_FE) -p eqsitecms-fe up
-
-# SEO Service
-seo:
-	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up -d
-
-seo-attach:
-	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up
-
-# Yandex Service
-yandex:
-	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) up -d
-
-yandex-attach:
-	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) up
-
-# =====CHECKS (NON-MUTATING) / FIXES=====
-
-check: check-backend check-email check-notification check-seo check-yandex check-frontend compose-check asyncapi-validate contracts-check secret-scan
-
-check-backend:
-	cd services/backend && uv run mypy src tests && uv run ruff check src tests && uv run ruff format --check src tests && uv run flake8 src tests && uv run pytest
-
-check-email:
-	cd services/email-service && uv run mypy src && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
-
-check-notification:
-	cd services/notification-service && uv run mypy src && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
-
-check-vk:
-	cd services/vk-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
-
-check-seo:
-	cd services/seo-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
-
-check-yandex:
-	cd services/yandex-service && uv run mypy src tests && uv run basedpyright && uv run ruff check . && uv run ruff format --check . && uv run flake8 src tests && uv run pytest -m "not infrastructure"
-
-check-frontend:
-	cd services/frontend && npm test && npm run lint && npm run typecheck && npm run build
-
-fix: fix-backend fix-email fix-notification fix-seo fix-frontend
-
-fix-backend:
-	cd services/backend && uv run ruff check --fix src tests && uv run ruff format src tests
-
-fix-email:
-	$(MAKE) -C services/email-service format
-
-fix-notification:
-	$(MAKE) -C services/notification-service format
-
-fix-vk:
-	$(MAKE) -C services/vk-service format
-
-fix-seo:
-	$(MAKE) -C services/seo-service format
-
-fix-yandex:
-	$(MAKE) -C services/yandex-service format
-
-fix-frontend:
-	cd services/frontend && npx eslint src --fix
-
-compose-check:
-	docker compose -f $(COMPOSE_INFRA) config --quiet
-	docker compose -f $(COMPOSE_BE) config --quiet
-	docker compose -f $(COMPOSE_NOTIFICATION) config --quiet
-	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_EMAIL) config --quiet
-	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_VK) config --quiet
-	docker compose -f $(COMPOSE_INFRA) -f $(COMPOSE_SEO) config --quiet
-	$(DC_FE) config --quiet
-	$(DC_CORE) config --quiet
 
 asyncapi-validate:
 	npx --yes @asyncapi/cli@6.0.2 validate services/backend/docs/asyncapi.yaml
@@ -313,85 +293,6 @@ contracts-check:
 
 secret-scan:
 	bash scripts/secret-scan.sh
-
-# =====CONTROLLED CORE RELEASE OPERATIONS=====
-
-migrate-core:
-	docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
-	$(DC_CORE) up -d db db-notifications db-email nats redis
-	$(DC_CORE) run --rm notification-migration
-	$(DC_CORE) run --rm email-migration
-	$(DC_CORE) run --rm backend sh -c 'cd /eqsitecms/src && uv run alembic -c alembic.ini upgrade head'
-
-recreate-core:
-	bash scripts/recreate-core.sh
-
-health-core:
-	@for container in eqsitecms-app eqsitecms-notification-service eqsitecms-email-service eqsitecms-email-celery-worker eqsitecms-redis; do \
-		echo "Waiting for $$container"; \
-		for attempt in $$(seq 1 30); do \
-			status=$$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$$container" 2>/dev/null || true); \
-			[ "$$status" = healthy ] && break; \
-			[ $$attempt -eq 30 ] && { echo "$$container is $$status" >&2; exit 1; }; \
-			sleep 2; \
-		done; \
-	done
-	@for container in eqsitecms-nats eqsitecms-frontend; do \
-		status=$$(docker inspect --format '{{.State.Status}}' "$$container" 2>/dev/null || true); \
-		[ "$$status" = running ] || { echo "$$container is $$status" >&2; exit 1; }; \
-	done
-
-status-core:
-	docker ps --filter name=eqsitecms-app --filter name=eqsitecms-notification --filter name=eqsitecms-email --filter name=eqsitecms-redis --filter name=eqsitecms-nats --filter name=eqsitecms-frontend
-
-logs-core:
-	@mkdir -p .release-evidence
-	docker logs --since 10m eqsitecms-app > .release-evidence/backend.log 2>&1
-	docker logs --since 10m eqsitecms-notification-service > .release-evidence/notification.log 2>&1
-	docker logs --since 10m eqsitecms-email-service > .release-evidence/email.log 2>&1
-	docker logs --since 10m eqsitecms-email-celery-worker > .release-evidence/email-celery.log 2>&1
-
-test:
-	$(MAKE) -C services/backend test
-	$(MAKE) -C services/notification-service test
-	$(MAKE) -C services/email-service test
-	$(MAKE) -C services/seo-service test
-	$(MAKE) -C services/yandex-service test
-	$(MAKE) -C services/frontend test
-
-lint:
-	$(MAKE) -C services/backend lint
-	$(MAKE) -C services/notification-service lint
-	$(MAKE) -C services/email-service lint
-	$(MAKE) -C services/seo-service lint
-	$(MAKE) -C services/yandex-service lint
-	$(MAKE) -C services/frontend lint
-
-format:
-	$(MAKE) -C services/backend format
-	$(MAKE) -C services/notification-service format
-	$(MAKE) -C services/email-service format
-	$(MAKE) -C services/seo-service format
-	$(MAKE) -C services/yandex-service format
-	$(MAKE) -C services/frontend format
-
-# =====BACKEND MANAGEMENT=====
-
-be-makemigrations:
-	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic revision --autogenerate -m '$(msg)'"
-
-be-migrate:
-	cd services/backend && docker exec eqsitecms-app sh -c "cd src && uv run alembic upgrade head"
-
-seo-migrate:
-	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
-	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) up -d db-seo
-	$(DC_SEO) -p eqsitecms-seo $(ENV_FILES_SEO) run --rm seo-migration
-
-yandex-migrate:
-	@docker network inspect eqsitecms_network >/dev/null 2>&1 || docker network create eqsitecms_network
-	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) up -d db-yandex
-	$(DC_YANDEX) -p eqsitecms-yandex $(ENV_FILES_YANDEX) run --rm yandex-migration
 
 # =====E2E TESTS (PLAYWRIGHT)=====
 

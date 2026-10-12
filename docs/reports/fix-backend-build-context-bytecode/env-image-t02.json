@@ -1,0 +1,11 @@
+{
+  "exit_code": 0,
+  "id": "sha256:6f0f6dfd78e049a732cb068b33b24c670537651f08aa88852126ccfde0b0db20",
+  "tags": [
+    "eqsitecms-backend:latest"
+  ],
+  "created": "2026-10-12T20:48:48.92686906+08:00",
+  "python_dont_write_bytecode": [
+    "PYTHONDONTWRITEBYTECODE=1"
+  ]
+}
