@@ -1,0 +1,10 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: false
+  excludeLinksFromLockfile: false
+
+# No package-owned development install. Build tools are borrowed read-only from
+# the enclosing workspace; optional SDK peers come from the canonical DSH tree.
+importers:
+  .: {}

@@ -1,0 +1,24 @@
+{
+  "head": "03a1d4a9be43a9dc92dc028f678e2c0b211c76b5",
+  "files": {
+    ".docker-compose/docker-compose.email.yml": "4011d952533ec5bb41b62224c8cca45e632afee8",
+    ".docker-compose/docker-compose.notification.yml": "ec0bbea7893cfbd3d8e9923fc95dd470eae0ea62",
+    ".docker-compose/docker-compose.seo.yml": "538276cf8b0706eb6501026f6aaa6efa825eeede",
+    ".docker-compose/docker-compose.vk.yml": "3bc485706d5b125d76247a922f7aa4c521562f69",
+    ".docker-compose/docker-compose.ya_metrica.yml": "26676be1113d332dc2f2acf2ec45d67c5b5d7a91",
+    ".docker-compose/docker-compose.yandex.yml": "17799dff979748d01ceebb36682e22f43f423905",
+    ".gitignore": "3dcb65c76462f0c72d94b33a8a38ab41dbf88e95",
+    ".vscode/settings.json": "61c66091eb3e4e9eda030f8accd4bf8f74143041",
+    "dsh/home/profiles/web/cordis.patch.yml": "55c1a3dfa0d7a532705c5a7a980333611ec5a734",
+    "dsh/home/profiles/web/cordis.yml": "84d1aa153ddf82637db7a04e4fab5ad3b25fac3d",
+    "dsh/home/profiles/web/package.json": "aeb070ee67859f3631943788920eb8bd8ec1e5f7",
+    "dsh/home/profiles/web/pnpm-lock.yaml": "11df8896ce1f87b4aa8baa9124ab5496a5e4577f",
+    "scripts/stackctl": "5bc14f92774b318770e4c7240846072c25628641",
+    "docs/reports/migrate-yandex-service-dependency-injector-qg-review.md": "455797141958fd2e509ec3a178c9a0ef572f30f1",
+    "docs/tasks/095_refactoring_dependency_injector_specs.md": "6cb0e83e105b24a0be62940fc3ea7451d517d164",
+    "dsh/bundles/": "missing",
+    "dsh/home/review-loop/": "missing",
+    "openspec/changes/migrate-yandex-service-dependency-injector/": "missing"
+  },
+  "reviewedAt": "2026-10-15T07:39:37.708Z"
+}

@@ -65,6 +65,12 @@ const PROFILES = {
     ],
     serviceKeys: ['db-vk', 'vk-migration', 'vk-service', 'vk-celery-worker', 'vk-bot'],
   },
+  yandex: {
+    project: 'eqsitecms-yandex',
+    files: ['yandex'],
+    envFiles: [join(PROJECT_ROOT, 'services/yandex-service/.env')],
+    serviceKeys: ['yandex-service', 'yandex-migration'],
+  },
   'site-ad': {
     project: 'eqsitecms-site-ad',
     composeFile: join(PROJECT_ROOT, 'services/site-ad/docker-compose.yaml'),
@@ -89,6 +95,7 @@ const SERVICES = {
   'vk-service': { container: 'eqsitecms-vk-service', composeKey: 'vk-service', fallbackProfile: 'vk', buildable: true },
   'vk-celery-worker': { container: 'eqsitecms-vk-celery-worker', composeKey: 'vk-celery-worker', fallbackProfile: 'vk', buildable: true },
   'vk-bot': { container: 'eqsitecms-vk-bot', composeKey: 'vk-bot', fallbackProfile: 'vk', buildable: true },
+  'yandex-service': { container: 'eqsitecms-yandex-service', composeKey: 'yandex-service', fallbackProfile: 'yandex', buildable: true },
   db: { container: 'eqsitecms-db', composeKey: 'db', fallbackProfile: 'core', buildable: false },
   'db-notifications': { container: 'eqsitecms-db-notifications', composeKey: 'db-notifications', fallbackProfile: 'core', buildable: false },
   'db-email': { container: 'eqsitecms-db-email', composeKey: 'db-email', fallbackProfile: 'core', buildable: false },

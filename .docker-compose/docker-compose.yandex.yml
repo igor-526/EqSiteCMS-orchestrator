@@ -9,11 +9,14 @@ services:
     env_file:
       - path: ../services/yandex-service/.env
         required: true
+    ports:
+      - "${EXPOSE_YANDEX_SERVICE_PORT}:8000"
     expose:
       - "8000"
     volumes:
-      - ../services/yandex-service/src:/app/src:${DEV_MOUNT:-ro}
+      - ../services/yandex-service/src:/app/src:${DEV_MOUNT:-rw}
     working_dir: /app/
+    command: ["uv", "run", "--no-sync", "uvicorn", "main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/src"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 30s

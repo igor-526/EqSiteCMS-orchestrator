@@ -56,3 +56,4 @@ htmlcov/
 # Local IDE and tool settings
 /.claude/settings.local.json
 /.agents/skills/**/credentials.json
+/.mimocode/node_modules

@@ -1,23 +1,7 @@
 {
-    "python.testing.pytestArgs": [
-        "."
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
     "python.languageServer": "None",
-    "python.defaultInterpreterPath": "${workspaceFolder}/services/backend/.venv/bin/python",
-    "cursorpyright.analysis.autoImportCompletions": true,
-    "cursorpyright.analysis.diagnosticMode": "workspace",
-    "cursorpyright.analysis.diagnosticSeverityOverrides": {
-        "reportMissingImports": "error",
-        "reportMissingModuleSource": "error",
-        "reportImportCycles": "warning"
-    },
-    "cursorpyright.analysis.typeCheckingMode": "basic",
-    "cursorpyright.analysis.exclude": [
-        "${workspaceFolder}/services/backend/.venv/**"
-    ],
-    "cursorpyright.analysis.extraPaths": [
-        "${workspaceFolder}/services/backend/src"
-    ]
+    "files.exclude": {
+        "services": true,
+        ".directory": true,
+    }
 }

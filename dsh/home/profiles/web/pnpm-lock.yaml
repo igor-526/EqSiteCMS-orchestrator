@@ -14,6 +14,9 @@ importers:
       '@eqsite/playwright-mcp':
         specifier: link:./bundles/playwright-mcp
         version: link:bundles/playwright-mcp
+      '@local/dsh-review-loop-services':
+        specifier: link:/home/igor/projects/eqSiteCMS/dsh/bundles/dsh-review-loop-services
+        version: link:../../../bundles/dsh-review-loop-services
       dsh-codex-connect:
         specifier: github:franksong2702/dsh-codex-connect
         version: https://codeload.github.com/franksong2702/dsh-codex-connect/tar.gz/f2a4616b2afdda0c68688c865b5c4f5b27b880e8(ws@8.22.0)

@@ -9,6 +9,8 @@ services:
     env_file:
       - path: ../services/notification-service/.env
         required: true
+    ports:
+      - "${EXPOSE_NOTIFICATION_SERVICE_PORT}:8000"
     expose:
       - "8000"
     volumes:
