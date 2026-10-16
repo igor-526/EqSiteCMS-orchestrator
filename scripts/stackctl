@@ -71,6 +71,18 @@ const PROFILES = {
     envFiles: [join(PROJECT_ROOT, 'services/yandex-service/.env')],
     serviceKeys: ['yandex-service', 'yandex-migration'],
   },
+  'ya-metrica': {
+    project: 'eqsitecms-ya-metrica',
+    files: ['ya_metrica'],
+    envFiles: [join(PROJECT_ROOT, 'services/ya-metrica-service/.env')],
+    serviceKeys: ['ya-metrica-service', 'ya-metrica-migration'],
+  },
+  infra: {
+    project: 'eqsitecms-infra',
+    files: ['infra'],
+    envFiles: [join(COMPOSE_DIR, '.env')],
+    serviceKeys: ['db-yandex', 'db-ya-metrica'],
+  },
   'site-ad': {
     project: 'eqsitecms-site-ad',
     composeFile: join(PROJECT_ROOT, 'services/site-ad/docker-compose.yaml'),
@@ -96,6 +108,9 @@ const SERVICES = {
   'vk-celery-worker': { container: 'eqsitecms-vk-celery-worker', composeKey: 'vk-celery-worker', fallbackProfile: 'vk', buildable: true },
   'vk-bot': { container: 'eqsitecms-vk-bot', composeKey: 'vk-bot', fallbackProfile: 'vk', buildable: true },
   'yandex-service': { container: 'eqsitecms-yandex-service', composeKey: 'yandex-service', fallbackProfile: 'yandex', buildable: true },
+  'ya-metrica-service': { container: 'eqsitecms-ya-metrica-service', composeKey: 'ya-metrica-service', fallbackProfile: 'ya-metrica', buildable: true },
+  'db-yandex': { container: 'eqsitecms-db-yandex', composeKey: 'db-yandex', fallbackProfile: 'infra', buildable: false },
+  'db-ya-metrica': { container: 'eqsitecms-db-ya-metrica', composeKey: 'db-ya-metrica', fallbackProfile: 'infra', buildable: false },
   db: { container: 'eqsitecms-db', composeKey: 'db', fallbackProfile: 'core', buildable: false },
   'db-notifications': { container: 'eqsitecms-db-notifications', composeKey: 'db-notifications', fallbackProfile: 'core', buildable: false },
   'db-email': { container: 'eqsitecms-db-email', composeKey: 'db-email', fallbackProfile: 'core', buildable: false },
@@ -112,6 +127,8 @@ const CONTAINER_BY_COMPOSE_KEY = new Map(
 );
 
 const DB_CONFIG = {
+  'db-yandex': { runtimeTcp: true },
+  'db-ya-metrica': { runtimeTcp: true },
   db: { userEnv: 'POSTGRES_USER', nameEnv: 'POSTGRES_NAME' },
   'db-notifications': { userEnv: 'POSTGRES_NOTIFICATIONS_USER', nameEnv: 'POSTGRES_NOTIFICATIONS_NAME' },
   'db-email': { userEnv: 'POSTGRES_EMAIL_USER', nameEnv: 'POSTGRES_EMAIL_NAME' },
@@ -165,14 +182,14 @@ function dockerDaemonAvailable() {
 }
 
 function validateProfile(profile) {
-  if (!profile || !PROFILES[profile]) {
+  if (!profile || !Object.hasOwn(PROFILES, profile)) {
     throw new Error(`Unknown profile: ${profile ?? '(missing)'}. Available: ${Object.keys(PROFILES).join(', ')}`);
   }
   return PROFILES[profile];
 }
 
 function validateService(alias) {
-  const service = SERVICES[alias];
+  const service = Object.hasOwn(SERVICES, alias) ? SERVICES[alias] : null;
   if (!service) {
     throw new Error(`Unknown service: ${alias ?? '(missing)'}. Available: ${Object.keys(SERVICES).join(', ')}`);
   }
@@ -186,11 +203,11 @@ function validateService(alias) {
   return service;
 }
 
-function composeArgs(profileName, extraArgs = []) {
+function composeArgs(profileName, extraArgs = [], project = null) {
   const profile = validateProfile(profileName);
   const args = ['compose'];
   for (const envFile of profile.envFiles) args.push('--env-file', envFile);
-  args.push('-p', profile.project);
+  args.push('-p', project ?? profile.project);
   if (profile.composeFile) {
     // Absolute compose file for site profiles
     args.push('-f', profile.composeFile);
@@ -221,7 +238,7 @@ function composeProject(container) {
 function profileForService(service) {
   const project = composeProject(service.container);
   const existingProfile = Object.entries(PROFILES)
-    .find(([, profile]) => profile.project === project)?.[0];
+    .find(([, profile]) => profile.project === project && profile.serviceKeys.includes(service.composeKey))?.[0];
   return { profile: existingProfile ?? service.fallbackProfile, project };
 }
 
@@ -333,6 +350,9 @@ async function cmdUp(profileName) {
     result = run('docker', composeArgs('vk', [
       'up', '-d', '--no-deps', 'db-vk', 'vk-migration', 'vk-service', 'vk-celery-worker', 'vk-bot',
     ]), { progress: true });
+  } else if (profileName === 'infra') {
+    // This registry intentionally exposes only the two Yandex databases.
+    result = run('docker', composeArgs(profileName, ['up', '-d', '--no-deps', ...profile.serviceKeys]), { progress: true });
   } else {
     result = run('docker', composeArgs(profileName, ['up', '-d']), { progress: true });
   }
@@ -355,11 +375,11 @@ async function cmdRebuild(alias) {
   const resolved = profileForService(service);
   process.stderr.write(`Rebuilding ${alias} as Compose service ${service.composeKey} in ${resolved.profile}...\n`);
 
-  const build = run('docker', composeArgs(resolved.profile, ['build', service.composeKey]), { progress: true });
+  const build = run('docker', composeArgs(resolved.profile, ['build', service.composeKey], resolved.project), { progress: true });
   if (build.status !== 0) return failure('Build failed', { service: alias, profile: resolved.profile });
   const recreate = run('docker', composeArgs(resolved.profile, [
     'up', '-d', '--no-deps', '--force-recreate', service.composeKey,
-  ]), { progress: true });
+  ], resolved.project), { progress: true });
   if (recreate.status !== 0) return failure('Container recreation failed', { service: alias, profile: resolved.profile });
   const state = await waitForHealth(service.container);
   const ok = state.health === 'healthy' || (state.health === 'none' && state.status === 'running');
@@ -401,13 +421,74 @@ async function cmdExec(alias, args) {
 }
 
 async function cmdPsql(dbAlias, args) {
-  const db = DB_CONFIG[dbAlias];
+  const db = Object.hasOwn(DB_CONFIG, dbAlias) ? DB_CONFIG[dbAlias] : null;
   if (!db) return failure(`Unknown database: ${dbAlias ?? '(missing)'}. Available: ${Object.keys(DB_CONFIG).join(', ')}`);
   const sqlIndex = args.indexOf('-c');
   if (sqlIndex < 0 || !args[sqlIndex + 1]) {
     return failure('Non-interactive agents must provide SQL with: psql <db> -c "SQL"', { database: dbAlias });
   }
   const service = validateService(dbAlias);
+  if (db.runtimeTcp) {
+    // Inspect only the selected container; pin exec to its immutable ID. Never
+    // consume Config.Env on the host or use a published port / fallback target.
+    const inspectFormat = '[{"Id":{{json .Id}},"Name":{{json .Name}},"NetworkSettings":{"Networks":{{json .NetworkSettings.Networks}}}}]';
+    const inspected = spawnSync('docker', ['inspect', service.container, '--format', inspectFormat], {
+      cwd: PROJECT_ROOT, encoding: 'utf8', timeout: 5_000,
+    });
+    let container;
+    try {
+      const rows = JSON.parse(inspected.stdout);
+      if (inspected.status === 0 && rows.length === 1) container = rows[0];
+    } catch { /* Unsafe or unavailable discovery fails closed below. */ }
+    const addresses = [...new Set(Object.values(container?.NetworkSettings?.Networks ?? {})
+      .map((network) => network.IPAddress).filter(Boolean))];
+    const address = addresses[0];
+    const octets = typeof address === 'string' ? address.split('.') : [];
+    const safeAddress = octets.length === 4
+      && octets.every((part) => /^(0|[1-9][0-9]{0,2})$/.test(part) && Number(part) <= 255)
+      && ![0, 127, 169].includes(Number(octets[0])) && Number(octets[0]) < 224;
+    if (!/^[a-f0-9]{64}$/.test(container?.Id ?? '')
+      || container?.Name !== `/${service.container}` || addresses.length !== 1 || !safeAddress) {
+      return failure('Safe database TCP target unavailable', { database: dbAlias, exitCode: 1 });
+    }
+    const target = { container: service.container, address, port: 5432 };
+    // All credentials, wrong-password generation and raw diagnostics stay in
+    // the container. SQL and target are separate positional arguments.
+    const script = [
+      'positive=not_run; negative=not_run',
+      'trap \'printf "%s\\n" "stackctl-auth:$positive:$negative" >&2\' 0',
+      'test -n "$POSTGRES_USER" && test -n "$POSTGRES_DB" && test -n "$POSTGRES_PASSWORD" || exit 1',
+      'unset PGHOSTADDR PGSERVICE PGSERVICEFILE',
+      'export LC_ALL=C PGCONNECT_TIMEOUT=3 PGOPTIONS="-c statement_timeout=5000"',
+      'probe() { timeout 8 psql -X -w -h "$2" -p 5432 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -c "$1"; }',
+      'positive=failed',
+      'output=$(PGPASSWORD="$POSTGRES_PASSWORD" probe "SELECT 1" "$2" 2>/dev/null) || exit 1',
+      'test "$output" = 1 || exit 1',
+      'positive=passed',
+      'nonce=$(od -An -N16 -tx1 /dev/urandom 2>/dev/null) || exit 1',
+      'test -n "$nonce" || exit 1',
+      'wrong="$POSTGRES_PASSWORD:stackctl-invalid:$nonce"',
+      'test "$wrong" != "$POSTGRES_PASSWORD" || exit 1',
+      'negative=indeterminate',
+      'diagnostic=$(PGPASSWORD="$wrong" probe "SELECT 1" "$2" 2>&1); status=$?',
+      'if test "$status" = 0; then negative=accepted; exit 1; fi',
+      'test "$status" = 2 || exit 1',
+      'case "$diagnostic" in *\'FATAL:  password authentication failed for user "\'*) negative=password_auth_rejected;; *) exit 1;; esac',
+      'if test "$1" != "SELECT 1"; then output=$(PGPASSWORD="$POSTGRES_PASSWORD" probe "$1" "$2" 2>/dev/null) || exit 1; fi',
+      // Even successful SQL/NOTICE output must not reveal either credential.
+      'case "$output" in *"$POSTGRES_PASSWORD"*|*"$wrong"*) exit 1;; esac',
+      'printf "%s\\n" "$output"',
+    ].join('\n');
+    const result = spawnSync('docker', ['exec', container.Id, 'sh', '-c', script, 'stackctl-psql', args[sqlIndex + 1], address], {
+      cwd: PROJECT_ROOT, encoding: 'utf8', timeout: 30_000,
+    });
+    const outcomes = /^stackctl-auth:(not_run|failed|passed):(not_run|indeterminate|accepted|password_auth_rejected)\s*$/.exec(result.stderr ?? '');
+    const probes = { positive: outcomes?.[1] ?? 'unknown', negative: outcomes?.[2] ?? 'unknown' };
+    if (result.status !== 0 || probes.positive !== 'passed' || probes.negative !== 'password_auth_rejected') {
+      return failure('psql TCP authentication or command failed', { database: dbAlias, target, probes, exitCode: 1 });
+    }
+    return success({ database: dbAlias, target, probes, stdout: result.stdout, stderr: '', exitCode: 0 });
+  }
   const env = parseEnvFile(join(COMPOSE_DIR, '.env'));
   const user = env[db.userEnv];
   const database = env[db.nameEnv];
@@ -551,6 +632,12 @@ async function cmdReady(aliases, flags) {
     return success({ message: 'No runtime changes (empty alias list)', services: [] });
   }
 
+  // Validate the complete request before inspecting or rebuilding any service.
+  for (const alias of aliases) {
+    const service = validateService(alias);
+    if (!service.buildable) return failure(`Service ${alias} has no build definition`, { service: alias });
+  }
+
   // Preflight checks
   const siteEnvDir = process.env.STACKCTL_SITE_ENV_DIR;
   const preflightErrors = [];
@@ -635,7 +722,7 @@ async function cmdReady(aliases, flags) {
     process.stderr.write(`\n=== Ready: ${alias} ===\n`);
     
     const rebuildResult = await cmdRebuild(alias);
-    const serviceState = { alias, rebuilt: rebuildResult.payload.ok };
+    const serviceState = { alias, profile: rebuildResult.payload.profile, rebuilt: rebuildResult.payload.ok };
     
     if (!rebuildResult.payload.ok) {
       serviceState.error = rebuildResult.payload.error;
@@ -752,7 +839,8 @@ async function main() {
 
   // Real advisory lock. flock owns and releases the lock for the complete child
   // process lifetime, including awaited async health checks.
-  if (!READ_ONLY_COMMANDS.has(command) && process.env.STACKCTL_LOCKED !== '1') {
+  const readOnly = READ_ONLY_COMMANDS.has(command) || (command === 'ready' && args.includes('--dry-run'));
+  if (!readOnly && process.env.STACKCTL_LOCKED !== '1') {
     const child = spawnSync('flock', [
       '-E', '75', '-n', LOCK_FILE,
       process.execPath, SCRIPT_PATH, command, ...args,
