@@ -9,8 +9,6 @@ services:
     env_file:
       - path: ../services/email-service/.env
         required: true
-    ports:
-      - "${EXPOSE_EMAIL_SERVICE_PORT}:8000"
     expose:
       - "8000"
     volumes:
