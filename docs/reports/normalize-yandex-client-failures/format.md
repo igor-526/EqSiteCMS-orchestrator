@@ -1,4 +1,60 @@
-# QG-FORMAT — актуальный recheck R1
+# QG-FORMAT — актуальный recheck R2
+
+**Unit QG-FORMAT-R2: проверка выполнена; все команды exit 0, но НЕ warning-free PASS.** Историческое падение R1 больше не воспроизводится полной root-группой. Сохраняется **FORMAT-R2-WARN / WARN-POLICY**: критерий lint «без warnings» не выполнен; собственного waiver нет. Итоговый APPROVED/REWORK принадлежит только QG-SYNTH.
+
+## Проверенная привязка и одна группа R2
+
+Cwd: `/home/igor/projects/eqSiteCMS/.cache/qg-normalize-yandex-client-failures/root`. Tested root: `407121d8bac20cf60f4a48d9533d1b299f732964`; PRE R1 `27d30b8f5a74e1db8d885f967186801fb450d79f` сохранён как история. Все 10 service SHA из [manifest](<../../../.cache/qg-normalize-yandex-client-failures/manifest.json>) заново сверены; точные SHA совпадают с таблицей R1 ниже. Все 11 repos detached/pinned/clean до группы, немедленно после format, после lint/test и final; индексы неизменны. Оба site-сервиса проверены на чистоту, но не входят в make-агрегацию.
+
+Интервал группы: `2026-10-19T09:11:54.524997+00:00` — `2026-10-19T09:13:18.539752+00:00`.
+
+| Команда | Exit | Длительность | Фактический результат |
+|---|---:|---:|---|
+| `make format` | 0 | 5.512 s | без diff; [полный лог](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/format.log>) |
+| `make lint` | 0 | 24.424 s | все 8 сервисов; 434 FE warnings и uv patch warnings; [полный лог](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/lint.log>) |
+| `make test` | 0 | 52.927 s | достигнуты все 8 suites, 0 failed; [полный лог](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/test.log>) |
+
+По одному запуску, строго format → немедленная clean-проверка root/all10 → lint → test. Между make не было report/checklist writes. [Machine result](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/result.json>) со статусом `passed` означает успешные exit codes/clean/invariants, **не** принятие warnings и не итоговый QG verdict. Runner exit 0. [Runner](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/run.py>).
+
+| Достигнутая suite | Passed | Остальные результаты | Время suite |
+|---|---:|---|---:|
+| backend | 1483 | 5 skipped | 5.58 s |
+| frontend | 629 (73 files) | stderr сохранён | 24.23 s |
+| notification-service | 132 | 2 deselected | 2.12 s |
+| email-service | 87 | 4 deselected | 2.22 s |
+| vk-service | 295 | 21 deselected | 3.30 s |
+| seo-service | 3 | — | 1.19 s |
+| yandex-service | 662 | 7 deselected, 2 xfailed | 3.97 s |
+| ya-metrica-service | 262 | — | 2.15 s |
+
+Итого 3553 passed, 0 failed, 5 skipped, 34 deselected, 2 xfailed. Это штатные исходы неизменённых recipes: backend unit scope, peers `-m "not infrastructure"`, FE Vitest. Дополнительных skip/xfail/selection flags агент не задавал; инфраструктурные suites не объявляются проверенными. R1 email boundary теперь проходит в составе всей backend suite ([test log:17](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/test.log#L17>)), не только targeted assertion; остальные семь suites действительно выполнены.
+
+## Неустранённые предупреждения R2
+
+- **FORMAT-R2-WARN / WARN-POLICY:** [lint:662](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/lint.log#L662>) — `434 problems (0 errors, 434 warnings)`, тот же известный FE baseline R1; owner frontend. Не исправлялись, не подавлялись, regression attribution не проводилась.
+- [lint:682–753](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/lint.log#L682-L753>) и test/format logs: uv `--no-sync` warning о requested Python 3.14.6 при готовом 3.14.7; owner setup/tooling. Backend реально Python 3.13.5, остальные Python suites 3.14.7. Окружение не ремонтировалось. Mypy informational note `annotation-unchecked` также сохранён.
+- FE test stderr содержит React `act(...)`, nested `<button>` hydration diagnostic, AntD deprecations; MSW unhandled-request diagnostic выведен именованным negative-test API boundary. Vitest завершился 73/73 files и 629/629 tests, но лог не выдаётся за warning/error-output-free. Owner frontend; новый source review/исправления вне unit не выполнялись.
+- FE typecheck сообщил генерацию route types и временную reconfiguration; непосредственный post-lint и final status/index clean подтверждены, постоянного tracked изменения нет. Source/config вручную не менялись.
+
+По [QG протоколу:447–451](<../../../agents/quality_gate.md#L447-L451>) warning-free условие не выполнено. SYNTH должен явно применить действующую warning policy, при необходимости адресовать WARN-POLICY Router; это не разрешение игнорировать warnings и не новый repair scope.
+
+## Safety / before-after R2
+
+Актуальный [root-refresh control](<../../../.cache/qg-normalize-yandex-client-failures/evidence/root-refresh-post-bookkeeping.json>) точно совпал с [original before](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/original-before.json>). [Original after verification](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/original-after-verification.json>) полностью идентичен: branch `feature/normalize-yandex-client-failures-root-cp`, HEAD `407121d8bac20cf60f4a48d9533d1b299f732964`, **211 foreign status / 1278 opaque hashes / 1071 foreign index entries**, все original 10 service HEAD/status/index и полный original root index сохранены, staged пуст. Foreign content/diff не просматривались, только opaque hashing/metadata. Исторические 98-record baseline не требовались.
+
+Isolated snapshots: [before](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/isolated-before.json>), [сразу после format](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/isolated-after-format.json>), [после lint](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/isolated-after-lint.json>), [после test](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/isolated-after-test.json>), [final](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/isolated-final.json>). Root Makefile неизменён. Notification fixture до/после SHA256 `33d988ed956f18a5a29bfd49e250576c0f3b09fe7d34d2c941dcc5a35d6d58f6`, совпадает с feasibility и R1; прежний evidence не перезаписывался, manual cleanup/delete не было.
+
+Окружение handoff: `UV_NO_SYNC=1 UV_OFFLINE=1 UV_PYTHON_DOWNLOADS=never UV_LINK_MODE=copy UV_NO_ENV_FILE=1`, `UV_CACHE_DIR=.../uv-cache/core`, `PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1`, `npm_config_cache=.../npm-cache/fe npm_config_offline=true`. Unset `UV_PROJECT_ENVIRONMENT/UV_PYTHON/PYTHON_VERSION/VIRTUAL_ENV/PYTHONPATH`. Собственные service venv, без original env/секретов, installs, dependency/network repairs, config/source fixes, test weakening, runtime/compose/rebuild, commit/stage/reset/restore/stash.
+
+После группы разрешённый bookkeeping — только этот original report и QG-FORMAT-R2.1/.V в [tasks:326–327](<../../../openspec/changes/normalize-yandex-client-failures/tasks.md#L326-L327>); isolated checklist не меняется. [Post-bookkeeping control](<../../../.cache/qg-normalize-yandex-client-failures/evidence/format-r2/post-bookkeeping.json>) фиксирует own двухфайловый diff и сохранение invariants; новые docs SHA не считаются tested. Actual runtime email/notification bindings остаются прежними до отдельного разрешённого targeted recreate; source/test PASS не доказывает runtime port closure.
+
+## Handoff R2
+
+Unit: QG-FORMAT-R2 | Профиль: Quality Gate | Статус: done (проверка), warning-policy unresolved. Отмечены только QG-FORMAT-R2.1/.V как выполненная проверка и честная передача evidence, не waiver/PASS всего gate. Далее DOCS-CP-FORMAT по прежней двухфайловой allowlist; SYNTH принимает единый verdict. Исправлений findings/повторной группы не было. Остановка.
+
+---
+
+# История — QG-FORMAT recheck R1 (superseded R2 выше)
 
 **Актуальный статус lane: FAILED.** Unit QG-FORMAT-R1 завершил одну реальную обязательную root verification-группу; исправлений и повторных make-прогонов нет. Исторический dependency BLOCKED ниже superseded успешным QG-CLEAN-VERIFY и настоящим запуском, но **не** заменён на PASS. APPROVED может выдать только QG-SYNTH.
 
