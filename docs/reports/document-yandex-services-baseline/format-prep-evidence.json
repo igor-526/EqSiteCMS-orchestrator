@@ -1,0 +1,110 @@
+{
+  "preparation_attempts": [
+    {
+      "command": "python3 docs/reports/document-yandex-services-baseline/format-prep.py",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "AssertionError: .claude/skills/api-smoke-test/credentials.json (metadata-only exclusion guard before archive)"
+    },
+    {
+      "command": "python3 docs/reports/document-yandex-services-baseline/format-prep.py",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "AssertionError: root (symbolic-link/gitlink metadata guard before archive)"
+    },
+    {
+      "command": "python3 docs/reports/document-yandex-services-baseline/format-prep.py",
+      "exit": 0,
+      "stdout": {
+        "snapshot": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+        "base_archives": 9,
+        "approved_documents": 18,
+        "file_hashes_verified": true,
+        "git_baseline_ready": false,
+        "dependencies_ready": false,
+        "root_commands": "NOT RUN"
+      },
+      "stderr": ""
+    }
+  ],
+  "root_link_entries_metadata_only": [
+    "160000 commit eb4190498ef76daec21dfcf5c24c44f337a61ed3\tdsh/bundles/dsh-review-loop-upstream"
+  ],
+  "dependency_inputs": {
+    "backend": {
+      "pyproject.toml": "c0e89cc35491ddfb76bfd88ce770ade2f8d55f214cf7b26b793583221ca6c2a8",
+      "uv.lock": "f4d7323e036e2d4f830c87c1805a1470ea2e5ecd743eb64c03e82f2ac54810a4",
+      ".python-version": "d7d7dbce2874cbcac948bc8db4cc29d07959351bd30bc2ed3cbc3bf9de8b6060"
+    },
+    "frontend": {
+      "package.json": "6817a90b478279b885f0b367d4a13decab62d1d60ebdb269d029e71e3606c616",
+      "package-lock.json": "da568ba6c456efacc359de21babfff3234a6cb2adace40497dfe2161af4e475b"
+    },
+    "notification-service": {
+      "pyproject.toml": "76aee867ca15fca4f50e2c216e8b6c288b9410286f2668d8202643f9f38473be",
+      "uv.lock": "fb2f1908700bb0751dfd1f8323f19b434c99c60e7a0c7a0a92b2ba74436e6080",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "email-service": {
+      "pyproject.toml": "4b63fd0b9910f1fbefd631559e549fa7710c3c4db68a3aed4819ce8c95effbe2",
+      "uv.lock": "953479ad41d9e2d2da048f5ac89fd3c3ded7fc1f9f7b09d788e3e178ee4278cd",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "vk-service": {
+      "pyproject.toml": "3df984f1df098ff0a8346ee7df919f6ecfb046938c00eac8519655b3f5cb892c",
+      "uv.lock": "53fd61a37ee49c07b82f32a1d34fe553d8d4ba1a2f861add0f5bb3a7f9fc5b9c",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "seo-service": {
+      "pyproject.toml": "bad3fb65b551ca9eda6dde37d3ddae9effe8cf409a351c81c9ee4364a8dbb360",
+      "uv.lock": "d173d270ec6efdfb53adf2969396294250ff2abc0a1e499ed1a8981cb513ccd4",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "yandex-service": {
+      "pyproject.toml": "62287e14e40230000dbfc1c3ce5aff4c108321b38d0dc2b42de7d5027ea77d5a",
+      "uv.lock": "32e4e20fc73ee24e1bd62bd9339675c2fa964e46dbb6a7661bc99cdcba3506c4",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "ya-metrica-service": {
+      "pyproject.toml": "4482947080f4a17d58253e9f3f46d5f44538925a72ed47c7532b75d9dcb7aae3",
+      "uv.lock": "e9ebc78ae0c4548820eeea3b2a0f93a449fc40424a4b3b117710611da636a7d5",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    }
+  },
+  "archives_created": [
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/root.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/backend.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/frontend.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/notification-service.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/email-service.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/vk-service.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/seo-service.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/yandex-service.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/ya-metrica-service.tar",
+    "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/approved-docs.tar"
+  ],
+  "root_commands": {
+    "make format": {
+      "status": "NOT RUN",
+      "exit": null
+    },
+    "make lint": {
+      "status": "NOT RUN",
+      "exit": null
+    },
+    "make test": {
+      "status": "NOT RUN",
+      "exit": null
+    }
+  },
+  "lane": "BLOCKED",
+  "unit": "partial",
+  "tools": {
+    "uv": "0.13.5",
+    "node": "v24.22.1",
+    "npm": "11.19.1",
+    "make": "4.4.1",
+    "version_group_exit": 0
+  },
+  "dependency_inputs_unchanged": true
+}

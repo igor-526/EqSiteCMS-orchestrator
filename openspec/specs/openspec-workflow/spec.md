@@ -61,8 +61,44 @@ Workflow MUST NOT автоматически запускать `openspec-explor
 - **WHEN** профильные агенты завершили свои зоны
 - **THEN** Quality Gate проверяет совокупный diff, архитектуру, тесты, access policy и OpenSpec validation до sync/archive
 
+### Requirement: Профиль Quality Gate соразмерен diff
+Router SHALL выбирать профиль Quality Gate по фактическому diff: `QG-DOCS` (только docs/specs/правила — один агент, OpenSpec validation и сверка specs), `QG-LITE` (код в не более чем двух сервисах без миграций, NATS-контрактов и UI behavior diff — один агент последовательно выполняет применимые lanes и synthesis) или `QG-FULL` (lanes отдельными агентами по DAG). `QG-FORMAT` SHALL выполнять format/lint/test только затронутых сервисов в текущем рабочем дереве и MUST NOT требовать чистый worktree, изолированные копии репозитория или установку зависимостей во все сервисы. Падения вне путей change, не вызванные им, SHALL классифицироваться как `pre-existing` и MUST NOT блокировать вердикт; дефекты окружения и инструментов вне scope SHALL фиксироваться как `blocked-env` и MUST NOT исправляться внутри change без решения пользователя. Повторная проверка после fix SHALL выполняться тем же QG-агентом и только по затронутым findings, не более одного повторного раунда.
+
+#### Scenario: Документационный change
+- **WHEN** diff change содержит только docs, specs и агентские правила
+- **THEN** Router запускает один QG-агент профиля `QG-DOCS`, а ENV, LIVE и FORMAT фиксируются как неприменимые
+
+#### Scenario: Чужой падающий тест
+- **WHEN** scoped `make test` падает в тесте, не импортирующем изменённые модули и вне путей change
+- **THEN** finding получает класс `pre-existing`, вердикт может быть `APPROVED`, а Router предлагает отдельную задачу в `docs/tasks`
+
+#### Scenario: Инструмент не поддерживает сервис
+- **WHEN** `stackctl` не поддерживает затронутый сервис
+- **THEN** QG использует штатный обход через `make`/`docker compose` сервиса, фиксирует `blocked-env` и не расширяет change починкой инструмента
+
+### Requirement: Waiver пользователя
+Если пользователь явно принимает риск по конкретному finding или blocker, Router SHALL зафиксировать его в отчёте Quality Gate как `waived by user` с формулировкой пользователя, SHALL выставить вердикт `APPROVED_WITH_WAIVER` и SHALL продолжить sync/archive/finalize без повторного требования. Waiver MUST NOT распространяться на вывод секретов и деструктивные операции с данными.
+
+#### Scenario: Пользователь игнорирует finding
+- **WHEN** QG вернул `REWORK` из-за finding, а пользователь пишет «игнорируем, архивируй»
+- **THEN** Router вносит waiver в отчёт и выполняет sync и archive
+
+### Requirement: Операционный режим Router
+Router SHALL выполнять сам, без делегирования и без OpenSpec, операционные задачи, не меняющие продуктовый код (восстановление окружения, установка зависимостей, управление стеком, git-инвентаризация, ответы о состоянии, sync/archive проверенного change, финализация), а также любую задачу, для которой пользователь явно запросил работу без агентов. В операционном режиме Router MUST NOT менять продуктовый код, specs и конфигурацию сервисов.
+
+#### Scenario: Пользователь просит поднять окружение без агентов
+- **WHEN** пользователь просит установить зависимости и поднять контейнеры «без маршрутизации агентами»
+- **THEN** Router выполняет команды сам через skill `stack-control`, не вызывая `delegate_*` и `workflow`
+
+### Requirement: Ожидание агентов без поллинга
+Router SHALL ожидать последовательный unit foreground-делегированием (`run_in_background: false`), а параллельные units — запуском в одном сообщении с завершением ответа до уведомления о завершении. Router MUST NOT ожидать агентов через `sleep` или циклы `job_output`/`list_agents` и MUST NOT перечитывать файлы правил перед каждым делегированием. Исполнители SHALL возвращать handoff финальным сообщением без дублирования через `send_message`. Execution unit SHALL содержать не менее ~5 существенных действий: чекпоинты, фиксации и отметка tasks выполняются в составе рабочего unit, а Planner вызывается только для исходного плана и реального изменения scope.
+
+#### Scenario: Последовательный unit
+- **WHEN** следующий шаг Router зависит от результата unit
+- **THEN** Router делегирует unit с `run_in_background: false` и получает handoff одним шагом
+
 ### Requirement: Синхронизация и архивирование
-Успешно проверенный change SHALL синхронизировать delta specs в main specs и SHALL быть архивирован только после завершённых tasks, положительного Quality Gate и успешной стадии `READY-FOR-MANUAL`. Архивирование MUST NOT завершать workflow: после него Router SHALL перейти к approval gate «Сливать в main?».
+Успешно проверенный change SHALL синхронизировать delta specs в main specs и SHALL быть архивирован только после завершённых tasks, положительного Quality Gate (`APPROVED` или `APPROVED_WITH_WAIVER`) и успешной стадии `READY-FOR-MANUAL`. Архивирование MUST NOT завершать workflow: после него Router SHALL перейти к approval gate «Сливать в main?».
 
 #### Scenario: Quality Gate одобрил change
 - **WHEN** findings устранены, повторная проверка успешна, `READY-FOR-MANUAL` завершилась успешно и delta specs валидны

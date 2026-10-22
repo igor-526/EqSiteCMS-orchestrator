@@ -1,0 +1,6 @@
+eslint /srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend/node_modules/eslint/lib/api.js
+typescript /srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend/node_modules/typescript/lib/typescript.js
+vitest /srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend/node_modules/vitest/index.cjs
+next /srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend/node_modules/next/dist/server/next.js
+@tailwindcss/oxide /srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend/node_modules/@tailwindcss/oxide/index.js
+{"checked":822,"missing":[]}

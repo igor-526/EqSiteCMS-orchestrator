@@ -1,0 +1,245 @@
+{
+  "unit": "QG-CONTRACTS",
+  "lane_status": "passed",
+  "overall_qg_verdict": null,
+  "runtime": "NOT RUN",
+  "production_ready": false,
+  "checked_tasks": [
+    "DOC-1.1",
+    "DOC-1.2",
+    "DOC-1.3",
+    "DOC-1.4",
+    "DOC-1.5",
+    "DOC-1.6",
+    "DOC-1.7",
+    "DOC-1.V",
+    "QG-CONTRACTS.1",
+    "QG-CONTRACTS.2",
+    "QG-CONTRACTS.3",
+    "QG-CONTRACTS.4",
+    "QG-CONTRACTS.5",
+    "QG-CONTRACTS.6",
+    "QG-CONTRACTS.7",
+    "QG-CONTRACTS.V"
+  ],
+  "completed_tasks": 16,
+  "total_tasks": 40,
+  "only_owned_checkbox_changes": true,
+  "protected_documents_unchanged": {
+    "openspec/changes/document-yandex-services-baseline/proposal.md": true,
+    "openspec/changes/document-yandex-services-baseline/design.md": true,
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md": true,
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md": true,
+    "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md": true,
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md": true,
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md": true,
+    "openspec/specs/yandex-peer-http-contract/spec.md": true,
+    "openspec/specs/yandex-client-failures/spec.md": true,
+    "docs/reports/document-yandex-services-baseline/backfill.md": true,
+    "docs/reports/document-yandex-services-baseline/doc-1-accept-evidence.json": true
+  },
+  "status_summary": {
+    "isPlanningComplete": true,
+    "isComplete": true,
+    "artifacts": [
+      {
+        "id": "proposal",
+        "outputPath": "proposal.md",
+        "status": "done",
+        "requires": []
+      },
+      {
+        "id": "specs",
+        "outputPath": "specs/**/*.md",
+        "status": "done",
+        "requires": [
+          "proposal"
+        ]
+      },
+      {
+        "id": "design",
+        "outputPath": "design.md",
+        "status": "done",
+        "requires": [
+          "proposal"
+        ]
+      },
+      {
+        "id": "tasks",
+        "outputPath": "tasks.md",
+        "status": "done",
+        "requires": [
+          "specs",
+          "design"
+        ]
+      }
+    ]
+  },
+  "strict_info_lines": 8,
+  "strict_only_info": true,
+  "verification_attempts": [
+    {
+      "attempt": 1,
+      "exit_code": 1,
+      "cause": "checker expected GET=15 DELETE=3; corrected to GET=16 DELETE=2; before CLI"
+    },
+    {
+      "attempt": 2,
+      "exit_code": 0,
+      "links": 317,
+      "cli_exit_codes": [
+        0,
+        0
+      ]
+    }
+  ],
+  "report_links": {
+    "count": 28,
+    "errors": 0,
+    "records": [
+      {
+        "line": 5,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/tasks.md#L32-L43",
+        "status": "PASS"
+      },
+      {
+        "line": 5,
+        "target": "backfill.md#L52-L98",
+        "status": "PASS"
+      },
+      {
+        "line": 9,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/design.md#L128-L130",
+        "status": "PASS"
+      },
+      {
+        "line": 10,
+        "target": "contracts-check.py",
+        "status": "PASS"
+      },
+      {
+        "line": 10,
+        "target": "contracts-evidence.json",
+        "status": "PASS"
+      },
+      {
+        "line": 12,
+        "target": "backfill.md#L19-L25",
+        "status": "PASS"
+      },
+      {
+        "line": 13,
+        "target": "contracts-final-evidence.json",
+        "status": "PASS"
+      },
+      {
+        "line": 17,
+        "target": "backfill.md#L86-L98",
+        "status": "PASS"
+      },
+      {
+        "line": 17,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/proposal.md#L14-L26",
+        "status": "PASS"
+      },
+      {
+        "line": 21,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 22,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 23,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 24,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 25,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 31,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md#L20-L50",
+        "status": "PASS"
+      },
+      {
+        "line": 31,
+        "target": "../../../openspec/specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "status": "PASS"
+      },
+      {
+        "line": 55,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md#L52-L86",
+        "status": "PASS"
+      },
+      {
+        "line": 64,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md#L88-L101",
+        "status": "PASS"
+      },
+      {
+        "line": 68,
+        "target": "../../../openspec/specs/yandex-client-failures/spec.md#L31-L53",
+        "status": "PASS"
+      },
+      {
+        "line": 85,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS"
+      },
+      {
+        "line": 86,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS"
+      },
+      {
+        "line": 87,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS"
+      },
+      {
+        "line": 88,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 89,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 90,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 91,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 92,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS"
+      },
+      {
+        "line": 95,
+        "target": "../../../openspec/changes/document-yandex-services-baseline/proposal.md#L57-L83",
+        "status": "PASS"
+      }
+    ]
+  },
+  "report_sha256": "2589857708c0f0c7e45a7ed187e1186b335df14084465e362b23a10b7d8a4fd4",
+  "tasks_final_sha256": "d83b78a6fb35198ab962723e4c86085925524cdb42c1b93700b68ecda64286b4",
+  "final_check_exit_code": 0
+}

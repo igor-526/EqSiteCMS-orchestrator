@@ -14,6 +14,7 @@
 4. Декомпозируй реализацию на непересекающиеся ownership-зоны (**deliverables**) и раздели каждую на **execution units** — куски, помещающиеся в одну агентную сессию по бюджету из `AGENTS.md`. Выдай таблицу units и DAG зависимостей.
 5. Выполни `openspec status --change <change> --json` и `openspec validate <change> --type change --strict`.
 6. Верни Router ссылки на все артефакты, результаты проверок и открытые вопросы. Остановись на пользовательском approval gate; apply и runtime-реализацию не начинай.
+7. Файл `agents/planner.md` большой: читай его секциями (`grep -n '^## \|^### '` → `read` с offset/limit), а не целиком. Для повторного вызова (правка по ответам пользователя, изменение scope) перечитывать его не нужно — правь только затронутые артефакты.
 <!-- dsh-persona:end -->
 
 ---
@@ -301,7 +302,7 @@ CB-BE-1 → CB-BE-2 → CB-BE-3 ─┬→ CB-BE-4 ─────┐
 - список execution units с профилем, ownership и verification;
 - DAG зависимостей и рекомендуемый порядок делегирования;
 - какие units независимы и могут идти параллельно;
-- какие units планируются как Quality Gate lanes (`QG-BE`, `QG-FE`, `QG-CONTRACTS`, `QG-LIVE`, `QG-SYNTH`) и какие из них неприменимы;
+- профиль Quality Gate (`QG-DOCS` / `QG-LITE` / `QG-FULL`, см. `agents/quality_gate.md`) и, для `QG-FULL`, применимые lanes;
 - точечный `contextFiles` set **на каждый unit** — это то, из чего Router собирает context pack, а не «все артефакты change».
 
 ---
@@ -346,7 +347,8 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 - Последний пункт каждого unit — `<UnitID>.V`: verification этого unit + handoff Router.
 - Smoke-пункты явно указывают реальную PostgreSQL и скилл `.claude/skills/api-smoke-test`.
 - В том unit, который первым выполняет smoke, обязателен пункт discovery DB-параметров через `docker inspect`.
-- Quality Gate планируется как отдельные units-lanes `QG-BE`, `QG-FE`, `QG-CONTRACTS`, `QG-LIVE`, `QG-SYNTH`; неприменимые lanes перечисляются с пометкой `неприменимо` и причиной.
+- Quality Gate планируется по профилю: `QG-DOCS` и `QG-LITE` — **один** unit `QG` (один агент, все применимые lanes + SYNTH); `QG-FULL` — units-lanes по DAG. `QG-FORMAT` — scoped по затронутым сервисам, без требования чистого worktree. Неприменимые lanes — одной строкой `неприменимо — <причина>`.
+- Не планируй отдельные units для чекпоинтов, фиксаций, коммитов, подготовки рабочего дерева или установки зависимостей ради проверок.
 - Плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в rework-чеклистах Quality Gate внутри `docs/reports/` (совместимость с оркестратором). В `tasks.md` структура — по execution units.
 
 **Пример компактного unit:**

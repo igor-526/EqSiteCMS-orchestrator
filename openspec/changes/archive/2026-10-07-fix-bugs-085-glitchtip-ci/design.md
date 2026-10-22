@@ -13,7 +13,7 @@
 **Constraints:**
 - Не можем изменять PostgreSQL `max_connections` на production без ops approval
 - NATS deployment стабильный; проблема в client resilience
-- GitHub Actions не имеет permissions писать в `/home/igor/projects/eqSiteCMS/.cache/uv`
+- GitHub Actions не имеет permissions писать в `/srv/eqSiteCMS/.cache/uv`
 
 **Ownership:**
 - **Backend ownership:** `services/backend/**` — pool config, health endpoint

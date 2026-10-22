@@ -1,0 +1,5 @@
+{
+  "classification": "infrastructure: npm launcher config collision; safe command failure, no repair",
+  "continue": "all three actual root commands unchanged launcher",
+  "repair_attempts": "PREP 2/2 exhausted; RUN no repairs"
+}

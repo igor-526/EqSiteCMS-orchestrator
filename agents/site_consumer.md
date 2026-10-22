@@ -128,7 +128,7 @@ route/page (SSR) -> content feature composition -> read API -> backend public GE
 
 ## 9. Протокол завершения работы
 
-Когда назначенный execution unit выполнен и отмечены только принадлежащие тебе checkbox, верни Router handoff по формату `AGENTS.md` и остановись. Не создавай отдельный формальный Quality Gate report: review запускается Router по lane-модели после завершения всех профильных units.
+Когда назначенный execution unit выполнен и отмечены только принадлежащие тебе checkbox, верни Router handoff по формату `AGENTS.md` и остановись. Не создавай отдельный формальный Quality Gate report: review запускается Router по профилю Quality Gate после завершения всех профильных units.
 
 ```text
 Unit: <ID> — <название> | Профиль: Site Consumer | Статус: done / partial / blocked

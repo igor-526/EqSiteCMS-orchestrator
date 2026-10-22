@@ -1,0 +1,14 @@
+make -C services/backend lint
+make[1]: Entering directory '/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend'
+uv run mypy src tests
+Success: no issues found in 306 source files
+uv run ruff check src tests
+All checks passed!
+uv run ruff format --check src tests
+306 files already formatted
+uv run flake8 src tests
+make[1]: Leaving directory '/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend'
+make -C services/frontend lint
+make[1]: Entering directory '/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend'
+npm run lint
+make[1]: Leaving directory '/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend'

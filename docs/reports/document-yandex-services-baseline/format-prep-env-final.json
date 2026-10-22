@@ -1,0 +1,294 @@
+{
+  "unit": "QG-FORMAT-PREP-ENV",
+  "status": "done",
+  "task": "QG-FORMAT.2",
+  "environment_ready": true,
+  "verification_group": {
+    "first_pass_command": "env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /bin/bash --noprofile --norc -c \". /srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-env.sh; exec /usr/bin/python3 /srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-verify.py verify\"",
+    "first_pass_exit": 1,
+    "first_pass_evidence": "format-prep-env-evidence.json",
+    "finalization_command": "/usr/bin/python3 docs/reports/document-yandex-services-baseline/format-prep-env-finalize.py",
+    "finalization_cwd": "/srv/eqSiteCMS",
+    "finalization_exit": 0,
+    "classification": "All environment checks pass. Initial conservative original-index physical hash guard classified as residual NOTE, not a dependency failure. No evidence overwritten."
+  },
+  "original_index_note": {
+    "repository": "vk-service",
+    "physical_before": "0b48fa6c2088b98306631d7cdebfbfac8c71eb2438b5ba8cc8a557120b31564d",
+    "physical_after": "52138a248e31167dc1b2ded45c923395f9165bca21b7dade1eeb37ab9da20694",
+    "physical_at_finalization": "61ebeeaee70b45164d3623d9d18e0a5b8d7a6698ef9ef655e889130f551638ba",
+    "logical_command": [
+      "git",
+      "diff",
+      "--cached",
+      "--quiet"
+    ],
+    "logical_cwd": "/srv/eqSiteCMS/services/vk-service",
+    "logical_exit": 0,
+    "head_unchanged": true,
+    "status_unchanged": true,
+    "tracked_and_staged_raw_unchanged": true,
+    "logical_reason": "Before and after staged diff are empty against the same HEAD; current git diff --cached --quiet returns 0.",
+    "physical_preservation": "not-established",
+    "cause": "unknown; not attributed to our process or to another actor without evidence",
+    "own_original_git_commands": "read-only metadata commands, all with GIT_OPTIONAL_LOCKS=0; no original init/add/commit/update-ref/write-tree/reset/clean",
+    "scope": "No unrelated dirty bytes, cache preservation, or historical global environment identity asserted."
+  },
+  "baselines": {
+    "root": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "exported_head": "457be4391fa800214ce6939030d3e125962b89be",
+      "local_commit": "1df545fc65fd1baa9788a45a91649764ecc1890d",
+      "tree": "1759634fae43e7946af698e43d051bdafab4c3c5",
+      "indexed_files": 1092,
+      "index_manifest_sha256": "919890d18215e1b57332489ad39dad244b3ecfdd3bef6d3e031199a5fb34b3b5",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [
+        "/services/backend/",
+        "/services/frontend/",
+        "/services/notification-service/",
+        "/services/email-service/",
+        "/services/vk-service/",
+        "/services/seo-service/",
+        "/services/yandex-service/",
+        "/services/ya-metrica-service/"
+      ],
+      "excluded_paths_metadata_only": [
+        ".claude/skills/api-smoke-test/credentials.json",
+        ".codex/skills/api-smoke-test/credentials.json",
+        "dsh/bundles/dsh-review-loop-upstream"
+      ]
+    },
+    "backend": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "exported_head": "68bbbbd979e07f745cafabf886c54fe515d87861",
+      "local_commit": "b5b1b0787582aa6244bdd56fd9b8e44973d86bf9",
+      "tree": "b36e19a2b7076a38357d48b20405eb57b270744b",
+      "indexed_files": 344,
+      "index_manifest_sha256": "983a1650c08f05e12e7fea1e71bc59cfbafcab2cae53329089f7c16022fa6b82",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "frontend": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "exported_head": "ba2c3ed98203ac340548c4f1ce1f2602f9eb858e",
+      "local_commit": "dffcf6a431b4484f25273dca1d16a389430123e1",
+      "tree": "041b31f9e7278ee6ddced3959b58c0ac0dcbb049",
+      "indexed_files": 402,
+      "index_manifest_sha256": "11d5db81bfcfdf2964405f648d9407b733558b3f6e3a471a7421d0737ff97ebd",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "notification-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "exported_head": "5c15cbf7ca4acef61fbac6f69642f43f5ac3bbb4",
+      "local_commit": "964816c31aea91ee5ada7e5ca0540046475d156f",
+      "tree": "5e77896c1e0587a9f13d634ad4784c77d7f31d6a",
+      "indexed_files": 141,
+      "index_manifest_sha256": "dca5541abe0c7d20859bb3fad56678b0a9ecca91628377d60ec7ded5bc17f17e",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "email-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "exported_head": "c298998ce6f3b3baff0f019e1a99029db1814b24",
+      "local_commit": "3abb1d32dc139b9733f493fc8e239938bbad051f",
+      "tree": "f17d610d6602c5249ff71205707d9f442eba6d44",
+      "indexed_files": 108,
+      "index_manifest_sha256": "4e51dd02509ed010ec204e055973ffceeb057246770119b6d5c6e7f46017a2ba",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "vk-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "exported_head": "fe02a63af148b9858c09afb9d36b768590e0fb88",
+      "local_commit": "697b410e13d19638970bd8d78d3950e0adcba28b",
+      "tree": "f11fbf88ac2e3dfe5fd7e5f19a0512121f604db7",
+      "indexed_files": 139,
+      "index_manifest_sha256": "fbbab2061d11406b1280f01f6911b077e84d54b121561f45c048a1fb5e7393c2",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "seo-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "exported_head": "5c202c3691513b09cb9b6b74558f2dae4d3af811",
+      "local_commit": "68e5edce814f1ec50b3952ae2fbda706c0775d76",
+      "tree": "c48ca8c2d970ee18135e7e3ced96e0af261cc0b2",
+      "indexed_files": 38,
+      "index_manifest_sha256": "f0185d32a74839191e5e44c20ff18fb476a9a2279dd41e340223e38dda3972c1",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "yandex-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "exported_head": "d3cf1dc5879d5ebc2f75bbdb437ca657cf1a4de4",
+      "local_commit": "2ef1daa0b886a2e3224667317665587001211795",
+      "tree": "cfc566160a0072489c81cd762a78d4cfc8558803",
+      "indexed_files": 117,
+      "index_manifest_sha256": "8c3609042d14ef40470d0514a0daa53f3c54e7c851863730addfeca906b713d3",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "ya-metrica-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "exported_head": "0bd7434cc97ac41f0a0aef1088e99b77ead48e1b",
+      "local_commit": "368344647965d70a332ea65b2ce012c4bd59433e",
+      "tree": "9c0a8ed68d4ac78fc18fed363b4a8b67581530cc",
+      "indexed_files": 68,
+      "index_manifest_sha256": "80c3dae65a7ea25a5fa371d1a818abd7665040fbd6192e7a41dd925420b4f9e9",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    }
+  },
+  "install_ledger": {
+    "backend": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-backend"
+    },
+    "frontend": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-frontend"
+    },
+    "notification-service": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-notification-service"
+    },
+    "email-service": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-email-service"
+    },
+    "vk-service": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-vk-service"
+    },
+    "seo-service": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-seo-service"
+    },
+    "yandex-service": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-yandex-service"
+    },
+    "ya-metrica-service": {
+      "exit": 0,
+      "ready": true,
+      "command_name": "install-ya-metrica-service"
+    }
+  },
+  "immutable_checks": {
+    "locked_inputs_unchanged": true,
+    "manifest_unchanged": true,
+    "archives_unchanged": true
+  },
+  "controlled_process_amendment": {
+    "openspec/changes/document-yandex-services-baseline/design.md": {
+      "frozen_sha256": "363870450af7f2e1b63622d73fd10a39fa0faf34718480ed2c217ef072338e2b",
+      "current_original_sha256": "04813370f3b8436deeb601abeefd28a8f2729340ef141bd09407f05871c03890"
+    },
+    "openspec/changes/document-yandex-services-baseline/tasks.md": {
+      "frozen_sha256": "d83b78a6fb35198ab962723e4c86085925524cdb42c1b93700b68ecda64286b4",
+      "current_original_sha256": "90dd5346e9215e87367afbaeac81fec19f9a282690fc0cd6e19c4e755a3be81b"
+    }
+  },
+  "generated": {
+    "allowlist": [
+      "services/*/.venv/**",
+      "services/frontend/node_modules/**",
+      "services/*/.ruff_cache/**",
+      "services/*/.mypy_cache/**",
+      "services/*/.pytest_cache/**",
+      "**/__pycache__/**",
+      "**/*.pyc",
+      "**/*.egg-info/**",
+      "services/frontend/.next/**",
+      "services/frontend/next-env.d.ts",
+      "services/frontend/tsconfig.tsbuildinfo"
+    ],
+    "file_count": 215150,
+    "unexpected": [],
+    "ledger": "format-prep-env-generated.json"
+  },
+  "repair_attempts": 2,
+  "build_backend": "setuptools==80.9.0 only; pinned closure installed in adapter .venv, uv sync --no-build-isolation --inexact; artifact dist-info hashes in evidence",
+  "node_install_policy": "npm ci --ignore-scripts; no browsers or lifecycle downloads; essential tools/native modules validated in group evidence",
+  "run_launcher": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-run.sh",
+  "run_environment": {
+    "UV_CACHE_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/uv-cache",
+    "npm_config_cache": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/npm-cache",
+    "HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/home",
+    "LANG": "C.UTF-8",
+    "TMPDIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/tmp-format-run",
+    "PLAYWRIGHT_BROWSERS_PATH": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/browser-cache",
+    "npm_config_offline": "true",
+    "XDG_CACHE_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-cache",
+    "UV_FROZEN": "true",
+    "PATH": "/home/igor/.local/bin:/home/igor/.nvm/versions/node/v24.22.1/bin:/usr/bin:/bin",
+    "UV_NO_SYNC": "true",
+    "npm_config_update_notifier": "false",
+    "UV_PYTHON_DOWNLOADS": "never",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_AUTHOR_NAME": "FORMAT measurement",
+    "GIT_AUTHOR_EMAIL": "format@invalid.local",
+    "GIT_COMMITTER_NAME": "FORMAT measurement",
+    "GIT_COMMITTER_EMAIL": "format@invalid.local",
+    "GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z",
+    "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z",
+    "UV_PYTHON_INSTALL_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/python",
+    "UV_PYTHON_BIN_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/python-bin",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHON_KEYRING_BACKEND": "keyring.backends.null.Keyring",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1",
+    "SENTRYCLI_SKIP_DOWNLOAD": "1",
+    "npm_config_yes": "false",
+    "npm_config_userconfig": "/dev/null",
+    "npm_config_globalconfig": "/dev/null",
+    "XDG_CONFIG_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-config",
+    "XDG_DATA_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-data",
+    "XDG_STATE_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-state"
+  },
+  "root_commands": "NOT RUN",
+  "next_unit": "QG-FORMAT-RUN in a fresh session after Router reads handoff; no repeat exports/installs",
+  "evidence_files": {
+    "format-snapshot.json": "21d492dd73803c8793c2549a79e07bbdfb84f73748a27cd8de3f995aaaa86ec1",
+    "format-prep-env-evidence.json": "202d5e50554feaaea223b92938d0496a6d7e4aa2e505fd4e62b7295870a81147",
+    "format-prep-env-generated.json": "5966fb1fa8141d31389f50e26eccbab7dbecf76083b6e7a28aa32563dabe80b8",
+    "format-prep-env-original-before.json": "abd9ae4d041bd03bdfc85e9426e94d9dbc1844bfaf1ab8066eaed4397ed59e6a",
+    "format-prep-env-run.sh": "ea2c083cb8b685441e15c3f3cd9047e783ca50980e9f5cfa6e38889096ef7bab"
+  }
+}

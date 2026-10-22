@@ -47,13 +47,33 @@ make fe            # Frontend (Next.js)
 
 ## Дополнительные Make команды
 
-- `make check` — non-mutating gate четырёх core-сервисов; `site-*` исключены.
+- `make check` — нормативный core gate четырёх сервисов; его фактическая готовность здесь не подтверждена (R-G2 в [каталоге](<SERVICES.md#отложенные-gaps-яндекса>)), PASS не обещается.
 - `make fix` — отдельный mutating autofix/format gate.
-- `make build` / `make build-nc` — сборка backend, notification, email и CMS frontend.
+- `make build` / `make build-nc` — сборка только backend, notification, email и CMS frontend; сервисы Яндекса не включены.
 - `make compose-check` / `make secret-scan` — статические release-проверки.
 - `make update` — алиас для `make sync`, обновляет код во всех репозиториях (`git pull`).
-- `make test` / `make lint` — совместимые алиасы non-mutating `make check`.
+- `make test` / `make lint` — делегируют одноимённые service targets расширенному набору по [Make:239–258](<Makefile#L239-L258>), включая оба сервиса Яндекса; это не алиасы `check` и не свидетельство PASS сервисных проверок.
+- `make format` — делегирует service format targets, **изменяет файлы**. QG-FORMAT запускает format/lint/test только в затронутых сервисах (`make -C services/<svc> …`) в текущем рабочем дереве, см. [`agents/quality_gate.md`](agents/quality_gate.md).
 - `make ship-test` — unit-тесты инструментов финализации (`scripts/shipctl`).
+
+### Индивидуальные команды сервисов Яндекса
+
+Роли, ресурсы и безопасный env inventory — в [каталоге сервисов](<SERVICES.md#8-yandex-service-и-9-ya-metrica-service>).
+
+```bash
+make yandex                 # Service Compose up -d
+make yandex-attach          # Service Compose up с выводом в терминал
+make yandex-build           # Индивидуальная сборка
+make yandex-build-nc        # Сборка без cache
+make ya-metrica              # Service Compose up -d
+make ya-metrica-attach       # Service Compose up с выводом в терминал
+make ya-metrica-build        # Индивидуальная сборка
+make ya-metrica-build-nc     # Сборка без cache
+```
+
+Это наличие recipes, не гарантия готовности `check`/`ready`/release. До up нужны отдельные DB/dependencies и external network `eqsitecms_network`; service Compose их не поднимает и не гарантирует завершения миграций до app-start. `make infra` поднимает весь infra-набор, не только две DB. **App и DB host-порты публикуются без явного loopback bind** — dev Compose не разрешает публичное/production использование и не закрывает auth/token gaps.
+
+На проверенном immutable baseline HEAD `4be101744e20299690773060a84c362184a2d5cc` в stackctl есть профиль `yandex` и alias `yandex-service`, но нет его DB; Metrica profile/alias и обе DB отсутствуют в явных registry только на этом HEAD, не обязательно в текущем дереве. Чужой local dirty overlay отличается от baseline, находится вне проверенного docs-only scope и не доказывает поддержку `ready`/`migrate`/release; R-G3 остаётся deferred. Обнаружение обоих репозиториев через manifest в shipctl plan не подтверждает release/ci/deployment поддержку. Подробная [матрица пределов и deferred gaps](<SERVICES.md#команды-и-пределы-поддержки-яндекса>) — в каталоге.
 
 ### Инструменты процесса
 
@@ -94,13 +114,15 @@ Release/recreate/migration/readiness/rollback workflow: `WORKFLOW.md`, `docs/ope
 
 Каждый сервис (`backend`, `frontend`, `notification-service`, `email-service`) хранит настройки в `services/<service-name>/`.
 
-**Приоритет загрузки для Docker Compose:**
+**Для перечисленного выше контура (не для сервисов Яндекса):**
 
 1. `.env` (обязательный, базовые настройки)
 2. `.env.local` (опциональный, специфичен для фронтенда)
 3. `.env.prod` (опциональный, переопределяет всё вышеперечисленное)
 
 Если файл `.env.prod` существует, Docker Compose применит его значения поверх базовых.
+
+Для сервисов Яндекса этот приоритет **не действует**: service Compose подключает только обязательный `services/<service>/.env`, он же передаётся Make через `--env-file`. Infra использует независимый `.docker-compose/.env`; значения DB согласовываются оператором между контурами. Имена переменных, безопасные placeholders, volume defaults и предел полноты app settings приведены в [root env inventory](<SERVICES.md#безопасный-root-env-inventory-яндекса>). Реальные env не публиковать; полнота service `.env.example` здесь не подтверждается.
 
 ## Структура проекта
 

@@ -1,0 +1,2 @@
+make[1]: *** [Makefile:4: test] Error 1
+make: *** [Makefile:240: test] Error 2

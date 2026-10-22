@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
     "lane": {
@@ -11,21 +10,24 @@
         "QG-FE-MANUAL",
         "QG-LIVE",
         "QG-CONTRACTS",
-        "QG-SYNTH"
+        "QG-FORMAT"
       ]
     },
     "status": {
       "type": "string",
-      "enum": ["passed", "failed", "blocked", "not_applicable"]
+      "enum": ["passed", "failed", "blocked-env", "not_applicable"]
     },
     "findings": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "severity": {
+          "class": {
             "type": "string",
-            "enum": ["critical", "major", "minor", "note"]
+            "enum": ["blocking", "minor", "pre-existing", "blocked-env"]
+          },
+          "key_check": {
+            "type": "boolean"
           },
           "owner_profile": {
             "type": "string",
@@ -41,7 +43,7 @@
             "type": "string"
           }
         },
-        "required": ["severity", "owner_profile", "summary"],
+        "required": ["class", "owner_profile", "summary"],
         "additionalProperties": false
       }
     },
@@ -71,30 +73,6 @@
       "type": "string"
     }
   },
-  "required": ["lane", "status"],
-  "additionalProperties": false,
-  "oneOf": [
-    {
-      "properties": {
-        "lane": {
-          "const": "QG-SYNTH"
-        },
-        "verdict": {
-          "type": "string",
-          "enum": ["APPROVED", "REWORK", "BLOCKED"]
-        },
-        "report_path": {
-          "type": "string"
-        }
-      },
-      "required": ["verdict", "report_path"]
-    },
-    {
-      "properties": {
-        "lane": {
-          "enum": ["QG-ENV", "QG-BE", "QG-FE-AUTO", "QG-FE-MANUAL", "QG-LIVE", "QG-CONTRACTS"]
-        }
-      }
-    }
-  ]
+  "required": ["lane", "status", "findings"],
+  "additionalProperties": false
 }

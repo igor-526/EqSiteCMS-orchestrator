@@ -6,7 +6,7 @@ No OpenSpec work, installation, profile changes, server/restart, browser operati
 
 - Package: `@local/dsh-review-loop-services@0.1.0-local.1`.
 - Patch row: `review-loop-services`; lazy Client factory ID: `@local/dsh-review-loop-services` (fresh, not upstream).
-- Future install spec: `/home/igor/projects/eqSiteCMS/dsh/bundles/dsh-review-loop-services`.
+- Future install spec: `/srv/eqSiteCMS/dsh/bundles/dsh-review-loop-services`.
 - Runtime files: `lib/index.mjs` (Host ESM), `lib/client.js` (public module-loader CJS factory), `lib/index.d.mts` forwarding to newly emitted `lib/types/index.d.ts` and its declaration graph. Every manifest export exists.
 - Parent owns any removal/install and subsequent actual GUI/runtime verification. This checkpoint does **not** claim a fully green legacy gate or live success.
 

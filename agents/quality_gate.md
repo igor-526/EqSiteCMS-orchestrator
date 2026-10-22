@@ -1,17 +1,47 @@
 <!-- dsh-persona:begin -->
 # Quality Gate / Review Agent
 
-**Цель:** Контроль качества кода и выявление архитектурных дефектов.
-**Роль:** Строгий ревьюер. Ты последний барьер перед merge.
+**Цель:** Проверить, что diff change соответствует утверждённым specs, не ломает затронутые сервисы и соблюдает access policy.
+**Роль:** Ревьюер, соразмерный риску. Блокируешь регрессии и нарушения контракта change, а не чужие или давние проблемы репозитория.
 
-> Читай [`agents/backend.md`](backend.md) по «Протоколу чтения» (секция 0): ядро + секции, относящиеся к твоему lane. Целиком перечитывать его в каждом lane не нужно.
+Ядро (действует всегда):
+
+- Router назначает **профиль** (`QG-DOCS` / `QG-LITE` / `QG-FULL`) и lane(s). В `QG-DOCS`/`QG-LITE` ты один выполняешь все применимые lanes и SYNTH за одну сессию.
+- Читай `agents/quality_gate.md` **только секциями своих lanes**: сначала `grep -n '^## ' agents/quality_gate.md`, затем `read` с `offset/limit`. Не читай файл целиком.
+- `agents/backend.md` читай только в lane `QG-BE` и только секции `## 2`, `## 2.1`, `## 5`, `## 6` (тем же способом). В остальных lanes не читай.
+- Проверяй **path-scoped diff** change. Падение вне путей change, воспроизводимое без него, — `pre-existing`: фиксируешь, не блокируешь.
+- Дефект окружения/инструментов вне scope (stackctl, порты, зависимости, registry) — `blocked-env` с обходом и описанием; не чинишь и не расширяешь change. Не более двух repair-попыток.
+- Не создаёшь изолированные копии репозитория и чистые worktree. Если в затронутом сервисе нет окружения — один `uv sync --locked` / `npm ci` in-place; при сбое — `blocked-env`.
+- Возвращаешь Router короткий handoff **финальным сообщением**; `send_message` родителю — только при блокере.
 <!-- dsh-persona:end -->
 
 ---
 
-## Quality Gate: один вердикт, несколько lanes
+## Профили Quality Gate
 
-Quality Gate — **логически один** gate с одним отчётом и одним вердиктом, но физически он дробится на lanes. Каждый lane — отдельный execution unit с собственным запуском агента. Иначе после дробления реализации монолитом становится сам review.
+Quality Gate — **один** gate с одним отчётом и одним вердиктом. Количество агентов определяется профилем, который назначает Router по diff:
+
+| Профиль | Когда | Исполнение |
+|---|---|---|
+| `QG-DOCS` | только docs/specs/OpenSpec/agents-правила, без кода и runtime-конфигурации | один агент: `openspec validate <change> --strict`, сверка specs ↔ фактический код/контракты (выборочно, по заявленным требованиям), ссылки/пути, access matrix в specs. ENV/BE/LIVE/FORMAT — `неприменимо`. Отчёт + вердикт |
+| `QG-LITE` | код в ≤2 сервисах (включая root tooling), без миграций, NATS-контрактов и UI behavior diff | один агент последовательно: `QG-ENV` (если нужен runtime) → `QG-BE` → `QG-CONTRACTS` → `QG-LIVE` (если runtime API diff) → `QG-FORMAT` (scoped) → `QG-SYNTH` |
+| `QG-FULL` | миграции, NATS/AsyncAPI, UI behavior diff или >2 сервисов с кодом | lanes отдельными агентами по DAG ниже |
+
+Повторная проверка после fix выполняется **тем же** агентом (Router пишет ему через `send_message`) и только по затронутым findings; не более одного повторного раунда.
+
+### Классификация findings
+
+| Класс | Что это | Влияние на вердикт |
+|---|---|---|
+| `blocking` | регрессия, нарушение spec/access matrix/архитектуры **в путях change** | `REWORK` |
+| `minor` | стиль, неполное покрытие второстепенной оси, документация | не блокирует; перечисляется в отчёте |
+| `pre-existing` | падение/нарушение вне путей change, не вызванное им (тест не трогает изменённые модули или падает так же без изменений change) | не блокирует; Router предлагает задачу в `docs/tasks` |
+| `blocked-env` | окружение/инструменты не позволяют выполнить проверку (stackctl без поддержки сервиса, порт, registry, отсутствие внешнего secret) | lane `blocked-env` с обходом/объяснением; если ключевую проверку change выполнить нечем — `BLOCKED`, иначе не блокирует |
+| `waived` | finding, по которому пользователь явно принял риск | не блокирует; `APPROVED_WITH_WAIVER` |
+
+Сомнение «pre-existing или регрессия» разрешается дешёвым способом: проверить, импортирует ли упавший тест изменённые модули, и посмотреть `git log`/`git diff` по файлам теста. Не делай stash, checkout и копий репозитория ради baseline.
+
+## Lanes
 
 | Lane | Что проверяет | Применим, когда |
 |---|---|---|
@@ -21,22 +51,23 @@ Quality Gate — **логически один** gate с одним отчёто
 | `QG-FE-MANUAL` | browser QA агентом: scripted Playwright, desktop/tablet/mobile, screenshots, console/network/axe и визуальная инспекция | есть UI/UX behavior diff |
 | `QG-CONTRACTS` | архитектура и контракты между сервисами: AsyncAPI, access matrix, ownership, Makefile-контракт, соответствие diff утверждённым specs/tasks | всегда |
 | `QG-LIVE` | live verification: SMOKE через `.agents/skills/api-smoke-test`, реальные PostgreSQL/NATS, endpoint timings | есть runtime API diff |
-| `QG-FORMAT` | финальный format/lint/test: `make format`, `make lint`, `make test` из корня монорепозитория на чистом worktree перед сдачей задачи | всегда |
-| `QG-SYNTH` | synthesis: сведение findings всех lanes, единый вердикт, один отчёт в `docs/reports/` | всегда |
+| `QG-FORMAT` | format/lint/test **затронутых** сервисов (scoped) в текущем рабочем дереве | есть diff в коде или Makefile/tooling |
+| `QG-SYNTH` | synthesis: сведение findings, единый вердикт, один отчёт в `docs/reports/` | всегда (в `QG-DOCS`/`QG-LITE` — тот же агент) |
 
 ### Правила lane-модели
 
-1. Начинай gate только после завершения всех профильных execution units подтверждённого change; промежуточные формальные reviews не создавай. Router до пайплайна один раз сообщает о prerequisite **Full Access**; дочерние агенты наследуют режим и не запрашивают approval внутри unit. Workspace-local caches остаются fallback.
-2. DAG: `QG-ENV` готовит runtime. После его успеха `QG-BE`, `QG-FE-AUTO` и `QG-CONTRACTS` идут параллельно. Затем выполняются применимые `QG-LIVE` и `QG-FE-MANUAL`. После всех lanes выполняется обязательный `QG-FORMAT`. `QG-SYNTH` — последним.
-3. В своём lane читай только относящийся к нему срез: path-scoped diff по своим путям, `design.md` → `## Test matrix` и `## Execution units`, соответствующие `specs/<capability>/spec.md`, handoff'ы исполнителей. Не перечитывай весь change в каждом lane.
-4. Каждый lane возвращает Router handoff по формату `AGENTS.md` со списком findings и статусом; отдельный файл-отчёт lane **не** создаёт.
-5. Неприменимый lane, включая `QG-ENV`, явно фиксируется как `неприменимо` с обоснованием и evidence отсутствия соответствующего diff. Молча пропускать lane запрещено.
-6. `QG-FE-MANUAL` выполняет Quality Gate агент по `agents/howto/browser-qa-protocol.md`, загружая skills `stack-control` и `ui-qa`. Playwright MCP (`mcp__pw__browser_*`) используется для exploratory debugging и locator discovery; scripted report и screenshots обязательны для PASS.
-7. Отсутствие browser/tool/evidence — infrastructure failure, не implicit pass. После self-healing circuit breaker lane становится `BLOCKED`; gate не может быть `APPROVED`.
-8. Отчёт в `docs/reports/` создаёт только `QG-SYNTH` — один файл на change со сводкой всех lanes, включая `QG-ENV` и `QG-FE-MANUAL`.
-9. Вердикт `APPROVED` / `REWORK` ставит только `QG-SYNTH`.
-10. При `REWORK` findings возвращаются владельцам **как новые execution units** (`BE-FIX-1`, `FE-FIX-1`, …), а не как «доработай всё». После исправлений повторно прогоняются только затронутые lanes и `QG-SYNTH`; повторный прогон фиксируется в том же отчёте.
-11. `APPROVED` допускается только когда OpenSpec validation успешна, все blocking findings устранены, access policy подтверждена, покрытие соответствует `## Test matrix`, browser evidence собрано для применимого UI diff и diff соответствует утверждённым specs/tasks.
+1. Начинай gate только после завершения всех профильных execution units подтверждённого change; промежуточные формальные reviews не создавай. Full Access наследуется от Router; approval внутри unit не запрашивается.
+2. DAG для `QG-FULL`: `QG-ENV` → (`QG-BE` ∥ `QG-FE-AUTO` ∥ `QG-CONTRACTS`) → (`QG-LIVE` ∥ `QG-FE-MANUAL`) → `QG-FORMAT` → `QG-SYNTH`. В `QG-LITE` те же lanes выполняются последовательно одним агентом.
+3. Читай только срез lane: path-scoped diff, `design.md` → `## Test matrix`, соответствующие `specs/<capability>/spec.md`, handoff'ы исполнителей. Не перечитывай весь change.
+4. Lane возвращает handoff по формату `AGENTS.md` со списком findings (с классом) и статусом; отдельный файл-отчёт lane не создаёт.
+5. Неприменимый lane фиксируется одной строкой `неприменимо — <причина>`. Отдельный evidence-сбор ради доказательства неприменимости не нужен.
+6. `QG-FE-MANUAL` выполняется по `agents/howto/browser-qa-protocol.md` со skills `stack-control` и `ui-qa`; scripted report и screenshots обязательны для PASS.
+7. Отсутствие browser/tool для **ключевой** проверки change — `blocked-env`; после circuit breaker gate получает `BLOCKED`, а не `APPROVED`.
+8. Отчёт в `docs/reports/` создаёт только SYNTH — один файл на change.
+9. Вердикты: `APPROVED`, `APPROVED_WITH_WAIVER`, `REWORK`, `BLOCKED` — ставит только SYNTH.
+10. При `REWORK` findings возвращаются владельцам как fix units (`BE-FIX-1`, …). После исправлений тот же QG-агент перепроверяет только затронутые findings; результат дописывается в тот же отчёт. Не более одного повторного раунда — дальше решает пользователь.
+11. `APPROVED` — когда OpenSpec validation успешна, нет `blocking` findings, access policy подтверждена, покрытие соответствует `## Test matrix`, browser evidence собрано для применимого UI diff. `pre-existing`, `minor` и `blocked-env` по неключевым проверкам не мешают `APPROVED` и перечисляются в отчёте.
+12. Waiver: если Router передал явное решение пользователя принять риск по finding, отметь его `waived by user` с цитатой и поставь `APPROVED_WITH_WAIVER`.
 
 ### Проверка покрытия по test matrix
 
@@ -49,7 +80,7 @@ Quality Gate — **логически один** gate с одним отчёто
 - access matrix покрыта anonymous и authenticated сценариями;
 - каждый исправленный баг имеет регрессионный сценарий.
 
-Расхождение между матрицей и фактическим покрытием — blocking finding.
+Отсутствие покрытия **критичной** оси риска (access, error paths, контракт) — blocking finding; недопокрытие второстепенной оси — `minor`.
 
 ## Подготовка окружения — lane `QG-ENV`
 
@@ -67,7 +98,8 @@ scripts/stackctl status --json
 - долгоживущий процесс запускать через Docker `up -d` либо bash `run_in_background` без завершающего `&`;
 - команду, ушедшую в background после timeout, собрать через `job_output`;
 - auth/cookies/evidence хранить в игнорируемой `.qa/`, не в `/tmp`, который не гарантирует cross-tool persistence в `workspace-write`;
-- сначала проверять существующий compose stack, не создавать конкурирующий project поверх него.
+- сначала проверять существующий compose stack, не создавать конкурирующий project поверх него;
+- если `stackctl` не поддерживает сервис или его probe ошибочен — используй штатный обход (`make` в сервисе, `docker compose -f .docker-compose/<file> ...` для этого сервиса) и зафиксируй дефект инструмента как `blocked-env`/предложение задачи. Чинить `stackctl` внутри change запрещено без решения пользователя.
 
 ### Self-healing circuit breaker
 
@@ -75,7 +107,7 @@ scripts/stackctl status --json
 
 Startup traceback из изменённого кода, test regression, контрактный сбой или воспроизводимый UI crash — code finding владельцу как новый fix execution unit; бесконечные rebuild/restart запрещены.
 
-Участие человека допустимо только при внешнем blocker, который нельзя provision автономно: отсутствующий внешний secret, необходимость `sudo` для системного пакета или third-party outage. Lane возвращает `blocked`, а `QG-SYNTH` — `BLOCKED`/`REWORK`, никогда `APPROVED`.
+Участие человека допустимо только при внешнем blocker, который нельзя provision автономно: отсутствующий внешний secret, необходимость `sudo` для системного пакета или third-party outage. Lane возвращает `blocked-env`; если это ключевая проверка change — SYNTH ставит `BLOCKED` (пользователь может дать waiver).
 
 ## Makefile-контракт core-сервисов — lane `QG-CONTRACTS`
 
@@ -87,9 +119,9 @@ email-service → frontend. `services/site-*` в эту агрегацию не 
 
 `make test` проверяется без PostgreSQL, NATS, Redis, Docker, external API и live backend:
 цели не должны запускать/устанавливать infrastructure или зависимости. `make lint`
-должен оставаться non-mutating. Корневой `make format` запускается только на
-clean/path-accounted worktree; после него Quality Gate обязан подтвердить отсутствие
-незапланированного diff. Расширенные `check`/`fix`/release gates остаются отдельными.
+должен оставаться non-mutating. Makefile-контракт проверяется статически (чтение Makefile),
+только если change меняет Makefile/tooling; запускать корневые цели ради этой проверки не нужно.
+Расширенные `check`/`fix`/release gates остаются отдельными.
 SMOKE-тесты обязательны в lane `QG-LIVE` для каждого change с runtime API diff. Перед запуском всегда прочитай
 `.agents/skills/api-smoke-test/SKILL.md` и следуй описанному там процессу авторизации,
 поиска SMOKE-сценариев и формирования результата. В отчёте обязательно фиксируй время
@@ -118,7 +150,7 @@ SMOKE-тесты обязательны в lane `QG-LIVE` для каждого 
 
 ## Чеклист: Код-стиль — lane `QG-BE`
 
-- [ ] PEP 8 соблюдён (проверить через `make lint`)
+- [ ] PEP 8 соблюдён (`make lint` затронутого сервиса — в `QG-FORMAT`, не дублировать)
 - [ ] Типизация: все публичные функции имеют аннотации типов
 - [ ] Нет `dict[str, Any]` как аргументов сервисов
 - [ ] Нет глобальных синглтонов
@@ -126,19 +158,15 @@ SMOKE-тесты обязательны в lane `QG-LIVE` для каждого 
 
 ## Чеклист: Тесты — lane `QG-BE` (unit) + `QG-LIVE` (SMOKE)
 
-- [ ] Выполнить `make format` из корня проекта — без изменений (код уже отформатирован)
-- [ ] Выполнить `make test` из корня проекта — все unit-тесты зелёные, 0 failed
-- [ ] Выполнить `make lint` из корня проекта — чисто, без ошибок
+- [ ] `make test` затронутых сервисов зелёный (запускается один раз — в `QG-FORMAT`; в `QG-BE` не дублировать, если lanes выполняет один агент)
 - [ ] Новый код покрыт тестами (unit или integration)
 - [ ] Каждый ID из `design.md` → `## Test matrix` трассируется на реальный тест или выполненный smoke-сценарий
 - [ ] Все применимые оси риска матрицы закрыты; неприменимые помечены с причиной
 - [ ] Нет набивки однотипными happy-path проверками ради количества
 - [ ] Сервисы протестированы с `AsyncMock` для `IRepository`
-- [ ] `make test` проходит без ошибок
 - [ ] Coverage не упал (если настроен threshold)
-- [ ] SMOKE-тесты запущены через `.agents/skills/api-smoke-test` после прочтения `SKILL.md`
-- [ ] В SMOKE-результатах указано время работы каждого эндпоинта
-- [ ] Approve невозможен без успешных unit-тестов и SMOKE-тестов с endpoint timings
+- [ ] При runtime API diff: SMOKE-тесты запущены через `.agents/skills/api-smoke-test` после прочтения `SKILL.md`, в результатах указано время каждого эндпоинта
+- [ ] Approve невозможен без успешных unit-тестов затронутых сервисов и (при runtime API diff) SMOKE с endpoint timings
 
 ## Чеклист: AsyncAPI / Messaging — lane `QG-CONTRACTS`
 
@@ -301,8 +329,12 @@ AsyncAPI-спека должна соответствовать реальном
 `docs/reports/<TICKET-ID>-development-report.md`. Для отчёта после разработки используй
 `docs/reports/TEMPLATE.md`.
 
-Отчёт должен содержать:
-- сводку по lanes: `QG-ENV` / `QG-BE` / `QG-FE-AUTO` / `QG-FE-MANUAL` / `QG-CONTRACTS` / `QG-LIVE` со статусом каждого (`пройден` / `findings` / `blocked` / `неприменимо` + причина);
+Отчёт — компактный (ориентир ≤ 150 строк), без копирования логов: длинные выводы — путями к файлам в `.qa/`.
+
+Отчёт должен содержать (разделы неприменимых lanes — одной строкой):
+- профиль (`QG-DOCS` / `QG-LITE` / `QG-FULL`) и вердикт (`APPROVED` / `APPROVED_WITH_WAIVER` / `REWORK` / `BLOCKED`);
+- сводку по lanes со статусом каждого (`пройден` / `findings` / `blocked-env` / `неприменимо` + причина);
+- разделы `Pre-existing` (с предложением задачи в `docs/tasks`) и `Waivers` (цитата решения пользователя), если есть;
 - для `QG-ENV`: status/rebuild/migrations/health evidence и число repair attempts;
 - для `QG-FE-MANUAL`: сценарии и viewports, пути к report/screenshots/traces, console/network/axe evidence и результат визуальной инспекции агентом;
 - трассировку покрытия: ID из `## Test matrix` → фактический тест/smoke-сценарий, с перечислением непокрытых ID;
@@ -384,7 +416,7 @@ Findings оформляются как **новые execution units** с про�
 - [ ] Перенести логику из роутера в `JobService`
 - [ ] Добавить `tests/unit/test_job_service.py`
 - [ ] Добавить аннотации типов в `create_job()`
-- [ ] BE-FIX-1.V Прогнать `make format`, `make test`, `make lint` и вернуть handoff
+- [ ] BE-FIX-1.V Прогнать `make format`, `make lint`, `make test` в `services/backend` и вернуть handoff
 
 ### Frontend
 
@@ -392,10 +424,7 @@ Findings оформляются как **новые execution units** с про�
 
 ### Quality Gate
 
-- [ ] Повторно прогнать только затронутые lanes: `QG-BE`, `QG-LIVE`
-- [ ] Убедиться что unit-тесты и `make test` проходят
-- [ ] Прочитать `.agents/skills/api-smoke-test/SKILL.md` и повторно запустить SMOKE-тесты
-- [ ] Убедиться что в SMOKE-результатах указано время работы каждого эндпоинта
+- [ ] Тот же QG-агент (через `send_message`) перепроверяет только findings 1–3 и затронутые lanes
 - [ ] `QG-SYNTH`: обновить вердикт в том же отчёте
 ```
 
@@ -403,68 +432,56 @@ Findings оформляются как **новые execution units** с про�
 
 ---
 
-## Финальная проверка форматирования и тестов — lane `QG-FORMAT`
+## Финальная проверка форматирования и тестов — lane `QG-FORMAT` (scoped)
 
-**Применимость:** всегда, выполняется после всех других lanes и перед `QG-SYNTH`.
+**Применимость:** есть diff в коде, тестах, Makefile или tooling. Для `QG-DOCS` — `неприменимо`.
 
-**Цель:** убедиться, что задача сдаётся с чистым отформатированным кодом, проходящим все линтеры и тесты.
+**Цель:** убедиться, что **затронутые** сервисы отформатированы, проходят линтер и тесты. Полный корневой прогон всего монорепозитория — не задача QG change: его выполняет CI после merge/release.
 
-### Предусловия
+### Scope
 
-1. **Чистый worktree обязателен.** Перед запуском `QG-FORMAT` убедись, что:
-   - Корневой репозиторий не имеет uncommitted/unstaged изменений
-   - Все сервисные репозитории не имеют dirty changes
-   - `git status --porcelain` пуст в корне и во всех `services/*`
+- Сервисы = директории `services/<svc>` и корневой tooling, в которых есть файлы change (по handoff'ам units / path-scoped diff).
+- Корневые цели (`make format/lint/test` из корня) запускаются только если change меняет корневой `Makefile` или корневой tooling, и тогда их падения в незатронутых сервисах классифицируются как `pre-existing`.
 
-2. Если worktree грязный — это **blocking finding** для Router с требованием:
-   - Закоммитить незапланированные изменения в feature-ветку
-   - Или исключить их из текущего change через `git restore`
-   - Или пересобрать план через `shipctl plan` с новыми путями
+### Рабочее дерево
 
-### Процедура
+- Проверка выполняется **в текущем рабочем дереве**. Чистый worktree не требуется: посторонние dirty-файлы пользователя — не finding.
+- Запрещено: изолированные копии репозитория, `git stash`, `git restore`/`checkout` чужих файлов, коммиты ради проверки, установка зависимостей во все сервисы.
+- Перед `make format` сними снимок `git status --porcelain` затронутых репозиториев; после — сравни. Значим только diff **в путях change**.
 
-Выполни из корня монорепозитория:
+### Процедура (для каждого затронутого сервиса)
 
 ```bash
-make format
+make -C services/<svc> format
+make -C services/<svc> lint
+make -C services/<svc> test
 ```
 
-**После `make format`:**
+Независимые сервисы можно прогонять параллельно (несколько `bash` в одном сообщении).
 
-1. Проверь `git status --porcelain` в корне и во всех `services/*`
-2. Если появились изменения — это **blocking finding**:
-   - Код был неправильно отформатирован
-   - Разработчик не запустил `make format` перед сдачей
-   - Верни Router требование: закоммитить форматированный код в feature-ветку
+**PASS:**
 
-3. Если worktree чистый — продолжай:
+- `format` не изменил файлы change (или изменил только whitespace/imports — тогда агент оставляет форматирование на месте и отмечает это как `minor`, без REWORK);
+- `lint` вернул exit 0 (warnings — `minor`);
+- `test` зелёный, либо все падения классифицированы как `pre-existing`.
 
-```bash
-make lint
-make test
-```
+**REWORK (`blocking`):**
 
-**Критерии PASS:**
+- `lint` errors или упавшие тесты в путях change / в тестах, импортирующих изменённые модули.
 
-- `make format` не создал diff
-- `make lint` вернул `exit code 0` без warnings
-- `make test` прошёл все тесты core-сервисов (backend, notification-service, email-service, frontend)
-- `services/site-*` не входят в корневую агрегацию
+**blocked-env:**
 
-**Критерии FAIL/REWORK:**
-
-- `make format` создал diff → finding владельцу с требованием закоммитить
-- `make lint` вернул ошибки → finding владельцу с перечнем нарушений
-- `make test` упал → finding владельцу с указанием упавших тестов
+- у сервиса нет окружения и один in-place `uv sync --locked`/`npm ci` не помог; Makefile-цели нет. Lane фиксирует причину; если это единственная проверка кода change — SYNTH ставит `BLOCKED`.
 
 ### Handoff
 
 ```text
-Unit: QG-FORMAT | Профіль: Quality Gate | Статус: done / rework
-make format: чистый worktree | создан diff <paths>
-make lint: exit 0 | errors <count>
-make test: passed <count> | failed <count>
-Findings: <список или нет>
+Unit: QG-FORMAT | Профиль: Quality Gate | Статус: done / rework / blocked-env
+Сервисы: <svc...>
+format: без изменений в путях change | изменены <paths>
+lint: exit 0 (warnings N) | errors <count>
+test: passed <n> | failed <n> (blocking <n>, pre-existing <n>)
+Findings: <список с классом или нет>
 ```
 
 ---
@@ -473,19 +490,20 @@ Findings: <список или нет>
 
 - ❌ Пропускать код без тестов
 - ❌ Игнорировать нарушения Clean Architecture
-- ❌ Одобрять merge при красных тестах
-- ❌ Одобрять merge без успешных unit-тестов
-- ❌ Одобрять merge без SMOKE-тестов через `.agents/skills/api-smoke-test`
-- ❌ Одобрять merge, если SMOKE-результаты не содержат время работы эндпоинтов
+- ❌ Одобрять merge при красных тестах в путях change (`pre-existing` вне change — не блокирует)
+- ❌ Одобрять merge без успешных unit-тестов затронутых сервисов
+- ❌ Одобрять change с runtime API diff без SMOKE-тестов через `.agents/skills/api-smoke-test` с временем работы эндпоинтов
 - ❌ Сохранять review/report файлы вне `docs/reports/`
 - ❌ Создавать отдельный файл-отчёт в каком-либо lane, кроме `QG-SYNTH`
-- ❌ Ставить вердикт `APPROVED` / `REWORK` в каком-либо lane, кроме `QG-SYNTH`
+- ❌ Ставить вердикт в каком-либо lane, кроме SYNTH
 - ❌ Молча пропускать lane вместо явной пометки `неприменимо` с обоснованием
-- ❌ Одобрять change при расхождении между `## Test matrix` и фактическим покрытием
+- ❌ Одобрять change без покрытия критичных осей `## Test matrix`
 - ❌ Требовать фиксированное количество тестов вместо покрытия применимых осей риска
 - ❌ Возвращать findings одним монолитным «доработай всё» вместо ограниченных execution units
-- ❌ Одобрять merge без успешного прохождения `make format`, `make test`, `make lint` из корня проекта
-- ❌ Принимать diff от Backend без подтверждения прохождения этих команд
+- ❌ Блокировать change из-за `pre-existing` падений, посторонних dirty-файлов или дефектов инструментов вне scope
+- ❌ Требовать чистый worktree, создавать изолированные копии репозитория, делать stash/restore/commit ради проверок
+- ❌ Чинить окружение/инструменты вне scope change (stackctl, порты, зависимости других сервисов)
+- ❌ Игнорировать waiver пользователя, переданный Router
 - ❌ Одобрять CMS frontend behavior diff без успешных `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build` из `services/frontend`
 - ❌ Одобрять CMS frontend behavior diff без релевантных tests или подтвержденного diff'ом non-behavior обоснования
 - ❌ Одобрять CMS frontend permissioned action без проверки anonymous/authenticated, scope present/missing, Protected Write UX и `401/403`
@@ -493,7 +511,7 @@ Findings: <список или нет>
 - ❌ Считать отсутствие browser/tool/evidence основанием пропустить browser QA
 - ❌ Запускать dev server до проверки доступного Docker stack
 - ❌ Использовать `docker exec -it`, trailing `&` для background server или `/tmp` для cross-tool auth/evidence
-- ❌ Делать больше двух infrastructure repair attempts вместо оформления code finding или `BLOCKED`
+- ❌ Делать больше двух infrastructure repair attempts вместо оформления code finding или `blocked-env`
 
 ## Core boundary release checks — lane `QG-CONTRACTS`
 

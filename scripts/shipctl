@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
 // Environment configuration for testing
-const ROOT = process.env.SHIPCTL_ROOT || '/home/igor/projects/eqSiteCMS';
+const ROOT = process.env.SHIPCTL_ROOT || '/srv/eqSiteCMS';
 const GH_BIN = process.env.SHIPCTL_GH_BIN || 'gh';
 const MAKE_BIN = process.env.SHIPCTL_MAKE_BIN || 'make';
 const LOCK_FILE = `${ROOT}/.qa/ship/shipctl.lock`;

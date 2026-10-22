@@ -1,0 +1,2289 @@
+{
+  "unit": "QG-FORMAT-PREP-ENV",
+  "status": "done",
+  "repair_attempts": 2,
+  "environment": {
+    "UV_CACHE_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/uv-cache",
+    "npm_config_cache": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/npm-cache",
+    "PWD": "/srv/eqSiteCMS",
+    "HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/home",
+    "LANG": "C.UTF-8",
+    "TMPDIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/tmp-run-prep-env",
+    "PLAYWRIGHT_BROWSERS_PATH": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/browser-cache",
+    "npm_config_offline": "true",
+    "XDG_CACHE_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-cache",
+    "SHLVL": "0",
+    "UV_FROZEN": "true",
+    "PATH": "/home/igor/.local/bin:/home/igor/.nvm/versions/node/v24.22.1/bin:/usr/bin:/bin",
+    "UV_NO_SYNC": "true",
+    "npm_config_update_notifier": "false",
+    "UV_PYTHON_DOWNLOADS": "never",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_AUTHOR_NAME": "FORMAT measurement",
+    "GIT_AUTHOR_EMAIL": "format@invalid.local",
+    "GIT_COMMITTER_NAME": "FORMAT measurement",
+    "GIT_COMMITTER_EMAIL": "format@invalid.local",
+    "GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z",
+    "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z",
+    "UV_PYTHON_INSTALL_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/python",
+    "UV_PYTHON_BIN_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/python-bin",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHON_KEYRING_BACKEND": "keyring.backends.null.Keyring",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1",
+    "SENTRYCLI_SKIP_DOWNLOAD": "1"
+  },
+  "baseline": {
+    "root": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "exported_head": "457be4391fa800214ce6939030d3e125962b89be",
+      "local_commit": "1df545fc65fd1baa9788a45a91649764ecc1890d",
+      "tree": "1759634fae43e7946af698e43d051bdafab4c3c5",
+      "indexed_files": 1092,
+      "index_manifest_sha256": "919890d18215e1b57332489ad39dad244b3ecfdd3bef6d3e031199a5fb34b3b5",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [
+        "/services/backend/",
+        "/services/frontend/",
+        "/services/notification-service/",
+        "/services/email-service/",
+        "/services/vk-service/",
+        "/services/seo-service/",
+        "/services/yandex-service/",
+        "/services/ya-metrica-service/"
+      ],
+      "excluded_paths_metadata_only": [
+        ".claude/skills/api-smoke-test/credentials.json",
+        ".codex/skills/api-smoke-test/credentials.json",
+        "dsh/bundles/dsh-review-loop-upstream"
+      ]
+    },
+    "backend": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "exported_head": "68bbbbd979e07f745cafabf886c54fe515d87861",
+      "local_commit": "b5b1b0787582aa6244bdd56fd9b8e44973d86bf9",
+      "tree": "b36e19a2b7076a38357d48b20405eb57b270744b",
+      "indexed_files": 344,
+      "index_manifest_sha256": "983a1650c08f05e12e7fea1e71bc59cfbafcab2cae53329089f7c16022fa6b82",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "frontend": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "exported_head": "ba2c3ed98203ac340548c4f1ce1f2602f9eb858e",
+      "local_commit": "dffcf6a431b4484f25273dca1d16a389430123e1",
+      "tree": "041b31f9e7278ee6ddced3959b58c0ac0dcbb049",
+      "indexed_files": 402,
+      "index_manifest_sha256": "11d5db81bfcfdf2964405f648d9407b733558b3f6e3a471a7421d0737ff97ebd",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "notification-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "exported_head": "5c15cbf7ca4acef61fbac6f69642f43f5ac3bbb4",
+      "local_commit": "964816c31aea91ee5ada7e5ca0540046475d156f",
+      "tree": "5e77896c1e0587a9f13d634ad4784c77d7f31d6a",
+      "indexed_files": 141,
+      "index_manifest_sha256": "dca5541abe0c7d20859bb3fad56678b0a9ecca91628377d60ec7ded5bc17f17e",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "email-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "exported_head": "c298998ce6f3b3baff0f019e1a99029db1814b24",
+      "local_commit": "3abb1d32dc139b9733f493fc8e239938bbad051f",
+      "tree": "f17d610d6602c5249ff71205707d9f442eba6d44",
+      "indexed_files": 108,
+      "index_manifest_sha256": "4e51dd02509ed010ec204e055973ffceeb057246770119b6d5c6e7f46017a2ba",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "vk-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "exported_head": "fe02a63af148b9858c09afb9d36b768590e0fb88",
+      "local_commit": "697b410e13d19638970bd8d78d3950e0adcba28b",
+      "tree": "f11fbf88ac2e3dfe5fd7e5f19a0512121f604db7",
+      "indexed_files": 139,
+      "index_manifest_sha256": "fbbab2061d11406b1280f01f6911b077e84d54b121561f45c048a1fb5e7393c2",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "seo-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "exported_head": "5c202c3691513b09cb9b6b74558f2dae4d3af811",
+      "local_commit": "68e5edce814f1ec50b3952ae2fbda706c0775d76",
+      "tree": "c48ca8c2d970ee18135e7e3ced96e0af261cc0b2",
+      "indexed_files": 38,
+      "index_manifest_sha256": "f0185d32a74839191e5e44c20ff18fb476a9a2279dd41e340223e38dda3972c1",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "yandex-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "exported_head": "d3cf1dc5879d5ebc2f75bbdb437ca657cf1a4de4",
+      "local_commit": "2ef1daa0b886a2e3224667317665587001211795",
+      "tree": "cfc566160a0072489c81cd762a78d4cfc8558803",
+      "indexed_files": 117,
+      "index_manifest_sha256": "8c3609042d14ef40470d0514a0daa53f3c54e7c851863730addfeca906b713d3",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    },
+    "ya-metrica-service": {
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "exported_head": "0bd7434cc97ac41f0a0aef1088e99b77ead48e1b",
+      "local_commit": "368344647965d70a332ea65b2ce012c4bd59433e",
+      "tree": "9c0a8ed68d4ac78fc18fed363b4a8b67581530cc",
+      "indexed_files": 68,
+      "index_manifest_sha256": "80c3dae65a7ea25a5fa371d1a818abd7665040fbd6192e7a41dd925420b4f9e9",
+      "initial_status": "",
+      "initial_tracked_diff": "",
+      "initial_index_diff": "",
+      "independently_accounted_nested_exclusions": [],
+      "excluded_paths_metadata_only": []
+    }
+  },
+  "readiness": {
+    "backend": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-backend"
+    },
+    "frontend": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-frontend"
+    },
+    "notification-service": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-notification-service"
+    },
+    "email-service": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-email-service"
+    },
+    "vk-service": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-vk-service"
+    },
+    "seo-service": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-seo-service"
+    },
+    "yandex-service": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-yandex-service"
+    },
+    "ya-metrica-service": {
+      "status": "verified-ready",
+      "exit": 0,
+      "command_name": "install-ya-metrica-service"
+    }
+  },
+  "root_commands": "NOT RUN",
+  "manifest_sha256": "21d492dd73803c8793c2549a79e07bbdfb84f73748a27cd8de3f995aaaa86ec1",
+  "generated_allowlist": [
+    "services/*/.venv/**",
+    "services/frontend/node_modules/**",
+    "services/*/.ruff_cache/**",
+    "services/*/.mypy_cache/**",
+    "services/*/.pytest_cache/**",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "**/*.egg-info/**",
+    "services/frontend/.next/**",
+    "services/frontend/next-env.d.ts",
+    "services/frontend/tsconfig.tsbuildinfo"
+  ],
+  "archives": [
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/root.tar",
+      "sha256": "b18097a76c11078fba1683437fb6fcf6a1609111012b9e4f6b24f2965159772a",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/backend.tar",
+      "sha256": "2383cc8217e93bdb74083611bfdb3ecee4c9f5b73ba47c6bf7d624a90bbe396b",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/frontend.tar",
+      "sha256": "ce9ac882f2735162ac056c4cb9b764f1da52549827ff72346d331aa563e6a9fc",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/notification-service.tar",
+      "sha256": "44d5a2532efc7b3786430bbb7b6a258ee5bc219f4abd62c1576bb1e3445da598",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/email-service.tar",
+      "sha256": "deb4e7d8aceb8362a71af2dc0bde96b9d54968cdd98b257f72f24a99e20fcad9",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/vk-service.tar",
+      "sha256": "2401a7057bd3e26bc0261c9d495caac615e3b4fb3184baff5937ec8b660e21cc",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/seo-service.tar",
+      "sha256": "fa3e58e977cb82eab5369d567a06d617231ba142f7312748d188b991fdaaa7b1",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/yandex-service.tar",
+      "sha256": "09ff698dbb806f7ed57293128a59772b2adf3d08e92ff95fa166162344d751de",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/ya-metrica-service.tar",
+      "sha256": "f7f03e0cf3d15b8592943a2b5c183a5e2e2c616309062f5d628b043926c344ae",
+      "mode": "0444"
+    },
+    {
+      "path": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/sealed/approved-docs.tar",
+      "sha256": "a5c82a38d3df1db2ea40547013cd3dda1b2651110eeeaf4f2c0b0ea75d1d71c3",
+      "mode": "0444"
+    }
+  ],
+  "dependency_inputs_before": {
+    "backend": {
+      "pyproject.toml": "c0e89cc35491ddfb76bfd88ce770ade2f8d55f214cf7b26b793583221ca6c2a8",
+      "uv.lock": "f4d7323e036e2d4f830c87c1805a1470ea2e5ecd743eb64c03e82f2ac54810a4",
+      ".python-version": "d7d7dbce2874cbcac948bc8db4cc29d07959351bd30bc2ed3cbc3bf9de8b6060"
+    },
+    "frontend": {
+      "package.json": "6817a90b478279b885f0b367d4a13decab62d1d60ebdb269d029e71e3606c616",
+      "package-lock.json": "da568ba6c456efacc359de21babfff3234a6cb2adace40497dfe2161af4e475b"
+    },
+    "notification-service": {
+      "pyproject.toml": "76aee867ca15fca4f50e2c216e8b6c288b9410286f2668d8202643f9f38473be",
+      "uv.lock": "fb2f1908700bb0751dfd1f8323f19b434c99c60e7a0c7a0a92b2ba74436e6080",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "email-service": {
+      "pyproject.toml": "4b63fd0b9910f1fbefd631559e549fa7710c3c4db68a3aed4819ce8c95effbe2",
+      "uv.lock": "953479ad41d9e2d2da048f5ac89fd3c3ded7fc1f9f7b09d788e3e178ee4278cd",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "vk-service": {
+      "pyproject.toml": "3df984f1df098ff0a8346ee7df919f6ecfb046938c00eac8519655b3f5cb892c",
+      "uv.lock": "53fd61a37ee49c07b82f32a1d34fe553d8d4ba1a2f861add0f5bb3a7f9fc5b9c",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "seo-service": {
+      "pyproject.toml": "bad3fb65b551ca9eda6dde37d3ddae9effe8cf409a351c81c9ee4364a8dbb360",
+      "uv.lock": "d173d270ec6efdfb53adf2969396294250ff2abc0a1e499ed1a8981cb513ccd4",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "yandex-service": {
+      "pyproject.toml": "62287e14e40230000dbfc1c3ce5aff4c108321b38d0dc2b42de7d5027ea77d5a",
+      "uv.lock": "32e4e20fc73ee24e1bd62bd9339675c2fa964e46dbb6a7661bc99cdcba3506c4",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    },
+    "ya-metrica-service": {
+      "pyproject.toml": "4482947080f4a17d58253e9f3f46d5f44538925a72ed47c7532b75d9dcb7aae3",
+      "uv.lock": "e9ebc78ae0c4548820eeea3b2a0f93a449fc40424a4b3b117710611da636a7d5",
+      ".python-version": "3a55324cbeddc91df012407d051dad08c88624c95a82fbdb856728729fbd14ab"
+    }
+  },
+  "verified_export_files": 2449,
+  "commands": [
+    {
+      "name": "root-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.007,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-init.stderr"
+    },
+    {
+      "name": "root-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.409,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-add.stderr"
+    },
+    {
+      "name": "root-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-index.stderr"
+    },
+    {
+      "name": "root-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.055,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-tree.stderr"
+    },
+    {
+      "name": "root-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "1759634fae43e7946af698e43d051bdafab4c3c5",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree 1759634fae43e7946af698e43d051bdafab4c3c5 -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-commit-tree.stderr"
+    },
+    {
+      "name": "root-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "1df545fc65fd1baa9788a45a91649764ecc1890d"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 1df545fc65fd1baa9788a45a91649764ecc1890d",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-head.stderr"
+    },
+    {
+      "name": "root-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.006,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-initial-status.stderr"
+    },
+    {
+      "name": "root-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-initial-tracked.stderr"
+    },
+    {
+      "name": "root-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-root-initial-staged.stderr"
+    },
+    {
+      "name": "backend-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-init.stderr"
+    },
+    {
+      "name": "backend-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.079,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-add.stderr"
+    },
+    {
+      "name": "backend-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-index.stderr"
+    },
+    {
+      "name": "backend-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.01,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-tree.stderr"
+    },
+    {
+      "name": "backend-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "b36e19a2b7076a38357d48b20405eb57b270744b",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree b36e19a2b7076a38357d48b20405eb57b270744b -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-commit-tree.stderr"
+    },
+    {
+      "name": "backend-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "b5b1b0787582aa6244bdd56fd9b8e44973d86bf9"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD b5b1b0787582aa6244bdd56fd9b8e44973d86bf9",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-head.stderr"
+    },
+    {
+      "name": "backend-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-initial-status.stderr"
+    },
+    {
+      "name": "backend-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-initial-tracked.stderr"
+    },
+    {
+      "name": "backend-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-backend-initial-staged.stderr"
+    },
+    {
+      "name": "frontend-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-init.stderr"
+    },
+    {
+      "name": "frontend-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.081,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-add.stderr"
+    },
+    {
+      "name": "frontend-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-index.stderr"
+    },
+    {
+      "name": "frontend-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.017,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-tree.stderr"
+    },
+    {
+      "name": "frontend-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "041b31f9e7278ee6ddced3959b58c0ac0dcbb049",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree 041b31f9e7278ee6ddced3959b58c0ac0dcbb049 -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-commit-tree.stderr"
+    },
+    {
+      "name": "frontend-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "dffcf6a431b4484f25273dca1d16a389430123e1"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD dffcf6a431b4484f25273dca1d16a389430123e1",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-head.stderr"
+    },
+    {
+      "name": "frontend-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-initial-status.stderr"
+    },
+    {
+      "name": "frontend-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-initial-tracked.stderr"
+    },
+    {
+      "name": "frontend-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-frontend-initial-staged.stderr"
+    },
+    {
+      "name": "notification-service-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-init.stderr"
+    },
+    {
+      "name": "notification-service-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.029,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-add.stderr"
+    },
+    {
+      "name": "notification-service-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-index.stderr"
+    },
+    {
+      "name": "notification-service-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.009,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-tree.stderr"
+    },
+    {
+      "name": "notification-service-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "5e77896c1e0587a9f13d634ad4784c77d7f31d6a",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree 5e77896c1e0587a9f13d634ad4784c77d7f31d6a -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-commit-tree.stderr"
+    },
+    {
+      "name": "notification-service-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "964816c31aea91ee5ada7e5ca0540046475d156f"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 964816c31aea91ee5ada7e5ca0540046475d156f",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-head.stderr"
+    },
+    {
+      "name": "notification-service-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-initial-status.stderr"
+    },
+    {
+      "name": "notification-service-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-initial-tracked.stderr"
+    },
+    {
+      "name": "notification-service-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-notification-service-initial-staged.stderr"
+    },
+    {
+      "name": "email-service-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-init.stderr"
+    },
+    {
+      "name": "email-service-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.019,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-add.stderr"
+    },
+    {
+      "name": "email-service-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-index.stderr"
+    },
+    {
+      "name": "email-service-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.007,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-tree.stderr"
+    },
+    {
+      "name": "email-service-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "f17d610d6602c5249ff71205707d9f442eba6d44",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree f17d610d6602c5249ff71205707d9f442eba6d44 -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-commit-tree.stderr"
+    },
+    {
+      "name": "email-service-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "3abb1d32dc139b9733f493fc8e239938bbad051f"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 3abb1d32dc139b9733f493fc8e239938bbad051f",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-head.stderr"
+    },
+    {
+      "name": "email-service-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-initial-status.stderr"
+    },
+    {
+      "name": "email-service-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-initial-tracked.stderr"
+    },
+    {
+      "name": "email-service-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-email-service-initial-staged.stderr"
+    },
+    {
+      "name": "vk-service-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-init.stderr"
+    },
+    {
+      "name": "vk-service-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.029,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-add.stderr"
+    },
+    {
+      "name": "vk-service-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-index.stderr"
+    },
+    {
+      "name": "vk-service-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.009,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-tree.stderr"
+    },
+    {
+      "name": "vk-service-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "f11fbf88ac2e3dfe5fd7e5f19a0512121f604db7",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree f11fbf88ac2e3dfe5fd7e5f19a0512121f604db7 -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-commit-tree.stderr"
+    },
+    {
+      "name": "vk-service-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "697b410e13d19638970bd8d78d3950e0adcba28b"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 697b410e13d19638970bd8d78d3950e0adcba28b",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-head.stderr"
+    },
+    {
+      "name": "vk-service-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-initial-status.stderr"
+    },
+    {
+      "name": "vk-service-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-initial-tracked.stderr"
+    },
+    {
+      "name": "vk-service-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-vk-service-initial-staged.stderr"
+    },
+    {
+      "name": "seo-service-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-init.stderr"
+    },
+    {
+      "name": "seo-service-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.008,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-add.stderr"
+    },
+    {
+      "name": "seo-service-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-index.stderr"
+    },
+    {
+      "name": "seo-service-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-tree.stderr"
+    },
+    {
+      "name": "seo-service-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "c48ca8c2d970ee18135e7e3ced96e0af261cc0b2",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree c48ca8c2d970ee18135e7e3ced96e0af261cc0b2 -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-commit-tree.stderr"
+    },
+    {
+      "name": "seo-service-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "68e5edce814f1ec50b3952ae2fbda706c0775d76"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 68e5edce814f1ec50b3952ae2fbda706c0775d76",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-head.stderr"
+    },
+    {
+      "name": "seo-service-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-initial-status.stderr"
+    },
+    {
+      "name": "seo-service-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-initial-tracked.stderr"
+    },
+    {
+      "name": "seo-service-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-seo-service-initial-staged.stderr"
+    },
+    {
+      "name": "yandex-service-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-init.stderr"
+    },
+    {
+      "name": "yandex-service-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.034,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-add.stderr"
+    },
+    {
+      "name": "yandex-service-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-index.stderr"
+    },
+    {
+      "name": "yandex-service-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.008,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-tree.stderr"
+    },
+    {
+      "name": "yandex-service-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "cfc566160a0072489c81cd762a78d4cfc8558803",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree cfc566160a0072489c81cd762a78d4cfc8558803 -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-commit-tree.stderr"
+    },
+    {
+      "name": "yandex-service-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "2ef1daa0b886a2e3224667317665587001211795"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 2ef1daa0b886a2e3224667317665587001211795",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-head.stderr"
+    },
+    {
+      "name": "yandex-service-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-initial-status.stderr"
+    },
+    {
+      "name": "yandex-service-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-initial-tracked.stderr"
+    },
+    {
+      "name": "yandex-service-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-yandex-service-initial-staged.stderr"
+    },
+    {
+      "name": "ya-metrica-service-init",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "init",
+        "--template=",
+        "--initial-branch=format-measurement",
+        "."
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false init --template= --initial-branch=format-measurement .",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-init.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-init.stderr"
+    },
+    {
+      "name": "ya-metrica-service-add",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "--literal-pathspecs",
+        "add",
+        "--force",
+        "--pathspec-from-file=-",
+        "--pathspec-file-nul"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false --literal-pathspecs add --force --pathspec-from-file=- --pathspec-file-nul",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.019,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-add.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-add.stderr"
+    },
+    {
+      "name": "ya-metrica-service-index",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false ls-files --stage -z",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-index.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-index.stderr"
+    },
+    {
+      "name": "ya-metrica-service-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "write-tree"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false write-tree",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.008,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-tree.stderr"
+    },
+    {
+      "name": "ya-metrica-service-commit-tree",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "commit-tree",
+        "9c0a8ed68d4ac78fc18fed363b4a8b67581530cc",
+        "-m",
+        "Synthetic safe exported snapshot; diff measurement only"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false commit-tree 9c0a8ed68d4ac78fc18fed363b4a8b67581530cc -m 'Synthetic safe exported snapshot; diff measurement only'",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-commit-tree.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-commit-tree.stderr"
+    },
+    {
+      "name": "ya-metrica-service-head",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "update-ref",
+        "HEAD",
+        "368344647965d70a332ea65b2ce012c4bd59433e"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false update-ref HEAD 368344647965d70a332ea65b2ce012c4bd59433e",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-head.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-head.stderr"
+    },
+    {
+      "name": "ya-metrica-service-initial-status",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false status --porcelain=v1 --untracked-files=all",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-initial-status.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-initial-status.stderr"
+    },
+    {
+      "name": "ya-metrica-service-initial-tracked",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.002,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-initial-tracked.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-initial-tracked.stderr"
+    },
+    {
+      "name": "ya-metrica-service-initial-staged",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.autocrlf=false",
+        "diff",
+        "--cached",
+        "--raw"
+      ],
+      "command": "git -c core.hooksPath=/dev/null -c core.autocrlf=false diff --cached --raw",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-initial-staged.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-ya-metrica-service-initial-staged.stderr"
+    },
+    {
+      "name": "uv-version",
+      "argv": [
+        "uv",
+        "--version"
+      ],
+      "command": "uv --version",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.005,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-uv-version.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-uv-version.stderr"
+    },
+    {
+      "name": "node-version",
+      "argv": [
+        "node",
+        "--version"
+      ],
+      "command": "node --version",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.003,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-node-version.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-node-version.stderr"
+    },
+    {
+      "name": "npm-version",
+      "argv": [
+        "npm",
+        "--version"
+      ],
+      "command": "npm --version",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.077,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-npm-version.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-npm-version.stderr"
+    },
+    {
+      "name": "make-version",
+      "argv": [
+        "make",
+        "--version"
+      ],
+      "command": "make --version",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-make-version.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-make-version.stderr"
+    },
+    {
+      "name": "git-version",
+      "argv": [
+        "git",
+        "--version"
+      ],
+      "command": "git --version",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.001,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-git-version.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-git-version.stderr"
+    },
+    {
+      "name": "python-install",
+      "argv": [
+        "uv",
+        "python",
+        "install",
+        "3.13.5",
+        "3.14.6",
+        "--no-bin"
+      ],
+      "command": "uv python install 3.13.5 3.14.6 --no-bin",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1",
+      "environment_overrides": {
+        "UV_PYTHON_DOWNLOADS": "automatic"
+      },
+      "exit": 0,
+      "elapsed_seconds": 41.739,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-python-install.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-python-install.stderr"
+    },
+    {
+      "name": "install-backend",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.13.5",
+        "--no-build-isolation"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.13.5 --no-build-isolation",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/backend",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 33.28,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-backend.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-backend.stderr"
+    },
+    {
+      "name": "install-notification-service",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.14.6",
+        "--no-build-isolation"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.14.6 --no-build-isolation",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/notification-service",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 29.667,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-notification-service.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-notification-service.stderr"
+    },
+    {
+      "name": "install-email-service",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.14.6",
+        "--no-build-isolation"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.14.6 --no-build-isolation",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/email-service",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 1.907,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-email-service.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-email-service.stderr"
+    },
+    {
+      "name": "install-vk-service",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.14.6",
+        "--no-build-isolation"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.14.6 --no-build-isolation",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/vk-service",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 1.359,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-vk-service.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-vk-service.stderr"
+    },
+    {
+      "name": "install-seo-service",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.14.6",
+        "--no-build-isolation"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.14.6 --no-build-isolation",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/seo-service",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 7.553,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-seo-service.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-seo-service.stderr"
+    },
+    {
+      "name": "install-yandex-service",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.14.6",
+        "--no-build-isolation"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.14.6 --no-build-isolation",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/yandex-service",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 2.797,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-yandex-service.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-yandex-service.stderr"
+    },
+    {
+      "name": "adapter-venv",
+      "argv": [
+        "uv",
+        "venv",
+        "--python",
+        "3.14.6",
+        ".venv"
+      ],
+      "command": "uv venv --python 3.14.6 .venv",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 0.011,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-adapter-venv.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-adapter-venv.stderr"
+    },
+    {
+      "name": "adapter-setuptools",
+      "argv": [
+        "uv",
+        "pip",
+        "install",
+        "--python",
+        "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service/.venv/bin/python",
+        "--only-binary",
+        ":all:",
+        "setuptools==80.9.0"
+      ],
+      "command": "uv pip install --python /srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service/.venv/bin/python --only-binary :all: setuptools==80.9.0",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {},
+      "exit": 0,
+      "elapsed_seconds": 1.257,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-adapter-setuptools.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-adapter-setuptools.stderr"
+    },
+    {
+      "name": "install-ya-metrica-service",
+      "argv": [
+        "uv",
+        "sync",
+        "--frozen",
+        "--all-groups",
+        "--python",
+        "3.14.6",
+        "--no-build-isolation",
+        "--inexact"
+      ],
+      "command": "uv sync --frozen --all-groups --python 3.14.6 --no-build-isolation --inexact",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/ya-metrica-service",
+      "environment_overrides": {
+        "UV_NO_SYNC": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 1.266,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-ya-metrica-service.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-ya-metrica-service.stderr"
+    },
+    {
+      "name": "install-frontend",
+      "argv": [
+        "npm",
+        "ci",
+        "--include=dev",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--offline=false"
+      ],
+      "command": "npm ci --include=dev --ignore-scripts --no-audit --no-fund --offline=false",
+      "cwd": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/repo/services/frontend",
+      "environment_overrides": {
+        "npm_config_offline": "false"
+      },
+      "exit": 0,
+      "elapsed_seconds": 34.782,
+      "stdout": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-frontend.stdout",
+      "stderr": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-install-frontend.stderr"
+    }
+  ],
+  "setup_failure": "initialize exit 1: --template= leaves no .git/info; mkdir owned info directory",
+  "baseline_ready": true,
+  "finalizer_setup_failure": "First finalizer exit 1 before writes: root untracked status includes own new report files. Repair 2 scopes status equality to nested repositories; root tracked/index remain checked.",
+  "final_evidence": "/srv/eqSiteCMS/docs/reports/document-yandex-services-baseline/format-prep-env-final.json",
+  "run_environment": {
+    "UV_CACHE_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/uv-cache",
+    "npm_config_cache": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/npm-cache",
+    "HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/home",
+    "LANG": "C.UTF-8",
+    "TMPDIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/tmp-format-run",
+    "PLAYWRIGHT_BROWSERS_PATH": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/browser-cache",
+    "npm_config_offline": "true",
+    "XDG_CACHE_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-cache",
+    "UV_FROZEN": "true",
+    "PATH": "/home/igor/.local/bin:/home/igor/.nvm/versions/node/v24.22.1/bin:/usr/bin:/bin",
+    "UV_NO_SYNC": "true",
+    "npm_config_update_notifier": "false",
+    "UV_PYTHON_DOWNLOADS": "never",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_AUTHOR_NAME": "FORMAT measurement",
+    "GIT_AUTHOR_EMAIL": "format@invalid.local",
+    "GIT_COMMITTER_NAME": "FORMAT measurement",
+    "GIT_COMMITTER_EMAIL": "format@invalid.local",
+    "GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z",
+    "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z",
+    "UV_PYTHON_INSTALL_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/python",
+    "UV_PYTHON_BIN_DIR": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/python-bin",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHON_KEYRING_BACKEND": "keyring.backends.null.Keyring",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1",
+    "SENTRYCLI_SKIP_DOWNLOAD": "1",
+    "npm_config_yes": "false",
+    "npm_config_userconfig": "/dev/null",
+    "npm_config_globalconfig": "/dev/null",
+    "XDG_CONFIG_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-config",
+    "XDG_DATA_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-data",
+    "XDG_STATE_HOME": "/srv/eqSiteCMS/.qa/qg-format-document-yandex-services-baseline-v1/xdg-state"
+  }
+}

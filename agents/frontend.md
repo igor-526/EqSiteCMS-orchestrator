@@ -666,4 +666,4 @@ Access/scopes: <что проверено, исключения>
 Остаток / split: <нет | FE-2 → FE-2a + FE-2b с границами>
 ```
 
-Этот handoff является evidence исполнителя, но не Quality Gate verdict. Формальный review выполняется по lane-модели (`QG-BE`, `QG-FE`, `QG-CONTRACTS`, `QG-LIVE`, `QG-SYNTH`) после завершения всех профильных units; blocking findings возвращаются владельцу как новые execution units, а исправления проверяются повторным прогоном затронутых lanes.
+Этот handoff является evidence исполнителя, но не Quality Gate verdict. Формальный review выполняется по профилю Quality Gate (`QG-LITE`/`QG-FULL`, см. `agents/quality_gate.md`) после завершения всех профильных units; blocking findings возвращаются владельцу как новые execution units, а исправления перепроверяет тот же QG-агент. Падения вне твоих путей, не вызванные твоими изменениями, не чини — укажи в handoff как `pre-existing`.

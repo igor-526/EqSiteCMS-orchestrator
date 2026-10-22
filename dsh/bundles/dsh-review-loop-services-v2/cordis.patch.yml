@@ -1,0 +1,3 @@
+- insert:
+    - id: review-loop-services-v2
+      name: '@local/dsh-review-loop-services-v2'

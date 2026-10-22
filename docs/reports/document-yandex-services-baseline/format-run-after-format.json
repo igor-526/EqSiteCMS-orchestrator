@@ -1,0 +1,377 @@
+{
+  "repositories": {
+    "root": {
+      "head": {
+        "artifact": "format-run-after-format-root-head.log",
+        "bytes": 41,
+        "sha256": "8baf0a6617a07f9bb059bbb9b06cdee56f47cc4a9c60e6c0785ce3b6bff0dfac"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-root-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-root-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-root-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-root-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-root-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-root-index.log",
+        "bytes": 123389,
+        "sha256": "919890d18215e1b57332489ad39dad244b3ecfdd3bef6d3e031199a5fb34b3b5"
+      },
+      "index_unchanged": true
+    },
+    "backend": {
+      "head": {
+        "artifact": "format-run-after-format-backend-head.log",
+        "bytes": 41,
+        "sha256": "5990b224694800375cd55db556bb025fb2b8b669d2c82ea08b45fb1b22c1cd0d"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-backend-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-backend-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-backend-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-backend-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-backend-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-backend-index.log",
+        "bytes": 30062,
+        "sha256": "983a1650c08f05e12e7fea1e71bc59cfbafcab2cae53329089f7c16022fa6b82"
+      },
+      "index_unchanged": true
+    },
+    "frontend": {
+      "head": {
+        "artifact": "format-run-after-format-frontend-head.log",
+        "bytes": 41,
+        "sha256": "1e417529c51e132c1ecaf5b621d9fb3fe22dd29ba3c188185c2c552ef4e26f90"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-frontend-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-frontend-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-frontend-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-frontend-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-frontend-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-frontend-index.log",
+        "bytes": 37819,
+        "sha256": "11d5db81bfcfdf2964405f648d9407b733558b3f6e3a471a7421d0737ff97ebd"
+      },
+      "index_unchanged": true
+    },
+    "notification-service": {
+      "head": {
+        "artifact": "format-run-after-format-notification-service-head.log",
+        "bytes": 41,
+        "sha256": "1b422b44057d5371a98d79822dfd82f7c498187370a325dfe76248777ae33452"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-notification-service-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-notification-service-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-notification-service-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-notification-service-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-notification-service-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-notification-service-index.log",
+        "bytes": 11990,
+        "sha256": "dca5541abe0c7d20859bb3fad56678b0a9ecca91628377d60ec7ded5bc17f17e"
+      },
+      "index_unchanged": true
+    },
+    "email-service": {
+      "head": {
+        "artifact": "format-run-after-format-email-service-head.log",
+        "bytes": 41,
+        "sha256": "778274749e0c31b26a7f030042c83284acebaf464827c24cbbb8a0d3e34a0f2d"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-email-service-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-email-service-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-email-service-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-email-service-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-email-service-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-email-service-index.log",
+        "bytes": 8811,
+        "sha256": "4e51dd02509ed010ec204e055973ffceeb057246770119b6d5c6e7f46017a2ba"
+      },
+      "index_unchanged": true
+    },
+    "vk-service": {
+      "head": {
+        "artifact": "format-run-after-format-vk-service-head.log",
+        "bytes": 41,
+        "sha256": "a73ff03fc52349399b7aa6ef981bb912bbf97676932886ae03ab2fe2a5753d8f"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-vk-service-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-vk-service-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-vk-service-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-vk-service-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-vk-service-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-vk-service-index.log",
+        "bytes": 11294,
+        "sha256": "fbbab2061d11406b1280f01f6911b077e84d54b121561f45c048a1fb5e7393c2"
+      },
+      "index_unchanged": true
+    },
+    "seo-service": {
+      "head": {
+        "artifact": "format-run-after-format-seo-service-head.log",
+        "bytes": 41,
+        "sha256": "b7e3c242b587e9ef8eef0d07198a1564888d5a7aefc4e515c4cba41f23e818c2"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-seo-service-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-seo-service-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-seo-service-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-seo-service-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-seo-service-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-seo-service-index.log",
+        "bytes": 2716,
+        "sha256": "f0185d32a74839191e5e44c20ff18fb476a9a2279dd41e340223e38dda3972c1"
+      },
+      "index_unchanged": true
+    },
+    "yandex-service": {
+      "head": {
+        "artifact": "format-run-after-format-yandex-service-head.log",
+        "bytes": 41,
+        "sha256": "d18d890e08597043b057e7a2c896d513d7bf082b8d25fb033737e2fbb2a44229"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-yandex-service-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-yandex-service-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-yandex-service-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-yandex-service-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-yandex-service-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-yandex-service-index.log",
+        "bytes": 9615,
+        "sha256": "8c3609042d14ef40470d0514a0daa53f3c54e7c851863730addfeca906b713d3"
+      },
+      "index_unchanged": true
+    },
+    "ya-metrica-service": {
+      "head": {
+        "artifact": "format-run-after-format-ya-metrica-service-head.log",
+        "bytes": 41,
+        "sha256": "359b94a1198acf65797ff589020464d3a17d8419ec1e25e61e49c3c9c440820c"
+      },
+      "head_unchanged": true,
+      "status": {
+        "artifact": "format-run-after-format-ya-metrica-service-status.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "tracked": {
+        "artifact": "format-run-after-format-ya-metrica-service-tracked.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged": {
+        "artifact": "format-run-after-format-ya-metrica-service-staged.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "patch": {
+        "artifact": "format-run-after-format-ya-metrica-service-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "staged-patch": {
+        "artifact": "format-run-after-format-ya-metrica-service-staged-patch.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "index": {
+        "artifact": "format-run-after-format-ya-metrica-service-index.log",
+        "bytes": 5203,
+        "sha256": "80c3dae65a7ea25a5fa371d1a818abd7665040fbd6192e7a41dd925420b4f9e9"
+      },
+      "index_unchanged": true
+    }
+  },
+  "generated": {
+    "count": 215167,
+    "ledger": "format-run-after-format-generated.json",
+    "unexpected": [],
+    "external_symlinks": []
+  },
+  "source_drift": {
+    "root": [],
+    "backend": [],
+    "frontend": [],
+    "notification-service": [],
+    "email-service": [],
+    "vk-service": [],
+    "seo-service": [],
+    "yandex-service": [],
+    "ya-metrica-service": []
+  },
+  "locked_inputs_unchanged": true,
+  "immutable": {
+    "manifest": true,
+    "archives": true
+  }
+}

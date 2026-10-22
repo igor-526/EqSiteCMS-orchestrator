@@ -25,7 +25,7 @@ function fixture(t, overrides = {}) {
     'POSTGRES_EMAIL_USER=email-user', 'POSTGRES_EMAIL_NAME=email-db',
     'POSTGRES_VK_USER=vk-user', 'POSTGRES_VK_NAME=vk-db',
   ].join('\n'));
-  const declaration = "const PROJECT_ROOT = '/home/igor/projects/eqSiteCMS';";
+  const declaration = "const PROJECT_ROOT = '/srv/eqSiteCMS';";
   assert.ok(source.includes(declaration));
   const script = join(root, 'stackctl.mjs');
   writeFileSync(script, source.replace(declaration, `const PROJECT_ROOT = ${JSON.stringify(root)};`));

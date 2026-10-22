@@ -135,7 +135,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/planner.md');
                       }
-                      return 'Ты — агент Planner проекта EqSiteCMS; роль назначена Router через delegate_planner. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
+                      return 'Ты — агент Planner проекта EqSiteCMS; роль назначена Router через delegate_planner. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim() + '\n\n---\n\n# AGENTS.md (уже загружен, не перечитывай)\n\n' + fs.readFileSync(path.resolve(dshHomePath(), '..', '..', 'AGENTS.md'), 'utf8');
                     })()
               - id: delegate-backend
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -168,7 +168,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/backend.md');
                       }
-                      return 'Ты — агент Backend проекта EqSiteCMS; роль назначена Router через delegate_backend. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
+                      return 'Ты — агент Backend проекта EqSiteCMS; роль назначена Router через delegate_backend. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim() + '\n\n---\n\n# AGENTS.md (уже загружен, не перечитывай)\n\n' + fs.readFileSync(path.resolve(dshHomePath(), '..', '..', 'AGENTS.md'), 'utf8');
                     })()
               - id: delegate-frontend
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -201,7 +201,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/frontend.md');
                       }
-                      return 'Ты — агент Frontend проекта EqSiteCMS; роль назначена Router через delegate_frontend. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
+                      return 'Ты — агент Frontend проекта EqSiteCMS; роль назначена Router через delegate_frontend. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim() + '\n\n---\n\n# AGENTS.md (уже загружен, не перечитывай)\n\n' + fs.readFileSync(path.resolve(dshHomePath(), '..', '..', 'AGENTS.md'), 'utf8');
                     })()
               - id: delegate-site-consumer
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -234,7 +234,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/site_consumer.md');
                       }
-                      return 'Ты — агент Site Consumer проекта EqSiteCMS; роль назначена Router через delegate_site_consumer. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
+                      return 'Ты — агент Site Consumer проекта EqSiteCMS; роль назначена Router через delegate_site_consumer. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim() + '\n\n---\n\n# AGENTS.md (уже загружен, не перечитывай)\n\n' + fs.readFileSync(path.resolve(dshHomePath(), '..', '..', 'AGENTS.md'), 'utf8');
                     })()
               - id: delegate-quality-gate
                 name: '@deepseek-ai/dsh-tool-subagent'
@@ -267,7 +267,7 @@
                       if (!match) {
                         throw new Error('dsh-persona markers missing in agents/quality_gate.md');
                       }
-                      return 'Ты — агент Quality Gate проекта EqSiteCMS; роль назначена Router через delegate_quality_gate. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim();
+                      return 'Ты — агент Quality Gate проекта EqSiteCMS; роль назначена Router через delegate_quality_gate. agents/router.md не читай.\n\n**ОБЯЗАТЕЛЬНО:** Общайся с пользователем исключительно на русском языке.\n\n' + match[1].trim() + '\n\n---\n\n# AGENTS.md (уже загружен, не перечитывай)\n\n' + fs.readFileSync(path.resolve(dshHomePath(), '..', '..', 'AGENTS.md'), 'utf8');
                     })()
               - id: workflow-ptc
                 name: '@deepseek-ai/dsh-workflow-ptc'

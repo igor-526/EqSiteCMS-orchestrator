@@ -130,7 +130,7 @@ Exit: `0` — успех (все ff или noop), `1` — push failure, `3` — 
 cd services/<repo.name> && git switch main
 
 # Для корневого репозитория:
-cd /home/igor/projects/eqSiteCMS && git switch main
+cd /srv/eqSiteCMS && git switch main
 ```
 
 **Обработка ошибок:**

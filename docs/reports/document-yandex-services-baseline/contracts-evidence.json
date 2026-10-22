@@ -1,0 +1,3774 @@
+{
+  "unit": "QG-CONTRACTS",
+  "group": [
+    "DOC-ACCESS",
+    "DOC-SECURITY",
+    "DOC-LINKS",
+    "CLI"
+  ],
+  "runtime": "NOT RUN",
+  "production_ready": false,
+  "qg_approved": false,
+  "artifacts": [
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/proposal.md",
+      "sha256": "1d24df632122fe495156ee37e5682c1baff5e8dda45132b60cd692d64c5b84d1",
+      "local_link_count": 47
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/design.md",
+      "sha256": "363870450af7f2e1b63622d73fd10a39fa0faf34718480ed2c217ef072338e2b",
+      "local_link_count": 34
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/tasks.md",
+      "sha256": "7f4b51dd621f339dd624de84e67e850dbb86c2a749d41c002d1d7ccafe310a2a",
+      "local_link_count": 18
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+      "sha256": "fe81efdc44fc25c496084d128fe7b7d246953cb7fcc6c27a9f479926206cd89f",
+      "local_link_count": 1
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+      "sha256": "aa88f0d6386b8c86b4a5c34e8131df52760139b1873c5648dfadf37a670d386d",
+      "local_link_count": 34
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+      "sha256": "83e2839ef40282764b5c8350a306e2787a5304039c9aab066153ee18d1e4575e",
+      "local_link_count": 45
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+      "sha256": "0a7c5b20acd5b5af6ff0051083971a422c9bf4764b11b2bd84fd4e355bf259d8",
+      "local_link_count": 65
+    },
+    {
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+      "sha256": "30ec1933575f4124da96967e1cc0cd5df3108cf2a6438619777103d45868e4ab",
+      "local_link_count": 73
+    }
+  ],
+  "capability_count": 5,
+  "scenario_count": 100,
+  "slices": [
+    {
+      "capability": "yandex-oauth-accounts",
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+      "sha256": "fe81efdc44fc25c496084d128fe7b7d246953cb7fcc6c27a9f479926206cd89f",
+      "requirements": 11,
+      "scenarios": [
+        {
+          "line": 15,
+          "title": "Y1-01 Ссылка для конюшни"
+        },
+        {
+          "line": 19,
+          "title": "Y1-02 Невалидный selector"
+        },
+        {
+          "line": 27,
+          "title": "Y1-03 Успешная последовательность"
+        },
+        {
+          "line": 31,
+          "title": "Y1-04 Отказ до записи"
+        },
+        {
+          "line": 39,
+          "title": "Y1-05 Первая авторизация"
+        },
+        {
+          "line": 43,
+          "title": "Y1-06 Повторная авторизация и другой tenant"
+        },
+        {
+          "line": 51,
+          "title": "Y1-07 Account DTO"
+        },
+        {
+          "line": 59,
+          "title": "Y1-08 Обратимость и случайность"
+        },
+        {
+          "line": 63,
+          "title": "Y1-09 Повреждение или неверный ключ"
+        },
+        {
+          "line": 71,
+          "title": "Y1-10 Нулевой или отрицательный срок"
+        },
+        {
+          "line": 75,
+          "title": "Y1-11 Чтение сохранённого токена"
+        },
+        {
+          "line": 83,
+          "title": "Y1-12 Границы профиля и ciphertext"
+        },
+        {
+          "line": 87,
+          "title": "Y1-13 Сбой подготовки"
+        },
+        {
+          "line": 95,
+          "title": "Y1-14 Pattern search, не regex"
+        },
+        {
+          "line": 99,
+          "title": "Y1-15 Границы и пустая страница"
+        },
+        {
+          "line": 107,
+          "title": "Y1-16 Повторное удаление"
+        },
+        {
+          "line": 111,
+          "title": "Y1-17 Конкурентное создание и cascade"
+        },
+        {
+          "line": 119,
+          "title": "Y1-18 Успех и commit failure"
+        },
+        {
+          "line": 123,
+          "title": "Y1-19 Ошибки repository и целостность"
+        },
+        {
+          "line": 131,
+          "title": "Y1-20 Anonymous OAuth/accounts"
+        },
+        {
+          "line": 149,
+          "title": "Y1-21 Header-bearing и чужой ресурс"
+        }
+      ],
+      "scenario_count": 21,
+      "expected_scenario_count": 21,
+      "doc_1_sha256_match": true,
+      "proposal_manifest_match": true
+    },
+    {
+      "capability": "yandex-metrica-gateway",
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+      "sha256": "aa88f0d6386b8c86b4a5c34e8131df52760139b1873c5648dfadf37a670d386d",
+      "requirements": 9,
+      "scenarios": [
+        {
+          "line": 51,
+          "title": "Y2-01 — defaults и передача фильтра"
+        },
+        {
+          "line": 55,
+          "title": "Y2-02 — границы пагинации"
+        },
+        {
+          "line": 59,
+          "title": "Y2-03 — некорректные query параметры"
+        },
+        {
+          "line": 66,
+          "title": "Y2-04 — неизвестный аккаунт"
+        },
+        {
+          "line": 70,
+          "title": "Y2-05 — wire query"
+        },
+        {
+          "line": 77,
+          "title": "Y2-06 — неполная страница и порядок"
+        },
+        {
+          "line": 81,
+          "title": "Y2-07 — пустая страница"
+        },
+        {
+          "line": 88,
+          "title": "Y2-08 — отсутствующая привязка"
+        },
+        {
+          "line": 92,
+          "title": "Y2-09 — найденная привязка"
+        },
+        {
+          "line": 96,
+          "title": "Y2-10 — отсутствующий связанный аккаунт"
+        },
+        {
+          "line": 103,
+          "title": "Y2-11 — первая привязка"
+        },
+        {
+          "line": 107,
+          "title": "Y2-12 — изменение counter или аккаунта"
+        },
+        {
+          "line": 111,
+          "title": "Y2-13 — последовательный повтор"
+        },
+        {
+          "line": 115,
+          "title": "Y2-14 — invalid counter или неизвестный аккаунт"
+        },
+        {
+          "line": 122,
+          "title": "Y2-15 — unique tenant и повторное использование counter"
+        },
+        {
+          "line": 126,
+          "title": "Y2-16 — FK и cascade"
+        },
+        {
+          "line": 133,
+          "title": "Y2-17 — удаление и повтор"
+        },
+        {
+          "line": 137,
+          "title": "Y2-18 — malformed path и body"
+        },
+        {
+          "line": 144,
+          "title": "Y2-19 — успешный запрос"
+        },
+        {
+          "line": 148,
+          "title": "Y2-20 — отказ и конфликт"
+        },
+        {
+          "line": 155,
+          "title": "Y2-21 — anonymous и fake headers"
+        },
+        {
+          "line": 159,
+          "title": "Y2-22 — foreign ID не доказывает permission"
+        }
+      ],
+      "scenario_count": 22,
+      "expected_scenario_count": 22,
+      "doc_1_sha256_match": true,
+      "proposal_manifest_match": true
+    },
+    {
+      "capability": "ya-metrica-adapter",
+      "path": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+      "sha256": "83e2839ef40282764b5c8350a306e2787a5304039c9aab066153ee18d1e4575e",
+      "requirements": 8,
+      "scenarios": [
+        {
+          "line": 63,
+          "title": "Параметры по умолчанию"
+        },
+        {
+          "line": 67,
+          "title": "Отсутствующий токен или неверный тип пагинации"
+        },
+        {
+          "line": 71,
+          "title": "Пустые строковые параметры"
+        },
+        {
+          "line": 78,
+          "title": "Границы размера страницы"
+        },
+        {
+          "line": 82,
+          "title": "Смещение страницы"
+        },
+        {
+          "line": 86,
+          "title": "Поиск передаётся провайдеру"
+        },
+        {
+          "line": 93,
+          "title": "Пригодный шифротекст"
+        },
+        {
+          "line": 97,
+          "title": "Повреждённый токен или другой ключ"
+        },
+        {
+          "line": 101,
+          "title": "Совместимость шифрования"
+        },
+        {
+          "line": 108,
+          "title": "Параметры исходящего запроса"
+        },
+        {
+          "line": 112,
+          "title": "Граница успешного provider ответа"
+        },
+        {
+          "line": 119,
+          "title": "Преобразование полей"
+        },
+        {
+          "line": 123,
+          "title": "Частичная страница сохраняет порядок и total"
+        },
+        {
+          "line": 127,
+          "title": "Пустые items не обнуляют total"
+        },
+        {
+          "line": 134,
+          "title": "Сквозная ошибка провайдера"
+        },
+        {
+          "line": 141,
+          "title": "Отсутствующий ключ"
+        },
+        {
+          "line": 148,
+          "title": "Health без provider проверки"
+        }
+      ],
+      "scenario_count": 17,
+      "expected_scenario_count": 17,
+      "doc_1_sha256_match": true,
+      "proposal_manifest_match": true
+    },
+    {
+      "capability": "yandex-service-runtime",
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+      "sha256": "0a7c5b20acd5b5af6ff0051083971a422c9bf4764b11b2bd84fd4e355bf259d8",
+      "requirements": 10,
+      "scenarios": [
+        {
+          "line": 55,
+          "title": "Y3-01 — Defaults и aliases приложения"
+        },
+        {
+          "line": 59,
+          "title": "Y3-02 — Область dotenv не переносится на peer модель"
+        },
+        {
+          "line": 66,
+          "title": "Y3-03 — Отсутствующий или пустой ключ"
+        },
+        {
+          "line": 70,
+          "title": "Y3-04 — Непустой ключ и фактическое имя поля"
+        },
+        {
+          "line": 77,
+          "title": "Y3-05 — Отсутствующее обязательное OAuth поле"
+        },
+        {
+          "line": 81,
+          "title": "Y3-06 — Опечатка peer alias значима"
+        },
+        {
+          "line": 88,
+          "title": "Y3-07 — Наблюдаемость выключена"
+        },
+        {
+          "line": 92,
+          "title": "Y3-08 — Включённая конфигурация и её границы"
+        },
+        {
+          "line": 99,
+          "title": "Y3-09 — Anonymous health"
+        },
+        {
+          "line": 103,
+          "title": "Y3-10 — Health с credential-bearing заголовками"
+        },
+        {
+          "line": 110,
+          "title": "Y3-11 — Создание приложения и импортные ограничения"
+        },
+        {
+          "line": 114,
+          "title": "Y3-12 — Вход в lifespan"
+        },
+        {
+          "line": 121,
+          "title": "Y3-13 — Штатное завершение lifespan"
+        },
+        {
+          "line": 125,
+          "title": "Y3-14 — Делегирование закрытия engine"
+        },
+        {
+          "line": 132,
+          "title": "Y3-15 — Провайдеры и граф зависимостей"
+        },
+        {
+          "line": 136,
+          "title": "Y3-16 — Параллельные контексты и освобождение"
+        },
+        {
+          "line": 143,
+          "title": "Y3-17 — Request session lifecycle"
+        },
+        {
+          "line": 147,
+          "title": "Y3-18 — Отдельный helper не подменяет DI"
+        },
+        {
+          "line": 154,
+          "title": "Y3-19 — Debug и CORS не наследуются из шаблона"
+        },
+        {
+          "line": 158,
+          "title": "Y3-20 — DB engine и session factory"
+        }
+      ],
+      "scenario_count": 20,
+      "expected_scenario_count": 20,
+      "doc_1_sha256_match": true,
+      "proposal_manifest_match": true
+    },
+    {
+      "capability": "yandex-services-access-evidence",
+      "path": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+      "sha256": "30ec1933575f4124da96967e1cc0cd5df3108cf2a6438619777103d45868e4ab",
+      "requirements": 10,
+      "scenarios": [
+        {
+          "line": 108,
+          "title": "S1-01 Сверка business routes и health"
+        },
+        {
+          "line": 112,
+          "title": "S1-02 Документация и framework companions"
+        },
+        {
+          "line": 119,
+          "title": "S1-03 Чувствительное чтение"
+        },
+        {
+          "line": 123,
+          "title": "S1-04 Административные записи"
+        },
+        {
+          "line": 130,
+          "title": "S1-05 Anonymous characterization"
+        },
+        {
+          "line": 134,
+          "title": "S1-06 Header-bearing не валидная аутентификация"
+        },
+        {
+          "line": 141,
+          "title": "S1-07 Tenant list и foreign read"
+        },
+        {
+          "line": 145,
+          "title": "S1-08 Delete и cross-tenant binding"
+        },
+        {
+          "line": 152,
+          "title": "S1-09 Token path и sensitive response"
+        },
+        {
+          "line": 156,
+          "title": "S1-10 Gateway и adapter query"
+        },
+        {
+          "line": 163,
+          "title": "S1-11 Callback и state"
+        },
+        {
+          "line": 167,
+          "title": "S1-12 Expiry и ключи"
+        },
+        {
+          "line": 174,
+          "title": "S1-13 Known unsafe decrypt log"
+        },
+        {
+          "line": 178,
+          "title": "S1-14 Query и reflection unknowns"
+        },
+        {
+          "line": 185,
+          "title": "S1-15 Compose host publication"
+        },
+        {
+          "line": 189,
+          "title": "S1-16 Nonblocking docs и production gate"
+        },
+        {
+          "line": 196,
+          "title": "S1-17 Health только liveness"
+        },
+        {
+          "line": 200,
+          "title": "S1-18 Framework и backend denial"
+        },
+        {
+          "line": 207,
+          "title": "S1-19 Трассировка будущих проверок"
+        },
+        {
+          "line": 211,
+          "title": "S1-20 Передача без побочного apply"
+        }
+      ],
+      "scenario_count": 20,
+      "expected_scenario_count": 20,
+      "doc_1_sha256_match": true,
+      "proposal_manifest_match": true
+    }
+  ],
+  "access": {
+    "rows": [
+      {
+        "line": 26,
+        "cells": [
+          "Y1 / Y",
+          "GET",
+          "`/api/auth/link`",
+          "Public Read, auth initiation в private peer",
+          "любой caller peer; локальной role check нет",
+          "main/test source: 200; missing/malformed equestrian_id → 400 (E-YA)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 27,
+        "cells": [
+          "Y2 / Y",
+          "POST",
+          "`/api/auth/code`",
+          "существующий Public Auth POST exception",
+          "caller OAuth-потока private peer; role check нет",
+          "main/test source: 200; invalid body/code/upstream → 400; callback несёт code в body (E-YA)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 28,
+        "cells": [
+          "Y3 / Y",
+          "GET",
+          "`/api/accounts/`",
+          "существующий Private Peer Read exception; PII, не consumer Public Read",
+          "доверенный внутренний caller; owner/role check нет",
+          "main/test source: 200; missing/malformed selector/params → 400 (E-YB)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 29,
+        "cells": [
+          "Y4 / Y",
+          "DELETE",
+          "`/api/accounts/{account_id}`",
+          "существующий Private Peer Write exception; не новое снятие Protected Write",
+          "доверенный внутренний caller; tenant/owner/role check нет",
+          "main/test source: 204, включая absent/repeat; malformed UUID → 400 (E-YB)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 30,
+        "cells": [
+          "Y5 / Y",
+          "GET",
+          "`/api/servicing/access-token/{account_id}`",
+          "существующий Sensitive Private Peer Read exception; plaintext secret response",
+          "доверенный внутренний сервис; tenant/owner/role check нет",
+          "main/test source: 200 с access_token; malformed/absent/decrypt failure → 400 (E-YC)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 31,
+        "cells": [
+          "Y6 / Y",
+          "GET",
+          "`/api/metrica/counters`",
+          "существующий Sensitive Private Peer Read exception",
+          "доверенный внутренний caller; owner/role check нет",
+          "main/test source: 200; missing/malformed account_id/params, absent account/peer failure → 400 (E-YD)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 32,
+        "cells": [
+          "Y7 / Y",
+          "GET",
+          "`/api/connections/metrica/{equestrian_id}`",
+          "существующий Private Peer Read exception; вложенный account profile",
+          "доверенный внутренний caller; owner/role check нет",
+          "main/test source: 200, включая counter=null; malformed UUID → 400; absent referenced account → 400 по service (E-YE)",
+          "fake headers: assertions found/null; absent referenced account — source inference, не отдельный API PASS; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 33,
+        "cells": [
+          "Y8 / Y",
+          "POST",
+          "`/api/connections/metrica`",
+          "существующий Private Peer Write exception; не новое снятие Protected Write",
+          "доверенный внутренний caller; account-tenant/caller/role check нет",
+          "main/test source: 200 create/update/no-op; invalid/absent account/conflict → 400; foreign account accepted в fake harness (E-YE)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 34,
+        "cells": [
+          "Y9 / Y",
+          "DELETE",
+          "`/api/connections/metrica/{counter_id}`",
+          "существующий Private Peer Write exception; counter_id здесь UUID binding",
+          "доверенный внутренний caller; tenant/owner/role check нет",
+          "main/test source: 204, включая absent/repeat; malformed UUID → 400 (E-YE)",
+          "fake headers: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 35,
+        "cells": [
+          "M1 / M",
+          "GET",
+          "`/api/metrica/counters`",
+          "существующий Sensitive Private Peer Read exception; sensitive query access_token",
+          "доверенный внутренний caller; token не CMS identity; role check нет",
+          "main/test source: 200 с пригодным ciphertext/upstream; missing/invalid token/params/upstream → 400 (E-M)",
+          "synthetic cookie/Bearer: те же assertions; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 36,
+        "cells": [
+          "H1-Y / Y",
+          "GET",
+          "`/health`",
+          "Public Read; static liveness",
+          "любой caller",
+          "main/test source: 200 status=ok; не DB/peer readiness (E-HY)",
+          "fake headers: тот же assertion; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 37,
+        "cells": [
+          "H1-M / M",
+          "GET",
+          "`/health`",
+          "Public Read; static liveness",
+          "любой caller",
+          "main/test source: 200 status=ok; не DB/provider readiness (E-HM)",
+          "synthetic headers: тот же assertion; валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 38,
+        "cells": [
+          "D1-Y1 / Y",
+          "GET, HEAD¹",
+          "`/docs`",
+          "Public Read, служебный",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET fake headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 39,
+        "cells": [
+          "D1-Y2 / Y",
+          "GET, HEAD¹",
+          "`/redoc`",
+          "Public Read, служебный",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET fake headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 40,
+        "cells": [
+          "D1-Y3 / Y",
+          "GET, HEAD¹",
+          "`/openapi.json`",
+          "Public Read, служебный",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET fake headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 41,
+        "cells": [
+          "D1-Y4 / Y",
+          "GET, HEAD¹",
+          "`/docs/oauth2-redirect`",
+          "Public Read, Swagger helper; не business callback Y2",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET fake headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 42,
+        "cells": [
+          "D1-M1 / M",
+          "GET, HEAD¹",
+          "`/docs`",
+          "Public Read, служебный",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET synthetic headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 43,
+        "cells": [
+          "D1-M2 / M",
+          "GET, HEAD¹",
+          "`/redoc`",
+          "Public Read, служебный",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET synthetic headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 44,
+        "cells": [
+          "D1-M3 / M",
+          "GET, HEAD¹",
+          "`/openapi.json`",
+          "Public Read, служебный",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET synthetic headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 45,
+        "cells": [
+          "D1-M4 / M",
+          "GET, HEAD¹",
+          "`/docs/oauth2-redirect`",
+          "Public Read, Swagger helper",
+          "любой caller",
+          "main/GET test: 200; HEAD: static framework inference, NOT RUN (E-D)",
+          "GET synthetic headers: 200 assertion; HEAD и валидная сессия/roles не доказаны"
+        ]
+      },
+      {
+        "line": 46,
+        "cells": [
+          "R1 / Y, M",
+          "иной method / путь",
+          "неизвестный путь, unsupported method, slash mismatch",
+          "Framework rejection; не endpoint и не auth denial",
+          "никто",
+          "main/test source: 400 без вызова business operation и redirect (E-D)",
+          "synthetic headers: то же; не доказательство authenticated denial"
+        ]
+      }
+    ],
+    "counts": {
+      "app_qualified_paths": 20,
+      "method_path": 28,
+      "GET": 16,
+      "HEAD_inferred": 8,
+      "POST": 2,
+      "DELETE": 2,
+      "routing_rejection_rows": 1
+    },
+    "expanded": [
+      [
+        "Y",
+        "GET",
+        "/api/auth/link"
+      ],
+      [
+        "Y",
+        "POST",
+        "/api/auth/code"
+      ],
+      [
+        "Y",
+        "GET",
+        "/api/accounts/"
+      ],
+      [
+        "Y",
+        "DELETE",
+        "/api/accounts/{account_id}"
+      ],
+      [
+        "Y",
+        "GET",
+        "/api/servicing/access-token/{account_id}"
+      ],
+      [
+        "Y",
+        "GET",
+        "/api/metrica/counters"
+      ],
+      [
+        "Y",
+        "GET",
+        "/api/connections/metrica/{equestrian_id}"
+      ],
+      [
+        "Y",
+        "POST",
+        "/api/connections/metrica"
+      ],
+      [
+        "Y",
+        "DELETE",
+        "/api/connections/metrica/{counter_id}"
+      ],
+      [
+        "M",
+        "GET",
+        "/api/metrica/counters"
+      ],
+      [
+        "Y",
+        "GET",
+        "/health"
+      ],
+      [
+        "M",
+        "GET",
+        "/health"
+      ],
+      [
+        "Y",
+        "GET",
+        "/docs"
+      ],
+      [
+        "Y",
+        "HEAD",
+        "/docs"
+      ],
+      [
+        "Y",
+        "GET",
+        "/redoc"
+      ],
+      [
+        "Y",
+        "HEAD",
+        "/redoc"
+      ],
+      [
+        "Y",
+        "GET",
+        "/openapi.json"
+      ],
+      [
+        "Y",
+        "HEAD",
+        "/openapi.json"
+      ],
+      [
+        "Y",
+        "GET",
+        "/docs/oauth2-redirect"
+      ],
+      [
+        "Y",
+        "HEAD",
+        "/docs/oauth2-redirect"
+      ],
+      [
+        "M",
+        "GET",
+        "/docs"
+      ],
+      [
+        "M",
+        "HEAD",
+        "/docs"
+      ],
+      [
+        "M",
+        "GET",
+        "/redoc"
+      ],
+      [
+        "M",
+        "HEAD",
+        "/redoc"
+      ],
+      [
+        "M",
+        "GET",
+        "/openapi.json"
+      ],
+      [
+        "M",
+        "HEAD",
+        "/openapi.json"
+      ],
+      [
+        "M",
+        "GET",
+        "/docs/oauth2-redirect"
+      ],
+      [
+        "M",
+        "HEAD",
+        "/docs/oauth2-redirect"
+      ]
+    ]
+  },
+  "proposal_E1_E10": [
+    "| E1 | [auth routes](<../../../services/yandex-service/src/api/yandex_auth.py#L12-L34>), [OAuth client](<../../../services/yandex-service/src/clients/yandex_oauth_client.py#L66-L102>) | [auth API](<../../../services/yandex-service/tests/api/test_yandex_auth.py#L18-L41>) |",
+    "| E2 | [OAuth orchestration](<../../../services/yandex-service/src/core/services/yandex_oauth_service.py#L27-L100>) | [создание/обновление/expiry](<../../../services/yandex-service/tests/unit/test_yandex_oauth_service.py#L45-L113>), [ошибки/границы](<../../../services/yandex-service/tests/unit/test_yandex_oauth_service.py#L116-L247>) |",
+    "| E3 | [account DTO](<../../../services/yandex-service/src/core/schemas/api/yandex_account.py#L8-L25>), [auth DTO](<../../../services/yandex-service/src/core/schemas/api/yandex_auth.py#L8-L18>) | [API фильтрация](<../../../services/yandex-service/tests/api/test_yandex_auth.py#L29-L41>), [validation](<../../../services/yandex-service/tests/api/test_yandex_auth.py#L93-L131>) |",
+    "| E4 | [accounts routes](<../../../services/yandex-service/src/api/yandex_accounts.py#L13-L41>), [accounts service](<../../../services/yandex-service/src/core/services/yandex_accounts_service.py#L18-L41>) | [accounts unit](<../../../services/yandex-service/tests/unit/test_yandex_accounts_service.py#L14-L138>), [accounts API](<../../../services/yandex-service/tests/api/test_yandex_accounts.py#L16-L121>) |",
+    "| E5 | [repository predicates/order](<../../../services/yandex-service/src/repositories/yandex_user_repository.py#L17-L73>), [delete/flush](<../../../services/yandex-service/src/repositories/abstract_repository.py#L43-L72>) | [SQL compilation](<../../../services/yandex-service/tests/unit/test_yandex_user_repository.py#L15-L136>), [PostgreSQL CRUD/search/rollback](<../../../services/yandex-service/tests/integration/test_repository_postgres.py#L28-L119>) |",
+    "| E6 | [entity limits](<../../../services/yandex-service/src/core/entities/yandex_user.py#L9-L36>), [model](<../../../services/yandex-service/src/models/yandex_users.py#L15-L60>), [исходная миграция](<../../../services/yandex-service/src/migration/versions/6fe0626759ae_.py#L21-L57>) | PostgreSQL constraints/migration execution в этом unit НЕ проверены; SQL/DDL inspection не равно real DB |",
+    "| E7 | [шифрование](<../../../services/yandex-service/src/core/services/encryption_service.py#L7-L22>) | [roundtrip/повреждение](<../../../services/yandex-service/tests/unit/test_encryption_service.py#L7-L31>) |",
+    "| E8 | [transaction boundary](<../../../services/yandex-service/src/utils/transactional_route.py#L10-L30>), [prefixes/error boundary](<../../../services/yandex-service/src/main.py#L75-L120>) | [commit/rollback/order](<../../../services/yandex-service/tests/api/test_transactions.py#L136-L178>), [runtime-route commit failure](<../../../services/yandex-service/tests/api/test_transactions.py#L198-L226>) — fake sessions |",
+    "| E9 | [token retrieval](<../../../services/yandex-service/src/core/services/yandex_service_authorization_service.py#L21-L33>), [token route](<../../../services/yandex-service/src/api/servicing.py#L12-L25>) | [selected/missing/corrupt token](<../../../services/yandex-service/tests/unit/test_service_authorization.py#L27-L79>) |",
+    "| E10 | [пары anonymous/header-bearing](<../../../services/yandex-service/tests/api/conftest.py#L18-L28>) | Заголовки содержат fake credentials; валидная user session/роли не доказаны |"
+  ],
+  "links": {
+    "count": 317,
+    "errors": 0,
+    "records": [
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 5,
+        "target": "../../../docs/tasks/097_yandex_services_retrospective_specs.md",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 10,
+        "target": "specs/yandex-services-access-evidence/spec.md#консолидированная-access-matrix",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 11,
+        "target": "design.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 11,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 18,
+        "target": "specs/yandex-oauth-accounts/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS",
+        "size_bytes": 18965
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 19,
+        "target": "specs/yandex-metrica-gateway/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 20,
+        "target": "specs/ya-metrica-adapter/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 21,
+        "target": "specs/yandex-service-runtime/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 22,
+        "target": "specs/yandex-services-access-evidence/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 26,
+        "target": "../../specs/yandex-client-failures/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 26,
+        "target": "../../specs/yandex-peer-http-contract/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 47,
+        "target": "design.md#execution-units",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 47,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 55,
+        "target": "specs/yandex-services-access-evidence/spec.md#реестр-gaps-и-открытые-security-questions--не-blockers-документационного-backfill",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 63,
+        "target": "../../../services/yandex-service/src/api/yandex_auth.py#L12-L34",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 1154,
+        "target_line_count": 34
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 63,
+        "target": "../../../services/yandex-service/src/clients/yandex_oauth_client.py#L66-L102",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/clients/yandex_oauth_client.py",
+        "status": "PASS",
+        "size_bytes": 3984,
+        "target_line_count": 102
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 63,
+        "target": "../../../services/yandex-service/tests/api/test_yandex_auth.py#L18-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 6172,
+        "target_line_count": 131
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 64,
+        "target": "../../../services/yandex-service/src/core/services/yandex_oauth_service.py#L27-L100",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_oauth_service.py",
+        "status": "PASS",
+        "size_bytes": 4754,
+        "target_line_count": 100
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 64,
+        "target": "../../../services/yandex-service/tests/unit/test_yandex_oauth_service.py#L45-L113",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_oauth_service.py",
+        "status": "PASS",
+        "size_bytes": 11551,
+        "target_line_count": 247
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 64,
+        "target": "../../../services/yandex-service/tests/unit/test_yandex_oauth_service.py#L116-L247",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_oauth_service.py",
+        "status": "PASS",
+        "size_bytes": 11551,
+        "target_line_count": 247
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 65,
+        "target": "../../../services/yandex-service/src/core/schemas/api/yandex_account.py#L8-L25",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/schemas/api/yandex_account.py",
+        "status": "PASS",
+        "size_bytes": 1051,
+        "target_line_count": 25
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 65,
+        "target": "../../../services/yandex-service/src/core/schemas/api/yandex_auth.py#L8-L18",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/schemas/api/yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 674,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 65,
+        "target": "../../../services/yandex-service/tests/api/test_yandex_auth.py#L29-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 6172,
+        "target_line_count": 131
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 65,
+        "target": "../../../services/yandex-service/tests/api/test_yandex_auth.py#L93-L131",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 6172,
+        "target_line_count": 131
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 66,
+        "target": "../../../services/yandex-service/src/api/yandex_accounts.py#L13-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_accounts.py",
+        "status": "PASS",
+        "size_bytes": 1611,
+        "target_line_count": 41
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 66,
+        "target": "../../../services/yandex-service/src/core/services/yandex_accounts_service.py#L18-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_accounts_service.py",
+        "status": "PASS",
+        "size_bytes": 1453,
+        "target_line_count": 41
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 66,
+        "target": "../../../services/yandex-service/tests/unit/test_yandex_accounts_service.py#L14-L138",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_accounts_service.py",
+        "status": "PASS",
+        "size_bytes": 6161,
+        "target_line_count": 138
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 66,
+        "target": "../../../services/yandex-service/tests/api/test_yandex_accounts.py#L16-L121",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_accounts.py",
+        "status": "PASS",
+        "size_bytes": 5434,
+        "target_line_count": 121
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 67,
+        "target": "../../../services/yandex-service/src/repositories/yandex_user_repository.py#L17-L73",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/repositories/yandex_user_repository.py",
+        "status": "PASS",
+        "size_bytes": 2950,
+        "target_line_count": 73
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 67,
+        "target": "../../../services/yandex-service/src/repositories/abstract_repository.py#L43-L72",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/repositories/abstract_repository.py",
+        "status": "PASS",
+        "size_bytes": 4653,
+        "target_line_count": 108
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 67,
+        "target": "../../../services/yandex-service/tests/unit/test_yandex_user_repository.py#L15-L136",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_user_repository.py",
+        "status": "PASS",
+        "size_bytes": 5761,
+        "target_line_count": 136
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 67,
+        "target": "../../../services/yandex-service/tests/integration/test_repository_postgres.py#L28-L119",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/integration/test_repository_postgres.py",
+        "status": "PASS",
+        "size_bytes": 4944,
+        "target_line_count": 119
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 68,
+        "target": "../../../services/yandex-service/src/core/entities/yandex_user.py#L9-L36",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/entities/yandex_user.py",
+        "status": "PASS",
+        "size_bytes": 1761,
+        "target_line_count": 36
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 68,
+        "target": "../../../services/yandex-service/src/models/yandex_users.py#L15-L60",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/models/yandex_users.py",
+        "status": "PASS",
+        "size_bytes": 1509,
+        "target_line_count": 60
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 68,
+        "target": "../../../services/yandex-service/src/migration/versions/6fe0626759ae_.py#L21-L57",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/migration/versions/6fe0626759ae_.py",
+        "status": "PASS",
+        "size_bytes": 3268,
+        "target_line_count": 70
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 69,
+        "target": "../../../services/yandex-service/src/core/services/encryption_service.py#L7-L22",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/encryption_service.py",
+        "status": "PASS",
+        "size_bytes": 834,
+        "target_line_count": 22
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 69,
+        "target": "../../../services/yandex-service/tests/unit/test_encryption_service.py#L7-L31",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_encryption_service.py",
+        "status": "PASS",
+        "size_bytes": 1380,
+        "target_line_count": 31
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 70,
+        "target": "../../../services/yandex-service/src/utils/transactional_route.py#L10-L30",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/transactional_route.py",
+        "status": "PASS",
+        "size_bytes": 1042,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 70,
+        "target": "../../../services/yandex-service/src/main.py#L75-L120",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 70,
+        "target": "../../../services/yandex-service/tests/api/test_transactions.py#L136-L178",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_transactions.py",
+        "status": "PASS",
+        "size_bytes": 12011,
+        "target_line_count": 281
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 70,
+        "target": "../../../services/yandex-service/tests/api/test_transactions.py#L198-L226",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_transactions.py",
+        "status": "PASS",
+        "size_bytes": 12011,
+        "target_line_count": 281
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 71,
+        "target": "../../../services/yandex-service/src/core/services/yandex_service_authorization_service.py#L21-L33",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_service_authorization_service.py",
+        "status": "PASS",
+        "size_bytes": 1285,
+        "target_line_count": 33
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 71,
+        "target": "../../../services/yandex-service/src/api/servicing.py#L12-L25",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/servicing.py",
+        "status": "PASS",
+        "size_bytes": 939,
+        "target_line_count": 25
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 71,
+        "target": "../../../services/yandex-service/tests/unit/test_service_authorization.py#L27-L79",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_service_authorization.py",
+        "status": "PASS",
+        "size_bytes": 3524,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 72,
+        "target": "../../../services/yandex-service/tests/api/conftest.py#L18-L28",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 81,
+        "target": "../../../services/yandex-service/src/core/services/yandex_service_authorization_service.py#L28-L33",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_service_authorization_service.py",
+        "status": "PASS",
+        "size_bytes": 1285,
+        "target_line_count": 33
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/proposal.md",
+        "line": 87,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 3,
+        "target": "../../../docs/tasks/097_yandex_services_retrospective_specs.md",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 7,
+        "target": "proposal.md#why",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 18,
+        "target": "proposal.md#source-anchors",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 34,
+        "target": "specs/yandex-oauth-accounts/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS",
+        "size_bytes": 18965
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 34,
+        "target": "proposal.md#source-anchors",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 35,
+        "target": "specs/yandex-metrica-gateway/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 35,
+        "target": "specs/yandex-metrica-gateway/spec.md#L163-L171",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983,
+        "target_line_count": 183
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 36,
+        "target": "specs/ya-metrica-adapter/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 36,
+        "target": "specs/ya-metrica-adapter/spec.md#L43-L56",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582,
+        "target_line_count": 151
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 37,
+        "target": "specs/yandex-service-runtime/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 37,
+        "target": "specs/yandex-service-runtime/spec.md#L162-L191",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205,
+        "target_line_count": 195
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 38,
+        "target": "specs/yandex-services-access-evidence/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 48,
+        "target": "../../specs/yandex-client-failures/spec.md#L31-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 49,
+        "target": "../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 50,
+        "target": "specs/yandex-service-runtime/spec.md#L183-L191",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205,
+        "target_line_count": 195
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 56,
+        "target": "specs/yandex-services-access-evidence/spec.md#L20-L50",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858,
+        "target_line_count": 246
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 58,
+        "target": "../../specs/yandex-peer-http-contract/spec.md#L57-L59",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 64,
+        "target": "specs/yandex-services-access-evidence/spec.md#L75-L101",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858,
+        "target_line_count": 246
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 76,
+        "target": "proposal.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 76,
+        "target": "design.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 76,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 89,
+        "target": "proposal.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 89,
+        "target": "#decisions",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 90,
+        "target": "#test-matrix",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 90,
+        "target": "specs/yandex-services-access-evidence/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 90,
+        "target": "../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 90,
+        "target": "../../specs/yandex-client-failures/spec.md#L31-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 91,
+        "target": "#context",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 91,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 92,
+        "target": "design.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 92,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 93,
+        "target": "proposal.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 93,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/design.md",
+        "line": 135,
+        "target": "specs/yandex-services-access-evidence/spec.md#L88-L101",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858,
+        "target_line_count": 246
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 3,
+        "target": "design.md#execution-units",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "proposal.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "design.md#decisions",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "specs/yandex-oauth-accounts/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS",
+        "size_bytes": 18965
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "specs/yandex-metrica-gateway/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "specs/ya-metrica-adapter/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "specs/yandex-service-runtime/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 11,
+        "target": "specs/yandex-services-access-evidence/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 12,
+        "target": "design.md#test-matrix",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 12,
+        "target": "specs/yandex-services-access-evidence/spec.md#L20-L101",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858,
+        "target_line_count": 246
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 12,
+        "target": "../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 12,
+        "target": "../../specs/yandex-client-failures/spec.md#L31-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 13,
+        "target": "design.md#context",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 13,
+        "target": "design.md#lanes-и-обязательный-format",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 14,
+        "target": "design.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 14,
+        "target": "tasks.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md",
+        "status": "PASS",
+        "size_bytes": 16471
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 15,
+        "target": "proposal.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/tasks.md",
+        "line": 17,
+        "target": "design.md#execution-units",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md",
+        "status": "PASS",
+        "size_bytes": 28756
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "line": 7,
+        "target": "../../proposal.md#source-anchors",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 9,
+        "target": "../../../../../docs/tasks/097_yandex_services_retrospective_specs.md#L1-L18",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 12,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L7-L17",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 12,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 12,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L7-L41",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 12,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L43-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 20,
+        "target": "../../../../../services/yandex-service/src/api/yandex_metrica.py#L12-L29",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 1232,
+        "target_line_count": 29
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 20,
+        "target": "../../../../../services/yandex-service/src/main.py#L80-L86",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 21,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_metrica_service.py#L25-L43",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 1777,
+        "target_line_count": 43
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 22,
+        "target": "../../../../../services/yandex-service/src/clients/yandex_metrica_service_client.py#L60-L75",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/clients/yandex_metrica_service_client.py",
+        "status": "PASS",
+        "size_bytes": 2905,
+        "target_line_count": 75
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 22,
+        "target": "../../../../../services/yandex-service/src/core/protocols/clients/yandex_metrica_service_client.py#L6-L15",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/protocols/clients/yandex_metrica_service_client.py",
+        "status": "PASS",
+        "size_bytes": 596,
+        "target_line_count": 15
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 22,
+        "target": "../../../../../services/yandex-service/tests/unit/test_yandex_metrica_service_client.py#L151-L190",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_metrica_service_client.py",
+        "status": "PASS",
+        "size_bytes": 12570,
+        "target_line_count": 284
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 23,
+        "target": "../../../../../services/yandex-service/src/core/schemas/api/yandex_metrica_counters.py#L9-L43",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/schemas/api/yandex_metrica_counters.py",
+        "status": "PASS",
+        "size_bytes": 1957,
+        "target_line_count": 43
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 23,
+        "target": "../../../../../services/yandex-service/src/core/schemas/api/yandex_account.py#L8-L25",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/schemas/api/yandex_account.py",
+        "status": "PASS",
+        "size_bytes": 1051,
+        "target_line_count": 25
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 24,
+        "target": "../../../../../services/yandex-service/src/api/yandex_connections.py#L16-L53",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_connections.py",
+        "status": "PASS",
+        "size_bytes": 1613,
+        "target_line_count": 53
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 24,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_metrica_counter_service.py#L28-L69",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_metrica_counter_service.py",
+        "status": "PASS",
+        "size_bytes": 3279,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 25,
+        "target": "../../../../../services/yandex-service/src/core/entities/yandex_metrica_counter.py#L8-L13",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/entities/yandex_metrica_counter.py",
+        "status": "PASS",
+        "size_bytes": 554,
+        "target_line_count": 13
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 25,
+        "target": "../../../../../services/yandex-service/src/repositories/yandex_metrica_counter_repository.py#L11-L21",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/repositories/yandex_metrica_counter_repository.py",
+        "status": "PASS",
+        "size_bytes": 740,
+        "target_line_count": 21
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 25,
+        "target": "../../../../../services/yandex-service/src/core/protocols/repositories/yandex_metrica_counter_repository.py#L9-L14",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/protocols/repositories/yandex_metrica_counter_repository.py",
+        "status": "PASS",
+        "size_bytes": 425,
+        "target_line_count": 14
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 26,
+        "target": "../../../../../services/yandex-service/src/models/yandex_metrica_counters.py#L13-L26",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/models/yandex_metrica_counters.py",
+        "status": "PASS",
+        "size_bytes": 612,
+        "target_line_count": 26
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 26,
+        "target": "../../../../../services/yandex-service/src/migration/versions/6fe0626759ae_.py#L48-L58",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/migration/versions/6fe0626759ae_.py",
+        "status": "PASS",
+        "size_bytes": 3268,
+        "target_line_count": 70
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 26,
+        "target": "../../../../../services/yandex-service/src/migration/versions/61c3a74f4ba9_.py#L18-L28",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/migration/versions/61c3a74f4ba9_.py",
+        "status": "PASS",
+        "size_bytes": 831,
+        "target_line_count": 29
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 27,
+        "target": "../../../../../services/yandex-service/src/repositories/abstract_repository.py#L43-L72",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/repositories/abstract_repository.py",
+        "status": "PASS",
+        "size_bytes": 4653,
+        "target_line_count": 108
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 27,
+        "target": "../../../../../services/yandex-service/src/utils/transactional_route.py#L10-L30",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/transactional_route.py",
+        "status": "PASS",
+        "size_bytes": 1042,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 28,
+        "target": "../../../../../services/yandex-service/tests/unit/test_yandex_metrica_service.py#L36-L130",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 5965,
+        "target_line_count": 130
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 28,
+        "target": "../../../../../services/yandex-service/tests/api/test_yandex_metrica.py#L17-L121",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 5397,
+        "target_line_count": 121
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 29,
+        "target": "../../../../../services/yandex-service/tests/unit/test_yandex_metrica_counter_service.py#L35-L148",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_metrica_counter_service.py",
+        "status": "PASS",
+        "size_bytes": 6508,
+        "target_line_count": 148
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 29,
+        "target": "../../../../../services/yandex-service/tests/api/test_yandex_connections.py#L16-L124",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_connections.py",
+        "status": "PASS",
+        "size_bytes": 6012,
+        "target_line_count": 124
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 30,
+        "target": "../../../../../services/yandex-service/tests/unit/test_yandex_metrica_counter_repository.py#L15-L49",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_metrica_counter_repository.py",
+        "status": "PASS",
+        "size_bytes": 2009,
+        "target_line_count": 49
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 30,
+        "target": "../../../../../services/yandex-service/tests/integration/test_counter_repository_postgres.py#L15-L36",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/integration/test_counter_repository_postgres.py",
+        "status": "PASS",
+        "size_bytes": 1637,
+        "target_line_count": 36
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 30,
+        "target": "../../../../../services/yandex-service/tests/integration/test_models_postgres.py#L30-L53",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/integration/test_models_postgres.py",
+        "status": "PASS",
+        "size_bytes": 3011,
+        "target_line_count": 77
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 31,
+        "target": "../../../../../services/yandex-service/tests/api/conftest.py#L18-L28",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 31,
+        "target": "../../../../../services/yandex-service/tests/api/conftest.py#L56-L81",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 31,
+        "target": "../../../../../services/yandex-service/tests/api/conftest.py#L119-L122",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "line": 167,
+        "target": "../../../../../services/yandex-service/tests/unit/test_yandex_metrica_service.py#L124-L130",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 5965,
+        "target_line_count": 130
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 9,
+        "target": "../../../../../docs/tasks/097_yandex_services_retrospective_specs.md#L1-L18",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 13,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L31-L69",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 13,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 26,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L18-L75",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 26,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_health.py#L15-L38",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 6705,
+        "target_line_count": 182
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 34,
+        "target": "../../../../../services/ya-metrica-service/src/api/yandex_metrica.py#L13-L30",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/api/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 1116,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 34,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L66-L73",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 34,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L40-L75",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 35,
+        "target": "../../../../../services/ya-metrica-service/src/core/services/yandex_metrica_service.py#L20-L40",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/services/yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 2924,
+        "target_line_count": 65
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 35,
+        "target": "../../../../../services/ya-metrica-service/src/clients/yandex_metrica.py#L62-L80",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/clients/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 3082,
+        "target_line_count": 80
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 35,
+        "target": "../../../../../services/ya-metrica-service/tests/unit/test_yandex_metrica_service.py#L20-L46",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/unit/test_yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 6883,
+        "target_line_count": 164
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 35,
+        "target": "../../../../../services/ya-metrica-service/tests/clients/test_yandex_metrica.py#L154-L168",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/clients/test_yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 10365,
+        "target_line_count": 279
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 36,
+        "target": "../../../../../services/ya-metrica-service/src/core/services/encryption_service.py#L7-L22",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/services/encryption_service.py",
+        "status": "PASS",
+        "size_bytes": 834,
+        "target_line_count": 22
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 36,
+        "target": "../../../../../services/ya-metrica-service/src/containers/services.py#L11-L18",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/containers/services.py",
+        "status": "PASS",
+        "size_bytes": 716,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 36,
+        "target": "../../../../../services/ya-metrica-service/tests/unit/test_encryption_service.py#L7-L36",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/unit/test_encryption_service.py",
+        "status": "PASS",
+        "size_bytes": 1471,
+        "target_line_count": 36
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 36,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L100-L125",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 37,
+        "target": "../../../../../services/ya-metrica-service/src/clients/yandex_metrica.py#L13-L60",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/clients/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 3082,
+        "target_line_count": 80
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 37,
+        "target": "../../../../../services/ya-metrica-service/src/core/schemas/clients/yandex_metrica.py#L4-L15",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/schemas/clients/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 738,
+        "target_line_count": 15
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 37,
+        "target": "../../../../../services/ya-metrica-service/src/core/protocols/clients/yandex_metrica.py#L4-L17",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/protocols/clients/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 862,
+        "target_line_count": 17
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 37,
+        "target": "../../../../../services/ya-metrica-service/tests/clients/test_yandex_metrica.py#L171-L220",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/clients/test_yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 10365,
+        "target_line_count": 279
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 38,
+        "target": "../../../../../services/ya-metrica-service/src/core/schemas/api/yandex_metrica_counters.py#L6-L17",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/schemas/api/yandex_metrica_counters.py",
+        "status": "PASS",
+        "size_bytes": 676,
+        "target_line_count": 17
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 38,
+        "target": "../../../../../services/ya-metrica-service/src/core/services/yandex_metrica_service.py#L43-L65",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/services/yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 2924,
+        "target_line_count": 65
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 38,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L170-L206",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 39,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L76-L106",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 39,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L136-L167",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 40,
+        "target": "../../../../../services/ya-metrica-service/src/settings.py#L7-L44",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 1950,
+        "target_line_count": 44
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 40,
+        "target": "../../../../../services/ya-metrica-service/tests/unit/test_settings.py#L12-L80",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 3135,
+        "target_line_count": 80
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 41,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L17-L28",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 41,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L71-L73",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 41,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_health.py#L15-L21",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 6705,
+        "target_line_count": 182
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 41,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L23-L29",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 45,
+        "target": "../../../../../services/ya-metrica-service/src/containers/services.py#L6-L18",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/containers/services.py",
+        "status": "PASS",
+        "size_bytes": 716,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 45,
+        "target": "../../../../../services/ya-metrica-service/src/core/services/yandex_metrica_service.py#L13-L65",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/services/yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 2924,
+        "target_line_count": 65
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 45,
+        "target": "../../../../../services/ya-metrica-service/src/containers/repositories.py#L1-L7",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/containers/repositories.py",
+        "status": "PASS",
+        "size_bytes": 215,
+        "target_line_count": 7
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 45,
+        "target": "../../../../../services/ya-metrica-service/src/repositories/__init__.py",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/repositories/__init__.py",
+        "status": "PASS",
+        "size_bytes": 0
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 45,
+        "target": "../../../../../services/ya-metrica-service/src/models/__init__.py",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/models/__init__.py",
+        "status": "PASS",
+        "size_bytes": 0
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 45,
+        "target": "../../../../../services/ya-metrica-service/src/migration/versions/20260710_0001_initial.py#L1-L14",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/migration/versions/20260710_0001_initial.py",
+        "status": "PASS",
+        "size_bytes": 186,
+        "target_line_count": 14
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 46,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L17-L28",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 46,
+        "target": "../../../../../services/ya-metrica-service/src/clients/yandex_metrica.py#L28-L60",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/clients/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 3082,
+        "target_line_count": 80
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 47,
+        "target": "../../../../../services/ya-metrica-service/src/settings.py#L7-L34",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 1950,
+        "target_line_count": 44
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 47,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L60-L64",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 48,
+        "target": "../../../../../services/ya-metrica-service/README.md#L1-L63",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/README.md",
+        "status": "PASS",
+        "size_bytes": 3632,
+        "target_line_count": 88
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 48,
+        "target": "../../../../../services/ya-metrica-service/pyproject.toml#L1-L6",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/pyproject.toml",
+        "status": "PASS",
+        "size_bytes": 1720,
+        "target_line_count": 75
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 48,
+        "target": "../../../../../services/ya-metrica-service/README.md#L85-L88",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/README.md",
+        "status": "PASS",
+        "size_bytes": 3632,
+        "target_line_count": 88
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "line": 48,
+        "target": "../../../../../services/ya-metrica-service/tests/unit/test_yandex_metrica_service.py#L83-L97",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/unit/test_yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 6883,
+        "target_line_count": 164
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 9,
+        "target": "../../../../../docs/tasks/097_yandex_services_retrospective_specs.md",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 13,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L7-L29",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 13,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L31-L41",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 13,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L7-L33",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 13,
+        "target": "../yandex-oauth-accounts/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS",
+        "size_bytes": 18965
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 13,
+        "target": "../yandex-metrica-gateway/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 17,
+        "target": "../../../../../services/yandex-service/src/settings.py#L7-L59",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 2574,
+        "target_line_count": 59
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 34,
+        "target": "../../../../../services/yandex-service/src/containers/application.py#L6-L13",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/application.py",
+        "status": "PASS",
+        "size_bytes": 550,
+        "target_line_count": 13
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 34,
+        "target": "../../../../../services/yandex-service/src/main.py#L39-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 35,
+        "target": "../../../../../services/yandex-service/src/containers/settings.py#L6-L9",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/settings.py",
+        "status": "PASS",
+        "size_bytes": 392,
+        "target_line_count": 9
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 36,
+        "target": "../../../../../services/yandex-service/src/containers/clients.py#L6-L18",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/clients.py",
+        "status": "PASS",
+        "size_bytes": 792,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 37,
+        "target": "../../../../../services/yandex-service/src/containers/services.py#L13-L45",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/services.py",
+        "status": "PASS",
+        "size_bytes": 1857,
+        "target_line_count": 45
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 38,
+        "target": "../../../../../services/yandex-service/src/containers/repositories.py#L7-L11",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/repositories.py",
+        "status": "PASS",
+        "size_bytes": 487,
+        "target_line_count": 11
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 38,
+        "target": "../../../../../services/yandex-service/src/depends/utils.py#L8-L10",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/depends/utils.py",
+        "status": "PASS",
+        "size_bytes": 266,
+        "target_line_count": 10
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 39,
+        "target": "../../../../../services/yandex-service/src/utils/transactional_route.py#L10-L30",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/transactional_route.py",
+        "status": "PASS",
+        "size_bytes": 1042,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 40,
+        "target": "../../../../../services/yandex-service/src/utils/database.py#L8-L18",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/database.py",
+        "status": "PASS",
+        "size_bytes": 1203,
+        "target_line_count": 50
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 40,
+        "target": "../../../../../services/yandex-service/src/main.py#L33-L36",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 48,
+        "target": "../../../../../services/yandex-service/tests/api/test_health.py#L31-L38",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 2484,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 48,
+        "target": "../../../../../services/yandex-service/tests/api/conftest.py#L28-L28",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 48,
+        "target": "../../../../../services/yandex-service/tests/api/test_health.py#L41-L48",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 2484,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 168,
+        "target": "../../../../../services/yandex-service/src/settings.py#L7-L59",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 2574,
+        "target_line_count": 59
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 168,
+        "target": "../../../../../services/yandex-service/tests/unit/test_settings.py#L23-L35",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 4973,
+        "target_line_count": 111
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 168,
+        "target": "../../../../../services/yandex-service/tests/unit/test_settings.py#L63-L90",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 4973,
+        "target_line_count": 111
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 169,
+        "target": "../../../../../services/yandex-service/src/settings.py#L27-L37",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 2574,
+        "target_line_count": 59
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 169,
+        "target": "../../../../../services/yandex-service/tests/unit/test_settings.py#L38-L42",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 4973,
+        "target_line_count": 111
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 169,
+        "target": "../../../../../services/yandex-service/tests/unit/test_settings.py#L82-L86",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 4973,
+        "target_line_count": 111
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 170,
+        "target": "../../../../../services/yandex-service/src/settings.py#L47-L56",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 2574,
+        "target_line_count": 59
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 170,
+        "target": "../../../../../services/yandex-service/src/containers/clients.py#L9-L18",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/clients.py",
+        "status": "PASS",
+        "size_bytes": 792,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 170,
+        "target": "../../../../../services/yandex-service/tests/unit/test_settings.py#L93-L111",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 4973,
+        "target_line_count": 111
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 171,
+        "target": "../../../../../services/yandex-service/src/settings.py#L15-L37",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/settings.py",
+        "status": "PASS",
+        "size_bytes": 2574,
+        "target_line_count": 59
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 171,
+        "target": "../../../../../services/yandex-service/src/utils/configure_sentry.py#L8-L19",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/configure_sentry.py",
+        "status": "PASS",
+        "size_bytes": 582,
+        "target_line_count": 19
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 171,
+        "target": "../../../../../services/yandex-service/tests/unit/test_settings.py#L45-L60",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_settings.py",
+        "status": "PASS",
+        "size_bytes": 4973,
+        "target_line_count": 111
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 171,
+        "target": "../../../../../services/yandex-service/tests/unit/test_observability.py#L34-L60",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_observability.py",
+        "status": "PASS",
+        "size_bytes": 2356,
+        "target_line_count": 60
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 172,
+        "target": "../../../../../services/yandex-service/src/main.py#L89-L91",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 172,
+        "target": "../../../../../services/yandex-service/tests/api/test_health.py#L31-L38",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 2484,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 173,
+        "target": "../../../../../services/yandex-service/src/main.py#L22-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 173,
+        "target": "../../../../../services/yandex-service/src/main.py#L75-L78",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 173,
+        "target": "../../../../../services/yandex-service/tests/api/test_lifespan.py#L10-L16",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_lifespan.py",
+        "status": "PASS",
+        "size_bytes": 530,
+        "target_line_count": 16
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 173,
+        "target": "../../../../../services/yandex-service/tests/unit/test_observability.py#L12-L31",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_observability.py",
+        "status": "PASS",
+        "size_bytes": 2356,
+        "target_line_count": 60
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 174,
+        "target": "../../../../../services/yandex-service/src/main.py#L33-L36",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 174,
+        "target": "../../../../../services/yandex-service/src/utils/database.py#L49-L50",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/database.py",
+        "status": "PASS",
+        "size_bytes": 1203,
+        "target_line_count": 50
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 174,
+        "target": "../../../../../services/yandex-service/tests/api/test_lifespan.py#L10-L16",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_lifespan.py",
+        "status": "PASS",
+        "size_bytes": 530,
+        "target_line_count": 16
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 174,
+        "target": "../../../../../services/yandex-service/tests/unit/test_database.py#L64-L68",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_database.py",
+        "status": "PASS",
+        "size_bytes": 2831,
+        "target_line_count": 68
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 175,
+        "target": "../../../../../services/yandex-service/src/containers/settings.py#L6-L9",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/settings.py",
+        "status": "PASS",
+        "size_bytes": 392,
+        "target_line_count": 9
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 175,
+        "target": "../../../../../services/yandex-service/src/containers/repositories.py#L7-L11",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/repositories.py",
+        "status": "PASS",
+        "size_bytes": 487,
+        "target_line_count": 11
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 175,
+        "target": "../../../../../services/yandex-service/src/containers/services.py#L13-L45",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/services.py",
+        "status": "PASS",
+        "size_bytes": 1857,
+        "target_line_count": 45
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 175,
+        "target": "../../../../../services/yandex-service/tests/unit/test_containers.py#L26-L64",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_containers.py",
+        "status": "PASS",
+        "size_bytes": 4602,
+        "target_line_count": 97
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 175,
+        "target": "../../../../../services/yandex-service/tests/unit/test_containers.py#L67-L97",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_containers.py",
+        "status": "PASS",
+        "size_bytes": 4602,
+        "target_line_count": 97
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 175,
+        "target": "../../../../../services/yandex-service/tests/unit/test_dependencies.py#L9-L29",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_dependencies.py",
+        "status": "PASS",
+        "size_bytes": 1091,
+        "target_line_count": 29
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 176,
+        "target": "../../../../../services/yandex-service/src/utils/transactional_route.py#L20-L28",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/transactional_route.py",
+        "status": "PASS",
+        "size_bytes": 1042,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 176,
+        "target": "../../../../../services/yandex-service/src/utils/database.py#L37-L46",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/database.py",
+        "status": "PASS",
+        "size_bytes": 1203,
+        "target_line_count": 50
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 176,
+        "target": "../../../../../services/yandex-service/tests/unit/test_database.py#L35-L61",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_database.py",
+        "status": "PASS",
+        "size_bytes": 2831,
+        "target_line_count": 68
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 176,
+        "target": "../../../../../services/yandex-service/tests/api/conftest.py#L119-L122",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 177,
+        "target": "../../../../../services/yandex-service/src/main.py#L44-L78",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 177,
+        "target": "../../../../../services/yandex-service/src/utils/database.py#L8-L34",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/database.py",
+        "status": "PASS",
+        "size_bytes": 1203,
+        "target_line_count": 50
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 177,
+        "target": "../../../../../services/yandex-service/tests/api/test_health.py#L22-L28",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 2484,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 177,
+        "target": "../../../../../services/yandex-service/tests/unit/test_database.py#L12-L32",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_database.py",
+        "status": "PASS",
+        "size_bytes": 2831,
+        "target_line_count": 68
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 181,
+        "target": "../../../../../services/yandex-service/Dockerfile#L1-L16",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/Dockerfile",
+        "status": "PASS",
+        "size_bytes": 365,
+        "target_line_count": 16
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 181,
+        "target": "../../../../../services/yandex-service/Makefile#L8-L21",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/Makefile",
+        "status": "PASS",
+        "size_bytes": 871,
+        "target_line_count": 29
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 188,
+        "target": "../../../../specs/database-connection-pooling/spec.md#L6-L36",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/database-connection-pooling/spec.md",
+        "status": "PASS",
+        "size_bytes": 2169,
+        "target_line_count": 47
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 189,
+        "target": "../../../../specs/platform-observability/spec.md#L9-L22",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/platform-observability/spec.md",
+        "status": "PASS",
+        "size_bytes": 16037,
+        "target_line_count": 154
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 189,
+        "target": "../../../../../services/yandex-service/src/utils/configure_logger.py#L4-L13",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/configure_logger.py",
+        "status": "PASS",
+        "size_bytes": 418,
+        "target_line_count": 13
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 189,
+        "target": "../../../../specs/platform-observability/spec.md#L69-L82",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/platform-observability/spec.md",
+        "status": "PASS",
+        "size_bytes": 16037,
+        "target_line_count": 154
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 190,
+        "target": "../../../../specs/service-env-and-clients/spec.md#L33-L38",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/service-env-and-clients/spec.md",
+        "status": "PASS",
+        "size_bytes": 5403,
+        "target_line_count": 68
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "line": 190,
+        "target": "../../../../specs/service-env-and-clients/spec.md#L20-L31",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/service-env-and-clients/spec.md",
+        "status": "PASS",
+        "size_bytes": 5403,
+        "target_line_count": 68
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 9,
+        "target": "../../../../../docs/tasks/097_yandex_services_retrospective_specs.md#L1-L18",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 15,
+        "target": "../../../../../AGENTS.md#L92-L117",
+        "resolved": "/srv/eqSiteCMS/AGENTS.md",
+        "status": "PASS",
+        "size_bytes": 12123,
+        "target_line_count": 147
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 16,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 18,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L31-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 58,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 58,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L31-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 59,
+        "target": "../../../../../services/yandex-service/src/main.py#L44-L120",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 59,
+        "target": "../../../../../services/yandex-service/src/api/__init__.py#L1-L13",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/__init__.py",
+        "status": "PASS",
+        "size_bytes": 451,
+        "target_line_count": 13
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 60,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L31-L106",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 60,
+        "target": "../../../../../services/ya-metrica-service/src/api/__init__.py#L1-L5",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/api/__init__.py",
+        "status": "PASS",
+        "size_bytes": 104,
+        "target_line_count": 5
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 61,
+        "target": "../../../../../services/yandex-service/src/containers/services.py#L13-L45",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/containers/services.py",
+        "status": "PASS",
+        "size_bytes": 1857,
+        "target_line_count": 45
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 61,
+        "target": "../../../../../services/ya-metrica-service/src/containers/services.py#L6-L18",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/containers/services.py",
+        "status": "PASS",
+        "size_bytes": 716,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 61,
+        "target": "../../../../../services/yandex-service/src/utils/transactional_route.py#L10-L30",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/utils/transactional_route.py",
+        "status": "PASS",
+        "size_bytes": 1042,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 61,
+        "target": "../../../../../services/yandex-service/src/depends/utils.py#L8-L10",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/depends/utils.py",
+        "status": "PASS",
+        "size_bytes": 266,
+        "target_line_count": 10
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 61,
+        "target": "../../../../../services/ya-metrica-service/src/depends/utils.py#L8-L10",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/depends/utils.py",
+        "status": "PASS",
+        "size_bytes": 266,
+        "target_line_count": 10
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../../../../../services/yandex-service/src/api/yandex_auth.py#L12-L34",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 1154,
+        "target_line_count": 34
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../../../../../services/yandex-service/src/core/schemas/api/yandex_auth.py#L14-L18",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/schemas/api/yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 674,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_oauth_service.py#L27-L58",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_oauth_service.py",
+        "status": "PASS",
+        "size_bytes": 4754,
+        "target_line_count": 100
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../../../../../services/yandex-service/src/clients/yandex_oauth_client.py#L66-L82",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/clients/yandex_oauth_client.py",
+        "status": "PASS",
+        "size_bytes": 3984,
+        "target_line_count": 102
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../../../../../services/yandex-service/tests/api/test_yandex_auth.py#L18-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_auth.py",
+        "status": "PASS",
+        "size_bytes": 6172,
+        "target_line_count": 131
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../yandex-oauth-accounts/spec.md#L127-L151",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS",
+        "size_bytes": 18965,
+        "target_line_count": 152
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 62,
+        "target": "../../proposal.md#L63-L83",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416,
+        "target_line_count": 87
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 63,
+        "target": "../../../../../services/yandex-service/src/api/yandex_accounts.py#L13-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_accounts.py",
+        "status": "PASS",
+        "size_bytes": 1611,
+        "target_line_count": 41
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 63,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_accounts_service.py#L18-L41",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_accounts_service.py",
+        "status": "PASS",
+        "size_bytes": 1453,
+        "target_line_count": 41
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 63,
+        "target": "../../../../../services/yandex-service/tests/api/test_yandex_accounts.py#L16-L93",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_accounts.py",
+        "status": "PASS",
+        "size_bytes": 5434,
+        "target_line_count": 121
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 64,
+        "target": "../../../../../services/yandex-service/src/api/servicing.py#L12-L25",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/servicing.py",
+        "status": "PASS",
+        "size_bytes": 939,
+        "target_line_count": 25
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 64,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_service_authorization_service.py#L21-L33",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_service_authorization_service.py",
+        "status": "PASS",
+        "size_bytes": 1285,
+        "target_line_count": 33
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 64,
+        "target": "../../../../../services/yandex-service/tests/api/test_servicing.py#L15-L55",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_servicing.py",
+        "status": "PASS",
+        "size_bytes": 2769,
+        "target_line_count": 55
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 64,
+        "target": "../../proposal.md#L71-L81",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416,
+        "target_line_count": 87
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 65,
+        "target": "../../../../../services/yandex-service/src/api/yandex_metrica.py#L12-L29",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 1232,
+        "target_line_count": 29
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 65,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_metrica_service.py#L25-L43",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 1777,
+        "target_line_count": 43
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 65,
+        "target": "../../../../../services/yandex-service/src/clients/yandex_metrica_service_client.py#L60-L75",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/clients/yandex_metrica_service_client.py",
+        "status": "PASS",
+        "size_bytes": 2905,
+        "target_line_count": 75
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 65,
+        "target": "../../../../../services/yandex-service/tests/api/test_yandex_metrica.py#L72-L121",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 5397,
+        "target_line_count": 121
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 65,
+        "target": "../../../../../services/yandex-service/tests/unit/test_yandex_metrica_service.py#L124-L130",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/unit/test_yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 5965,
+        "target_line_count": 130
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 66,
+        "target": "../../../../../services/yandex-service/src/api/yandex_connections.py#L16-L53",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/api/yandex_connections.py",
+        "status": "PASS",
+        "size_bytes": 1613,
+        "target_line_count": 53
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 66,
+        "target": "../../../../../services/yandex-service/src/core/services/yandex_metrica_counter_service.py#L28-L69",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/core/services/yandex_metrica_counter_service.py",
+        "status": "PASS",
+        "size_bytes": 3279,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 66,
+        "target": "../../../../../services/yandex-service/tests/api/test_yandex_connections.py#L16-L96",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_yandex_connections.py",
+        "status": "PASS",
+        "size_bytes": 6012,
+        "target_line_count": 124
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 66,
+        "target": "../yandex-metrica-gateway/spec.md#L33-L44",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983,
+        "target_line_count": 183
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 66,
+        "target": "../yandex-metrica-gateway/spec.md#L163-L171",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983,
+        "target_line_count": 183
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 67,
+        "target": "../../../../../services/ya-metrica-service/src/api/yandex_metrica.py#L10-L30",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/api/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 1116,
+        "target_line_count": 30
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 67,
+        "target": "../../../../../services/ya-metrica-service/src/core/services/yandex_metrica_service.py#L20-L42",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/core/services/yandex_metrica_service.py",
+        "status": "PASS",
+        "size_bytes": 2924,
+        "target_line_count": 65
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 67,
+        "target": "../../../../../services/ya-metrica-service/src/clients/yandex_metrica.py#L62-L80",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/clients/yandex_metrica.py",
+        "status": "PASS",
+        "size_bytes": 3082,
+        "target_line_count": 80
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 67,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L18-L125",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 67,
+        "target": "../ya-metrica-adapter/spec.md#L50-L56",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582,
+        "target_line_count": 151
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 68,
+        "target": "../../../../../services/yandex-service/src/main.py#L89-L91",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4746,
+        "target_line_count": 120
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 68,
+        "target": "../../../../../services/yandex-service/tests/api/test_health.py#L31-L38",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 2484,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 68,
+        "target": "../yandex-service-runtime/spec.md#L42-L48",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205,
+        "target_line_count": 195
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 68,
+        "target": "../yandex-service-runtime/spec.md#L183-L195",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205,
+        "target_line_count": 195
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 69,
+        "target": "../../../../../services/ya-metrica-service/src/main.py#L71-L73",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/src/main.py",
+        "status": "PASS",
+        "size_bytes": 4035,
+        "target_line_count": 106
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 69,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_health.py#L15-L21",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 6705,
+        "target_line_count": 182
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 70,
+        "target": "../../../../../services/yandex-service/tests/api/test_health.py#L41-L69",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 2484,
+        "target_line_count": 69
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 70,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_health.py#L15-L38",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_health.py",
+        "status": "PASS",
+        "size_bytes": 6705,
+        "target_line_count": 182
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 71,
+        "target": "../../../../../services/yandex-service/.venv/lib/python3.14/site-packages/fastapi/applications.py#L1105-L1158",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/.venv/lib/python3.14/site-packages/fastapi/applications.py",
+        "status": "PASS",
+        "size_bytes": 183452,
+        "target_line_count": 4768
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 71,
+        "target": "../../../../../services/yandex-service/.venv/lib/python3.14/site-packages/starlette/routing.py#L212-L234",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/.venv/lib/python3.14/site-packages/starlette/routing.py",
+        "status": "PASS",
+        "size_bytes": 29579,
+        "target_line_count": 747
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 71,
+        "target": "../../../../../services/ya-metrica-service/.venv/lib/python3.14/site-packages/fastapi/applications.py#L1105-L1158",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/.venv/lib/python3.14/site-packages/fastapi/applications.py",
+        "status": "PASS",
+        "size_bytes": 183452,
+        "target_line_count": 4768
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 71,
+        "target": "../../../../../services/ya-metrica-service/.venv/lib/python3.14/site-packages/starlette/routing.py#L212-L234",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/.venv/lib/python3.14/site-packages/starlette/routing.py",
+        "status": "PASS",
+        "size_bytes": 29579,
+        "target_line_count": 747
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 72,
+        "target": "../../../../../services/yandex-service/tests/api/conftest.py#L18-L81",
+        "resolved": "/srv/eqSiteCMS/services/yandex-service/tests/api/conftest.py",
+        "status": "PASS",
+        "size_bytes": 5735,
+        "target_line_count": 146
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 72,
+        "target": "../../../../../services/ya-metrica-service/tests/api/test_counters_api.py#L18-L37",
+        "resolved": "/srv/eqSiteCMS/services/ya-metrica-service/tests/api/test_counters_api.py",
+        "status": "PASS",
+        "size_bytes": 9363,
+        "target_line_count": 215
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 73,
+        "target": "../../../../../.docker-compose/docker-compose.yandex.yml#L12-L27",
+        "resolved": "/srv/eqSiteCMS/.docker-compose/docker-compose.yandex.yml",
+        "status": "PASS",
+        "size_bytes": 1633,
+        "target_line_count": 54
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 73,
+        "target": "../../../../../.docker-compose/docker-compose.ya_metrica.yml#L12-L27",
+        "resolved": "/srv/eqSiteCMS/.docker-compose/docker-compose.ya_metrica.yml",
+        "status": "PASS",
+        "size_bytes": 1685,
+        "target_line_count": 54
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 83,
+        "target": "../../proposal.md#L77-L81",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416,
+        "target_line_count": 87
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 83,
+        "target": "../ya-metrica-adapter/spec.md#L50-L55",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582,
+        "target_line_count": 151
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 85,
+        "target": "../yandex-service-runtime/spec.md#L183-L191",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205,
+        "target_line_count": 195
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 227,
+        "target": "../../../../../docs/tasks/097_yandex_services_retrospective_specs.md#L1-L18",
+        "resolved": "/srv/eqSiteCMS/docs/tasks/097_yandex_services_retrospective_specs.md",
+        "status": "PASS",
+        "size_bytes": 2399,
+        "target_line_count": 18
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 228,
+        "target": "../../../../../agents/planner.md#L1-L16",
+        "resolved": "/srv/eqSiteCMS/agents/planner.md",
+        "status": "PASS",
+        "size_bytes": 34074,
+        "target_line_count": 394
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 229,
+        "target": "../../proposal.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md",
+        "status": "PASS",
+        "size_bytes": 14416
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 230,
+        "target": "../yandex-oauth-accounts/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md",
+        "status": "PASS",
+        "size_bytes": 18965
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 231,
+        "target": "../yandex-metrica-gateway/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md",
+        "status": "PASS",
+        "size_bytes": 28983
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 232,
+        "target": "../ya-metrica-adapter/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md",
+        "status": "PASS",
+        "size_bytes": 25582
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 233,
+        "target": "../yandex-service-runtime/spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md",
+        "status": "PASS",
+        "size_bytes": 34205
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 234,
+        "target": "spec.md",
+        "resolved": "/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "status": "PASS",
+        "size_bytes": 45858
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 235,
+        "target": "../../../../specs/yandex-peer-http-contract/spec.md#L35-L79",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-peer-http-contract/spec.md",
+        "status": "PASS",
+        "size_bytes": 13401,
+        "target_line_count": 79
+      },
+      {
+        "artifact": "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md",
+        "line": 236,
+        "target": "../../../../specs/yandex-client-failures/spec.md#L31-L53",
+        "resolved": "/srv/eqSiteCMS/openspec/specs/yandex-client-failures/spec.md",
+        "status": "PASS",
+        "size_bytes": 10448,
+        "target_line_count": 69
+      }
+    ]
+  },
+  "cli": [
+    {
+      "argv": [
+        "/srv/eqSiteCMS/.cache/openspec-tool/1.14.3/openspec-local",
+        "status",
+        "--change",
+        "document-yandex-services-baseline",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"changeName\": \"document-yandex-services-baseline\",\n  \"schemaName\": \"spec-driven\",\n  \"planningHome\": {\n    \"kind\": \"repo\",\n    \"root\": \"/srv/eqSiteCMS\",\n    \"changesDir\": \"/srv/eqSiteCMS/openspec/changes\",\n    \"defaultSchema\": \"spec-driven\"\n  },\n  \"changeRoot\": \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline\",\n  \"artifactPaths\": {\n    \"proposal\": {\n      \"outputPath\": \"proposal.md\",\n      \"resolvedOutputPath\": \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md\",\n      \"existingOutputPaths\": [\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/proposal.md\"\n      ]\n    },\n    \"specs\": {\n      \"outputPath\": \"specs/**/*.md\",\n      \"resolvedOutputPath\": \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/**/*.md\",\n      \"existingOutputPaths\": [\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md\",\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md\",\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md\",\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md\",\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md\"\n      ]\n    },\n    \"design\": {\n      \"outputPath\": \"design.md\",\n      \"resolvedOutputPath\": \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md\",\n      \"existingOutputPaths\": [\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/design.md\"\n      ]\n    },\n    \"tasks\": {\n      \"outputPath\": \"tasks.md\",\n      \"resolvedOutputPath\": \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md\",\n      \"existingOutputPaths\": [\n        \"/srv/eqSiteCMS/openspec/changes/document-yandex-services-baseline/tasks.md\"\n      ]\n    }\n  },\n  \"isPlanningComplete\": true,\n  \"isComplete\": true,\n  \"applyRequires\": [\n    \"tasks\"\n  ],\n  \"nextSteps\": [\n    \"All planning artifacts are complete. Run openspec instructions apply --change \\\"document-yandex-services-baseline\\\" --json to inspect implementation progress.\"\n  ],\n  \"actionContext\": {\n    \"mode\": \"repo-local\",\n    \"sourceOfTruth\": \"repo\",\n    \"planningArtifacts\": [\n      \"proposal\",\n      \"specs\",\n      \"design\",\n      \"tasks\"\n    ],\n    \"linkedContext\": [],\n    \"allowedEditRoots\": [\n      \"/srv/eqSiteCMS\"\n    ],\n    \"requiresAffectedAreaSelection\": false,\n    \"constraints\": [\n      \"Repo-local change artifacts and implementation edits are scoped to this project.\"\n    ]\n  },\n  \"artifacts\": [\n    {\n      \"id\": \"proposal\",\n      \"outputPath\": \"proposal.md\",\n      \"status\": \"done\",\n      \"requires\": []\n    },\n    {\n      \"id\": \"specs\",\n      \"outputPath\": \"specs/**/*.md\",\n      \"status\": \"done\",\n      \"requires\": [\n        \"proposal\"\n      ]\n    },\n    {\n      \"id\": \"design\",\n      \"outputPath\": \"design.md\",\n      \"status\": \"done\",\n      \"requires\": [\n        \"proposal\"\n      ]\n    },\n    {\n      \"id\": \"tasks\",\n      \"outputPath\": \"tasks.md\",\n      \"status\": \"done\",\n      \"requires\": [\n        \"specs\",\n        \"design\"\n      ]\n    }\n  ],\n  \"root\": {\n    \"path\": \"/srv/eqSiteCMS\",\n    \"source\": \"nearest\"\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/srv/eqSiteCMS/.cache/openspec-tool/1.14.3/openspec-local",
+        "validate",
+        "document-yandex-services-baseline",
+        "--type",
+        "change",
+        "--strict"
+      ],
+      "exit_code": 0,
+      "stdout": "Change 'document-yandex-services-baseline' is valid\n",
+      "stderr": "ℹ [INFO] yandex-metrica-gateway/spec.md: Header \"### Gaps и точечная передача S1/F1 (контекст delta)\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Gaps и точечная передача S1/F1 (контекст delta)\" if it should be validated as a requirement.\nℹ [INFO] yandex-metrica-gateway/spec.md: Header \"### Локальная декомпозиция для синтеза (контекст delta)\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Локальная декомпозиция для синтеза (контекст delta)\" if it should be validated as a requirement.\nℹ [INFO] yandex-service-runtime/spec.md: Header \"### Coverage: source → requirement/scenario → evidence (контекст delta)\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Coverage: source → requirement/scenario → evidence (контекст delta)\" if it should be validated as a requirement.\nℹ [INFO] yandex-service-runtime/spec.md: Header \"### Actual execution — только static observation (контекст delta)\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Actual execution — только static observation (контекст delta)\" if it should be validated as a requirement.\nℹ [INFO] yandex-service-runtime/spec.md: Header \"### Нормативные сопоставления и gaps для S1/F1 (контекст delta)\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Нормативные сопоставления и gaps для S1/F1 (контекст delta)\" if it should be validated as a requirement.\nℹ [INFO] yandex-service-runtime/spec.md: Header \"### Передача в синтез (контекст delta)\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Передача в синтез (контекст delta)\" if it should be validated as a requirement.\nℹ [INFO] yandex-services-access-evidence/spec.md: Header \"### Контекст передачи — локальная декомпозиция и exact F1 context pack\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Контекст передачи — локальная декомпозиция и exact F1 context pack\" if it should be validated as a requirement.\nℹ [INFO] yandex-services-access-evidence/spec.md: Header \"### Verification PLAN-S1\" in ADDED Requirements is not a \"### Requirement:\" header and is ignored by validation. Use \"### Requirement: Verification PLAN-S1\" if it should be validated as a requirement.\n"
+    }
+  ],
+  "protected_sha256": {
+    "openspec/changes/document-yandex-services-baseline/proposal.md": "1d24df632122fe495156ee37e5682c1baff5e8dda45132b60cd692d64c5b84d1",
+    "openspec/changes/document-yandex-services-baseline/design.md": "363870450af7f2e1b63622d73fd10a39fa0faf34718480ed2c217ef072338e2b",
+    "openspec/changes/document-yandex-services-baseline/tasks.md": "7f4b51dd621f339dd624de84e67e850dbb86c2a749d41c002d1d7ccafe310a2a",
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-oauth-accounts/spec.md": "fe81efdc44fc25c496084d128fe7b7d246953cb7fcc6c27a9f479926206cd89f",
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-metrica-gateway/spec.md": "aa88f0d6386b8c86b4a5c34e8131df52760139b1873c5648dfadf37a670d386d",
+    "openspec/changes/document-yandex-services-baseline/specs/ya-metrica-adapter/spec.md": "83e2839ef40282764b5c8350a306e2787a5304039c9aab066153ee18d1e4575e",
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-service-runtime/spec.md": "0a7c5b20acd5b5af6ff0051083971a422c9bf4764b11b2bd84fd4e355bf259d8",
+    "openspec/changes/document-yandex-services-baseline/specs/yandex-services-access-evidence/spec.md": "30ec1933575f4124da96967e1cc0cd5df3108cf2a6438619777103d45868e4ab",
+    "openspec/specs/yandex-peer-http-contract/spec.md": "39ed365bbd4d32c067b310f65bc96e1dafdf5effa0ecc53544625db1c475f48d",
+    "openspec/specs/yandex-client-failures/spec.md": "6f4d0e627c2442a229e4313d747b61e321574fa07488d7373fd4a725fd22cfcf",
+    "docs/reports/document-yandex-services-baseline/backfill.md": "d50372e3611ea80d9f92aa299c7456d3c39bc49225f14e438f8b3b58a803e520",
+    "docs/reports/document-yandex-services-baseline/doc-1-accept-evidence.json": "97daca68adae52b4552113719495b6312dde734c4ec4d30abdde80607cd3051b"
+  },
+  "errors": []
+}

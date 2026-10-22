@@ -16,6 +16,7 @@
 
 - **Прочитай `agents/router.md` целиком** до любого ответа.
 - Если ты запущен в DSH-сессии с preset `eqsite-router`, `agents/router.md` уже в твоём system prompt — не перечитывай.
+- Операционные задачи (окружение, зависимости, стек, git-статус, sync/archive, финализация) и явное «без агентов» Router выполняет сам — см. «Режимы работы» в `agents/router.md`.
 
 ---
 
@@ -53,6 +54,12 @@ OpenSpec Change → Deliverable (ownership) → Execution Unit (одна аге�
 
 Если хотя бы один критерий нарушен, unit делится **до** делегирования. Это эвристика-предохранитель, а не точная метрика.
 
+**Нижняя граница.** Каждый запуск агента имеет фиксированную стоимость bootstrap (system prompt, правила роли, контекст change), поэтому слишком мелкие units так же вредны, как слишком крупные:
+
+- не создавай unit меньше ~5 существенных действий;
+- чекпоинт, фиксация решений, отметка tasks, короткая verification и коммит своих путей — часть того unit, который выполнил работу, а не отдельный unit;
+- механическая работа без проектных решений (установка зависимостей, прогон одинаковых команд, health-проверки) может покрывать несколько сервисов одним unit; правило «один сервис» относится к изменению кода.
+
 ---
 
 ## Checkpoint и handoff между execution units (обязательно)
@@ -62,7 +69,7 @@ OpenSpec Change → Deliverable (ownership) → Execution Unit (одна аге�
 1. Выполняет только назначенные task IDs.
 2. Запускает verification, относящуюся **к этому unit**, а не весь набор проверок change.
 3. Отмечает в OpenSpec `tasks.md` только фактически выполненные checkbox.
-4. Возвращает Router короткий handoff и **останавливается**.
+4. Возвращает Router короткий handoff **финальным сообщением** и **останавливается**. Не дублируй handoff через `send_message` родителю: каждое сообщение будит Router и стоит ему полного прочтения контекста. `send_message` родителю — только при блокере, требующем решения.
 
 Обязательный формат handoff — короткий, без пересказа плана и без дублирования diff:
 
@@ -76,6 +83,10 @@ Verification: <команда → результат>
 ```
 
 Router не начинает следующий unit, не прочитав handoff предыдущего. Handoff — основной канал передачи контекста между units: следующий агент стартует со свежим контекстом и не восстанавливает состояние по diff и не перечитывает работу предыдущего.
+
+### Чтение больших файлов правил
+
+Файлы `agents/*.md` большие. Читай их секциями: сначала `grep -n '^## ' <file>`, затем `read` с `offset/limit` нужных секций. Не перечитывай уже прочитанный файл или секцию в той же сессии. `AGENTS.md` и persona роли уже переданы тебе — не перечитывай их.
 
 ---
 
@@ -124,11 +135,11 @@ Tenant selector является non-secret identity hint: missing/invalid selec
 
 - `nats-jetstream-protocols.md` — протоколы работы с NATS Jetstream (используется Backend и Quality Gate)
 - `site-ksk-inlove-design.md` — обязательный дизайн-протокол Site Consumer при работе с `services/site-ksk-inlove/**`; подключает точечное чтение схемы, каталога компонентов и визуальной спецификации INLOVE
-- `context-economy-patterns.md` — **обязательные** паттерны экономии контекста для предотвращения превышения лимита 200K токенов; читается Router перед каждым делегированием (см. `agents/router.md`)
+- `context-economy-patterns.md` — справочник паттернов экономии контекста с примерами; читается при проектировании декомпозиции или разборе перерасхода. Перед каждым делегированием его **не** перечитывают: рабочий чеклист Router встроен в `agents/router.md`
 - `browser-qa-protocol.md` — автономный протокол `QG-FE-AUTO` и `QG-FE-MANUAL`; используется Quality Gate при наличии UI diff
-- `.agents/skills/stack-control` — управление и диагностика Docker-стека через `scripts/stackctl`; обязателен для `QG-ENV`, `QG-LIVE` и browser QA
+- `.agents/skills/stack-control` — управление и диагностика Docker-стека через `scripts/stackctl`; используется в `QG-ENV`, `QG-LIVE`, browser QA и операционном режиме Router. Если `stackctl` не поддерживает сервис — штатный обход через `make`/`docker compose` этого сервиса, а не починка инструмента внутри change
 - `.agents/skills/ui-qa` — scripted Playwright, evidence и визуальная инспекция для `QG-FE-MANUAL`
-- `.agents/skills/task-finalize` — фінализация задачи после `QG-SYNTH = APPROVED`: `stackctl ready`, `shipctl plan/merge/release/ci`, approval gates
+- `.agents/skills/task-finalize` — финализация задачи после `QG-SYNTH = APPROVED` (или `APPROVED_WITH_WAIVER`): `stackctl ready`, `shipctl plan/merge/release/ci`, approval gates
 - Playwright MCP предоставляет `mcp__pw__browser_*` для exploratory debugging и поиска селекторов; он дополняет, но не заменяет scripted evidence
 
 Агенты загружают эти howto/skills только когда задача требует соответствующей технологии.

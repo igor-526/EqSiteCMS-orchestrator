@@ -4,7 +4,7 @@
   "dependencies": {
     "@eqsite/dsh-agents": "link:./bundles/eqsite-agents",
     "@eqsite/playwright-mcp": "link:./bundles/playwright-mcp",
-    "@local/dsh-review-loop-services": "link:/home/igor/projects/eqSiteCMS/dsh/bundles/dsh-review-loop-services",
+    "@local/dsh-review-loop-services-v2": "link:../../../bundles/dsh-review-loop-services-v2",
     "dsh-codex-connect": "github:franksong2702/dsh-codex-connect"
   },
   "dsh": {
@@ -15,7 +15,7 @@
         "dsh-codex-connect",
         "@eqsite/playwright-mcp",
         "@eqsite/dsh-agents",
-        "@local/dsh-review-loop-services"
+        "@local/dsh-review-loop-services-v2"
       ]
     }
   }
