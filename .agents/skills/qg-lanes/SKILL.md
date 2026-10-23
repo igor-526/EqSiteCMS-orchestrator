@@ -1,74 +1,55 @@
 ---
 name: qg-lanes
-description: Quality Gate lanes orchestration через workflow для OpenSpec changes профиля QG-FULL
-whenToUse: Только для профиля QG-FULL (миграции, NATS/AsyncAPI, UI behavior diff или >2 сервисов с кодом). Для QG-DOCS и QG-LITE не используй — делегируй одного QG-агента через delegate_quality_gate
+description: Запуск lanes Quality Gate профиля QG-FULL отдельными delegate_quality_gate агентами
+whenToUse: Только для профиля QG-FULL (миграции, NATS/AsyncAPI или >2 сервисов с кодом). Для QG-DOCS и QG-LITE не используй — делегируй одного QG-агента через delegate_quality_gate
 ---
 
-# Quality Gate Lanes Workflow (QG-FULL)
+# Quality Gate Lanes (QG-FULL)
 
-Skill запускает применимые lanes профиля `QG-FULL` через `workflow`: DAG, параллельные уровни, структурированные handoff'ы, вычисленный вердикт и один отчёт.
+Lanes профиля `QG-FULL` запускаются отдельными агентами `delegate_quality_gate` (фон, continuable). Инструмент `workflow` в preset `eqsite-router` отключён: агенты workflow получают persona Router и отказываются выполнять review.
 
-## Когда НЕ использовать
+Профили, классификация findings и содержимое lanes — в `agents/quality_gate.md`.
 
-| Профиль | Как запускать |
-|---|---|
-| `QG-DOCS` | один `delegate_quality_gate` (фон, continuable) |
-| `QG-LITE` | один `delegate_quality_gate` (фон, continuable), агент сам проходит lanes последовательно |
-| `QG-FULL` | этот skill |
-
-Профили и классификация findings — `agents/quality_gate.md`.
-
-## Протокол
-
-### 1. Применимые lanes
+## Применимые lanes
 
 По path-scoped diff change:
 
 - `QG-ENV` — есть runtime/API/UI diff;
-- `QG-BE` — diff в Python-сервисах;
-- `QG-FE-AUTO` — diff в `services/frontend` или `services/site-*`;
-- `QG-FE-MANUAL` — UI/UX behavior diff;
-- `QG-LIVE` — runtime API diff;
+- `QG-BE` — diff в Python-сервисах; включает scoped `format/lint/test` этих сервисов;
+- `QG-FE-AUTO` — diff в `services/frontend` или `services/site-*`; включает scoped `format/lint/test` этих сервисов;
 - `QG-CONTRACTS` — всегда;
-- `QG-FORMAT` — есть diff в коде/Makefile/tooling (scoped: только затронутые сервисы).
+- `QG-LIVE` — runtime API diff;
+- `QG-FE-MANUAL` — UI/UX behavior diff; CMS проверяется в одном viewport 1366×768;
+- `QG-SYNTH` — всегда; пишет единственный отчёт `docs/reports/<change>.md`.
 
-### 2. contextFiles и changedPaths
+Отдельного агента `QG-FORMAT` нет: его процедура выполняется внутри `QG-BE` и `QG-FE-AUTO`.
 
-Точечно по lane (секции `design.md`, конкретные `specs/<capability>/spec.md`, handoff'ы units). `changedPaths` — union «Изменённые файлы» из handoff'ов units. `proposal.md` целиком не передавай.
+## Порядок
 
-### 3. Запуск
-
-```javascript
-// прочитай .agents/skills/qg-lanes/lanes.workflow.js и handoff.schema.json
-workflow({
-  script: '<содержимое lanes.workflow.js>',
-  meta: { name: 'qg-lanes', description: 'Quality Gate QG-FULL для <change>' },
-  args: {
-    change: '<change-id>',
-    applicable_lanes: { 'QG-ENV': true, 'QG-BE': true, 'QG-CONTRACTS': true, 'QG-FORMAT': true /* ... */ },
-    contextFiles: { /* lane → [пути/секции] */ },
-    changedPaths: [ /* пути от корня */ ],
-    report_path: 'docs/reports/<change-id>/synthesis.md',
-    schemas: { lane: <handoff.schema.json> },
-    dryRun: false
-  }
-});
+```text
+QG-ENV (фон, дождаться)
+  → QG-BE ∥ QG-FE-AUTO ∥ QG-CONTRACTS   (одним сообщением, фон)
+  → QG-LIVE ∥ QG-FE-MANUAL             (одним сообщением, фон; только если на предыдущем уровне нет blocking)
+  → QG-SYNTH                           (фон)
 ```
 
-Workflow — один tool call; Router ждёт его без поллинга.
+После запуска уровня Router завершает ответ коротким статусом. Уведомления о завершении будят Router; следующий уровень запускается, когда завершены все агенты текущего.
 
-### 4. Результат
+Если на уровне `BE/FE-AUTO/CONTRACTS` есть `blocking` — сначала fix units владельцам, повторная проверка теми же агентами, затем `LIVE/FE-MANUAL`. Browser QA по коду, который ещё изменится, не запускается.
 
-- `verdict`: `APPROVED` | `REWORK` | `BLOCKED` (REWORK — есть `blocking`; BLOCKED — есть `blocked-env` с `key_check`);
-- `blocking`, `pre_existing`, `blocked_env` — списки findings;
-- отчёт записан в `report_path`.
+## Prompt lane
 
-`pre_existing` и неключевые `blocked_env` не мешают `APPROVED`; Router предлагает по ним задачи в `docs/tasks`. Waiver пользователя Router вносит в отчёт и меняет вердикт на `APPROVED_WITH_WAIVER`.
+```text
+Ты Quality Gate, lane <LANE>, профиль QG-FULL. Change: <change-id>.
+contextFiles: <секции design.md, specs/<capability>/spec.md>
+Изменённые пути: <union «Изменённые файлы» из handoff'ов units>
+Handoff'ы units: <коротко, только нужное lane>
+Evidence: .qa/<change-id>/<lane>/ . Файлов в docs/reports не создавай.
+Верни handoff финальным сообщением: статус, findings с классом (blocking/minor/pre-existing/blocked-env), команды и результаты, пути к evidence.
+```
 
-### 5. Повтор после fix
+`QG-SYNTH` получает handoff'ы всех lanes в prompt, сам проверки не повторяет, пишет `docs/reports/<change-id>.md` и ставит вердикт.
 
-Workflow-агенты не continuable. После fix запусти workflow с `only: [<затронутые lanes>]` (не все lanes), либо, если затронут один lane, — один `delegate_quality_gate` на этот lane. Не более одного повторного раунда.
+## Повтор после fix
 
-## Fallback
-
-Если workflow недоступен или lane вернул невалидный ответ — один `delegate_quality_gate` на затронутые lanes.
+Тот же агент lane через `send_message`, только затронутые findings. Не более одного повторного раунда. Результат дописывается в тот же отчёт: Router передаёт его агенту `QG-SYNTH` через `send_message`.

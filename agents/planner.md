@@ -125,7 +125,7 @@
 
 Раздел Manual QA должен содержать:
 - browser steps для проверки в реальном браузере, с предусловиями, URL/route, действиями пользователя и ожидаемым результатом для каждого шага;
-- viewports/responsive checks для desktop/tablet/mobile и явную проверку отсутствия overlap текста, кнопок, таблиц, modal/picker/layout элементов;
+- один viewport 1366×768 (CMS desktop-only, минимальный поддерживаемый экран; tablet/mobile не планируются) и явную проверку отсутствия overlap текста, кнопок, таблиц, modal/picker/layout элементов в нём;
 - auth states: anonymous redirect/block для CMS route/page и authenticated render для разрешенного пользователя;
 - scopes/permissions: scope present и scope missing для permissioned actions;
 - Protected Write UX, когда frontend-изменение связано с `POST/PATCH/DELETE`: hidden/disabled/guarded action, mutation guard, double-submit guard и отображение backend denial через `401/403`;
@@ -133,7 +133,7 @@
 - success refresh/invalidation: ожидаемое обновление таблицы/списка/карточки/tooltip/indicator после успешной mutation;
 - pagination/filter/search/sort browser checks, если feature содержит списки или таблицы, включая reset `offset`;
 - no `site-*` mixing/regression checks, если изменение может затронуть публичный consumer-контур;
-- итоговый отчет QA: passed/failed steps, screenshots для failed responsive/error/permission cases и network status/body для failed API cases.
+- итоговый отчет QA: passed/failed steps, screenshots для failed layout/error/permission cases (evidence — в `.qa/<change>/`) и network status/body для failed API cases.
 
 Запрещено заменять Manual QA только unit/component/API-boundary тестами или live-backend unit test substitution: автоматизированные тесты через MSW/mocks обязательны отдельно, а browser Manual QA фиксирует пользовательский flow и визуальное поведение.
 
@@ -347,9 +347,9 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 - Последний пункт каждого unit — `<UnitID>.V`: verification этого unit + handoff Router.
 - Smoke-пункты явно указывают реальную PostgreSQL и скилл `.claude/skills/api-smoke-test`.
 - В том unit, который первым выполняет smoke, обязателен пункт discovery DB-параметров через `docker inspect`.
-- Quality Gate планируется по профилю: `QG-DOCS` и `QG-LITE` — **один** unit `QG` (один агент, все применимые lanes + SYNTH); `QG-FULL` — units-lanes по DAG. `QG-FORMAT` — scoped по затронутым сервисам, без требования чистого worktree. Неприменимые lanes — одной строкой `неприменимо — <причина>`.
+- Quality Gate планируется по профилю: `QG-DOCS` и `QG-LITE` — **один** unit `QG` (один агент, все применимые lanes + отчёт) и, при UI behavior diff, unit `QG-FE-MANUAL` (1366×768); `QG-FULL` — units-lanes по DAG без отдельного `QG-FORMAT` (scoped format/lint/test входит в `QG-BE`/`QG-FE-AUTO`). Чистый worktree не требуется. UI diff сам по себе не переводит change в `QG-FULL`. Неприменимые lanes — одной строкой `неприменимо — <причина>`.
 - Не планируй отдельные units для чекпоинтов, фиксаций, коммитов, подготовки рабочего дерева или установки зависимостей ради проверок.
-- Плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в rework-чеклистах Quality Gate внутри `docs/reports/` (совместимость с оркестратором). В `tasks.md` структура — по execution units.
+- Плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в разделе доработки отчёта Quality Gate `docs/reports/<change>.md` (совместимость с оркестратором). В `tasks.md` структура — по execution units.
 
 **Пример компактного unit:**
 

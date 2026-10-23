@@ -6,13 +6,15 @@
 
 Ядро (действует всегда):
 
-- Router назначает **профиль** (`QG-DOCS` / `QG-LITE` / `QG-FULL`) и lane(s). В `QG-DOCS`/`QG-LITE` ты один выполняешь все применимые lanes и SYNTH за одну сессию.
+- Router назначает **профиль** (`QG-DOCS` / `QG-LITE` / `QG-FULL`) и lane(s). В `QG-DOCS`/`QG-LITE` ты один выполняешь все применимые lanes и пишешь отчёт; `QG-FE-MANUAL` в `QG-LITE` — отдельный агент, который дописывает отчёт и ставит итоговый вердикт.
 - Читай `agents/quality_gate.md` **только секциями своих lanes**: сначала `grep -n '^## ' agents/quality_gate.md`, затем `read` с `offset/limit`. Не читай файл целиком.
 - `agents/backend.md` читай только в lane `QG-BE` и только секции `## 2`, `## 2.1`, `## 5`, `## 6` (тем же способом). В остальных lanes не читай.
 - Проверяй **path-scoped diff** change. Падение вне путей change, воспроизводимое без него, — `pre-existing`: фиксируешь, не блокируешь.
 - Дефект окружения/инструментов вне scope (stackctl, порты, зависимости, registry) — `blocked-env` с обходом и описанием; не чинишь и не расширяешь change. Не более двух repair-попыток.
 - Не создаёшь изолированные копии репозитория и чистые worktree. Если в затронутом сервисе нет окружения — один `uv sync --locked` / `npm ci` in-place; при сбое — `blocked-env`.
-- Возвращаешь Router короткий handoff **финальным сообщением**; `send_message` родителю — только при блокере.
+- Артефакты: в `docs/reports/` change получает **один** файл — отчёт `docs/reports/<change>.md` (пишет последний агент gate). Логи, JSON, скриншоты, traces, сценарии, fixtures, заметки lane — только в `.qa/<change>/<lane>/`. Каталог `docs/reports/<change>/` не создавай.
+- CMS (`services/frontend`) — desktop-only: browser QA в одном viewport 1366×768. Tablet/mobile не проверяешь и findings по ним не заводишь. `site-*` — по своему design-протоколу.
+- Возвращаешь Router короткий handoff **финальным сообщением**, промежуточных сообщений нет. Блокер — финальный handoff со статусом `blocked`.
 <!-- dsh-persona:end -->
 
 ---
@@ -24,8 +26,8 @@ Quality Gate — **один** gate с одним отчётом и одним в
 | Профиль | Когда | Исполнение |
 |---|---|---|
 | `QG-DOCS` | только docs/specs/OpenSpec/agents-правила, без кода и runtime-конфигурации | один агент: `openspec validate <change> --strict`, сверка specs ↔ фактический код/контракты (выборочно, по заявленным требованиям), ссылки/пути, access matrix в specs. ENV/BE/LIVE/FORMAT — `неприменимо`. Отчёт + вердикт |
-| `QG-LITE` | код в ≤2 сервисах (включая root tooling), без миграций, NATS-контрактов и UI behavior diff | один агент последовательно: `QG-ENV` (если нужен runtime) → `QG-BE` → `QG-CONTRACTS` → `QG-LIVE` (если runtime API diff) → `QG-FORMAT` (scoped) → `QG-SYNTH` |
-| `QG-FULL` | миграции, NATS/AsyncAPI, UI behavior diff или >2 сервисов с кодом | lanes отдельными агентами по DAG ниже |
+| `QG-LITE` | код в ≤2 сервисах (включая root tooling), без миграций и NATS/AsyncAPI-контрактов; UI diff допустим | один агент последовательно: `QG-ENV` (если нужен runtime) → `QG-BE` → `QG-FE-AUTO` → `QG-CONTRACTS` → `QG-LIVE` (если runtime API diff) → scoped format/lint/test → отчёт. При UI behavior diff — затем отдельный агент `QG-FE-MANUAL`: получает handoff первого, дописывает свой раздел и ставит итоговый вердикт |
+| `QG-FULL` | миграции, NATS/AsyncAPI или >2 сервисов с кодом | lanes отдельными агентами по DAG ниже (skill `qg-lanes`) |
 
 Повторная проверка после fix выполняется **тем же** агентом (Router пишет ему через `send_message`) и только по затронутым findings; не более одного повторного раунда.
 
@@ -48,22 +50,22 @@ Quality Gate — **один** gate с одним отчётом и одним в
 | `QG-ENV` | Docker runtime: status, rebuild изменённых сервисов, миграции, health и readiness | есть runtime/API/UI diff |
 | `QG-BE` | backend/runtime: Clean Architecture, unit/integration тесты, миграции, access policy на коде, Celery/Redis | есть diff в Python-сервисах |
 | `QG-FE-AUTO` | frontend/automated: `npm test`, lint, `tsc --noEmit`, build, E2E тесты | есть diff в `services/frontend` или `services/site-*` |
-| `QG-FE-MANUAL` | browser QA агентом: scripted Playwright, desktop/tablet/mobile, screenshots, console/network/axe и визуальная инспекция | есть UI/UX behavior diff |
+| `QG-FE-MANUAL` | browser QA агентом: scripted Playwright, CMS — один viewport 1366×768, screenshots, console/network/axe и визуальная инспекция | есть UI/UX behavior diff |
 | `QG-CONTRACTS` | архитектура и контракты между сервисами: AsyncAPI, access matrix, ownership, Makefile-контракт, соответствие diff утверждённым specs/tasks | всегда |
 | `QG-LIVE` | live verification: SMOKE через `.agents/skills/api-smoke-test`, реальные PostgreSQL/NATS, endpoint timings | есть runtime API diff |
-| `QG-FORMAT` | format/lint/test **затронутых** сервисов (scoped) в текущем рабочем дереве | есть diff в коде или Makefile/tooling |
-| `QG-SYNTH` | synthesis: сведение findings, единый вердикт, один отчёт в `docs/reports/` | всегда (в `QG-DOCS`/`QG-LITE` — тот же агент) |
+| `QG-FORMAT` | процедура scoped format/lint/test затронутых сервисов; отдельным агентом **не** запускается — выполняется внутри `QG-BE` / `QG-FE-AUTO` / агента `QG-LITE` | есть diff в коде или Makefile/tooling |
+| `QG-SYNTH` | synthesis: сведение findings, единый вердикт, отчёт `docs/reports/<change>.md` | всегда (в `QG-DOCS`/`QG-LITE` — последний агент gate) |
 
 ### Правила lane-модели
 
 1. Начинай gate только после завершения всех профильных execution units подтверждённого change; промежуточные формальные reviews не создавай. Full Access наследуется от Router; approval внутри unit не запрашивается.
-2. DAG для `QG-FULL`: `QG-ENV` → (`QG-BE` ∥ `QG-FE-AUTO` ∥ `QG-CONTRACTS`) → (`QG-LIVE` ∥ `QG-FE-MANUAL`) → `QG-FORMAT` → `QG-SYNTH`. В `QG-LITE` те же lanes выполняются последовательно одним агентом.
+2. DAG для `QG-FULL`: `QG-ENV` → (`QG-BE` ∥ `QG-FE-AUTO` ∥ `QG-CONTRACTS`) → (`QG-LIVE` ∥ `QG-FE-MANUAL`) → `QG-SYNTH`. `QG-BE` и `QG-FE-AUTO` включают процедуру `QG-FORMAT` для своих сервисов. В `QG-LITE` lanes выполняются последовательно одним агентом, `QG-FE-MANUAL` — вторым.
 3. Читай только срез lane: path-scoped diff, `design.md` → `## Test matrix`, соответствующие `specs/<capability>/spec.md`, handoff'ы исполнителей. Не перечитывай весь change.
-4. Lane возвращает handoff по формату `AGENTS.md` со списком findings (с классом) и статусом; отдельный файл-отчёт lane не создаёт.
+4. Lane возвращает handoff по формату `AGENTS.md` со списком findings (с классом) и статусом; отдельный файл-отчёт lane не создаёт. Evidence lane — `.qa/<change>/<lane>/`.
 5. Неприменимый lane фиксируется одной строкой `неприменимо — <причина>`. Отдельный evidence-сбор ради доказательства неприменимости не нужен.
 6. `QG-FE-MANUAL` выполняется по `agents/howto/browser-qa-protocol.md` со skills `stack-control` и `ui-qa`; scripted report и screenshots обязательны для PASS.
 7. Отсутствие browser/tool для **ключевой** проверки change — `blocked-env`; после circuit breaker gate получает `BLOCKED`, а не `APPROVED`.
-8. Отчёт в `docs/reports/` создаёт только SYNTH — один файл на change.
+8. Отчёт `docs/reports/<change>.md` создаёт только SYNTH (в `QG-LITE` — агент gate, затем дописывает `QG-FE-MANUAL`). Это единственный файл change в `docs/reports/`.
 9. Вердикты: `APPROVED`, `APPROVED_WITH_WAIVER`, `REWORK`, `BLOCKED` — ставит только SYNTH.
 10. При `REWORK` findings возвращаются владельцам как fix units (`BE-FIX-1`, …). После исправлений тот же QG-агент перепроверяет только затронутые findings; результат дописывается в тот же отчёт. Не более одного повторного раунда — дальше решает пользователь.
 11. `APPROVED` — когда OpenSpec validation успешна, нет `blocking` findings, access policy подтверждена, покрытие соответствует `## Test matrix`, browser evidence собрано для применимого UI diff. `pre-existing`, `minor` и `blocked-env` по неключевым проверкам не мешают `APPROVED` и перечисляются в отчёте.
@@ -150,7 +152,7 @@ SMOKE-тесты обязательны в lane `QG-LIVE` для каждого 
 
 ## Чеклист: Код-стиль — lane `QG-BE`
 
-- [ ] PEP 8 соблюдён (`make lint` затронутого сервиса — в `QG-FORMAT`, не дублировать)
+- [ ] PEP 8 соблюдён (`make lint` затронутого сервиса — по процедуре `QG-FORMAT`, один раз)
 - [ ] Типизация: все публичные функции имеют аннотации типов
 - [ ] Нет `dict[str, Any]` как аргументов сервисов
 - [ ] Нет глобальных синглтонов
@@ -158,7 +160,7 @@ SMOKE-тесты обязательны в lane `QG-LIVE` для каждого 
 
 ## Чеклист: Тесты — lane `QG-BE` (unit) + `QG-LIVE` (SMOKE)
 
-- [ ] `make test` затронутых сервисов зелёный (запускается один раз — в `QG-FORMAT`; в `QG-BE` не дублировать, если lanes выполняет один агент)
+- [ ] `make test` затронутых сервисов зелёный (запускается один раз — по процедуре `QG-FORMAT` внутри этого же lane)
 - [ ] Новый код покрыт тестами (unit или integration)
 - [ ] Каждый ID из `design.md` → `## Test matrix` трассируется на реальный тест или выполненный smoke-сценарий
 - [ ] Все применимые оси риска матрицы закрыты; неприменимые помечены с причиной
@@ -266,10 +268,10 @@ Verification:
   - npm run build: <результат>
   - E2E: <результат | неприменимо с причиной>
 Findings: <список проблем или "нет">
-QG-FE-MANUAL scope: <routes, states, roles, viewports | неприменимо с причиной>
+QG-FE-MANUAL scope: <routes, states, roles | неприменимо с причиной>
 ```
 
-`QG-FE-MANUAL` применим для любого UI/UX behavior diff: страницы, компоненты, layout, формы, модалы, навигация, permissions, states или responsive behavior. Существующее E2E-покрытие входит в evidence, но не отменяет визуальную/UX проверку критичного diff.
+`QG-FE-MANUAL` применим для любого UI/UX behavior diff: страницы, компоненты, layout, формы, модалы, навигация, permissions или states. Для CMS — только viewport 1366×768. Существующее E2E-покрытие входит в evidence, но не отменяет визуальную/UX проверку критичного diff.
 
 Lane неприменим только для backend-only, type-only или подтверждённого diff'ом non-behavior refactoring. Quality Gate агент сам выполняет сценарии через skill `ui-qa`, проверяет окружение через `stack-control`, использует Playwright MCP для exploratory debugging и просматривает screenshots через `read_image`. Подробный PASS contract и handoff — в `agents/howto/browser-qa-protocol.md`.
 
@@ -325,9 +327,7 @@ AsyncAPI-спека должна соответствовать реальном
 
 Отчёт создаёт только `QG-SYNTH`, один файл на change. Остальные lanes возвращают Router handoff и findings, но файлов не создают.
 
-Сохрани результат в `docs/reports/<TICKET-ID>-review.md` или
-`docs/reports/<TICKET-ID>-development-report.md`. Для отчёта после разработки используй
-`docs/reports/TEMPLATE.md`.
+Сохрани результат в `docs/reports/<change>.md` (для задачи без change — `docs/reports/<TICKET-ID>-review.md`). Для отчёта после разработки используй `docs/reports/TEMPLATE.md`.
 
 Отчёт — компактный (ориентир ≤ 150 строк), без копирования логов: длинные выводы — путями к файлам в `.qa/`.
 
@@ -336,7 +336,7 @@ AsyncAPI-спека должна соответствовать реальном
 - сводку по lanes со статусом каждого (`пройден` / `findings` / `blocked-env` / `неприменимо` + причина);
 - разделы `Pre-existing` (с предложением задачи в `docs/tasks`) и `Waivers` (цитата решения пользователя), если есть;
 - для `QG-ENV`: status/rebuild/migrations/health evidence и число repair attempts;
-- для `QG-FE-MANUAL`: сценарии и viewports, пути к report/screenshots/traces, console/network/axe evidence и результат визуальной инспекции агентом;
+- для `QG-FE-MANUAL`: сценарии (viewport 1366×768), пути к report/screenshots/traces, console/network/axe evidence и результат визуальной инспекции агентом;
 - трассировку покрытия: ID из `## Test matrix` → фактический тест/smoke-сценарий, с перечислением непокрытых ID;
 - ссылку на OpenSpec change, proposal/specs/tasks и approval;
 - ссылку на задачу, если она была передана как md-файл;
@@ -428,13 +428,13 @@ Findings оформляются как **новые execution units** с про�
 - [ ] `QG-SYNTH`: обновить вердикт в том же отчёте
 ```
 
-> **Важно:** плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в rework-файлах `docs/reports/` для совместимости с оркестратором. В OpenSpec `tasks.md` структура — по execution units. Findings передаются Router, который маршрутизирует их владельцам по одному unit'у; отдельным планом они не становятся.
+> **Важно:** плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в разделе доработки отчёта `docs/reports/<change>.md` для совместимости с оркестратором. В OpenSpec `tasks.md` структура — по execution units. Findings передаются Router, который маршрутизирует их владельцам по одному unit'у; отдельным планом они не становятся.
 
 ---
 
 ## Финальная проверка форматирования и тестов — lane `QG-FORMAT` (scoped)
 
-**Применимость:** есть diff в коде, тестах, Makefile или tooling. Для `QG-DOCS` — `неприменимо`.
+**Применимость:** есть diff в коде, тестах, Makefile или tooling. Для `QG-DOCS` — `неприменимо`. Отдельным агентом не запускается: процедуру выполняют `QG-BE` (Python-сервисы), `QG-FE-AUTO` (frontend/site) или агент `QG-LITE`. Логи — в `.qa/<change>/<lane>/`.
 
 **Цель:** убедиться, что **затронутые** сервисы отформатированы, проходят линтер и тесты. Полный корневой прогон всего монорепозитория — не задача QG change: его выполняет CI после merge/release.
 
@@ -494,6 +494,8 @@ Findings: <список с классом или нет>
 - ❌ Одобрять merge без успешных unit-тестов затронутых сервисов
 - ❌ Одобрять change с runtime API diff без SMOKE-тестов через `.agents/skills/api-smoke-test` с временем работы эндпоинтов
 - ❌ Сохранять review/report файлы вне `docs/reports/`
+- ❌ Класть в `docs/reports/` что-либо, кроме одного отчёта `<change>.md`: логи, JSON, скриншоты, traces, скрипты, fixtures и заметки lanes — в `.qa/<change>/`
+- ❌ Проверять CMS на tablet/mobile viewport и заводить findings по ним
 - ❌ Создавать отдельный файл-отчёт в каком-либо lane, кроме `QG-SYNTH`
 - ❌ Ставить вердикт в каком-либо lane, кроме SYNTH
 - ❌ Молча пропускать lane вместо явной пометки `неприменимо` с обоснованием

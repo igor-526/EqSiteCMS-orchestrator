@@ -52,10 +52,15 @@
                 })()
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
+          # Goal-режим отключён: при активной цели DSH запускает новый раунд Router каждый раз,
+          # когда Router простаивает в ожидании фоновых агентов (сессия 9c242c5a: 158 холостых раундов, ~16.6M токенов).
+          # Продолжение пайплайна обеспечивают уведомления о завершении агентов.
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
+            disabled: true
           - id: tool-goal
             name: '@deepseek-ai/dsh-tool-goal'
+            disabled: true
           - id: planning
             name: cordis:group
             group: true
@@ -122,6 +127,7 @@
                       - delegate_quality_gate
                       - workflow
                       - ask_user_question
+                      - send_message
                   persona: !!js |
                     (() => {
                       const fs = process.getBuiltinModule('node:fs');
@@ -155,6 +161,7 @@
                       - delegate_quality_gate
                       - workflow
                       - ask_user_question
+                      - send_message
                   persona: !!js |
                     (() => {
                       const fs = process.getBuiltinModule('node:fs');
@@ -188,6 +195,7 @@
                       - delegate_quality_gate
                       - workflow
                       - ask_user_question
+                      - send_message
                   persona: !!js |
                     (() => {
                       const fs = process.getBuiltinModule('node:fs');
@@ -221,6 +229,7 @@
                       - delegate_quality_gate
                       - workflow
                       - ask_user_question
+                      - send_message
                   persona: !!js |
                     (() => {
                       const fs = process.getBuiltinModule('node:fs');
@@ -254,6 +263,7 @@
                       - delegate_quality_gate
                       - workflow
                       - ask_user_question
+                      - send_message
                   persona: !!js |
                     (() => {
                       const fs = process.getBuiltinModule('node:fs');
@@ -273,8 +283,11 @@
                 name: '@deepseek-ai/dsh-workflow-ptc'
                 config:
                   provider: spawn
+              # workflow отключён: агенты workflow наследуют persona Router и отказываются выполнять review
+              # (сессия 9c242c5a: 4 из 8 lanes qg-lanes не выполнены). QG-FULL lanes запускаются через delegate_quality_gate.
               - id: tool-workflow
                 name: '@deepseek-ai/dsh-tool-workflow'
+                disabled: true
           - id: tool-ask-user
             name: '@deepseek-ai/dsh-tool-ask-user'
           - id: tool-todo

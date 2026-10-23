@@ -19,6 +19,14 @@ scripts/stackctl doctor frontend  # если frontend unhealthy
 
 При изменениях UI пересобери соответствующий сервис через `stackctl rebuild`. Не запускай `npm run dev &`: используй Docker или managed background job без shell `&`.
 
+## 1a. Подготовь браузер
+
+```bash
+source scripts/qa/browser-env.sh && node -e 'require("playwright")' # из services/frontend
+```
+
+`browser-env.sh` выставляет `PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright` и при нехватке системных библиотек Chromium (`libnspr4`, `libnss3`, `libasound2`) без sudo распаковывает их в `.cache/browser-libs`. Выполняй `source` в каждой команде с Playwright: env не сохраняется между tool calls. Это не blocker и не вопрос пользователю.
+
 ## 2. Получи auth state
 
 Credentials существуют только runtime в ignored `.qa/credentials.json` либо совместимом smoke credential store. Не печатай пароль и не сохраняй его в отчётах.
@@ -31,15 +39,17 @@ node scripts/qa/login.mjs --role admin
 
 ## 3. Составь и выполни сценарии
 
-По OpenSpec tasks/design создай ignored `.qa/scenarios.json`. Минимально проверь changed flow, loading/empty/error states и доступность ключевых контролов.
+По OpenSpec tasks/design создай ignored `.qa/<change>/manual/scenarios.json`. Минимально проверь changed flow, loading/empty/error states и доступность ключевых контролов.
 
 ```bash
 node scripts/qa/run-scenarios.mjs \
-  --scenarios .qa/scenarios.json \
+  --scenarios .qa/<change>/manual/scenarios.json \
   --auth .qa/auth-admin.json \
-  --output-dir .qa/reports/qg-fe-manual \
-  --viewports desktop,tablet,mobile
+  --output-dir .qa/<change>/manual/run \
+  --viewports desktop
 ```
+
+CMS — desktop-only: `desktop` = 1366×768, единственный viewport. `tablet`/`mobile` — только для `site-*`, если этого требует их design-протокол. Все evidence — в `.qa/<change>/`, не в `docs/reports/`.
 
 Поддерживаемые действия: `goto`, `click`, `fill`, `wait`, `press`, `checkVisible`, `checkText`, `screenshot`. Неизвестное действие завершает run ошибкой.
 
@@ -47,10 +57,10 @@ Runner собирает console/page errors, request failures, HTTP 5xx, axe vio
 
 ## 4. Выполни визуальную инспекцию
 
-Прочитай `report.json`, затем каждый final/step screenshot через `read_image`. Сверь с дизайн-спецификацией:
+Прочитай `report.json`, затем screenshots **изменённых** состояний через `read_image` (по одному на state, ориентир ≤15 за сессию; каждое изображение остаётся в контексте до конца сессии). Сверь с дизайн-спецификацией:
 
 - нет наложений, обрезки и горизонтального overflow;
-- интерактивные элементы видимы на desktop/tablet/mobile;
+- интерактивные элементы видимы и доступны в 1366×768;
 - loading/empty/error states читаемы;
 - focus и keyboard flow работают;
 - тексты, цвета и компоненты соответствуют design system.

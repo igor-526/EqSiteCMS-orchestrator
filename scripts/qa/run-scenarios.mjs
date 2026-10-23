@@ -26,7 +26,8 @@ const backendUrl = arg('--backend-url', 'http://localhost:8001');
 const viewportNames = arg('--viewports', 'desktop').split(',').map((item) => item.trim()).filter(Boolean);
 
 const VIEWPORTS = {
-  desktop: { label: 'desktop', descriptor: devices['Desktop Chrome'] },
+  // CMS — desktop-only, эталон минимального экрана 1366×768 (tablet/mobile — только для site-* по запросу).
+  desktop: { label: 'desktop', descriptor: { ...devices['Desktop Chrome'], viewport: { width: 1366, height: 768 }, screen: { width: 1366, height: 768 } } },
   tablet: { label: 'tablet', descriptor: devices['iPad Pro 11'] },
   mobile: { label: 'mobile', descriptor: devices['Pixel 5'] },
 };

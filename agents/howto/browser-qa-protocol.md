@@ -14,7 +14,15 @@
 - Router один раз до пайплайна сообщает, что требуется режим **Full Access**. Субагенты наследуют его и не могут запрашивать approval внутри unit.
 - npm/uv/Playwright caches остаются workspace-local как fallback.
 - Runtime подготовлен lane `QG-ENV`; Docker-стек предпочтительнее dev servers.
-- Auth state, cookies, сценарии, screenshots, traces и отчёты хранятся в игнорируемой `.qa/`. `/tmp` не используется для данных между tool calls: в `workspace-write` он не является cross-tool persistent.
+- Auth state, cookies, сценарии, скрипты, screenshots, traces и отчёты хранятся в игнорируемой `.qa/<change>/manual/` (auth — `.qa/auth-*.json`). В `docs/reports/` browser QA ничего не пишет, кроме своего раздела в отчёте `docs/reports/<change>.md`. `/tmp` не используется для данных между tool calls: в `workspace-write` он не является cross-tool persistent.
+
+## Viewport
+
+CMS (`services/frontend`) ориентирована только на компьютер. Эталон — **1366×768** (минимальная поддерживаемая ширина и высота), это единственный обязательный viewport: `run-scenarios.mjs --viewports desktop`. Tablet/mobile для CMS не проверяются, axe/layout-проблемы, воспроизводимые только на них, findings не являются. Публичные сайты `site-*` проверяются по своему design-протоколу (например, `site-ksk-inlove-design.md`).
+
+## Браузер
+
+Перед запуском Playwright выполни `source scripts/qa/browser-env.sh`: скрипт выставляет `PLAYWRIGHT_BROWSERS_PATH` и, если Chromium не находит системные библиотеки (`libnspr4`, `libnss3`, `libasound2`), без sudo распаковывает их в `.cache/browser-libs` и добавляет в `LD_LIBRARY_PATH`. Env не сохраняется между tool calls — `source` выполняется в каждой команде. Пользователя об установке библиотек не спрашивай.
 
 ## DAG
 
@@ -27,7 +35,7 @@ QG-FE-MANUAL           │
   └──────────────→ QG-SYNTH
 ```
 
-`QG-FE-MANUAL` применим при UI/UX behavior diff: новые или изменённые страницы, компоненты, layout, формы, модалы, навигация, permissions, loading/empty/error states, responsive behavior. Для backend-only, type-only или подтверждённого non-behavior diff lane помечается `неприменимо` с причиной.
+`QG-FE-MANUAL` применим при UI/UX behavior diff: новые или изменённые страницы, компоненты, layout, формы, модалы, навигация, permissions, loading/empty/error states. Для backend-only, type-only или подтверждённого non-behavior diff lane помечается `неприменимо` с причиной.
 
 Наличие E2E не отменяет browser QA для визуально или UX-критичного diff: E2E становится частью evidence и может сократить exploratory scope.
 
@@ -68,7 +76,7 @@ Anonymous и authenticated сценарии проверяются раздел�
 
 ### 3. Сформировать сценарии
 
-Создай `.qa/<change>/scenarios.json` на основе:
+Создай `.qa/<change>/manual/scenarios.json` на основе:
 
 - релевантных OpenSpec `design.md` и `tasks.md`;
 - изменённых routes/components;
@@ -76,14 +84,14 @@ Anonymous и authenticated сценарии проверяются раздел�
 - access matrix для anonymous/authenticated flows;
 - design specification для site consumer.
 
-Каждый сценарий содержит точные шаги, ожидаемый результат и проверяемые viewport/state. Общая фраза «проверить, что UI работает» запрещена.
+Каждый сценарий содержит точные шаги, ожидаемый результат и проверяемый state. Общая фраза «проверить, что UI работает» запрещена.
 
 ### 4. Scripted Playwright evidence
 
-Запусти сценарии через `ui-qa` на desktop, tablet и mobile. Обязательное evidence:
+Запусти сценарии через `ui-qa` в viewport 1366×768 (`--viewports desktop`). Обязательное evidence:
 
 - machine-readable `report.json`;
-- screenshots для релевантных состояний и viewport;
+- screenshots для релевантных состояний;
 - browser console errors;
 - failed network requests и ответы `5xx`;
 - axe findings уровня critical/serious;
@@ -93,10 +101,15 @@ Anonymous и authenticated сценарии проверяются раздел�
 
 ### 5. Визуальная инспекция агентом
 
-Прочитай каждый обязательный screenshot через `read_image` и сравни с design/spec evidence. Проверь:
+Каждое изображение остаётся в контексте до конца сессии (91–93 screenshots подняли контекст QA-агента до 215K токенов), поэтому бюджет строгий:
+
+- `read_image` — только для screenshots **изменённых** состояний, по одному на state, не больше ~15 за сессию;
+- состояния, полностью покрытые assertions и axe без нарушений, визуально не перепроверяются;
+- при повторной проверке после fix смотри только screenshots исправленных findings.
+
+Прочитай обязательные screenshots через `read_image` и сравни с design/spec evidence. Проверь:
 
 - clipping, overlap, horizontal overflow и unreadable text;
-- responsive layout и touch targets;
 - видимость focus и keyboard flow;
 - корректность loading/empty/error/disabled states;
 - соответствие дизайн-системе и отсутствие очевидной визуальной регрессии.
@@ -149,7 +162,7 @@ MCP не заменяет воспроизводимый scripted report. Пос
 - console errors и неожиданные `5xx` отсутствуют;
 - нет critical/serious axe findings либо каждое исключение утверждено спецификацией;
 - обязательные screenshots просмотрены агентом через `read_image`;
-- report, screenshots и traces сохранены в `.qa/` и перечислены в handoff.
+- report, screenshots и traces сохранены в `.qa/<change>/manual/` и перечислены в handoff.
 
 `FAIL/REWORK` — функциональная, визуальная, accessibility или access regression. `BLOCKED` — только доказанный infrastructure/external blocker после circuit breaker.
 
@@ -158,7 +171,7 @@ MCP не заменяет воспроизводимый scripted report. Пос
 ```text
 Unit: QG-FE-MANUAL | Профиль: Quality Gate | Статус: done / rework / blocked
 Environment: stackctl status → <результат>; repair attempts: <0..2>
-Scenarios: <passed>/<total>; viewports: desktop/tablet/mobile
+Scenarios: <passed>/<total>; viewport: 1366×768
 Evidence: <report.json, screenshots, traces>
 Console/network/axe: <результат>
 Visual inspection: <просмотренные screenshots и вывод>
