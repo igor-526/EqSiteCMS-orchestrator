@@ -99,15 +99,15 @@ DAG — `design.md` → `### DAG`. `MS-BE-2` ∥ `MS-BE-3` допустимы п
 
 **Specs:** `metrica-parse-queue` · **Пути:** см. таблицу · **Зависит от:** `MS-BE-5`
 
-- [ ] MS-BE-6.1 Создать `src/workers/celery_app.py` по `agents/howto/celery-protocols.md` и D7: очередь `ya_metrica` (default), JSON, `task_acks_late`, `task_reject_on_worker_lost`, prefetch 1, `task_ignore_result`, `visibility_timeout=3600`, beat schedule `metrica.dispatch_ready` каждые `PARSE_DISPATCH_INTERVAL_SECONDS`, autodiscovery `workers.tasks`
-- [ ] MS-BE-6.2 Добавить в `src/utils/database.py` фабрику engine/session для Celery-задач (`NullPool`, создание и `dispose` внутри одного `asyncio.run`); проверить `tests/unit/test_database.py`
-- [ ] MS-BE-6.3 Реализовать задачи `metrica.process_account` и `metrica.dispatch_ready` (`src/workers/tasks/metrica_parse.py`): `asyncio.run` сервисов, re-dispatch при `has_more`, тихий выход при занятом аккаунте, `autoretry_for` только для инфраструктурных ошибок (`max_retries=3`, `retry_backoff=True`), структурные логи
-- [ ] MS-BE-6.4 Реализовать `CeleryParseDispatcher` (`src/workers/dispatcher.py`) по `ParseDispatcherProtocol`
-- [ ] MS-BE-6.5 Зарегистрировать в `src/containers/**` клиенты (стат, yandex-service, seo-service), репозитории, сервисы D11, `celery_app` (`providers.Singleton`) и dispatcher; обновить `src/core/services/__init__.py`; проверить `tests/unit/test_containers.py`
-- [ ] MS-BE-6.6 Добавить в `.docker-compose/docker-compose.ya_metrica.yml` сервисы `ya-metrica-celery-worker` (`celery -A workers.celery_app worker -Q ya_metrica --concurrency=${WORKER_CONCURRENCY:-1} --hostname ya-metrica-worker@%h`, healthcheck адресным `inspect ping`, `stop_grace_period: 300s`) и `ya-metrica-celery-beat` (один экземпляр); проверить `docker compose -f … config --services` (без вывода env)
-- [ ] MS-BE-6.7 Добавить Redis DB 5/6 (`ya-metrica-service`) в `agents/redis-databases.yaml` и строку `ya-metrica-service | ya_metrica | metrica.process_account, metrica.dispatch_ready` в таблицу «Сервисы и их очереди» `agents/howto/celery-protocols.md`
-- [ ] MS-BE-6.8 Реализовать и прогнать `UT-MS-14` (`tests/workers/test_metrica_parse_tasks.py`) и `UT-MS-16` (`tests/workers/test_celery_app.py`, dispatcher, DI)
-- [ ] MS-BE-6.V Прогнать targeted `uv run pytest tests/workers tests/unit/test_containers.py tests/unit/test_database.py` и `make lint`, логи в `.qa/metrica-stats-parsing/ms-be-6/`, отметить выполненные task IDs и вернуть handoff (имена задач/очереди/compose-сервисов)
+- [x] MS-BE-6.1 Создать `src/workers/celery_app.py` по `agents/howto/celery-protocols.md` и D7: очередь `ya_metrica` (default), JSON, `task_acks_late`, `task_reject_on_worker_lost`, prefetch 1, `task_ignore_result`, `visibility_timeout=3600`, beat schedule `metrica.dispatch_ready` каждые `PARSE_DISPATCH_INTERVAL_SECONDS`, autodiscovery `workers.tasks`
+- [x] MS-BE-6.2 Добавить в `src/utils/database.py` фабрику engine/session для Celery-задач (`NullPool`, создание и `dispose` внутри одного `asyncio.run`); проверить `tests/unit/test_database.py`
+- [x] MS-BE-6.3 Реализовать задачи `metrica.process_account` и `metrica.dispatch_ready` (`src/workers/tasks/metrica_parse.py`): `asyncio.run` сервисов, re-dispatch при `has_more`, тихий выход при занятом аккаунте, `autoretry_for` только для инфраструктурных ошибок (`max_retries=3`, `retry_backoff=True`), структурные логи
+- [x] MS-BE-6.4 Реализовать `CeleryParseDispatcher` (`src/workers/dispatcher.py`) по `ParseDispatcherProtocol`
+- [x] MS-BE-6.5 Зарегистрировать в `src/containers/**` клиенты (стат, yandex-service, seo-service), репозитории, сервисы D11, `celery_app` (`providers.Singleton`) и dispatcher; обновить `src/core/services/__init__.py`; проверить `tests/unit/test_containers.py`
+- [x] MS-BE-6.6 Добавить в `.docker-compose/docker-compose.ya_metrica.yml` сервисы `ya-metrica-celery-worker` (`celery -A workers.celery_app worker -Q ya_metrica --concurrency=${WORKER_CONCURRENCY:-1} --hostname ya-metrica-worker@%h`, healthcheck адресным `inspect ping`, `stop_grace_period: 300s`) и `ya-metrica-celery-beat` (один экземпляр); проверить `docker compose -f … config --services` (без вывода env)
+- [x] MS-BE-6.7 Добавить Redis DB 5/6 (`ya-metrica-service`) в `agents/redis-databases.yaml` и строку `ya-metrica-service | ya_metrica | metrica.process_account, metrica.dispatch_ready` в таблицу «Сервисы и их очереди» `agents/howto/celery-protocols.md`
+- [x] MS-BE-6.8 Реализовать и прогнать `UT-MS-14` (`tests/workers/test_metrica_parse_tasks.py`) и `UT-MS-16` (`tests/workers/test_celery_app.py`, dispatcher, DI)
+- [x] MS-BE-6.V Прогнать targeted `uv run pytest tests/workers tests/unit/test_containers.py tests/unit/test_database.py` и `make lint`, логи в `.qa/metrica-stats-parsing/ms-be-6/`, отметить выполненные task IDs и вернуть handoff (имена задач/очереди/compose-сервисов)
 
 ## 7\. MS-BE-7 — endpoint запуска, документация, финальная проверка сервиса (профиль: Backend)
 

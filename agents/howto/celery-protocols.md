@@ -28,6 +28,7 @@ flowchart LR
 |--------|---------|--------|
 | `email-service` | `email` | `send_email_task` |
 | `vk-service` | `vk` | `vk.integration_probe` |
+| `ya-metrica-service` | `ya_metrica` | `metrica.process_account`, `metrica.dispatch_ready` |
 
 ## Конфигурация
 
@@ -76,6 +77,7 @@ class CelerySettings(BaseSettings):
 - **БД 2** — backend для email-service
 - **БД 3** — broker для vk-service
 - **БД 4** — backend для vk-service
+- **БД 5/6** — broker/backend для ya-metrica-service
 - Каждый новый сервис, использующий Celery, получает 2 БД (broker + backend)
 
 ## Переменные окружения
@@ -282,3 +284,17 @@ Readiness worker проверяется только адресным `celery in
 Отдельный blocking real Redis/Celery gate проверяет delivery, retry, `acks_late`, duplicate idempotency, worker restart/redelivery и concurrent repository/session lifecycle. Он использует реальные Redis и worker, уникальные ресурсы, bounded waits и cleanup. Default unit suite может исключать marker `infrastructure`, но canonical integration command обязан FAIL, а не skip, при отсутствии обязательного env/infra.
 7. **Structured logging** — логируйте task_id, имя задачи, статус, длительность.
 8. **DI-контейнер** — регистрируйте celery_app через dependency-injector для тестируемости.
+
+
+## ya-metrica-service: PostgreSQL queue bridge
+
+DI создаёт Celery через `workers.app_factory.create_celery_app` и `providers.Singleton`;
+`workers.celery_app` только экспортирует экземпляр для CLI. Autodiscovery импортирует
+`workers.tasks` (`related_name=None`), пакет явно экспортирует доменные задачи.
+Только инфраструктурные ошибки получают Celery autoretry (3, backoff); доменные
+повторы хранятся в PostgreSQL. Сообщение содержит только ID аккаунта.
+JSON, acks_late, reject_on_worker_lost, prefetch=1, ignore_result,
+visibility_timeout=3600. Beat — один экземпляр. На asyncio.run создаётся свой
+NullPool-engine/session с dispose в finally; транзакциями управляют сервисы.
+Redis password берётся только из собственного окружения/.env ya-metrica-service
+через CelerySettings с URL encoding; чужие .env runtime не читает.
