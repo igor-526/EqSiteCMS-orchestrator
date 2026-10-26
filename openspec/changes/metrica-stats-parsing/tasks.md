@@ -45,15 +45,15 @@ DAG — `design.md` → `### DAG`. `MS-BE-2` ∥ `MS-BE-3` допустимы п
 
 **Specs:** `metrica-stats-ingestion` · **Пути:** см. таблицу · **Зависит от:** `MS-BE-1`
 
-- [ ] MS-BE-2.1 Вынести `BaseApiClient` (`src/clients/base.py`: `base_url`, timeout, безопасная классификация timeout/transport/http/response, фабрика исключения) из `src/clients/yandex_metrica.py`; удалить untracked `src/clients/yandex_metrica_parser.py` (содержит живой токен — не копировать значение никуда)
-- [ ] MS-BE-2.2 Перевести `YandexMetricaClient` на наследование от `BaseApiClient` без изменения поведения `get_counters`; проверить регрессией `UT-MS-13` (`tests/clients/test_base_client.py`, существующий `tests/clients/test_yandex_metrica.py`)
-- [ ] MS-BE-2.3 Реализовать `YandexMetricaStatClient.get_stat_page` (`src/clients/yandex_metrica_stat.py`): params по спеке (ids, metrics, dimensions, date1/date2, limit, 1-based offset, `sort=ym:s:date,<dim>`, `accuracy=full`), OAuth header, timeout из настроек
-- [ ] MS-BE-2.4 Добавить валидатор оболочки ответа `stat/v1/data` и DTO страницы (`src/core/schemas/clients/yandex_metrica_stat.py`: `total_rows`, `sampled`, `total_rows_rounded`, сырые строки)
-- [ ] MS-BE-2.5 Добавить `PeerServiceException(service, status, category)` в `src/core/exceptions/` и `YandexServiceClient` (`get_metrica_binding` → Y7, `get_enc_access_token` → Y5 с полем `enc_access_token`) с DTO ответов
-- [ ] MS-BE-2.6 Реализовать `SeoServiceClient.resolve_pages/resolve_search_queries` (`X-Equestrian-Id`, body `{"items"}`, ответ `[{source, normalized, id}]`, ≤1000 элементов)
-- [ ] MS-BE-2.7 Обновить Protocol'ы клиентов в `src/core/protocols/clients/` (стат-клиент, yandex-service, seo-service)
-- [ ] MS-BE-2.8 Реализовать и прогнать `UT-MS-05` и клиентскую часть `UT-MS-09`/`UT-MS-11` (`tests/clients/test_yandex_metrica_stat.py`, `test_yandex_service.py`, `test_seo_service.py`) на mock-транспорте, без живых запросов
-- [ ] MS-BE-2.V Прогнать `uv run pytest tests/clients` и `make lint`, отметить выполненные task IDs и вернуть handoff (сигнатуры клиентов, категории исключений)
+- [x] MS-BE-2.1 Вынести `BaseApiClient` (`src/clients/base.py`: `base_url`, timeout, безопасная классификация timeout/transport/http/response, фабрика исключения) из `src/clients/yandex_metrica.py`; удалить untracked `src/clients/yandex_metrica_parser.py` (содержит живой токен — не копировать значение никуда)
+- [x] MS-BE-2.2 Перевести `YandexMetricaClient` на наследование от `BaseApiClient` без изменения поведения `get_counters`; проверить регрессией `UT-MS-13` (`tests/clients/test_base_client.py`, существующий `tests/clients/test_yandex_metrica.py`)
+- [x] MS-BE-2.3 Реализовать `YandexMetricaStatClient.get_stat_page` (`src/clients/yandex_metrica_stat.py`): params по спеке (ids, metrics, dimensions, date1/date2, limit, 1-based offset, `sort=ym:s:date,<dim>`, `accuracy=full`), OAuth header, timeout из настроек
+- [x] MS-BE-2.4 Добавить валидатор оболочки ответа `stat/v1/data` и DTO страницы (`src/core/schemas/clients/yandex_metrica_stat.py`: `total_rows`, `sampled`, `total_rows_rounded`, сырые строки)
+- [x] MS-BE-2.5 Добавить `PeerServiceException(service, status, category)` в `src/core/exceptions/` и `YandexServiceClient` (`get_metrica_binding` → Y7, `get_enc_access_token` → Y5 с полем `enc_access_token`) с DTO ответов
+- [x] MS-BE-2.6 Реализовать `SeoServiceClient.resolve_pages/resolve_search_queries` (`X-Equestrian-Id`, body `{"items"}`, ответ `[{source, normalized, id}]`, ≤1000 элементов)
+- [x] MS-BE-2.7 Обновить Protocol'ы клиентов в `src/core/protocols/clients/` (стат-клиент, yandex-service, seo-service)
+- [x] MS-BE-2.8 Реализовать и прогнать `UT-MS-05` и клиентскую часть `UT-MS-09`/`UT-MS-11` (`tests/clients/test_yandex_metrica_stat.py`, `test_yandex_service.py`, `test_seo_service.py`) на mock-транспорте, без живых запросов
+- [x] MS-BE-2.V Прогнать `uv run pytest tests/clients` и `make lint`, отметить выполненные task IDs и вернуть handoff (сигнатуры клиентов, категории исключений)
 
 ## 3\. MS-BE-3 — репозитории хранения и очереди (профиль: Backend)
 
