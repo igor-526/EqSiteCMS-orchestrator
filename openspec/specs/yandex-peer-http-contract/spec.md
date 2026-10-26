@@ -36,7 +36,7 @@
 
 Change SHALL сохранять фактическую модель доступа приведённых путей без добавления публичной экспозиции, обхода backend authorization или ослабления существующих проверок. `authenticated` означает тот же запрос с user cookie/Authorization: в текущих peer routes они не дают дополнительных прав и не требуются. `access_token` Метрики — вход для Яндекс, не user authentication. По ответу Q2 пользователь заявил: «Это dev окружение. На production такого не будет»; существующие access exceptions сохраняются в рамках этого dev change без auth/network changes. Отдельный security change MUST NOT становиться prerequisite для apply или dev verification; финальный approval реализации по-прежнему требуется. Это заявление MUST NOT считаться техническим подтверждением production isolation: перед production deployment/release SHALL быть подтверждена защита чувствительных peer APIs от внешних anonymous callers, иначе production выпуск блокируется. Устранение production exposure выполняется вне ownership этого change.
 
-Идентификаторы Y1..M1/H1/D1/R1 служат трассировкой тестов. Результаты `200/204` предполагают валидные данные и существующий ресурс; ошибка данных/интеграции → `400` независимо от cookie.
+Идентификаторы Y1..M2/H1/D1/R1 служат трассировкой тестов. Результаты `200/204` предполагают валидные данные и существующий ресурс; ошибка данных/интеграции → `400` независимо от cookie.
 
 | ID | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|---|
@@ -44,22 +44,23 @@ Change SHALL сохранять фактическую модель доступ
 | Y2 | POST | yandex `/api/auth/code` | Public Auth POST exception | caller OAuth-потока private peer | 200; invalid code/body/upstream 400 | то же |
 | Y3 | GET | yandex `/api/accounts/` | Private Peer Read exception | доверенный внутренний caller | 200; invalid/missing equestrian_id 400 | то же |
 | Y4 | DELETE | yandex `/api/accounts/{account_id}` | Private Peer Write exception | доверенный внутренний caller | 204, включая отсутствующий ID (идемпотентность); malformed ID 400 | то же |
-| Y5 | GET | yandex `/api/servicing/access-token/{account_id}` | Sensitive Private Peer Read exception | доверенный внутренний сервис | 200; invalid/missing resource 400 | то же |
+| Y5 | GET | yandex `/api/servicing/access-token/{account_id}` | Sensitive Private Peer Read exception (service-to-service) | доверенный внутренний сервис (ya-metrica-service) | 200 `{"enc_access_token": <ciphertext>}` без открытого токена; malformed/missing resource 400 | то же |
 | Y6 | GET | yandex `/api/metrica/counters` | Sensitive Private Peer Read exception | доверенный внутренний caller | 200; invalid/missing account_id/upstream 400 | то же |
 | Y7 | GET | yandex `/api/connections/metrica/{equestrian_id}` | Private Peer Read exception | доверенный внутренний caller | 200, включая counter=null; malformed ID 400 | то же |
 | Y8 | POST | yandex `/api/connections/metrica` | Private Peer Write exception | доверенный внутренний caller | 200; validation/conflict 400 | то же |
 | Y9 | DELETE | yandex `/api/connections/metrica/{counter_id}` | Private Peer Write exception | доверенный внутренний caller | 204, включая отсутствующий ID (идемпотентность); malformed ID 400 | то же |
 | M1 | GET | ya-metrica `/api/metrica/counters` | Sensitive Private Peer Read exception | доверенный внутренний caller | 200; missing/invalid access_token/params/upstream 400 | то же |
+| M2 | POST | ya-metrica `/api/metrica/stats/parse` | Private Peer Write exception (service-to-service) | доверенный внутренний сервис (оператор, будущий SEO-триггер) | 200 с запуском; validation/диапазон/нет привязки/активный запуск/yandex-service недоступен 400 | то же |
 | H1 | GET | оба `/health` | Public Read | любой caller | 200; internal failure 400 | то же |
 | D1 | GET | оба `/docs`, `/redoc`, `/openapi.json`, `/docs/oauth2-redirect` | Public Read, служебные | любой caller | 200; internal failure 400 | то же |
 | R1 | любой | оба неизвестный путь, unsupported method, slash mismatch | Framework rejection | никто | 400; операция не вызвана | то же |
 
-Причины исключений: Y2 инициирует OAuth до user session. Y3..Y9 и M1 сейчас не имеют auth dependency и являются доверенными peer API, а не CMS user API; Y5 выдаёт чувствительный token, Y6/M1 оперируют приватными данными и поэтому НЕ классифицируются как общедоступное чтение сайтов. Y4/Y8/Y9 credential-less запись — существующее явное исключение из Protected Write, сохраняемое в заявленном пользователем dev окружении, а не новое разрешение публичного production доступа. Production deployment/release требует подтверждённой защиты на внешней границе; этот change не доказывает private exposure, не создаёт peer credential и не разрешает публичную production выдачу токенов.
+Причины исключений: Y2 инициирует OAuth до user session. Y3..Y9, M1 и M2 не имеют auth dependency и являются доверенными peer API, а не CMS user API; Y5 выдаёт только ciphertext токена (расшифровка — у ya-metrica-service общим ключом), но он остаётся чувствительным и потому Y5 НЕ Public Read; Y6/M1 оперируют приватными данными и поэтому НЕ классифицируются как общедоступное чтение сайтов. M2 — service-to-service постановка парсинга без CMS-пользователя; `equestrian_id` в body — идентификатор ресурса, не tenant selector. Y4/Y8/Y9/M2 credential-less запись — существующее явное исключение из Protected Write, сохраняемое в заявленном пользователем dev окружении, а не новое разрешение публичного production доступа. Production deployment/release требует подтверждённой защиты на внешней границе; этот change не доказывает private exposure, не создаёт peer credential и не разрешает публичную production выдачу токенов.
 
 Дополнительные оси governance: `equestrian_id`/`account_id`/`counter_id` — resource/tenant identity, не секретная аутентификация; `X-Equestrian-Service-Key` здесь не используется. Owner/foreign проверок на user cookies в данных peers нет: валидный ID другого tenant имеет тот же контракт у доверенного внутреннего caller, а неизвестный ресурс следует строке матрицы (`400` для Y5/Y6, `204` для DELETE, `200 counter=null` для Y7). Это существующая граница доверия, не новое разрешение CMS-пользователю; owner-only email policy неприменима. Роли CMS не создаются и не меняются.
 
 #### Scenario: Anonymous и authenticated для каждой строки
-- **WHEN** тесты вызывают каждую строку Y1..Y9, M1, H1 и D1 без cookies, затем с cookie/Authorization
+- **WHEN** тесты вызывают каждую строку Y1..Y9, M1, M2, H1 и D1 без cookies, затем с cookie/Authorization
 - **THEN** подтверждаются одинаковые контрактные статусы и payload по матрице, а upstream/token input не принимается за user authentication
 
 #### Scenario: Валидация и чужой ресурс
@@ -77,3 +78,19 @@ Change SHALL сохранять фактическую модель доступ
 #### Scenario: Main backend отказывает в доступе
 - **WHEN** запрос к защищённому main backend endpoint приходит без auth или с чужими правами
 - **THEN** сохраняется действующий `401/403`; нормализация статусов peers не применяется к backend
+
+### Requirement: Выдача зашифрованного токена сервисам
+
+yandex-service SHALL отвечать на `GET /api/servicing/access-token/{account_id}` телом `{"enc_access_token": "<ciphertext>"}`, где ciphertext — сохранённый зашифрованный access token аккаунта без расшифровки. Ответ MUST NOT содержать поле `access_token` или открытый токен. Расшифровку выполняет вызывающий сервис общим `ENCRYPTION_SERVICE_KEY`, как для списка счётчиков.
+
+#### Scenario: Существующий аккаунт
+- **WHEN** доверенный сервис запрашивает токен существующего аккаунта без Cookie/Authorization, а затем с произвольными Cookie/Authorization
+- **THEN** оба ответа `200` с одинаковым `enc_access_token`, равным сохранённому ciphertext, расшифровка в yandex-service не вызывается
+
+#### Scenario: Совместимость с ya-metrica-service
+- **WHEN** ya-metrica-service расшифровывает полученный `enc_access_token` тем же `ENCRYPTION_SERVICE_KEY`
+- **THEN** получается исходный OAuth-токен аккаунта
+
+#### Scenario: Отсутствующий или некорректный аккаунт
+- **WHEN** `account_id` не UUID либо аккаунт не найден
+- **THEN** ответ `400` с безопасным `detail`, без токена и без текста внутреннего исключения в ответе и логах
