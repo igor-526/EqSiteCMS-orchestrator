@@ -59,15 +59,15 @@ DAG — `design.md` → `### DAG`. `MS-BE-2` ∥ `MS-BE-3` допустимы п
 
 **Specs:** `metrica-stats-storage`, `metrica-parse-queue` · **Пути:** см. таблицу · **Зависит от:** `MS-BE-1`
 
-- [ ] MS-BE-3.1 Реализовать `StatsRepository` для обоих видов (`src/repositories/metrica_stats_repository.py`): пакетный upsert аддитивных колонок (замена для другого задания, сумма для того же — D2) с `RETURNING (xmax = 0)` → счётчики inserted/updated
-- [ ] MS-BE-3.2 Добавить в `StatsRepository` сверку окна (D3, возвращает число удалённых) и `get_last_stat_date(equestrian_id)` по виду
-- [ ] MS-BE-3.3 Реализовать `ParseRunRepository.create_run_with_tasks` и `has_active_tasks` под `pg_advisory_xact_lock` по конюшне (D7)
-- [ ] MS-BE-3.4 Реализовать в `ParseTaskRepository` claim по аккаунту (SKIP LOCKED + NOT EXISTS running, `UniqueViolation` → «аккаунт занят»), `list_dispatchable_accounts`, продление lease и `save_checkpoint` (next\_offset + счётчики)
-- [ ] MS-BE-3.5 Реализовать в `ParseTaskRepository` `mark_succeeded`, `schedule_retry`, `mark_failed`, `reap_expired_leases`, `fail_queued_by_account`
-- [ ] MS-BE-3.6 Описать Protocol'ы репозиториев в `src/core/protocols/repositories/` и транзакционную границу (репозиторий работает в переданной сессии, commit — у вызывающего)
-- [ ] MS-BE-3.7 Реализовать и прогнать `IT-MS-02..06` (`tests/integration/test_stats_repository_postgres.py`) на реальной PostgreSQL, включая пример агрегации `/tours?utm` + `/tours` из спеки
-- [ ] MS-BE-3.8 Реализовать и прогнать `IT-MS-08..14` (`tests/integration/test_tasks_repository_postgres.py`), включая параллельные claim и постановку через два соединения
-- [ ] MS-BE-3.V Прогнать `TEST_DATABASE_URL=… uv run pytest tests/integration` и `make lint`, логи в `.qa/metrica-stats-parsing/ms-be-3/`, отметить выполненные task IDs и вернуть handoff (методы репозиториев, семантика транзакций)
+- [x] MS-BE-3.1 Реализовать `StatsRepository` для обоих видов (`src/repositories/metrica_stats_repository.py`): пакетный upsert аддитивных колонок (замена для другого задания, сумма для того же — D2) с `RETURNING (xmax = 0)` → счётчики inserted/updated
+- [x] MS-BE-3.2 Добавить в `StatsRepository` сверку окна (D3, возвращает число удалённых) и `get_last_stat_date(equestrian_id)` по виду
+- [x] MS-BE-3.3 Реализовать `ParseRunRepository.create_run_with_tasks` и `has_active_tasks` под `pg_advisory_xact_lock` по конюшне (D7)
+- [x] MS-BE-3.4 Реализовать в `ParseTaskRepository` claim по аккаунту (SKIP LOCKED + NOT EXISTS running, `UniqueViolation` → «аккаунт занят»), `list_dispatchable_accounts`, продление lease и `save_checkpoint` (next\_offset + счётчики)
+- [x] MS-BE-3.5 Реализовать в `ParseTaskRepository` `mark_succeeded`, `schedule_retry`, `mark_failed`, `reap_expired_leases`, `fail_queued_by_account`
+- [x] MS-BE-3.6 Описать Protocol'ы репозиториев в `src/core/protocols/repositories/` и транзакционную границу (репозиторий работает в переданной сессии, commit — у вызывающего)
+- [x] MS-BE-3.7 Реализовать и прогнать `IT-MS-02..06` (`tests/integration/test_stats_repository_postgres.py`) на реальной PostgreSQL, включая пример агрегации `/tours?utm` + `/tours` из спеки
+- [x] MS-BE-3.8 Реализовать и прогнать `IT-MS-08..14` (`tests/integration/test_tasks_repository_postgres.py`), включая параллельные claim и постановку через два соединения
+- [x] MS-BE-3.V Прогнать `TEST_DATABASE_URL=… uv run pytest tests/integration` и `make lint`, логи в `.qa/metrica-stats-parsing/ms-be-3/`, отметить выполненные task IDs и вернуть handoff (методы репозиториев, семантика транзакций)
 
 ## 4\. MS-BE-4 — резолв дат, декомпозиция, постановка (профиль: Backend)
 
