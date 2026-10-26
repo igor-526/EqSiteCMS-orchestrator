@@ -113,12 +113,14 @@ DAG — `design.md` → `### DAG`. `MS-BE-2` ∥ `MS-BE-3` допустимы п
 
 **Specs:** `metrica-parse-trigger`, `yandex-peer-http-contract` · **Пути:** см. таблицу · **Зависит от:** `MS-BE-6`
 
-- [ ] MS-BE-7.1 Добавить DTO `ParseRunInDto` (`extra="forbid"`) и `ParseRunOutDto` (с `clamped`) в `src/core/schemas/api/` по D12, без секретных полей
-- [ ] MS-BE-7.2 Добавить route `POST /api/metrica/stats/parse` (`src/api/`), wiring в `src/main.py`, маппинг доменных исключений в `400` и 4 новых safe detail в `SAFE_DETAILS`
-- [ ] MS-BE-7.3 Реализовать и прогнать `AT-MS-01..06` (`tests/api/test_parse_api.py`, регрессия `test_counters_api.py`, `test_health.py`) anonymous и с Cookie/Bearer, включая обрезку диапазона
-- [ ] MS-BE-7.4 Обновить `README.md` ya-metrica: назначение, таблицы и правила агрегации (суммы аддитивных колонок, средние = `SUM/SUM`, неаддитивность `users`), endpoint и access matrix M1/M2/H1, Celery worker/beat и Redis DB 5/6, env (в т.ч. `YA_METRICA_UTC_OFFSET_HOURS`), IT с `TEST_DATABASE_URL`
-- [ ] MS-BE-7.5 Обновить секцию 8/9 `SERVICES.md` (endpoint M2, Celery worker/beat, зависимости от yandex-service/seo-service/Redis) и упоминание Redis DB в разделе инфраструктуры
-- [ ] MS-BE-7.V Прогнать `make lint` и `TEST_DATABASE_URL=… make test-cov` (coverage 100%) из `services/ya-metrica-service`, логи в `.qa/metrica-stats-parsing/ms-be-7/`, отметить выполненные task IDs и вернуть handoff
+- [x] MS-BE-7.1 Добавить DTO `ParseRunInDto` (`extra="forbid"`) и `ParseRunOutDto` (с `clamped`) в `src/core/schemas/api/` по D12, без секретных полей
+- [x] MS-BE-7.2 Добавить route `POST /api/metrica/stats/parse` (`src/api/`), wiring в `src/main.py`, маппинг доменных исключений в `400` и 4 новых safe detail в `SAFE_DETAILS`
+- [x] MS-BE-7.3 Реализовать и прогнать `AT-MS-01..06` (`tests/api/test_parse_api.py`, регрессия `test_counters_api.py`, `test_health.py`) anonymous и с Cookie/Bearer, включая обрезку диапазона
+- [x] MS-BE-7.4 Обновить `README.md` ya-metrica: назначение, таблицы и правила агрегации (суммы аддитивных колонок, средние = `SUM/SUM`, неаддитивность `users`), endpoint и access matrix M1/M2/H1, Celery worker/beat и Redis DB 5/6, env (в т.ч. `YA_METRICA_UTC_OFFSET_HOURS`), IT с `TEST_DATABASE_URL`
+- [x] MS-BE-7.5 Обновить секцию 8/9 `SERVICES.md` (endpoint M2, Celery worker/beat, зависимости от yandex-service/seo-service/Redis) и упоминание Redis DB в разделе инфраструктуры
+- [x] MS-BE-7.V Прогнать `make lint` и `TEST_DATABASE_URL=… make test-cov` (coverage 100%) из `services/ya-metrica-service`, логи в `.qa/metrica-stats-parsing/ms-be-7/`, отметить выполненные task IDs и вернуть handoff
+
+MS-BE-7 verification: `make format`/`make lint` — PASS; `TEST_DATABASE_URL=… make test-cov` — 656 passed, 100% строк/ветвей на отдельной `eqsitecmsyametrica_test` (случайные схемы, остаток 0). Evidence: `.qa/metrica-stats-parsing/ms-be-7/`. Для восстановления общего покрытия добавлены минимальные guard-регрессии в `services/ya-metrica-service/tests/unit/test_change_guards.py`; API-регрессия M1 обновлена под транспорт `clients.base` после MS-BE-2. Реализации вне ownership не менялись. Live smoke не запускался.
 
 ## 8\. YS-1 — Y5 возвращает зашифрованный токен (профиль: Backend)
 

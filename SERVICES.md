@@ -36,7 +36,7 @@ EqSiteCMS поддерживает два контура доступа к API:
 ## 🏗 Инфраструктура (Databases / Brokers)
 
 - **PostgreSQL**: Основная транзакционная БД. Хранит пользователей, проекты, балансы, настройки сущностей.
-- **Redis**: Брокер сообщений и backend для Celery. Номера БД распределены по сервисам (см. `agents/redis-databases.yaml`).
+- **Redis**: Брокер сообщений и backend для Celery. Номера БД распределены по сервисам (см. `agents/redis-databases.yaml`); ya-metrica-service использует DB 5 (broker) и DB 6 (backend).
   - БД 0 — зарезервирована (кэш backend)
   - БД 1 — broker для email-service
   - БД 2 — backend для email-service
@@ -223,9 +223,30 @@ EXPOSE_VK_DB_PORT=5436
 
 ### 8. Yandex Service и 9. Ya Metrica Service
 
-[Yandex Service](<services/yandex-service/>) — интеграция с Яндексом; [Ya Metrica Service](<services/ya-metrica-service/>) — адаптер Яндекс Метрики. Это два самостоятельных ignored nested Git-репозитория, не submodules; оба зарегистрированы в [manifest:13–14](<services.manifest#L13-L14>). Регистрация не включает их в core release scope.
+[Yandex Service](<services/yandex-service/>) — интеграция с Яндексом; [Ya Metrica Service](<services/ya-metrica-service/>) — адаптер Яндекс Метрики с очередью загрузки статистики страниц/поисковых запросов в PostgreSQL. Это два самостоятельных ignored nested Git-репозитория, не submodules; оба зарегистрированы в [manifest:13–14](<services.manifest#L13-L14>). Регистрация не включает их в core release scope.
 
 Полные lifecycle/storage/API/access-контракты и app settings оформляются отдельным service-backfill по [заданию 097](<docs/tasks/097_yandex_services_retrospective_specs.md>), а не этим корневым onboarding.
+
+#### Парсинг статистики Метрики
+
+`POST /api/metrica/stats/parse` (M2) ставит запуск по `equestrian_id` и optional
+`date_from/date_to`: `200` с `run_id`, `clamped`, диапазонами и queued-заданиями;
+ошибки ввода/привязки/активного запуска/интеграции — `400`. Это Private Peer Write
+exception для внутреннего сервиса без CMS-ролей: anonymous и Cookie/Bearer имеют
+одинаковый контракт. M1 `/api/metrica/counters` остаётся Sensitive Private Peer Read
+(`200/400`), H1 `/health` — Public Read (`200`). Production выпуск требует
+подтверждённой защиты чувствительных peers от внешнего anonymous доступа.
+
+Зависимости ya-metrica: собственный PostgreSQL, yandex-service (Y7 привязка,
+Y5 ciphertext `enc_access_token`, расшифровка только в памяти ya-metrica), seo-service
+(резолв UUID страниц/запросов), Redis DB 5/6. Service Compose содержит
+`ya-metrica-celery-worker` (очередь `ya_metrica`, `metrica.process_account`) и
+единственный `ya-metrica-celery-beat` (`metrica.dispatch_ready`). Источник истины —
+очередь в PostgreSQL, Redis доставляет JSON без credentials. Окна ≤5 дней,
+claim/lease сериализуют задания одного аккаунта. Собственные `.env`/environment
+задают Redis credentials, `CELERY_APP_*`, `YA_METRICA_UTC_OFFSET_HOURS` (−12..14,
+по умолчанию +3); runtime не читает чужие env и не зависит от оркестратора.
+Подробности агрегации, API и тестов — [README ya-metrica](services/ya-metrica-service/README.md).
 
 #### Ресурсы Яндекса
 
