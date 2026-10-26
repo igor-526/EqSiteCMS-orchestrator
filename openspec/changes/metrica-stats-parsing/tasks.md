@@ -85,15 +85,15 @@ DAG — `design.md` → `### DAG`. `MS-BE-2` ∥ `MS-BE-3` допустимы п
 
 **Specs:** `metrica-stats-ingestion`, `metrica-parse-queue`, `metrica-stats-storage` · **Пути:** см. таблицу · **Зависит от:** `MS-BE-4`
 
-- [ ] MS-BE-5.1 Реализовать `ParseJobFactory` (`parse_job_factory.py`): Y7-сверка привязки, Y5 ciphertext, расшифровка `EncryptionService` → `ParseJob` (токен только в памяти); ошибки → `binding_changed`/`credentials_unavailable`/`credentials_invalid`/`yandex_service_unavailable`
-- [ ] MS-BE-5.2 Реализовать разбор строк в `StatIngestionService` (`stat_ingestion_service.py`): оболочка, конвертация в аддитивные колонки (`bounces`, `visit_duration_seconds` округлением), пропуск null/пустых измерений, непригодных строк и дат вне окна, флаг сэмплирования
-- [ ] MS-BE-5.3 Реализовать резолв сущностей (D6): уникальные значения, пакеты ≤ `SEO_RESOLVE_BATCH_SIZE`, бисекция при 400, пропуски; суммирование строк с одним `(stat_date, uuid)` внутри страницы API (D2)
-- [ ] MS-BE-5.4 Реализовать цикл страниц D5: старт с `next_offset`, одна транзакция на страницу (upsert + checkpoint + lease), остановка по пустой странице/`total_rows`
-- [ ] MS-BE-5.5 Реализовать `RetryPolicy` (`parse_retry_policy.py`): маппинг исключений → `error_code` D8, retryable-признак, backoff с потолком
-- [ ] MS-BE-5.6 Реализовать `TaskRunner.run_next_for_account` (`parse_task_runner.py`): claim → job → ingest → succeeded+сверка / retry / failed + fail-fast по аккаунту → `RunOutcome(has_more)`; логи старт/финиш/ошибки без секретов; `ParseDispatchService.collect_ready_accounts` (reaper + аккаунты к запуску)
-- [ ] MS-BE-5.7 Реализовать и прогнать `UT-MS-06..09` (`tests/unit/test_stat_ingestion_service.py`) и `UT-MS-11` (`tests/unit/test_parse_job_factory.py`, включая расшифровку ciphertext формата yandex-service)
-- [ ] MS-BE-5.8 Реализовать и прогнать `UT-MS-10` и `UT-MS-12` (`tests/unit/test_parse_retry_policy.py`, `tests/unit/test_parse_task_runner.py`, `tests/unit/test_parse_dispatch_service.py`, caplog-маркеры токена/ciphertext/фразы)
-- [ ] MS-BE-5.V Прогнать targeted `uv run pytest tests/unit/test_parse_*.py tests/unit/test_stat_ingestion_service.py` и `make lint`, отметить выполненные task IDs и вернуть handoff (точки входа `TaskRunner`/`ParseDispatchService`, требования к фабрике сессий)
+- [x] MS-BE-5.1 Реализовать `ParseJobFactory` (`parse_job_factory.py`): Y7-сверка привязки, Y5 ciphertext, расшифровка `EncryptionService` → `ParseJob` (токен только в памяти); ошибки → `binding_changed`/`credentials_unavailable`/`credentials_invalid`/`yandex_service_unavailable`
+- [x] MS-BE-5.2 Реализовать разбор строк в `StatIngestionService` (`stat_ingestion_service.py`): оболочка, конвертация в аддитивные колонки (`bounces`, `visit_duration_seconds` округлением), пропуск null/пустых измерений, непригодных строк и дат вне окна, флаг сэмплирования
+- [x] MS-BE-5.3 Реализовать резолв сущностей (D6): уникальные значения, пакеты ≤ `SEO_RESOLVE_BATCH_SIZE`, бисекция при 400, пропуски; суммирование строк с одним `(stat_date, uuid)` внутри страницы API (D2)
+- [x] MS-BE-5.4 Реализовать цикл страниц D5: старт с `next_offset`, одна транзакция на страницу (upsert + checkpoint + lease), остановка по пустой странице/`total_rows`
+- [x] MS-BE-5.5 Реализовать `RetryPolicy` (`parse_retry_policy.py`): маппинг исключений → `error_code` D8, retryable-признак, backoff с потолком
+- [x] MS-BE-5.6 Реализовать `TaskRunner.run_next_for_account` (`parse_task_runner.py`): claim → job → ingest → succeeded+сверка / retry / failed + fail-fast по аккаунту → `RunOutcome(has_more)`; логи старт/финиш/ошибки без секретов; `ParseDispatchService.collect_ready_accounts` (reaper + аккаунты к запуску)
+- [x] MS-BE-5.7 Реализовать и прогнать `UT-MS-06..09` (`tests/unit/test_stat_ingestion_service.py`) и `UT-MS-11` (`tests/unit/test_parse_job_factory.py`, включая расшифровку ciphertext формата yandex-service)
+- [x] MS-BE-5.8 Реализовать и прогнать `UT-MS-10` и `UT-MS-12` (`tests/unit/test_parse_retry_policy.py`, `tests/unit/test_parse_task_runner.py`, `tests/unit/test_parse_dispatch_service.py`, caplog-маркеры токена/ciphertext/фразы)
+- [x] MS-BE-5.V Прогнать targeted `uv run pytest tests/unit/test_parse_*.py tests/unit/test_stat_ingestion_service.py` и `make lint`, отметить выполненные task IDs и вернуть handoff (точки входа `TaskRunner`/`ParseDispatchService`, требования к фабрике сессий)
 
 ## 6\. MS-BE-6 — Celery: app, задачи, dispatcher, DI, compose (профиль: Backend)
 
