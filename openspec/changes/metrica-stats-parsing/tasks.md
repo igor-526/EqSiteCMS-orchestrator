@@ -157,6 +157,10 @@ Lanes запускаются отдельными агентами по DAG `age
 - [ ] QG-LIVE.1 Независимо повторить ключевые `SM-MS-03`, `SM-MS-05`, `SM-MS-06`, `SM-MS-08`, `SM-MS-11`, `SM-MS-13` на живом стеке и сверить с handoff `SMOKE-1`
 - [ ] QG-SYNTH.1 Свести findings lanes в `docs/reports/metrica-stats-parsing.md` с вердиктом; findings направить владельцам units через Router, неприменимые lanes отметить одной строкой с причиной
 
+## FIX-1 — Celery configuration follow-up (профиль: Backend)
+
+- [x] FIX-1.1 Исправить QG-CONTRACTS C-01/C-02: `CelerySettings.populate_by_name=True`, `task_expires=3600`; регрессии canonical kwargs/aliases, валидации URL и TTL; targeted settings/workers pytest и `make lint` — PASS (52 passed), evidence `.qa/metrica-stats-parsing/fix-1/`.
+
 ## Workflow follow-up
 
 *   После `QG-SYNTH = APPROVED`/`APPROVED_WITH_WAIVER` Router синхронизирует delta specs (`metrica-stats-storage`, `metrica-parse-queue`, `metrica-stats-ingestion`, `metrica-parse-trigger` — новые; `yandex-peer-http-contract` — изменённая), повторно выполняет `openspec status` и `openspec validate metrica-stats-parsing --type change --strict`, затем архивирует change.
