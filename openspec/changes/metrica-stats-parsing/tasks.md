@@ -73,13 +73,13 @@ DAG — `design.md` → `### DAG`. `MS-BE-2` ∥ `MS-BE-3` допустимы п
 
 **Specs:** `metrica-parse-trigger`, `metrica-parse-queue` · **Пути:** см. таблицу · **Зависит от:** `MS-BE-2`, `MS-BE-3`
 
-- [ ] MS-BE-4.1 Добавить доменные исключения постановки (`src/core/exceptions/parse.py`: пустой диапазон, нет привязки, интеграция Яндекс недоступна, активный запуск), DTO запуска/окон с `clamped` (`src/core/schemas/parse.py`) и `ParseDispatcherProtocol` (`src/core/protocols/parse_dispatcher.py`)
-- [ ] MS-BE-4.2 Реализовать `DateRangeResolver` (`parse_date_resolver.py`) по D9: «сегодня» по `YA_METRICA_UTC_OFFSET_HOURS`, обрезка явного диапазона до `[today − 2y; today]` с признаком `clamped`, `400` при пустом результате/одной дате, авто-режим раздельно по видам
-- [ ] MS-BE-4.3 Реализовать `TaskDecomposer` (`parse_decomposer.py`) по D4: окна ≤5 дней, чередование видов, `sequence`
-- [ ] MS-BE-4.4 Реализовать `ParseEnqueueService.enqueue` (`parse_enqueue_service.py`): Y7 до транзакции → транзакция (лок, активный запуск, даты, run+tasks с `counter_id`/`yandex_account_id`, `max_attempts`) → после commit `dispatcher.dispatch_account` (ошибка — warning, не отказ) → результат; лог постановки и обрезки
-- [ ] MS-BE-4.5 Реализовать и прогнать `UT-MS-01`, `UT-MS-02` (`tests/unit/test_parse_date_resolver.py`)
-- [ ] MS-BE-4.6 Реализовать и прогнать `UT-MS-03` (`tests/unit/test_parse_decomposer.py`) и `UT-MS-04` (`tests/unit/test_parse_enqueue_service.py`) с фейковыми клиентами/репозиториями/dispatcher
-- [ ] MS-BE-4.V Прогнать targeted `uv run pytest tests/unit/test_parse_*.py` и `make lint`, отметить выполненные task IDs и вернуть handoff (сигнатура `enqueue`, исключения, протокол dispatcher)
+- [x] MS-BE-4.1 Добавить доменные исключения постановки (`src/core/exceptions/parse.py`: пустой диапазон, нет привязки, интеграция Яндекс недоступна, активный запуск), DTO запуска/окон с `clamped` (`src/core/schemas/parse.py`) и `ParseDispatcherProtocol` (`src/core/protocols/parse_dispatcher.py`)
+- [x] MS-BE-4.2 Реализовать `DateRangeResolver` (`parse_date_resolver.py`) по D9: «сегодня» по `YA_METRICA_UTC_OFFSET_HOURS`, обрезка явного диапазона до `[today − 2y; today]` с признаком `clamped`, `400` при пустом результате/одной дате, авто-режим раздельно по видам
+- [x] MS-BE-4.3 Реализовать `TaskDecomposer` (`parse_decomposer.py`) по D4: окна ≤5 дней, чередование видов, `sequence`
+- [x] MS-BE-4.4 Реализовать `ParseEnqueueService.enqueue` (`parse_enqueue_service.py`): Y7 до транзакции → транзакция (лок, активный запуск, даты, run+tasks с `counter_id`/`yandex_account_id`, `max_attempts`) → после commit `dispatcher.dispatch_account` (ошибка — warning, не отказ) → результат; лог постановки и обрезки
+- [x] MS-BE-4.5 Реализовать и прогнать `UT-MS-01`, `UT-MS-02` (`tests/unit/test_parse_date_resolver.py`)
+- [x] MS-BE-4.6 Реализовать и прогнать `UT-MS-03` (`tests/unit/test_parse_decomposer.py`) и `UT-MS-04` (`tests/unit/test_parse_enqueue_service.py`) с фейковыми клиентами/репозиториями/dispatcher
+- [x] MS-BE-4.V Прогнать targeted `uv run pytest tests/unit/test_parse_*.py` и `make lint`, отметить выполненные task IDs и вернуть handoff (сигнатура `enqueue`, исключения, протокол dispatcher)
 
 ## 5\. MS-BE-5 — выполнение задания: креды, ELT-парсинг, ретраи, диспетчер (профиль: Backend)
 
