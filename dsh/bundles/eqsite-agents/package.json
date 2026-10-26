@@ -1,0 +1,12 @@
+{
+  "name": "@eqsite/dsh-agents",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "description": "EqSiteCMS Router and role presets compatible with DSH 0.2.1",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

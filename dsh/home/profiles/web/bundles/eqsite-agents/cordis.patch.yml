@@ -125,7 +125,6 @@
                       - delegate_frontend
                       - delegate_site_consumer
                       - delegate_quality_gate
-                      - workflow
                       - ask_user_question
                       - send_message
                   persona: !!js |
@@ -159,7 +158,6 @@
                       - delegate_frontend
                       - delegate_site_consumer
                       - delegate_quality_gate
-                      - workflow
                       - ask_user_question
                       - send_message
                   persona: !!js |
@@ -193,7 +191,6 @@
                       - delegate_frontend
                       - delegate_site_consumer
                       - delegate_quality_gate
-                      - workflow
                       - ask_user_question
                       - send_message
                   persona: !!js |
@@ -227,7 +224,6 @@
                       - delegate_frontend
                       - delegate_site_consumer
                       - delegate_quality_gate
-                      - workflow
                       - ask_user_question
                       - send_message
                   persona: !!js |
@@ -261,7 +257,6 @@
                       - delegate_frontend
                       - delegate_site_consumer
                       - delegate_quality_gate
-                      - workflow
                       - ask_user_question
                       - send_message
                   persona: !!js |

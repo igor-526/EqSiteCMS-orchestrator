@@ -2,10 +2,10 @@
   "name": "dsh-profile-web",
   "private": true,
   "dependencies": {
-    "@eqsite/dsh-agents": "link:./bundles/eqsite-agents",
+    "@eqsite/dsh-agents": "link:/srv/eqSiteCMS/dsh/bundles/eqsite-agents",
     "@eqsite/playwright-mcp": "link:./bundles/playwright-mcp",
     "@local/dsh-review-loop-services-v2": "link:../../../bundles/dsh-review-loop-services-v2",
-    "dsh-codex-connect": "github:franksong2702/dsh-codex-connect"
+    "dsh-codex-connect": "0.2.0-alpha.10"
   },
   "dsh": {
     "profile": {
@@ -14,8 +14,8 @@
         "@deepseek-ai/dsh-web-app",
         "dsh-codex-connect",
         "@eqsite/playwright-mcp",
-        "@eqsite/dsh-agents",
-        "@local/dsh-review-loop-services-v2"
+        "@local/dsh-review-loop-services-v2",
+        "@eqsite/dsh-agents"
       ]
     }
   }

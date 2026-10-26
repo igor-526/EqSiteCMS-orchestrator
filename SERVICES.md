@@ -296,4 +296,15 @@ Registry/discovery границы приведены по [design §2 и ист�
 | R-G6 | Deployment/Helm/CI/release readiness не аудитированы | Отдельное решение; manifest discovery недостаточно, core release не расширяется |
 | R-G7 | Endpoint/errors зависят от принятого результата `normalize-yandex-client-failures` | Service-backfill после freeze; активный change не изменяется |
 
+### 10. SEO Service (`services/seo-service`)
+
+Внутренний FastAPI peer для нормализации и batch-resolve поисковых запросов/страниц, tenant-scoped списков и черных списков query-параметров/хешей страниц. Resolve возвращает стабильные UUID; изменение черных списков не переписывает ранее сохраненные страницы.
+
+- Ресурсы: [SEO Compose](<.docker-compose/docker-compose.seo.yml>) — `seo-service` (`eqsitecms-seo-service`) и one-shot `seo-migration`; external network `eqsitecms_network`. PostgreSQL 16: `eqsitecms-db-seo:5432`, БД/пользователь `eqsitecmsseo`, host-порт БД `5437`. Live upgrade до `20261023_0002` проверен; `pg_trgm` установлен.
+- Локальные команды: `make seo-build`, upgrade через `docker compose -p eqsitecms-seo -f .docker-compose/docker-compose.seo.yml --env-file services/seo-service/.env run --rm seo-migration`, затем `make seo`. Миграция должна успешно завершиться до запросов к API. Исходники монтируются `ro`, без autoreload; после изменений нужна пересборка/перезапуск. `stackctl` SEO пока не поддерживает: используется штатный `make`/Compose, backend обслуживается через `scripts/stackctl … app`.
+- Backend: `SEO_SERVICE_URL`, default `http://eqsitecms-seo-service:8000`; live backend использует default, отдельный override не потребовался. Host-порт приложения задается `EXPOSE_SEO_SERVICE_PORT` и не является фиксированным: в проверенном runtime — `32768 → 8000`.
+- API peer: public `GET /health`; все 12 операций `/api/**` требуют только UUID `X-Equestrian-Id`, missing/invalid selector — `401`. Credentials не требуются и игнорируются: это **Internal Trusted Network Read/Write**, явное исключение из обычного Public Read/Protected Write. Resolve: `POST /api/search-queries/resolve`, `POST /api/pages/resolve`; списки: `GET /api/search-queries`, `GET /api/pages`; настройки: GET/POST и PATCH/DELETE по ID под `/api/page-normalization/blacklisted-query-params` и `/api/page-normalization/blacklisted-hashes`. Подробности — [README SEO](<services/seo-service/README.md>).
+- CMS обращается только через 10 маршрутов backend `/api/seo/**`: **только ADMIN**, включая GET; anonymous — `401`, остальные роли (включая SUPERUSER/DEVELOPER без ADMIN) — `403`. Tenant берется из actor, не из клиентского selector; чужие элементы — `404`. Успешный CRUD черных списков — `201/200/204`, дубль — `409`, validation — `400`.
+- **Production isolation boundary:** отсутствие credentials безопасно только внутри доверенной сети. Наличие Compose network само по себе изоляцию не доказывает. Текущие dev app/DB порты опубликованы на `0.0.0.0`/`::`; до production требуется отдельное подтверждение внешней недоступности peer и БД, иначе выпуск заблокирован. Live smoke не является production security approval; настройки сети здесь не менялись.
+
 ---
