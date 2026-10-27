@@ -31,7 +31,7 @@ DC_INFRA = docker compose -p eqsitecms-infra -f $(COMPOSE_INFRA) --env-file $(CO
 
 .PHONY: sync update services-branches harness build build-nc test lint format check check-backend check-email \
 		check-notification check-frontend fix fix-backend fix-email fix-notification fix-frontend \
-		compose-check asyncapi-validate asyncapi-validate-vk contracts-check secret-scan migrate-core recreate-core health-core status-core logs-core \
+		compose-check asyncapi-validate asyncapi-validate-parse asyncapi-validate-vk contracts-check secret-scan migrate-core recreate-core health-core status-core logs-core \
 		be-build be-build-nc be be-attach be-makemigrations be-migrate \
 		notification-build notification-build-nc notification notification-attach \
 		fe-build fe-build-nc fe fe-attach \
@@ -280,6 +280,12 @@ asyncapi-validate:
 # consumer contract explicitly when working on the standalone VK service.
 asyncapi-validate-vk:
 	npx --yes @asyncapi/cli@6.0.2 validate services/vk-service/docs/asyncapi.yaml
+
+# Контракты отдельного контура парсинга; core validator не расширяется.
+# CLI 6.0.2 требует tslib, отсутствующий в его standalone npx dependency graph.
+asyncapi-validate-parse:
+	npx --yes --package @asyncapi/cli@6.0.2 --package tslib@2.8.1 asyncapi validate services/seo-service/docs/asyncapi.yaml
+	npx --yes --package @asyncapi/cli@6.0.2 --package tslib@2.8.1 asyncapi validate services/ya-metrica-service/docs/asyncapi.yaml
 
 # Кросс-репозиторные контрактные тесты сверяют AsyncAPI соседнего сервиса.
 # В CI отдельного репозитория соседа нет, и тест деградирует до skip.

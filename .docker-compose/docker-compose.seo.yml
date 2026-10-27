@@ -25,6 +25,24 @@ services:
     networks:
       - eqsitecms_network
 
+  seo-scheduler:
+    build:
+      context: ../services/seo-service
+      dockerfile: Dockerfile
+    image: eqsitecms-seo:latest
+    container_name: eqsitecms-seo-scheduler
+    restart: always
+    env_file:
+      - path: ../services/seo-service/.env
+        required: true
+    volumes:
+      - ../services/seo-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    # Один экземпляр, без HTTP и опубликованных портов.
+    command: ["uv", "run", "--no-sync", "python", "-m", "scheduler.main"]
+    networks:
+      - eqsitecms_network
+
   seo-migration:
     build:
       context: ../services/seo-service

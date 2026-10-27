@@ -103,11 +103,11 @@ Backend SHALL транслировать ответы seo-service: `400` → `40
 - **THEN** backend отвечает `502`
 
 ### Requirement: Route inventory
-Backend SHALL классифицировать все 10 маршрутов в route inventory с access class, ролью только `ADMIN`, конюшней из сессии и ссылкой на тесты; сгенерированный `docs/backend-route-inventory.md` MUST соответствовать приложению.
+Backend SHALL классифицировать все 11 маршрутов `/api/seo/*` в route inventory с access class, ролью только `ADMIN`, конюшней из сессии и ссылкой на тесты; сгенерированный `docs/backend-route-inventory.md` MUST соответствовать приложению.
 
 #### Scenario: Инвентарь актуален
 - **WHEN** выполняется тест route inventory
-- **THEN** все `/api/seo/*` маршруты классифицированы, GET — как protected GET exception, запись — как protected write
+- **THEN** все `/api/seo/*` маршруты классифицированы, GET — как protected GET exception, запись (включая `POST /api/seo/parse-jobs`) — как protected write
 
 ### Requirement: Access matrix списка страниц с метриками
 Изменённый маршрут `GET /api/seo/pages` SHALL сохранять класс Protected GET exception (только `ADMIN`, конюшня из сессии) по матрице ниже. Остальные 9 маршрутов `/api/seo/**` не меняются.
@@ -152,3 +152,10 @@ Backend SHALL классифицировать все 10 маршрутов в r
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
 | GET | backend `/api/seo/search-queries` | Protected GET exception | только ADMIN | `401`, SEO не вызывается | ADMIN `200` с items/total/metrics_table; без ADMIN `403` до downstream; невалидный query `400`; downstream/DTO error `502`; tenant только из сессии |
+
+### Requirement: Проксирование постановки парсинга
+Backend SHALL предоставлять `POST /api/seo/parse-jobs` и проксировать его в `POST /api/parse-jobs` seo-service с `X-Equestrian-Id` конюшни сессии; access class, роли и статусы определяет capability `seo-parse-trigger-api`. Остальные 10 маршрутов `/api/seo/**` не меняются.
+
+#### Scenario: Прокси вызывает только seo-service
+- **WHEN** ADMIN вызывает `POST /api/seo/parse-jobs`
+- **THEN** backend обращается только к seo-service, без cookie и клиентских заголовков, и не обращается к ya-metrica-service

@@ -229,13 +229,35 @@ EXPOSE_VK_DB_PORT=5436
 
 #### Парсинг статистики Метрики
 
-`POST /api/metrica/stats/parse` (M2) ставит запуск по `equestrian_id` и optional
-`date_from/date_to`: `200` с `run_id`, `clamped`, диапазонами и queued-заданиями;
-ошибки ввода/привязки/активного запуска/интеграции — `400`. Это Private Peer Write
-exception для внутреннего сервиса без CMS-ролей: anonymous и Cookie/Bearer имеют
-одинаковый контракт. M1 `/api/metrica/counters` остаётся Sensitive Private Peer Read
-(`200/400`), H1 `/health` — Public Read (`200`). Production выпуск требует
-подтверждённой защиты чувствительных peers от внешнего anonymous доступа.
+Оркестратор — seo-service: CMS → backend `POST /api/seo/parse-jobs` → seo
+`POST /api/parse-jobs` → NATS JetStream `commands.parse.ya_metrica.run` →
+ya-metrica-service → PostgreSQL очередь заданий → Celery worker. Ежедневные команды
+публикует отдельный `seo-scheduler` (см. раздел 10), не Celery beat исполнителя.
+Прямой HTTP endpoint запуска удалён: старый путь отклоняется framework с `400`
+независимо от credentials и отсутствует в OpenAPI. M1 `/api/metrica/counters`
+остаётся Sensitive Private Peer Read (`200/400`), H1 `/health` — Public Read (`200`).
+
+Stream `PARSE_COMMANDS` принадлежит seo-service (API + scheduler), wildcard
+`commands.parse.>`, FILE/LIMITS, max_age 7 суток. ya-metrica регистрирует только
+durable `ya-metrica-parse-run`: filter `commands.parse.ya_metrica.run`, explicit ack,
+deliver all, ack_wait 30 с, max_deliver 5. Команда v1 содержит job_id, provider,
+equestrian_id, trigger, occurred_at, window, params={} — без токенов и ID аккаунта.
+Auto-окно определяет исполнитель: последняя дата..сегодня, без статистики — 2 года.
+Повторы дедуплицируются Nats-Msg-Id и сохранённым job_id; active run/missing binding/
+invalid range подтверждаются без нового запуска, битая команда → term,
+временная ошибка интеграции/хранилища → nak. Startup consumer повторяется с backoff,
+статический health не доказывает готовность очереди. Контракты:
+[producer AsyncAPI](services/seo-service/docs/asyncapi.yaml) и
+[consumer AsyncAPI](services/ya-metrica-service/docs/asyncapi.yaml);
+`make asyncapi-validate-parse` проверяет оба, core `asyncapi-validate` не меняется.
+NATS без auth — Internal Trusted Network Write. До production необходимо подтвердить
+внешнюю недоступность NATS и credential-less peers; release gate остаётся блокирующим.
+
+Yandex-service предоставляет scheduler новый Private Peer Read
+`GET /api/connections/metrica?limit&offset` → `{total,items:[{equestrian_id,counter_id}]}`,
+без секретов, ORDER BY equestrian_id; limit 1..500 (default 100), offset ≥0 (default 0),
+невалидные значения → `400`. Anonymous и Cookie/Bearer одинаково получают `200`:
+credentials игнорируются. Это внутренний реестр интеграций, не Public Read для сайтов.
 
 Зависимости ya-metrica: собственный PostgreSQL, yandex-service (Y7 привязка,
 Y5 ciphertext `enc_access_token`, расшифровка только в памяти ya-metrica), seo-service
@@ -331,13 +353,17 @@ Registry/discovery границы приведены по [design §2 и ист�
 
 Внутренний FastAPI peer для нормализации и batch-resolve поисковых запросов/страниц, tenant-scoped списков и черных списков query-параметров/хешей страниц. Resolve возвращает стабильные UUID; изменение черных списков не переписывает ранее сохраненные страницы.
 
-- Ресурсы: [SEO Compose](<.docker-compose/docker-compose.seo.yml>) — `seo-service` (`eqsitecms-seo-service`) и one-shot `seo-migration`; external network `eqsitecms_network`. PostgreSQL 16: `eqsitecms-db-seo:5432`, БД/пользователь `eqsitecmsseo`, host-порт БД `5437`. Live upgrade до `20261023_0002` проверен; `pg_trgm` установлен.
+- Ресурсы: [SEO Compose](<.docker-compose/docker-compose.seo.yml>) — `seo-service` (`eqsitecms-seo-service`), `seo-scheduler` (`eqsitecms-seo-scheduler`, тот же образ, без портов, restart always) и one-shot `seo-migration`; external network `eqsitecms_network`. PostgreSQL 16: `eqsitecms-db-seo:5432`, БД/пользователь `eqsitecmsseo`, host-порт БД `5437`. Live upgrade до `20261023_0002` проверен; `pg_trgm` установлен.
 - Локальные команды: `make seo-build`, upgrade через `docker compose -p eqsitecms-seo -f .docker-compose/docker-compose.seo.yml --env-file services/seo-service/.env run --rm seo-migration`, затем `make seo`. Миграция должна успешно завершиться до запросов к API. Исходники монтируются `ro`, без autoreload; после изменений нужна пересборка/перезапуск. `stackctl` SEO пока не поддерживает: используется штатный `make`/Compose, backend обслуживается через `scripts/stackctl … app`.
 - Backend: `SEO_SERVICE_URL`, default `http://eqsitecms-seo-service:8000`; live backend использует default, отдельный override не потребовался. Host-порт приложения задается `EXPOSE_SEO_SERVICE_PORT` и не является фиксированным: в проверенном runtime — `32768 → 8000`.
-- API peer: public `GET /health`; все 12 операций `/api/**` требуют только UUID `X-Equestrian-Id`, missing/invalid selector — `401`. Credentials не требуются и игнорируются: это **Internal Trusted Network Read/Write**, явное исключение из обычного Public Read/Protected Write. Resolve: `POST /api/search-queries/resolve`, `POST /api/pages/resolve`; списки: `GET /api/search-queries`, `GET /api/pages`; настройки: GET/POST и PATCH/DELETE по ID под `/api/page-normalization/blacklisted-query-params` и `/api/page-normalization/blacklisted-hashes`. Подробности — [README SEO](<services/seo-service/README.md>).
+- API peer: public `GET /health`; все 13 операций `/api/**` требуют только UUID `X-Equestrian-Id`, missing/invalid selector — `401`. Credentials не требуются и игнорируются: это **Internal Trusted Network Read/Write**, явное исключение из обычного Public Read/Protected Write. Resolve: `POST /api/search-queries/resolve`, `POST /api/pages/resolve`; списки: `GET /api/search-queries`, `GET /api/pages`; настройки: GET/POST и PATCH/DELETE по ID под `/api/page-normalization/blacklisted-query-params` и `/api/page-normalization/blacklisted-hashes`. Подробности — [README SEO](<services/seo-service/README.md>).
 - Метрики страниц: `GET /api/pages` принимает mode/metric/date_from/date_to и сортировку по page/created_at/metric-колонке; возвращает `items/total/metrics_table`. SEO разрешает период, вызывает ya-metrica M4 при существующей колонке сортировки, выполняет SQL с рангом, поиском и пагинацией, затем M3 для непустой выборки и builder. «Запросы» (`GET /api/search-queries`) возвращают тот же обязательный `metrics_table` через общий resolver/registry/builder: M6 `/api/metrica/search-query-stats/ranking` → SQL list/count → M5 `/api/metrica/search-query-stats/table` для UUID текущей страницы и всех buckets. SQL tenant/search/rank применяется до пагинации, без агрегации/сортировки в Python; ровно два SEO SQL и ≤2 peer-вызовов. Без существующей metric-колонки нет M6 (stale key → default/null), пустая страница не вызывает M5. Query pagination сохраняет clamp limit 1..100/offset ≥0; invalid параметры → 400 до данных/peer. Selector обязателен, credentials его не заменяют. Env остаются `SEO_UTC_OFFSET_HOURS`, `YA_METRICA_SERVICE_URL`, `YA_METRICA_TIMEOUT_SECONDS=4`; согласование timezone ручное. Production isolation peers/БД — отдельный блокирующий release gate, новые внешние порты не добавляются. Сбой ya-metrica → безопасный `502` с rollback.
 - Env SEO: `SEO_UTC_OFFSET_HOURS=3` (целое −12..14) необходимо согласовать с `YA_METRICA_UTC_OFFSET_HOURS`; чужой env не читается. `YA_METRICA_SERVICE_URL=http://eqsitecms-ya-metrica-service:8000`, `YA_METRICA_TIMEOUT_SECONDS=4` (до двух последовательных вызовов, ≤8 с при backend timeout 10 с). Это read-зависимость seo → ya-metrica в дополнение к resolve-зависимости ya-metrica → seo.
-- CMS обращается только через 10 маршрутов backend `/api/seo/**`: **только ADMIN**, включая GET; anonymous — `401`, остальные роли (включая SUPERUSER/DEVELOPER без ADMIN) — `403`. Tenant берется из actor, не из клиентского selector; чужие элементы — `404`. Успешный CRUD черных списков — `201/200/204`, дубль — `409`, validation — `400`.
-- **Production isolation boundary:** отсутствие credentials безопасно только внутри доверенной сети. Наличие Compose network само по себе изоляцию не доказывает. Текущие dev app/DB порты опубликованы на `0.0.0.0`/`::`; до production требуется отдельное подтверждение внешней недоступности peer и БД, иначе выпуск заблокирован. Live smoke не является production security approval; настройки сети здесь не менялись.
+- CMS обращается только через 11 маршрутов backend `/api/seo/**`: **только ADMIN**, включая GET; anonymous — `401`, остальные роли (включая SUPERUSER/DEVELOPER без ADMIN) — `403`. Tenant берется из actor, не из клиентского selector; чужие элементы — `404`. Успешный CRUD черных списков — `201/200/204`, дубль — `409`, validation — `400`.
+- Ручной parse API: `POST /api/parse-jobs`, тело только `{provider:"ya_metrica"}`, `X-Equestrian-Id` обязателен до body (`401` без/invalid selector); credentials игнорируются (Internal Trusted Network Write). Ответ после PubAck и аудита `202 {job_id,provider,status:"accepted"}`, это не завершение парсинга; body/unknown/disabled provider/нет привязки `400`, yandex `502`, очередь `503`. CMS backend `POST /api/seo/parse-jobs` — Protected Write, только ADMIN: anonymous `401`, без ADMIN `403` до downstream/body; tenant только из actor, успех `202`, безопасные ошибки `400/502/503`.
+- Расписание: `python -m scheduler.main` в единственном `seo-scheduler` (локально `PYTHONPATH=src uv run python -m scheduler.main`), service env тот же, что API; SIGTERM/SIGINT → graceful NATS/DB cleanup. `PARSE_SCHEDULE_ENABLED=true`, `PARSE_SCHEDULE_TIME=03:00` (строго HH:MM), `PARSE_SCHEDULER_TICK_SECONDS=30`, `PARSE_PROVIDERS_ENABLED=ya_metrica` (CSV), `PARSE_TARGETS_PAGE_SIZE=100` (1..500), `PARSE_DISPATCH_MAX_ATTEMPTS=5`. Локальная дата/время берутся из `SEO_UTC_OFFSET_HOURS`, обязательное ручное согласование с `YA_METRICA_UTC_OFFSET_HOURS`: иначе окно может сместиться на сутки. Слот догоняется только до конца текущих локальных суток; disabled отключает только расписание. Цели через `YANDEX_SERVICE_URL=http://eqsitecms-yandex-service:8000`, `YANDEX_SERVICE_TIMEOUT_SECONDS=4`, без credentials. Ошибка списка не завершает слот, ошибка цели изолируется.
+- Ledger PostgreSQL `parse_dispatches` (`20261028_0003_parse_dispatches`): partial unique `(provider,equestrian_id,schedule_date)` для schedule, claim → publish → mark короткими транзакциями, pending/published/failed, retries до cap и stale lease recovery. Manual audit после PubAck, не занимает ежедневный слот. Рестарт не повторяет published-цели; in-memory кэш — только оптимизация, не источник истины. Provider registry через `ParseProviderProtocol` позволяет добавлять реализацию/DI, enabled code, subject/durable и AsyncAPI без изменения scheduler/envelope/ledger/API — руководство в README SEO.
+- NATS env SEO: `NATS_SERVERS=nats://eqsitecms-nats:4222`, `NATS_STREAM_PARSE_COMMANDS=PARSE_COMMANDS`, `NATS_SUBJECTS_PARSE_COMMANDS=commands.parse.>`, `NATS_PARSE_COMMANDS_MAX_AGE_SECONDS=604800`, `NATS_PUBLISH_TIMEOUT_SECONDS=5`, `NATS_ERROR_REPORT_AFTER_ATTEMPTS=3`, `NATS_SETUP_MAX_ATTEMPTS=10`, `NATS_SETUP_BACKOFF_SECONDS=2`. В ya-metrica собственные `NATS_*` для durable/ack/fetch/retry описаны в его README и `.env.example`. Реальные env читает/правит оператор; сервисы не читают чужой env. Default unit suites не заменяют real-broker acceptance gate; отсутствие брокера в обязательном gate — FAIL, не skip.
+- **Production isolation boundary:** отсутствие credentials безопасно только внутри доверенной сети. Наличие Compose network само по себе изоляцию не доказывает. Текущие dev app/DB порты опубликованы на `0.0.0.0`/`::`; до production требуется отдельное подтверждение внешней недоступности peers, NATS и БД, иначе выпуск заблокирован. Live smoke не является production security approval; настройки сети здесь не менялись.
 
 ---
