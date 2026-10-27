@@ -248,6 +248,16 @@ claim/lease сериализуют задания одного аккаунта.
 по умолчанию +3); runtime не читает чужие env и не зависит от оркестратора.
 Подробности агрегации, API и тестов — [README ya-metrica](services/ya-metrica-service/README.md).
 
+#### Агрегаты страниц для SEO
+
+ya-metrica предоставляет seo-service Private Peer Read M3
+`GET /api/metrica/page-stats/table` (metric, equestrian_id, повторяемые bucket и
+page_ids текущей выборки) и M4 `GET /api/metrica/page-stats/ranking`
+(metric, equestrian_id, date_from/date_to, direction). M3 агрегирует в SQL по
+готовым границам колонок; M4 возвращает ранжированные UUID. Календарь, поиск и
+пагинация остаются в seo. Credentials игнорируются; peer остаётся приватным,
+production isolation gate не снимается. Подробности — README ya-metrica.
+
 #### Ресурсы Яндекса
 
 | Ресурс | Yandex | Metrica |
@@ -325,6 +335,8 @@ Registry/discovery границы приведены по [design §2 и ист�
 - Локальные команды: `make seo-build`, upgrade через `docker compose -p eqsitecms-seo -f .docker-compose/docker-compose.seo.yml --env-file services/seo-service/.env run --rm seo-migration`, затем `make seo`. Миграция должна успешно завершиться до запросов к API. Исходники монтируются `ro`, без autoreload; после изменений нужна пересборка/перезапуск. `stackctl` SEO пока не поддерживает: используется штатный `make`/Compose, backend обслуживается через `scripts/stackctl … app`.
 - Backend: `SEO_SERVICE_URL`, default `http://eqsitecms-seo-service:8000`; live backend использует default, отдельный override не потребовался. Host-порт приложения задается `EXPOSE_SEO_SERVICE_PORT` и не является фиксированным: в проверенном runtime — `32768 → 8000`.
 - API peer: public `GET /health`; все 12 операций `/api/**` требуют только UUID `X-Equestrian-Id`, missing/invalid selector — `401`. Credentials не требуются и игнорируются: это **Internal Trusted Network Read/Write**, явное исключение из обычного Public Read/Protected Write. Resolve: `POST /api/search-queries/resolve`, `POST /api/pages/resolve`; списки: `GET /api/search-queries`, `GET /api/pages`; настройки: GET/POST и PATCH/DELETE по ID под `/api/page-normalization/blacklisted-query-params` и `/api/page-normalization/blacklisted-hashes`. Подробности — [README SEO](<services/seo-service/README.md>).
+- Метрики страниц: `GET /api/pages` принимает mode/metric/date_from/date_to и сортировку по page/created_at/metric-колонке; возвращает `items/total/metrics_table`. SEO разрешает период, вызывает ya-metrica M4 при существующей колонке сортировки, выполняет SQL с рангом, поиском и пагинацией, затем M3 для непустой выборки и builder. «Запросы» не меняются. Сбой ya-metrica → безопасный `502` с rollback.
+- Env SEO: `SEO_UTC_OFFSET_HOURS=3` (целое −12..14) необходимо согласовать с `YA_METRICA_UTC_OFFSET_HOURS`; чужой env не читается. `YA_METRICA_SERVICE_URL=http://eqsitecms-ya-metrica-service:8000`, `YA_METRICA_TIMEOUT_SECONDS=4` (до двух последовательных вызовов, ≤8 с при backend timeout 10 с). Это read-зависимость seo → ya-metrica в дополнение к resolve-зависимости ya-metrica → seo.
 - CMS обращается только через 10 маршрутов backend `/api/seo/**`: **только ADMIN**, включая GET; anonymous — `401`, остальные роли (включая SUPERUSER/DEVELOPER без ADMIN) — `403`. Tenant берется из actor, не из клиентского selector; чужие элементы — `404`. Успешный CRUD черных списков — `201/200/204`, дубль — `409`, validation — `400`.
 - **Production isolation boundary:** отсутствие credentials безопасно только внутри доверенной сети. Наличие Compose network само по себе изоляцию не доказывает. Текущие dev app/DB порты опубликованы на `0.0.0.0`/`::`; до production требуется отдельное подтверждение внешней недоступности peer и БД, иначе выпуск заблокирован. Live smoke не является production security approval; настройки сети здесь не менялись.
 

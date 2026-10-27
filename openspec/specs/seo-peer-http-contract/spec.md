@@ -12,7 +12,7 @@ HTTP-контракт seo-service как внутреннего peer-серви�
 | POST | `/api/search-queries/resolve` | Internal Trusted Network Write (исключение из Protected Write) | доверенный внутренний caller (парсеры) | `200`; без/невалидный `X-Equestrian-Id` `401`; невалидный body `400` | то же (cookie/Authorization игнорируются) |
 | POST | `/api/pages/resolve` | Internal Trusted Network Write (исключение) | доверенный внутренний caller (парсеры) | `200`; tenant `401`; `400` | то же |
 | GET | `/api/search-queries` | Internal Trusted Network Read (исключение из Public Read) | доверенный внутренний caller (backend) | `200`; tenant `401`; невалидные query `400` | то же |
-| GET | `/api/pages` | Internal Trusted Network Read (исключение) | доверенный внутренний caller (backend) | `200`; tenant `401`; `400` | то же |
+| GET | `/api/pages` | Internal Trusted Network Read (исключение) | доверенный внутренний caller (backend) | `200` c `items/total/metrics_table`; без/невалидный `X-Equestrian-Id` `401` до обращения к БД и ya-metrica; невалидные `mode`/`metric`/даты (одна дата без другой, обратный диапазон)/`ordering`/`limit`/`offset` `400` без вызова ya-metrica; будущие даты не отклоняются, а ограничиваются сегодняшним днём по `SEO_UTC_OFFSET_HOURS`; сбой ya-metrica `502` | то же (cookie/Authorization игнорируются) |
 | GET | `/api/page-normalization/blacklisted-query-params` | Internal Trusted Network Read (исключение) | доверенный внутренний caller (backend) | `200`; tenant `401` | то же |
 | POST | `/api/page-normalization/blacklisted-query-params` | Internal Trusted Network Write (исключение) | доверенный внутренний caller (backend) | `201`; `400` невалидное значение; `409` дубль в конюшне; tenant `401` | то же |
 | PATCH | `/api/page-normalization/blacklisted-query-params/{item_id}` | Internal Trusted Network Write (исключение) | доверенный внутренний caller (backend) | `200`; `404` чужой/отсутствующий; `409` дубль; `400` невалидный id/значение; tenant `401` | то же |
@@ -53,7 +53,7 @@ seo-service SHALL обслуживать `/api/*` без проверки creden
 - **THEN** ответ `400` (лишние поля запрещены), конюшня из тела не используется
 
 ### Requirement: Множество HTTP-статусов и безопасные ошибки
-seo-service SHALL отвечать `200`, `201`, `204` при успехе; `400` при невалидном теле, query, path-параметре или нормализации; `401` только при проблемах tenant selector; `404` для отсутствующего в конюшне элемента; `409` для дубля; `500` для непредвиденной ошибки. Тело ошибки MUST содержать только `detail` без входных значений, SQL, traceback и параметров подключения.
+seo-service SHALL отвечать `200`, `201`, `204` при успехе; `400` при невалидном теле, query, path-параметре или нормализации; `401` только при проблемах tenant selector; `404` для отсутствующего в конюшне элемента; `409` для дубля; `502`, когда зависимый peer-сервис (ya-metrica-service) недоступен или нарушил контракт; `500` для непредвиденной ошибки. Тело ошибки MUST содержать только `detail` без входных значений, SQL, traceback, параметров подключения и тела ответа peer-сервиса.
 
 #### Scenario: Невалидное тело
 - **WHEN** caller с валидным `X-Equestrian-Id` отправляет malformed JSON или тело неверной схемы
@@ -62,6 +62,10 @@ seo-service SHALL отвечать `200`, `201`, `204` при успехе; `400
 #### Scenario: Непредвиденная ошибка
 - **WHEN** обработка запроса завершается неожиданным исключением, например недоступностью БД
 - **THEN** ответ `500` с безопасным `detail`, без traceback и параметров подключения; транзакция откатывается
+
+#### Scenario: Сбой зависимого peer-сервиса
+- **WHEN** при обработке `GET /api/pages` ya-metrica-service недоступна, отвечает не `200` или возвращает тело неверной схемы
+- **THEN** ответ `502` с безопасным `detail`, без тела и адреса peer-сервиса
 
 ### Requirement: Статический health
 `GET /health` SHALL возвращать `200` и `{"status":"ok"}` без проверки tenant selector и без обращения к БД.
@@ -80,3 +84,20 @@ seo-service SHALL отвечать `200`, `201`, `204` при успехе; `400
 #### Scenario: Ошибка посреди batch
 - **WHEN** resolve-запрос завершается ошибкой после вставки части значений
 - **THEN** ни одно значение этого запроса не остаётся в БД
+
+### Requirement: Access matrix списка страниц с метриками
+Изменённый маршрут `GET /api/pages` SHALL сохранять класс Internal Trusted Network Read (исключение из Public Read) по матрице ниже; credentials не требуются и не меняют результат, конюшня — только из `X-Equestrian-Id`.
+
+#### Scenario: Anonymous и посторонние credentials
+- **WHEN** caller вызывает `GET /api/pages` с валидным `X-Equestrian-Id` без credentials, затем с произвольными cookie и `Authorization`
+- **THEN** оба ответа `200` с идентичным телом, включая `metrics_table`
+
+#### Scenario: Нет tenant selector
+- **WHEN** caller вызывает `GET /api/pages?mode=week` без `X-Equestrian-Id`
+- **THEN** ответ `401`, ни БД seo-service, ни ya-metrica не вызываются
+
+| method | path | access class | roles | expected without auth | expected with auth |
+|---|---|---|---|---|---|
+| GET | `/api/pages` | Internal Trusted Network Read (исключение) | доверенный внутренний caller (backend) | `200` c `items/total/metrics_table`; без/невалидный `X-Equestrian-Id` `401` до обращения к БД и ya-metrica; невалидные `mode`/`metric`/даты (одна дата без другой, обратный диапазон)/`ordering`/`limit`/`offset` `400` без вызова ya-metrica; будущие даты не отклоняются, а ограничиваются сегодняшним днём по `SEO_UTC_OFFSET_HOURS`; сбой ya-metrica `502` | то же (cookie/Authorization игнорируются) |
+
+Причина исключения не меняется: статистика и список страниц — внутренние SEO-данные администрирования, публичным `site-*` не нужны.
