@@ -27,7 +27,7 @@ HTTP-контракт seo-service как внутреннего peer-серви�
 ## Requirements
 
 ### Requirement: Доверенная внутренняя сеть без credentials
-seo-service SHALL обслуживать `/api/*` без проверки credentials: сервисные ключи, cookie и Authorization MUST NOT требоваться и MUST NOT давать дополнительных прав. Проверка роли `ADMIN` выполняется только в backend. Перед production deployment SHALL быть подтверждено, что seo-service недоступен внешним callers; иначе выпуск блокируется.
+seo-service SHALL обслуживать `/api/*` без проверки credentials: сервисные ключи, cookie и Authorization MUST NOT требоваться и MUST NOT давать дополнительных прав. Проверка роли `SEO` выполняется только в backend. Перед production deployment SHALL быть подтверждено, что seo-service недоступен внешним callers; иначе выпуск блокируется.
 
 #### Scenario: Запрос без credentials
 - **WHEN** внутренний caller вызывает `GET /api/pages` с валидным `X-Equestrian-Id` без каких-либо credentials
@@ -107,7 +107,7 @@ seo-service SHALL отвечать `200`, `201`, `202`, `204` при успех�
 Причина исключения не меняется: статистика и список страниц — внутренние SEO-данные администрирования, публичным `site-*` не нужны.
 
 ### Requirement: Access matrix списка запросов с метриками
-`GET /api/search-queries` SHALL сохранять Internal Trusted Network Read exception по матрице ниже. Причина исключения из Public Read — приватная аналитика конюшни, доступная CMS только через ADMIN backend. Selector MUST оставаться несекретным UUID; cookie/Authorization его не заменяют. Production MUST блокироваться без подтверждения внешней недоступности peer и БД.
+`GET /api/search-queries` SHALL сохранять Internal Trusted Network Read exception по матрице ниже. Причина исключения из Public Read — приватная аналитика конюшни, доступная CMS только через SEO backend. Selector MUST оставаться несекретным UUID; cookie/Authorization его не заменяют. Production MUST блокироваться без подтверждения внешней недоступности peer и БД.
 
 #### Scenario: Anonymous и посторонние credentials
 - **WHEN** caller без credentials, затем с cookie и Bearer вызывает список запросов с валидным X-Equestrian-Id и параметрами метрик

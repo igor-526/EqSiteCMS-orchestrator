@@ -31,15 +31,15 @@ OAuth-поток Яндекса в CMS: открытие ссылки автор
 
 ### Requirement: Callback-страница OAuth Яндекса
 
-CMS MUST иметь страницу `/callbacks/oauth/yandex` вне бокового layout, которая читает `code` и `state` из URL (прочие параметры, например `cid`, игнорируются) и выполняет ровно один `POST /api/yandex/auth/code` с `{code, state}`, показывая состояния обработки, успеха и ошибки.
+CMS MUST иметь страницу `/callbacks/oauth/yandex` вне бокового layout, доступную для обмена кода только с актуальной ролью SEO, которая читает `code` и `state` из URL (прочие параметры, например `cid`, игнорируются) и выполняет ровно один `POST /api/yandex/auth/code` с `{code, state}`, показывая состояния обработки, успеха и ошибки.
 
 #### Scenario: Успешный callback
-- **WHEN** Яндекс перенаправляет на `/callbacks/oauth/yandex?state=<uuid>&code=<code>&cid=<cid>` в окне с активной сессией CMS пользователя ADMIN
+- **WHEN** Яндекс перенаправляет на `/callbacks/oauth/yandex?state=<uuid>&code=<code>&cid=<cid>` в окне с активной сессией CMS пользователя SEO
 - **THEN** страница отправляет POST с `code` и `state`, показывает успех с логином добавленного аккаунта
 
 #### Scenario: Callback без ADMIN
-- **WHEN** callback с валидными параметрами открывает authenticated пользователь без ADMIN, включая SUPERUSER/DEVELOPER
-- **THEN** POST получает `403`, peer не вызывается, страница показывает отказ без `code` и не сообщает `success`
+- **WHEN** callback с валидными параметрами открывает authenticated пользователь без SEO, включая SUPERUSER/DEVELOPER
+- **THEN** локальный guard не отправляет POST, страница показывает отказ без `code` и не сообщает `success`; при серверном отказе `403` peer не вызывается
 
 #### Scenario: Однократная отправка
 - **WHEN** эффект страницы выполняется повторно (React StrictMode, повторный рендер)
@@ -54,7 +54,7 @@ CMS MUST иметь страницу `/callbacks/oauth/yandex` вне боков
 - **THEN** POST не отправляется, страница показывает, что авторизация отменена
 
 #### Scenario: Ошибка backend
-- **WHEN** POST возвращает ошибку (`400`, `403` отсутствие ADMIN или несовпадение конюшни, `502`)
+- **WHEN** POST возвращает ошибку (`400`, `403` отсутствие SEO или несовпадение конюшни, `502`)
 - **THEN** страница показывает безопасное сообщение ошибки и не показывает `code`
 
 ### Requirement: Уведомление окна-родителя и закрытие popup

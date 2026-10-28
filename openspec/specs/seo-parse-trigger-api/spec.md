@@ -31,26 +31,26 @@ seo-service SHALL принимать `POST /api/parse-jobs` с телом `{"pro
 - **WHEN** публикация завершилась ошибкой либо истёк тайм-аут
 - **THEN** ответ `503`, запись ledger не создаётся, а повтор запроса безопасен
 
-### Requirement: Backend-маршрут только для ADMIN
-Backend SHALL предоставлять `POST /api/seo/parse-jobs` с телом `{"provider": "<код по маске ^[a-z][a-z0-9_]{1,31}$>"}`: без сессии `401`; без роли `ADMIN` (включая SUPERUSER/DEVELOPER) `403` до обращения к seo-service. Конюшня — из сессии; тело, query и заголовки клиента не влияют на конюшню; cookie в seo-service не пересылаются.
+### Requirement: Backend-маршрут только для SEO
+Backend SHALL предоставлять `POST /api/seo/parse-jobs` с телом `{"provider": "<код по маске ^[a-z][a-z0-9_]{1,31}$>"}`: без сессии `401`; без роли `SEO` (включая SUPERUSER/DEVELOPER) `403` до обращения к seo-service. Конюшня — из сессии; тело, query и заголовки клиента не влияют на конюшню; cookie в seo-service не пересылаются.
 
 #### Scenario: Anonymous
 - **WHEN** запрос приходит без cookie `access_token`
 - **THEN** ответ `401`, seo-service не вызывается
 
 #### Scenario: SUPERUSER и DEVELOPER без ADMIN
-- **WHEN** пользователь без `ADMIN` вызывает маршрут
+- **WHEN** пользователь без `SEO` вызывает маршрут
 - **THEN** ответ `403`, seo-service не вызывается
 
 #### Scenario: ADMIN конюшни A передаёт чужую конюшню
-- **WHEN** ADMIN конюшни A отправляет `X-Equestrian-Id` или `equestrian_id` конюшни B
+- **WHEN** SEO конюшни A отправляет `X-Equestrian-Id` или `equestrian_id` конюшни B
 - **THEN** при лишнем поле в теле ответ `400`, заголовок игнорируется, seo-service получает конюшню A
 
 ### Requirement: Трансляция результата backend
 Backend SHALL возвращать `202` с телом seo-service; `400` seo-service — `400` с безопасным `detail` (≤300 символов), недоступность или невалидный ответ seo-service — `502`, `503` seo-service — `503` с константным `detail`. Backend MUST NOT обращаться к ya-metrica-service и NATS для этой операции.
 
 #### Scenario: Успех
-- **WHEN** ADMIN вызывает маршрут, seo-service отвечает `202`
+- **WHEN** SEO вызывает маршрут, seo-service отвечает `202`
 - **THEN** backend отвечает `202` с `job_id`, `provider`, `status`
 
 #### Scenario: Невалидный ответ peer
@@ -62,7 +62,7 @@ Backend SHALL возвращать `202` с телом seo-service; `400` seo-se
 - **THEN** backend отвечает `503` без тела ответа peer
 
 ### Requirement: Access matrix ручного запуска
-Новые маршруты SHALL соответствовать матрице. `POST /api/parse-jobs` — Internal Trusted Network Write: явное исключение из Protected Write, поскольку seo-service — внутренний peer без credentials, ролевая проверка выполняется backend (как у остальных `/api/**` seo-service); selector — non-secret identity hint. `POST /api/seo/parse-jobs` — Protected Write, только `ADMIN`.
+Новые маршруты SHALL соответствовать матрице. `POST /api/parse-jobs` — Internal Trusted Network Write: явное исключение из Protected Write, поскольку seo-service — внутренний peer без credentials, ролевая проверка выполняется backend (как у остальных `/api/**` seo-service); selector — non-secret identity hint. `POST /api/seo/parse-jobs` — Protected Write, только `SEO`.
 
 #### Scenario: Строки матрицы проверяются anonymous и authenticated
 - **WHEN** тесты вызывают каждую строку без credentials и с cookie/Authorization либо ролями
@@ -70,7 +70,7 @@ Backend SHALL возвращать `202` с телом seo-service; `400` seo-se
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
-| POST | backend `/api/seo/parse-jobs` | Protected Write | только ADMIN | `401` | `202`; без ADMIN `403` до downstream; невалидное тело/провайдер `400`; нет интеграции `400`; seo/yandex недоступны `502`; очередь недоступна `503` |
+| POST | backend `/api/seo/parse-jobs` | Protected Write | только SEO | `401` | `202`; без SEO `403` до downstream; невалидное тело/провайдер `400`; нет интеграции `400`; seo/yandex недоступны `502`; очередь недоступна `503` |
 | POST | seo-service `/api/parse-jobs` | Internal Trusted Network Write (исключение) | доверенный внутренний caller (backend); роли CMS не проверяются | без/невалидный `X-Equestrian-Id` `401` до разбора тела; с selector без credentials `202`; невалидное тело/провайдер/нет интеграции `400`; yandex-service недоступен `502`; брокер недоступен `503` | то же; cookie/Authorization игнорируются |
 
 #### Scenario: Selector не заменяется credentials

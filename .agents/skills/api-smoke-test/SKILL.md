@@ -1,7 +1,7 @@
 ---
 name: smoke
 description: Запуск SMOKE-тестов из плана на реальном API с автоматической авторизацией. Используй, когда пользователь просит прогнать smoke-тесты, выполнить SMOKE, проверить API по плану.
-argument-hint: [su|admin|dev] [путь_к_плану]
+argument-hint: [su|admin|dev|seo] [путь_к_плану]
 allowed-tools: Read, Bash, Glob
 ---
 
@@ -14,20 +14,24 @@ allowed-tools: Read, Bash, Glob
 
 ## Аргументы
 
-- **роль** (опционально): `superuser`, `admin` или `dev`. По умолчанию `superuser`.
+- **роль** (опционально): `superuser` (`su`), `admin`, `developer` (`dev`) или `seo`. По умолчанию `superuser`.
 - **план** (опционально): путь к файлу плана. По умолчанию ищет активный план в `docs/plans/`.
 
 Примеры вызова:
-- `/smoke` — запуск как admin, план выбирается из контекста
-- `/smoke user` — запуск как user
+- `/smoke` — запуск как superuser, план выбирается из контекста
+- `/smoke seo openspec/changes/105-seo-role/design.md` — SEO-only по явному design
 
 ## Шаг 1: Прочитай credentials
 
-Прочитай файл `.claude/skills/api-smoke-test/credentials.json`. Из него возьми:
+Читай credentials программно в памяти, без печати файла/секретов. Для этой копии используй `.agents/skills/api-smoke-test/credentials.json`. Из него возьми:
 - `base_url` — базовый URL API
 - `auth_endpoint` — путь для логина
 - `cookie_jar` — путь к файлу куков
-- `roles.<роль>.login` и `roles.<роль>.password` — данные для входа
+- `roles.<роль>.login` — login выбранного пользователя (не login роли-источника пароля).
+- Пароль: если есть `password_ref`, переходи к указанной роли **в том же файле**, пока не встретится непустой `password`. Храни visited-набор; missing ref, цикл, одновременно password+password_ref или отсутствие пароля — ошибка и остановка до HTTP. Не переключайся на другую копию credentials и не печатай пароль. `roles.seo` содержит только login `seo` и `password_ref=admin`.
+- Сохраняй base_url/auth_endpoint/прочие роли каждой копии независимо; не синхронизируй credentials между копиями.
+- Для change 105 используй отдельные cookie jars `.qa/105-seo-role/<role>.cookies` (каждый профиль отдельно, включая mixed-role fixture). Перед созданием установи `umask 077`, каталог — 700, файлы — 600; никогда не публикуй cookie или raw auth response. Anonymous запросы не используют jar. Другие сценарии также не должны разделять jar разных ролей.
+- Локальная подготовка (только QG, не startup): из `services/backend` запусти `PYTHONPATH=src uv run python -m maintain.provision_seo_smoke_user --confirm-local-test-db --equestrian-id <existing-test-UUID> --credentials ../../.agents/skills/api-smoke-test/credentials.json ../../.claude/skills/api-smoke-test/credentials.json`. Нужны development/test/local и локальная PostgreSQL; seed должен быть применён. Несовпадение паролей двух копий — остановка до решения оператора. При конфликте username/tenant/roles команда отказывает, не исправляет аккаунт; повтор совместимой записи — no-op.
 
 ## Шаг 2: Найди SMOKE-тесты в плане
 
@@ -45,15 +49,7 @@ allowed-tools: Read, Bash, Glob
 
 > ⚠️ API использует **cookie-авторизацию**, не Bearer-токен. Все запросы должны идти с параметром `-b <cookie_jar>`.
 
-Выполни логин и сохрани куки:
-
-```bash
-curl -s -o /dev/null -w "%{http_code}" \
-  -c <cookie_jar> \
-  -X POST "<base_url><auth_endpoint>" \
-  -H "Content-Type: application/json" \
-  -d '{"login": "<login>", "password": "<password>"}'
-```
+Выполни логин клиентом, который читает credentials и разрешает password_ref в памяти (например, Python httpx). Передай JSON через память процесса, а не shell argv, environment или временный файл. Если используешь curl, подавай JSON через stdin (`--data-binary @-`), без `set -x`/verbose и без вывода тела логина. Не подставляй пароль литералом в команду и evidence. Сохрани cookies только в выбранный jar с правами 600; в выводе оставь HTTP-статус.
 
 Ожидаемый статус: `200`. Если получен другой код — сообщи об ошибке авторизации и остановись.
 
@@ -134,11 +130,11 @@ curl -s -b <cookie_jar> \
 
 Итог: `N/M тестов прошли`.
 
-Если какой-то тест упал — выведи полный ответ API для диагностики.
+Если тест упал — выведи только redacted диагностический ответ, без cookies, токенов, паролей и OAuth code/state.
 
 ## Нюансы
 
 - **Порт**: По умолчанию `8000`. Если BE поднят на другом порту — `base_url` в `credentials.json` нужно поправить.
 - **Idempotency**: Тесты с `PATCH` должны восстанавливать исходное состояние (обычно это явно указано в плане — тест `SM-17` и подобные).
 - **Переменные плана**: Блок с `VID_ID`, `WS_ID` и т.д. всегда идёт сразу после заголовка SMOKE-секции — прочитай его до начала тестов.
-- **Токен живёт 15 минут** — ровно столько сколько нужно на один прогон. Файл куков перезаписывается при каждом вызове скилла, сохранять его между сессиями не нужно.
+- **Токен живёт 15 минут** — ровно столько сколько нужно на один прогон. Отдельный файл куков выбранной роли перезаписывается при каждом вызове скилла, сохранять его между сессиями не нужно.
