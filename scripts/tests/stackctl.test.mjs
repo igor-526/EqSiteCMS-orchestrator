@@ -2,20 +2,49 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, realpathSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../stackctl'), 'utf8');
 const SECRET = 'fixture-password-not-for-host-output';
 const PEERS = ['yandex-service', 'ya-metrica-service'];
-const DBS = ['db-yandex', 'db-ya-metrica'];
-const NEW_ALIASES = ['ya-metrica-service', ...DBS];
+const SEO = ['seo-service', 'seo-scheduler', 'seo-maintenance'];
+const DBS = ['db-yandex', 'db-ya-metrica', 'db-seo'];
+import * as evidenceFs from 'node:fs';
+import * as evidencePath from 'node:path';
+import { fileURLToPath as evidenceFilePath } from 'node:url';
+
+// QA_EVIDENCE_ROOT contract: validated lane root + exclusive per-suite child.
+function suiteEvidence(defaultDir, suite, root) {
+  const raw = process.env.QA_EVIDENCE_ROOT;
+  if (raw === undefined) return evidencePath.resolve(defaultDir);
+  const invalid = () => { throw new Error('Invalid or colliding QA_EVIDENCE_ROOT'); };
+  if (!raw || raw.includes('\\') || raw.split('/').some(p => p === '.' || p === '..')) invalid();
+  const base = evidencePath.join(root, '.qa/harden-agent-verification-pipeline');
+  const target = evidencePath.resolve(root, raw);
+  if (!target.startsWith(base + evidencePath.sep)) invalid();
+  const parts = evidencePath.relative(root, target).split(evidencePath.sep);
+  if (parts.some(p => !/^[a-zA-Z0-9_.-]+$/.test(p))) invalid();
+  let current = root;
+  for (const part of parts) {
+    current = evidencePath.join(current, part);
+    try { evidenceFs.mkdirSync(current); } catch (e) { if (e.code !== 'EEXIST') invalid(); }
+    const st = evidenceFs.lstatSync(current);
+    if (st.isSymbolicLink() || !st.isDirectory()) invalid();
+  }
+  const child = evidencePath.join(target, suite);
+  try { evidenceFs.mkdirSync(child); } catch { invalid(); }
+  return child;
+}
+// End QA_EVIDENCE_ROOT contract.
+const FIXTURE_DIR = suiteEvidence('.qa/harden-agent-verification-pipeline/STACK-1/fixtures', 'stackctl', evidenceFilePath(new URL('../../', import.meta.url)));
+const NEW_ALIASES = ['ya-metrica-service', ...SEO, ...DBS];
 
 // Only the fixture copy's hardcoded root changes. All Docker/flock calls are
 // intercepted via an isolated PATH; no host env files or real daemon are used.
 function fixture(t, overrides = {}) {
-  const root = mkdtempSync(join(tmpdir(), 'stackctl-test-'));
+  mkdirSync(FIXTURE_DIR, { recursive: true });
+  const root = mkdtempSync(join(FIXTURE_DIR, 'stackctl-test-'));
   const bin = join(root, 'bin');
   mkdirSync(bin);
   mkdirSync(join(root, '.docker-compose'));
@@ -54,20 +83,22 @@ if (args[0] === 'inspect') {
   const container = args[1];
   if (cfg.missingContainers) process.exit(1);
   let project = container.includes('ya-metrica') ? 'eqsitecms-ya-metrica' : 'eqsitecms-yandex';
+  if (container.startsWith('eqsitecms-seo-')) project = 'eqsitecms-seo';
   if (container.includes('-db')) project = 'eqsitecms-infra';
   if (container === 'eqsitecms-app') project = 'eqsitecms-core';
   project = cfg.projects?.[container] ?? project;
   const port = container === 'eqsitecms-yandex-service' ? '8007' : '32768';
-  console.log(JSON.stringify([{
+  const rows = [{
     Id: cfg.invalidIdentity ? 'invalid' : 'a'.repeat(64),
     Name: cfg.wrongIdentity ? '/other-container' : '/' + container,
     Config: args.includes('--format') ? undefined : { Labels: { 'com.docker.compose.project': project }, Env: ['POSTGRES_PASSWORD=' + cfg.runtime.POSTGRES_PASSWORD] },
     State: { Status: 'running', Health: { Status: 'healthy' } },
     NetworkSettings: {
-      Ports: { '8000/tcp': [{ HostIp: '0.0.0.0', HostPort: port }] },
+      Ports: Object.hasOwn(cfg, 'ports') ? cfg.ports : container.endsWith('-scheduler') || container.endsWith('-maintenance') ? {} : { '8000/tcp': [{ HostIp: '0.0.0.0', HostPort: port }] },
       Networks: cfg.networks ?? { infra: { IPAddress: '172.20.0.7' } },
     },
-  }]));
+  }];
+  console.log(cfg.malformedInspect ? 'invalid secret=' + cfg.runtime.POSTGRES_PASSWORD : JSON.stringify(cfg.ambiguousInspect ? [...rows, ...rows] : rows));
 } else if (args[0] === 'compose') {
   if (cfg.failCompose && args.includes(cfg.failCompose)) process.exit(1);
 } else if (args[0] === 'logs') {
@@ -163,8 +194,8 @@ console.log(args.at(-1) === 'SELECT 1' ? '1' : ' ?column?\\n----------\\n       
     // Verify the exact absolute deletion target is our own temporary fixture.
     const target = realpathSync(root);
     assert.equal(target, resolve(root));
-    assert.equal(dirname(target), realpathSync(tmpdir()));
-    assert.ok(target.startsWith(join(realpathSync(tmpdir()), 'stackctl-test-')));
+    assert.equal(dirname(target), realpathSync(FIXTURE_DIR));
+    assert.ok(target.startsWith(join(realpathSync(FIXTURE_DIR), 'stackctl-test-')));
     rmSync(target, { recursive: true });
   });
   const records = (path) => {
@@ -199,12 +230,12 @@ function assertTargeted(f, peers = PEERS, projects = {}) {
   const calls = composeCalls(f);
   assert.equal(calls.length, peers.length * 2);
   peers.forEach((peer, index) => {
-    const profile = peer === 'yandex-service' ? 'yandex' : 'ya-metrica';
-    const file = profile === 'yandex' ? 'yandex' : 'ya_metrica';
+    const profile = SEO.includes(peer) ? 'seo' : peer === 'yandex-service' ? 'yandex' : 'ya-metrica';
+    const file = profile === 'ya-metrica' ? 'ya_metrica' : profile;
     for (const call of calls.slice(index * 2, index * 2 + 2)) {
       assert.equal(call[call.indexOf('-p') + 1], projects[peer] ?? `eqsitecms-${profile}`);
       assert.equal(call[call.indexOf('-f') + 1], join(f.root, `.docker-compose/docker-compose.${file}.yml`));
-      assert.equal(call[call.indexOf('--env-file') + 1], join(f.root, `services/${peer}/.env`));
+      assert.equal(call[call.indexOf('--env-file') + 1], join(f.root, `services/${profile === 'seo' ? 'seo-service' : peer}/.env`));
     }
     assert.deepEqual(calls[index * 2].slice(-2), ['build', peer]);
     assert.deepEqual(calls[index * 2 + 1].slice(-5), ['up', '-d', '--no-deps', '--force-recreate', peer]);
@@ -323,7 +354,7 @@ test('UT-TOOL-03: unknown/container/prototype aliases cannot escape allowlist', 
   }
 });
 
-test('UT-TOOL-04: both databases use runtime credentials, TCP and -w; SQL stays a positional argument', async (t) => {
+test('UT-TOOL-04: runtime databases use runtime credentials, TCP and -w; SQL stays a positional argument', async (t) => {
   for (const alias of DBS) {
     await t.test(alias, (t) => {
       const f = fixture(t);
@@ -423,7 +454,7 @@ function assertNoDatabaseMutation(f) {
   assert.ok(f.calls().filter((call) => call.args[0] === 'exec').every((call) => call.args[2] === 'sh'));
 }
 
-test('UT-TOOL-06: both aliases prove password auth on a single runtime IP; SELECT 1 reuses positive', async (t) => {
+test('UT-TOOL-06: runtime aliases prove password auth on a single runtime IP; SELECT 1 reuses positive', async (t) => {
   for (const alias of DBS) {
     await t.test(alias, (t) => {
       const f = fixture(t);
@@ -512,11 +543,124 @@ test('UT-TOOL-08: positive/exec failures and secret SQL output are suppressed wi
   }
 });
 
-test('UT-TOOL-01: infra profile up is bounded to the two registered databases', (t) => {
+test('UT-TOOL-01: infra profile up is bounded to the three registered databases', (t) => {
   const f = fixture(t);
   assert.equal(f.run('up', 'infra').status, 0);
   const calls = composeCalls(f);
   assert.equal(calls.length, 1);
-  assert.deepEqual(calls[0].slice(-5), ['up', '-d', '--no-deps', ...DBS]);
+  assert.deepEqual(calls[0].slice(-(3 + DBS.length)), ['up', '-d', '--no-deps', ...DBS]);
   assert.equal(calls[0][calls[0].indexOf('-p') + 1], 'eqsitecms-infra');
+});
+
+test('STACK-01: exact SEO aliases retain existing project and never start neighbours', async (t) => {
+  for (const alias of SEO) {
+    await t.test(alias, (t) => {
+      const project = alias === 'seo-service' ? 'eqsitecms-seo' : 'custom-existing-seo';
+      const f = fixture(t, { projects: { [`eqsitecms-${alias}`]: project } });
+      const result = f.run('ready', alias, '--no-migrate');
+      assert.equal(result.status, 0, result.stdout);
+      assertTargeted(f, [alias], { [alias]: project });
+      assert.equal(result.payload.services[0].migrated, undefined);
+    });
+  }
+});
+
+test('STACK-01: SEO default deny precedes Docker and lock, including dry-run/mixed aliases', async (t) => {
+  for (const alias of SEO) {
+    for (const flags of [[], ['--dry-run']]) {
+      await t.test([alias, ...flags].join(' '), (t) => {
+        const f = fixture(t, { lockBusy: true });
+        const result = f.run('ready', 'app', alias, ...flags);
+        assert.equal(result.status, 1);
+        assert.match(result.payload.error, /requires --no-migrate/);
+        assert.deepEqual(f.calls(), []);
+      });
+    }
+  }
+});
+
+test('STACK-01: SEO dry-run ignores busy lock and emits only no-migration plans', (t) => {
+  const f = fixture(t, { lockBusy: true });
+  const result = f.run('ready', ...SEO, '--no-migrate', '--dry-run');
+  assert.equal(result.status, 0);
+  assert.deepEqual(result.payload.plan, SEO.map((alias) => ({ alias, profile: 'seo', rebuild: true, migrate: false })));
+  assert.ok(f.calls().every((c) => c.tool === 'docker' && ['info', 'inspect'].includes(c.args[0])));
+});
+
+test('STACK-01: seo profile up includes only explicit runtime keys, migrate refuses', (t) => {
+  const f = fixture(t);
+  assert.equal(f.run('up', 'seo').status, 0);
+  assert.deepEqual(composeCalls(f)[0].slice(-6), ['up', '-d', '--no-deps', ...SEO]);
+  assert.equal(f.run('migrate', 'seo').status, 1);
+  assert.equal(composeCalls(f).length, 1);
+});
+
+test('STACK-01: endpoints is read-only dynamic discovery; workers are internal', (t) => {
+  const f = fixture(t, { lockBusy: true });
+  const result = f.run('endpoints', ...SEO);
+  assert.equal(result.status, 0);
+  assert.deepEqual(result.payload, { ok: true, services: [
+    { alias: 'seo-service', urls: ['http://localhost:32768'], internalOnly: false },
+    ...SEO.slice(1).map((alias) => ({ alias, urls: [], internalOnly: true })),
+  ] });
+  assert.ok(f.calls().every((c) => c.tool === 'docker' && ['info', 'inspect'].includes(c.args[0])));
+  assert.ok(f.calls().filter((c) => c.args[0] === 'inspect').every((c) => c.args.includes('--format') && !c.args.at(-1).includes('Env')));
+});
+
+test('STACK-01: endpoints dedupes dual stack, respects host IP and internal exposed ports', async (t) => {
+  for (const [ports, urls] of [
+    [{ '8000/tcp': [{ HostIp: '0.0.0.0', HostPort: '49152' }, { HostIp: '::', HostPort: '49152' }] }, ['http://localhost:49152']],
+    [{ '8000/tcp': [{ HostIp: '127.0.0.1', HostPort: '49153' }] }, ['http://127.0.0.1:49153']],
+    [{ '8000/tcp': [{ HostIp: '::1', HostPort: '49154' }] }, ['http://[::1]:49154']],
+    [{ '8000/tcp': null }, []], [{}, []],
+  ]) {
+    await t.test(JSON.stringify(ports), (t) => {
+      const f = fixture(t, { ports });
+      const result = f.run('endpoints', 'seo-service');
+      assert.equal(result.status, 0);
+      assert.deepEqual(result.payload.services, [{ alias: 'seo-service', urls, internalOnly: !urls.length }]);
+    });
+  }
+});
+
+test('STACK-01: endpoints rejects missing, ambiguous, malformed or credential-bearing discovery safely', async (t) => {
+  const bindings = [{ HostIp: '0.0.0.0', HostPort: '49152' }];
+  const configs = [
+    { missingContainers: true }, { invalidIdentity: true }, { wrongIdentity: true },
+    { malformedInspect: true }, { ambiguousInspect: true },
+    ...[null, [], 'secret=' + SECRET, { '8000/udp': bindings }, { 'unknown': bindings },
+      { '8000/tcp': [] }, { '8000/tcp': {} },
+      { '8000/tcp': bindings, '9000/tcp': bindings },
+      ...['', '0', '65536', '80oops', '80?token=' + SECRET].map((HostPort) => ({ '8000/tcp': [{ HostIp: '0.0.0.0', HostPort }] })),
+      ...['', 'user:pass@host', 'host?token=' + SECRET, '999.1.2.3'].map((HostIp) => ({ '8000/tcp': [{ HostIp, HostPort: '49152' }] })),
+      { '8000/tcp': [...bindings, { HostIp: '::', HostPort: '49153' }] },
+    ].map((ports) => ({ ports })),
+  ];
+  for (const [index, config] of configs.entries()) {
+    await t.test(`invalid-${index}`, (t) => {
+      const f = fixture(t, config);
+      assert.equal(f.run('endpoints', 'seo-service').status, 1);
+      assert.ok(f.calls().every((c) => c.tool === 'docker' && ['info', 'inspect'].includes(c.args[0])));
+    });
+  }
+});
+
+test('STACK-01: endpoints rejects unknown aliases before discovery and non-HTTP workers with bindings', (t) => {
+  const f = fixture(t);
+  for (const args of [[], ['__proto__'], ['seo-service', 'seo-migration'], ['eqsitecms-seo-service']]) {
+    assert.equal(f.run('endpoints', ...args).status, 1);
+  }
+  assert.ok(f.calls().every((c) => c.args[0] === 'info'));
+  const worker = fixture(t, { ports: { '8000/tcp': [{ HostIp: '0.0.0.0', HostPort: '49152' }] } });
+  assert.equal(worker.run('endpoints', 'seo-scheduler').status, 1);
+  assert.equal(worker.run('endpoints', 'db-seo').status, 1);
+});
+
+test('STACK-01: documented contract preserves aliases, safety and exit codes', () => {
+  const doc = readFileSync(resolve('.agents/skills/stack-control/SKILL.md'), 'utf8');
+  for (const text of [...SEO, ...DBS, ...PEERS, 'endpoints', 'internalOnly', '--no-migrate', '--dry-run', 'flock', 'Exit `0`', '`1`', '`2`', 'down', 'volumes']) {
+    assert.ok(doc.includes(text), `Missing documented contract: ${text}`);
+  }
+  assert.ok(!source.includes("case 'down':"));
+  assert.ok(!source.includes("case 'rm':"));
 });

@@ -1,0 +1,157 @@
+{
+  "cost": "not-calculated",
+  "notes": [
+    "total includes repeated cache reads; cache is not unique tokens or quota",
+    "no savings percentage: comparable multi-change sample not supplied",
+    "only explicit sources observed; missing data remains unknown"
+  ],
+  "process": {
+    "changes": 1,
+    "coverage": {
+      "ledgerEvents": 13,
+      "units": 2,
+      "unitsWithHandoff": 2,
+      "unobservedChanges": "unknown"
+    },
+    "exactFailPass": {
+      "coverage": {
+        "observed": 1,
+        "population": 1
+      },
+      "denominator": 1,
+      "numerator": 1,
+      "value": 1.0
+    },
+    "firstPass": {
+      "blocked": 0,
+      "coverage": {
+        "observed": 1,
+        "population": 1
+      },
+      "denominator": 1,
+      "numerator": 0,
+      "unknown": 0,
+      "value": 0.0
+    },
+    "fullSuites": {
+      "denominator": 0,
+      "groups": [],
+      "notExecuted": 0,
+      "repeats": 0,
+      "runs": 0
+    },
+    "newSessions": 1,
+    "partial": {
+      "causes": {
+        "scope": 1
+      },
+      "count": 1,
+      "denominator": 3
+    },
+    "reopen": {
+      "count": 1,
+      "denominator": 1
+    },
+    "resumes": 2,
+    "splits": 1,
+    "time": {
+      "allCategories": {
+        "intervals": 2,
+        "measuredSeconds": 20.0,
+        "overlapSeconds": 5.0,
+        "unionSeconds": 15.0
+      },
+      "byCategory": {
+        "external-blocker": {
+          "intervals": 0,
+          "measuredSeconds": 0,
+          "overlapSeconds": 0,
+          "unionSeconds": 0,
+          "unknownIntervals": 1
+        },
+        "model": {
+          "intervals": 1,
+          "measuredSeconds": 10.0,
+          "overlapSeconds": 0.0,
+          "unionSeconds": 10.0,
+          "unknownIntervals": 0
+        },
+        "tool": {
+          "intervals": 1,
+          "measuredSeconds": 10.0,
+          "overlapSeconds": 0.0,
+          "unionSeconds": 10.0,
+          "unknownIntervals": 2
+        },
+        "user": {
+          "intervals": 0,
+          "measuredSeconds": 0,
+          "overlapSeconds": 0,
+          "unionSeconds": 0,
+          "unknownIntervals": 0
+        }
+      },
+      "gaps": [
+        "unrecorded intervals unknown; measured spans are not complete wall time"
+      ],
+      "unknownIntervals": 3
+    },
+    "units": 2,
+    "unknownSessionStarts": 0
+  },
+  "quota": "not-calculated",
+  "schemaVersion": 1,
+  "usage": {
+    "byRole": {
+      "Backend": {
+        "cacheRead": {
+          "complete": true,
+          "known": 2,
+          "unknown": 0,
+          "value": 160
+        },
+        "cacheWrite": {
+          "complete": false,
+          "known": 0,
+          "unknown": 2,
+          "value": null
+        },
+        "input": {
+          "complete": true,
+          "known": 2,
+          "unknown": 0,
+          "value": 220
+        },
+        "output": {
+          "complete": true,
+          "known": 2,
+          "unknown": 0,
+          "value": 30
+        },
+        "total": {
+          "complete": true,
+          "known": 2,
+          "unknown": 0,
+          "value": 250
+        }
+      }
+    },
+    "gaps": [],
+    "ignoredRecords": 6,
+    "initialContext": {
+      "definition": "first observed terminal request input per session; not cumulative usage or universal bootstrap",
+      "input": {
+        "complete": true,
+        "known": 1,
+        "unknown": 0,
+        "value": 100
+      },
+      "order": "explicit input order; earlier missing requests unknown",
+      "sessions": 1,
+      "unknownSessionMessages": 0
+    },
+    "legacyRecords": 0,
+    "messages": 2,
+    "sources": 1
+  }
+}

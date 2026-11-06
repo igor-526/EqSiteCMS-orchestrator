@@ -43,6 +43,33 @@ services:
     networks:
       - eqsitecms_network
 
+  # OFF by default: explicit profile AND SEO_NORMALIZATION_ENABLED=true required.
+  # Enable only after real PG/JetStream acceptance; one replica, no HTTP listener.
+  seo-maintenance:
+    profiles: ["seo-maintenance"]
+    build:
+      context: ../services/seo-service
+      dockerfile: Dockerfile
+    image: eqsitecms-seo:latest
+    container_name: eqsitecms-seo-maintenance
+    restart: "on-failure:3"
+    env_file:
+      - path: ../services/seo-service/.env
+        required: true
+    volumes:
+      - ../services/seo-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/
+    command: ["uv", "run", "--no-sync", "python", "-m", "maintenance.main"]
+    stop_grace_period: 40s
+    healthcheck:
+      test: ["CMD", "uv", "run", "--no-sync", "python", "-m", "maintenance.readiness"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 120s
+    networks:
+      - eqsitecms_network
+
   seo-migration:
     build:
       context: ../services/seo-service

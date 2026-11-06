@@ -50,6 +50,8 @@ services:
       - eqsitecms_network
 
   ya-metrica-celery-worker:
+    # Opt-in only after PG/NATS readiness acceptance; never enable in this unit.
+    profiles: [metrica-runtime]
     build:
       context: ../services/ya-metrica-service
       dockerfile: Dockerfile
@@ -80,7 +82,76 @@ services:
     networks:
       - eqsitecms_network
 
+  ya-metrica-cleanup-worker:
+    # Opt-in only after PG/NATS readiness acceptance; never enable in this unit.
+    profiles: [metrica-runtime]
+    build:
+      context: ../services/ya-metrica-service
+      dockerfile: Dockerfile
+    image: eqsitecms-ya-metrica:latest
+    container_name: eqsitecms-ya-metrica-cleanup-worker
+    restart: always
+    env_file:
+      - path: ../services/ya-metrica-service/.env
+        required: true
+    volumes:
+      - ../services/ya-metrica-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    hostname: ya-metrica-cleanup-worker
+    stop_grace_period: 300s
+    command: >-
+      sh -c 'test "$$MAINTENANCE_RUNTIME_ENABLED" = "true" &&
+      exec uv run --no-sync celery -A workers.celery_app worker -Q ya_metrica_cleanup -l info
+      --concurrency=1 --hostname ya-metrica-cleanup-worker@%h'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          timeout 10s uv run --no-sync celery -A workers.celery_app inspect ping
+          --destination ya-metrica-cleanup-worker@ya-metrica-cleanup-worker --timeout 5 | grep -q pong
+      interval: 15s
+      timeout: 12s
+      retries: 5
+      start_period: 20s
+    networks:
+      - eqsitecms_network
+
+  ya-metrica-merge-worker:
+    # Opt-in only after PG/NATS readiness acceptance; never enable in this unit.
+    profiles: [metrica-merge]
+    build:
+      context: ../services/ya-metrica-service
+      dockerfile: Dockerfile
+    image: eqsitecms-ya-metrica:latest
+    container_name: eqsitecms-ya-metrica-merge-worker
+    restart: always
+    env_file:
+      - path: ../services/ya-metrica-service/.env
+        required: true
+    volumes:
+      - ../services/ya-metrica-service/src:/app/src:${DEV_MOUNT:-ro}
+    working_dir: /app/src
+    hostname: ya-metrica-merge-worker
+    stop_grace_period: 300s
+    command: >-
+      sh -c 'test "$$MAINTENANCE_RUNTIME_ENABLED" = "true" &&
+      exec uv run --no-sync celery -A workers.celery_app worker -Q ya_metrica_merge -l info
+      --concurrency=1 --hostname ya-metrica-merge-worker@%h'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          timeout 10s uv run --no-sync celery -A workers.celery_app inspect ping
+          --destination ya-metrica-merge-worker@ya-metrica-merge-worker --timeout 5 | grep -q pong
+      interval: 15s
+      timeout: 12s
+      retries: 5
+      start_period: 20s
+    networks:
+      - eqsitecms_network
+
   ya-metrica-celery-beat:
+    profiles: [metrica-runtime]
     build:
       context: ../services/ya-metrica-service
       dockerfile: Dockerfile

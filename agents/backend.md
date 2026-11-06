@@ -19,7 +19,7 @@
 | `## 2. Фактическая архитектура` + `### Правило зависимостей` | границы слоёв |
 | `## 5. Что запрещено` | блокирующие анти-паттерны |
 | `## 6. Именование — конвенции` | конвенции |
-| `## 13. Протокол завершения работы` + `## Обязательные проверки перед передачей на Quality Gate` | handoff и verification |
+| `## 13. Протокол завершения работы` + `## Обязательные проверки перед завершением unit` | handoff и verification |
 
 **По требованию — только если unit это затрагивает:**
 
@@ -495,7 +495,7 @@ Handoff — короткий. Не пересказывай план, не ду�
 ```text
 Unit: <ID> — <название> | Профиль: Backend | Статус: done / partial / blocked
 Изменённые файлы: <список путей>
-Verification: make format → <результат>; make test → <результат>; make lint → <результат>
+Verification: <stage; scenario IDs; фактические команды → результат; evidencePath; неприменимое с причиной>
 Отмеченные tasks: <IDs>
 Решения: <только влияющие на следующие units; 1–3 строки>
 Остаток: <что не сделано и почему; предложение split, если нужно>
@@ -503,34 +503,13 @@ Verification: make format → <результат>; make test → <резуль�
 
 ## Обязательные проверки перед завершением unit
 
-Запускай verification **своего unit'а**, а не весь набор проверок change. Выполни из директории назначенного Python core-сервиса:
+Канонический контракт — [единая verification policy](howto/verification-policy.md#границы-verification). Промежуточный unit: targeted tests и scoped non-mutating lint/typecheck/format-check. Последний unit сервиса: полные `make test`, `make lint`, canonical format/check по Makefile; `make format` — подготовка владельца до evidence. Не повторяй эквивалентные aliases. Docs-only — static checks, не product suites.
 
-```bash
-make format
-make test
-make lint
-```
+Для DTO/envelope нужны production producer→consumer paired checks с обоими service env; для rollback — real PostgreSQL и persisted state в новой независимой session после rollback; для topology — isolated existing-config negative cases без silent repair. Prerequisites, isolation и отдельный permit до setup/teardown обязательны по [risk-based acceptance](howto/verification-policy.md#risk-based-owner-acceptance). Mock/skip не доказывают реальные границы; missing infra/permission явно blocked/unchecked.
 
-Все три команды должны завершиться без ошибок **в путях твоего unit**.
-Если падение вызвано твоими изменениями — исправить до завершения unit.
-Если падает тест/lint вне твоих путей и не из-за твоих изменений (pre-existing) — не чинить, не расширять unit; указать в handoff строкой `pre-existing: <тест/файл>`.
-Не закрывать unit со статусом `done` при наличии ошибок в этих командах: используй статус `partial` или `blocked`.
+Fix начинает с [exact reproducer](howto/verification-policy.md#exact-reproducer-для-fix), затем PASS и impacted regression. Не воспроизведённый FAIL — unreproduced/blocked, не проверенное закрытие. Новый diff инвалидирует затронутые evidence; full rerun требует ledger reason. Ошибки собственных проверок не закрывай done; pre-existing вне ownership не чини, укажи в handoff.
 
-Расширенная форма handoff, когда нужно передать детали verification:
-
-```text
-Unit: <ID> — <название> | Профиль: Backend | Статус: done / partial / blocked
-Сервис: services/backend
-Изменены файлы: <список>
-Тесты: <ID из test matrix; запускались/не запускались и почему>
-Миграции: <да/нет>
-make format: чисто / <ошибки>
-make test:   X passed, 0 failed / <ошибки>
-make lint:   чисто / <ошибки>
-Отмеченные tasks: <IDs>
-Решения: <1–3 строки>
-Остаток / split: <нет | BE-3 → BE-3a + BE-3b с границами>
-```
+Handoff содержит stage, matrix IDs, фактическую команду/результат и evidencePath, skipped/not-applicable с причиной; не шаблонный список якобы выполненных команд.
 
 ---
 

@@ -1,5 +1,29 @@
 # Browser QA Protocol
 
+Канонические границы и invalidation: [verification policy](verification-policy.md).
+Точный CLI/schema/report/privacy: [browser helper README](../../scripts/qa/browser/README.md).
+
+## Scoped owner self-check и независимый QG
+
+Owner до первого QG выбирает конечные scenario IDs по diff: keyboard/focus, hidden
+sizing/remount, geometry/scroll/long error, contrast normal/hover/focus/error.
+`self-check` меняет selection, не assertions. QG независимо исполняет обязательный
+конечный registry, дополняя только новым подтверждённым риском с bounded budget.
+Для docs/tooling без product UI diff manual lane не добавляется: FIX-01/BR-01..03
+synthetic Chromium suite принадлежит QG-CONTRACTS, одна команда без duplicate runs:
+
+```bash
+source scripts/qa/browser-env.sh && node --test scripts/tests/qa-browser.test.mjs
+```
+
+FIX-01: safe bad fixture ожидаемо FAIL, good PASS; это не закрытие product finding.
+Для product fix сохранять reproducer-before.json и reproducer-after.json по policy:
+те же scenario/input/keys/route/DOM locator, environment, expected; actual/status,
+revision и timestamps трассируются. Space → Escape проверяет оба слоя, focus return
+и pending/nonpending, не общий Escape. Before уже PASS/среда недоступна —
+unreproduced/blocked closure; не создавать искусственный product FAIL.
+После exact PASS — impacted regression и один targeted QG recheck, затем stop.
+
 ## Назначение
 
 `QG-FE` состоит из двух execution units, которые выполняет Quality Gate агент без участия человека:
@@ -14,7 +38,7 @@
 - Router один раз до пайплайна сообщает, что требуется режим **Full Access**. Субагенты наследуют его и не могут запрашивать approval внутри unit.
 - npm/uv/Playwright caches остаются workspace-local как fallback.
 - Runtime подготовлен lane `QG-ENV`; Docker-стек предпочтительнее dev servers.
-- Auth state, cookies, сценарии, скрипты, screenshots, traces и отчёты хранятся в игнорируемой `.qa/<change>/manual/` (auth — `.qa/auth-*.json`). В `docs/reports/` browser QA ничего не пишет, кроме своего раздела в отчёте `docs/reports/<change>.md`. `/tmp` не используется для данных между tool calls: в `workspace-write` он не является cross-tool persistent.
+- Auth state, cookies, сценарии, скрипты, screenshots, traces и отчёты хранятся в игнорируемой `.qa/<change>/QG-FE-MANUAL/` (auth — `.qa/auth-*.json`). В `docs/reports/` browser QA ничего не пишет, кроме своего раздела в отчёте `docs/reports/<change>.md`. `/tmp` не используется для данных между tool calls: в `workspace-write` он не является cross-tool persistent.
 
 ## Viewport
 
@@ -41,14 +65,10 @@ QG-FE-MANUAL           │
 
 ## `QG-FE-AUTO`
 
-В затронутом frontend-сервисе запусти применимые команды:
-
-```bash
-npm test
-npm run lint
-npx tsc --noEmit
-npm run build
-```
+В затронутом frontend-сервисе независимо выполни один canonical `make test`,
+`make lint`, non-mutating format-check и CMS `npm run build` на актуальной revision.
+Эквивалентные npm aliases не повторять; отдельный tsc — только если не входит в lint.
+Docs-only — static checks, не product suite. Причины повторов/invalidation — по policy.
 
 Затем из корня запусти существующий Playwright suite для изменённых routes. Не вызывай `npx`, который скачивает отсутствующий пакет: зависимости должны быть установлены заранее в workspace.
 
@@ -76,7 +96,7 @@ Anonymous и authenticated сценарии проверяются раздел�
 
 ### 3. Сформировать сценарии
 
-Создай `.qa/<change>/manual/scenarios.json` на основе:
+Создай `.qa/<change>/QG-FE-MANUAL/scenarios.json` на основе:
 
 - релевантных OpenSpec `design.md` и `tasks.md`;
 - изменённых routes/components;
@@ -84,18 +104,43 @@ Anonymous и authenticated сценарии проверяются раздел�
 - access matrix для anonymous/authenticated flows;
 - design specification для site consumer.
 
-Каждый сценарий содержит точные шаги, ожидаемый результат и проверяемый state. Общая фраза «проверить, что UI работает» запрещена.
+Каждый сценарий содержит конечный id/riskId/url/prerequisites/steps/expected/axeScope/evidencePolicy (schemaVersion 2). Axe include обязателен, exclude требует причину. Keyboard использует реальные Tab/Shift+Tab/Enter/Space/Escape, focus/hidden/count/attribute assertions; geometry/scroll и computed contrast с alpha: text ≥4.5, largeText/UI ≥3. Unsupported background — failed, не PASS. Unknown/ambiguous locator, empty selection или invalid threshold — ошибка. Общая фраза «проверить, что UI работает» запрещена.
 
 ### 4. Scripted Playwright evidence
 
-Запусти сценарии через `ui-qa` в viewport 1366×768 (`--viewports desktop`). Обязательное evidence:
+Запусти через `ui-qa`, CMS только 1366×768 (`--viewports desktop`).
+Перед запуском registry фиксирует IDs/prerequisites/evidenceOwner/permission/budget/stopCondition.
+Пример из корня; URL — обнаруженный runtime endpoint, не выдуманный default:
+
+```bash
+source scripts/qa/browser-env.sh && node scripts/qa/run-scenarios.mjs \
+  --scenarios .qa/<change>/QG-FE-MANUAL/scenarios.json --auth .qa/auth-admin.json \
+  --output-dir .qa/<change>/QG-FE-MANUAL/run --base-url <discovered-url> \
+  --mode qg --scenario-ids nested,table --timeout-ms 120000 --max-scenarios 10 \
+  --service frontend --viewports desktop
+```
+
+Owner использует тот же CLI с `--mode self-check` и явными IDs. QG без IDs исполняет
+все scenarios manifest; registry всё равно конечен. Budget scenario ≤120s, suite ≤15min;
+max-scenarios ограничивает scenario×viewport (default 50, max 100), не заменяет общий deadline.
+При timeout/key blocker — stop, failed/blocked + unchecked IDs, не skip/PASS.
+Обязательное evidence:
 
 - machine-readable `report.json`;
-- screenshots для релевантных состояний;
+- safe fragment screenshots для релевантных состояний либо evidence-redacted с причиной и assertions;
 - browser console errors;
 - failed network requests и ответы `5xx`;
 - axe findings уровня critical/serious;
-- trace для упавшего сценария.
+- schemaVersion 2 report с compatibility keys, counts/outcomes и safe origin+pathname.
+
+Live raw trace всегда OFF (CLI включения нет), даже при FAIL. Только внутренний
+synthetic fixture runner без auth на своём loopback origin может писать trace,
+без sources и внешних запросов. Live screenshot по умолчанию evidence-redacted;
+разрешён только заранее проверенный целиком fragment через
+`evidencePolicy.screenshot:{selector:"#safe-panel",mask:["#private-field"]}`.
+Mask применяется до записи. Нет fullPage live, raw console text/headers/bodies/auth
+в evidence. Report хранит коды/статусы, URL без query/hash/userinfo; secrets также
+запрещены в pathname/IDs. Auth — отдельный ignored input. Не писать raw с очисткой потом.
 
 Долгий запуск делай через bash `run_in_background` **без** завершающего `&`; после timeout собирай результат через `job_output`. Не запускай долгоживущие процессы конструкцией `command &`.
 
@@ -161,8 +206,8 @@ MCP не заменяет воспроизводимый scripted report. Пос
 - все обязательные scripted scenarios пройдены;
 - console errors и неожиданные `5xx` отсутствуют;
 - нет critical/serious axe findings либо каждое исключение утверждено спецификацией;
-- обязательные screenshots просмотрены агентом через `read_image`;
-- report, screenshots и traces сохранены в `.qa/<change>/manual/` и перечислены в handoff.
+- обязательные безопасные screenshots просмотрены через `read_image`; запрещённые fragment states явно evidence-redacted и проверены assertions, не выданы за визуальную инспекцию;
+- report и разрешённые safe screenshots/fixture traces сохранены в `.qa/<change>/<lane>/`; redacted/trace-off причины и соответствующие assertions перечислены в handoff. Privacy exception не освобождает от проверки behavior, но запрещает raw capture.
 
 `FAIL/REWORK` — функциональная, визуальная, accessibility или access regression. `BLOCKED` — только доказанный infrastructure/external blocker после circuit breaker.
 

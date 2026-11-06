@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { isIP } from 'node:net';
 
 const PROJECT_ROOT = '/srv/eqSiteCMS';
 const COMPOSE_DIR = join(PROJECT_ROOT, '.docker-compose');
@@ -77,11 +78,17 @@ const PROFILES = {
     envFiles: [join(PROJECT_ROOT, 'services/ya-metrica-service/.env')],
     serviceKeys: ['ya-metrica-service', 'ya-metrica-migration'],
   },
+  seo: {
+    project: 'eqsitecms-seo',
+    files: ['seo'],
+    envFiles: [join(PROJECT_ROOT, 'services/seo-service/.env')],
+    serviceKeys: ['seo-service', 'seo-scheduler', 'seo-maintenance'],
+  },
   infra: {
     project: 'eqsitecms-infra',
     files: ['infra'],
     envFiles: [join(COMPOSE_DIR, '.env')],
-    serviceKeys: ['db-yandex', 'db-ya-metrica'],
+    serviceKeys: ['db-yandex', 'db-ya-metrica', 'db-seo'],
   },
   'site-ad': {
     project: 'eqsitecms-site-ad',
@@ -109,6 +116,10 @@ const SERVICES = {
   'vk-bot': { container: 'eqsitecms-vk-bot', composeKey: 'vk-bot', fallbackProfile: 'vk', buildable: true },
   'yandex-service': { container: 'eqsitecms-yandex-service', composeKey: 'yandex-service', fallbackProfile: 'yandex', buildable: true },
   'ya-metrica-service': { container: 'eqsitecms-ya-metrica-service', composeKey: 'ya-metrica-service', fallbackProfile: 'ya-metrica', buildable: true },
+  'seo-service': { container: 'eqsitecms-seo-service', composeKey: 'seo-service', fallbackProfile: 'seo', buildable: true },
+  'seo-scheduler': { container: 'eqsitecms-seo-scheduler', composeKey: 'seo-scheduler', fallbackProfile: 'seo', buildable: true },
+  'seo-maintenance': { container: 'eqsitecms-seo-maintenance', composeKey: 'seo-maintenance', fallbackProfile: 'seo', buildable: true },
+  'db-seo': { container: 'eqsitecms-db-seo', composeKey: 'db-seo', fallbackProfile: 'infra', buildable: false },
   'db-yandex': { container: 'eqsitecms-db-yandex', composeKey: 'db-yandex', fallbackProfile: 'infra', buildable: false },
   'db-ya-metrica': { container: 'eqsitecms-db-ya-metrica', composeKey: 'db-ya-metrica', fallbackProfile: 'infra', buildable: false },
   db: { container: 'eqsitecms-db', composeKey: 'db', fallbackProfile: 'core', buildable: false },
@@ -127,6 +138,7 @@ const CONTAINER_BY_COMPOSE_KEY = new Map(
 );
 
 const DB_CONFIG = {
+  'db-seo': { runtimeTcp: true },
   'db-yandex': { runtimeTcp: true },
   'db-ya-metrica': { runtimeTcp: true },
   db: { userEnv: 'POSTGRES_USER', nameEnv: 'POSTGRES_NAME' },
@@ -135,9 +147,9 @@ const DB_CONFIG = {
   'db-vk': { userEnv: 'POSTGRES_VK_USER', nameEnv: 'POSTGRES_VK_NAME' },
 };
 
-const READ_ONLY_COMMANDS = new Set(['status', 'logs', 'doctor']);
+const READ_ONLY_COMMANDS = new Set(['status', 'logs', 'doctor', 'endpoints']);
 const KNOWN_COMMANDS = new Set([
-  'status', 'up', 'rebuild', 'restart', 'logs', 'exec', 'psql', 'migrate', 'seed', 'doctor', 'ready',
+  'status', 'up', 'rebuild', 'restart', 'logs', 'exec', 'psql', 'migrate', 'seed', 'doctor', 'ready', 'endpoints',
 ]);
 
 const PROFILES_WITH_MIGRATIONS = new Set(['be', 'notification', 'email', 'vk']);
@@ -350,8 +362,8 @@ async function cmdUp(profileName) {
     result = run('docker', composeArgs('vk', [
       'up', '-d', '--no-deps', 'db-vk', 'vk-migration', 'vk-service', 'vk-celery-worker', 'vk-bot',
     ]), { progress: true });
-  } else if (profileName === 'infra') {
-    // This registry intentionally exposes only the two Yandex databases.
+  } else if (profileName === 'infra' || profileName === 'seo') {
+    // Explicit keys only: never start migrations or neighbouring services.
     result = run('docker', composeArgs(profileName, ['up', '-d', '--no-deps', ...profile.serviceKeys]), { progress: true });
   } else {
     result = run('docker', composeArgs(profileName, ['up', '-d']), { progress: true });
@@ -624,9 +636,60 @@ function getPublishedPorts(container) {
   return ports;
 }
 
+// Discovery never reads Config.Env, logs or fallback ports. Multiple distinct
+// bindings are ambiguous; dual-stack wildcard bindings of the same port dedupe.
+async function cmdEndpoints(aliases) {
+  if (!aliases.length) return failure('endpoints requires at least one service alias');
+  const selected = aliases.map((alias) => [alias, validateService(alias)]);
+  const httpAliases = new Set(['app', 'frontend', 'notification-service', 'email-service',
+    'vk-service', 'yandex-service', 'ya-metrica-service', 'seo-service', 'site-ad', 'site-ksk-inlove']);
+  const services = [];
+  for (const [alias, service] of selected) {
+    const format = '[{"Id":{{json .Id}},"Name":{{json .Name}},"NetworkSettings":{"Ports":{{json .NetworkSettings.Ports}}}}]';
+    const result = run('docker', ['inspect', service.container, '--format', format]);
+    let rows;
+    try { rows = JSON.parse(result.stdout); } catch { /* Fail closed below. */ }
+    const row = Array.isArray(rows) && rows.length === 1 ? rows[0] : null;
+    const ports = row?.NetworkSettings?.Ports;
+    const invalid = () => failure('Safe published endpoint mapping unavailable', { service: alias });
+    if (result.status !== 0 || !/^[a-f0-9]{64}$/.test(row?.Id ?? '')
+      || row?.Name !== `/${service.container}` || !ports || typeof ports !== 'object' || Array.isArray(ports)) return invalid();
+    const urls = new Set();
+    let publishedKeys = 0;
+    for (const [key, bindings] of Object.entries(ports)) {
+      if (!/^[1-9][0-9]{0,4}\/tcp$/.test(key) || Number(key.split('/')[0]) > 65535) return invalid();
+      if (bindings === null) continue;
+      if (!Array.isArray(bindings) || !bindings.length) return invalid();
+      publishedKeys++;
+      if (!httpAliases.has(alias) || publishedKeys > 1) return invalid();
+      for (const binding of bindings) {
+        if (!binding || typeof binding.HostPort !== 'string'
+          || !/^[1-9][0-9]{0,4}$/.test(binding.HostPort) || Number(binding.HostPort) > 65535
+          || typeof binding.HostIp !== 'string' || !isIP(binding.HostIp)) return invalid();
+        const ip = binding.HostIp;
+        const host = ['0.0.0.0', '::'].includes(ip) ? 'localhost' : isIP(ip) === 6 ? `[${ip}]` : ip;
+        urls.add(`http://${host}:${binding.HostPort}`);
+      }
+    }
+    if (urls.size > 1) return invalid();
+    services.push({ alias, urls: [...urls], internalOnly: urls.size === 0 });
+  }
+  return success({ services });
+}
+
+function validateSeoReady(aliases, flags) {
+  if (!flags.includes('--no-migrate') && aliases.some((alias) =>
+    ['seo-service', 'seo-scheduler', 'seo-maintenance'].includes(alias))) {
+    return failure('SEO ready requires --no-migrate; migrations are not managed by stackctl');
+  }
+  return null;
+}
+
 async function cmdReady(aliases, flags) {
   const dryRun = flags.includes('--dry-run');
   const noMigrate = flags.includes('--no-migrate');
+  const denied = validateSeoReady(aliases, flags);
+  if (denied) return denied;
   
   if (!aliases.length) {
     return success({ message: 'No runtime changes (empty alias list)', services: [] });
@@ -808,12 +871,13 @@ async function cmdReady(aliases, flags) {
 }
 
 function usageResult() {
-  return failure('Usage: stackctl <status|up|rebuild|restart|logs|exec|psql|migrate|seed|doctor|ready> [args...]');
+  return failure('Usage: stackctl <status|up|rebuild|restart|logs|exec|psql|migrate|seed|doctor|ready|endpoints> [args...]');
 }
 
 async function dispatch(command, args) {
   switch (command) {
     case 'status': return cmdStatus(args);
+    case 'endpoints': return cmdEndpoints(args);
     case 'up': return cmdUp(args[0]);
     case 'rebuild': return cmdRebuild(args[0]);
     case 'restart': return cmdRestart(args[0]);
@@ -836,6 +900,11 @@ async function main() {
   const [command, ...args] = process.argv.slice(2);
   if (!command) return usageResult();
   if (!KNOWN_COMMANDS.has(command)) return failure(`Unknown command: ${command}`);
+
+  if (command === 'ready') {
+    const denied = validateSeoReady(args.filter((arg) => !arg.startsWith('--')), args);
+    if (denied) return denied;
+  }
 
   // Real advisory lock. flock owns and releases the lock for the complete child
   // process lifetime, including awaited async health checks.

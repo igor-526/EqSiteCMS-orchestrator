@@ -72,6 +72,16 @@
 
 Каждый ID трассируется на scenario delta spec или на строку access matrix.
 
+Acceptance/prerequisites оформляются до дорогого исполнения по [единой verification policy](howto/verification-policy.md#ownership-closure-и-prerequisites). Для каждой строки обязательны поля `riskId, scenarioId, unit, testPath/command, evidenceOwner, prerequisites, isolation, permission, budget, stopCondition, status` (допустима отдельная связанная таблица). Пример concrete evidence registry:
+
+| riskId | scenarioId | unit | testPath/command | evidenceOwner | prerequisites | isolation | permission | budget | stopCondition | status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| R-PG-ROLLBACK | PG-01 | BE-RECOVERY | `tests/integration/test_recovery.py::test_persisted_failure` (планируемый node ID) | QG-BE → `.qa/<change>/QG-BE/PG-01.json` | real PG, обе service deps при paired diff | dedicated `_test` DB/роль, owned schema | отдельный target/resource/expiry permit до setup/teardown | 120s scenario, 2 infra repairs | missing permit/infra → blocked до mutation | planned |
+
+Это шаблон будущего change, не существующий выполненный тест. Статусы: planned/passed/failed/blocked/not-applicable/unchecked; для последних трёх причина обязательна. Missing tooling получает deliverable с владельцем/тестами, provisionable роли/fixtures — подготовку внутри slice, внешний OAuth — отдельный unchecked gap и решение пользователя; не подменяй real coverage синтетикой. Один QG evidence owner на пересекающееся свойство, соседние lanes ссылаются на него; независимый QG запуск owner tests обязателен.
+
+До fix планируй точный исходный reproducer, before/after JSON и impacted regression по [exact reproducer policy](howto/verification-policy.md#exact-reproducer-для-fix). Unreproduced FAIL не позволяет закрыть finding. Реестр конечный: не более одного targeted QG recheck, затем stop при сохраняющемся finding/исчерпанном бюджете.
+
 #### Обязательные оси покрытия
 
 Каждая применимая ось получает минимум один сценарий. Неприменимая ось помечается `неприменимо` с причиной:
@@ -84,6 +94,8 @@
 6. Персистентность на реальной PostgreSQL для всего, что зависит от constraint'ов, транзакций, типов, сортировок и миграций.
 7. Контракт ответа: отсутствие приватных полей, стабильная схема, отсутствие секретов в payload и логах.
 8. Регрессия — отдельный сценарий на каждый исправляемый баг.
+9. По diff: production paired producer→consumer DTO/envelope; persisted failure после rollback в новой session, lease/concurrency в двух sessions; existing-topology negatives без silent repair.
+10. Config boundary/constructor kwargs, task_expires, midnight внутри long batch, bounded waits и deterministic lifecycle fixtures — по применимости.
 
 #### Правила размера
 
@@ -174,14 +186,7 @@ rg -n "site-ad|site-\\*|Public Read|public read" services/frontend/src -g '*.{ts
 find services/frontend/src -maxdepth 2 -type d \( -name shared -o -name widgets -o -name entities \)
 ```
 
-В execution unit `QG-FE` Planner обязан добавлять пункты запуска из `services/frontend`:
-
-```bash
-npm test
-npm run lint
-npx tsc --noEmit
-npm run build
-```
+В execution unit `QG-FE` Planner назначает независимый final-service gate по [staged policy](howto/verification-policy.md#границы-verification): `make test`, `make lint`, canonical format/check и `npm run build`. Эквивалентные Make/npm aliases и включённый в lint tsc повторно не запускаются. Промежуточные FE units получают targeted checks; до первого QG — scoped browser selection изменённых mechanisms в Chromium 1366×768 с конечными evidence IDs, не весь browser gate.
 
 Quality Gate checklist также должен требовать review качества tests относительно behavior diff, проверку access/scopes scenarios, MSW/no live backend calls, pagination `limit/offset` и no `site-*` mixing.
 
@@ -207,34 +212,9 @@ Planner планирует smoke как:
 
 #### Smoke-тесты и реальная PostgreSQL
 
-Smoke-тесты backend-фич **обязательно** должны использовать реальную PostgreSQL БД. Planner обязан перед составлением smoke-тестов найти DB-контейнер и получить параметры подключения через `docker inspect`, а не хардкодить креды, имя БД или порт.
+Поведение constraint/transaction/lease/migration проверяется реальной PostgreSQL, не mock. До тестов Planner фиксирует безопасную identity test target, изоляцию и missing prerequisites, а не ищет credentials app DB. Не читать/печатать Config.Env, DSN или credentials. Нет изолированной `_test` DB/роли — blocked, без public/app fallback.
 
-Алгоритм поиска DB-контейнера:
-
-1. Основной поиск по Docker labels:
-   - `com.docker.compose.project=eqsitecms`
-   - `com.docker.compose.service=db`
-2. Fallback, если label-поиск не дал результата:
-   - имя или alias контейнера: `eqsitecms-db`
-   - image содержит `postgres`
-3. После выбора контейнера выполнить `docker inspect <container>` и взять:
-   - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` из `Config.Env`
-   - host port PostgreSQL из `NetworkSettings.Ports["5432/tcp"]` или `HostConfig.PortBindings["5432/tcp"]`
-   - имя контейнера, image, compose labels и network aliases как диагностические признаки
-4. В плане указать найденный контейнер и параметры без хардкода вне данных inspect.
-5. Если контейнер не найден или inspect недоступен, Planner фиксирует технический блокер в плане и не придумывает параметры подключения.
-
-Для текущего локального окружения известный пример inspect-признаков:
-
-- Контейнер: `eqsitecms-db` (`478aa22ca9d6`)
-- `Name`: `/eqsitecms-db`
-- `Config.Image`: `postgres:17`
-- Labels: `com.docker.compose.project=eqsitecms`, `com.docker.compose.service=db`
-- Network aliases: `eqsitecms-db`, `db`
-- Env: `POSTGRES_DB=eqsitecms`, `POSTGRES_USER=eqsitecms`, `POSTGRES_PASSWORD=eqsitecms`
-- Host port для `5432/tcp`: `5433`
-
-Эти значения являются примером обнаруженного окружения. При новом планировании всегда сначала выполняй поиск и `docker inspect`.
+Setup/teardown PG/NATS требует отдельного разрешения пользователя и fail-closed permit с target/resource scope/expiry; approval proposal/apply не является таким разрешением. Cleanup только owned ресурсов, bounded и с residual manifest. До разрешения — только non-mutating planning/static checks. Конкретные helpers/CLI берутся из handoff владельцев, не создаются одноразово в smoke.
 
 ### 3. Декомпозиция: deliverables и execution units
 
@@ -244,22 +224,22 @@ Planner обязан выдать **три уровня**, а не один пл
 2. **Execution units** — границы одной агентной сессии внутри deliverable. Один deliverable может содержать несколько units одного профиля (`BE-1`, `BE-2`, `BE-3`).
 3. **Задачи внутри unit** — атомарные шаги: конкретный файл или набор файлов.
 
-Бюджет одного execution unit (норматив в `AGENTS.md`): один сервис **или** один архитектурный slice, примерно **8–12 существенных действий**, **одна группа verification**. Если unit не помещается — дели его на планировании, а не оставляй это агенту в рантайме.
+Бюджет одного execution unit (норматив в `AGENTS.md`): один сервис **или** один архитектурный slice, примерно **5–12 существенных действий**, **одна группа verification**. Это эвристика контекста, не счётчик файлов. Slice включает свои tests, fixtures/conftest, wiring, migration/head fixtures, DTO snapshots, inventories/generators и outputs; пути заранее принадлежат тому же владельцу либо передаются последовательно. Две связанные fixtures не основание для split. Checkpoint units запрещены. Реальное превышение — split до делегирования; обнаруженное в работе — atomic partial с причиной scope/ownership/infrastructure/other, без героического завершения.
 
 Типовые slice-границы:
 
 ```text
-schema/storage → repository/domain → API/access control → интеграция с другим сервисом → unit tests → live verification
+schema/storage + tests/fixtures → repository/domain + tests → API/access + tests → integration + acceptance
 ```
 
 #### Таблица execution units (обязательна в `design.md` и в шапке `tasks.md`)
 
 | Unit | Профиль | Deliverable | Ownership paths | Зависит от | Verification |
 |---|---|---|---|---|---|
-| `CB-BE-1` | Backend | A | `services/backend/app/models/**`, `migrations/**` | — | `make test` |
-| `CB-BE-2` | Backend | A | `services/backend/app/repositories/**`, `core/services/**` | `CB-BE-1` | `make test` |
-| `CB-BE-3` | Backend | A | `services/backend/app/api/**` | `CB-BE-2` | `make test`, access matrix |
-| `CB-BE-4` | Backend | A | `services/backend/tests/unit/**` | `CB-BE-3` | `UT-CB-01..18` |
+| `CB-BE-1` | Backend | A | <schema paths + dependent tests/migration fixtures> | — | targeted tests + scoped static |
+| `CB-BE-2` | Backend | A | <repository/domain paths + dependent tests/fixtures/wiring> | `CB-BE-1` | targeted tests + scoped static |
+| `CB-BE-3` | Backend | A | <API paths + dependent tests/snapshots/inventories> | `CB-BE-2` | targeted tests + access matrix |
+| `CB-BE-4` | Backend | A | <remaining tests + assigned closure paths> | `CB-BE-3` | `UT-CB-01..18`; final-service gate если назначен |
 | `CB-NOTIFY-1` | Backend | B | `services/notification-service/**` | `CB-BE-3` | `make -C services/notification-service test` |
 | `CB-SMOKE-1` | Backend | C | — (verification only) | `CB-BE-4`, `CB-NOTIFY-1` | `SM-CB-01..12` на живом API |
 
@@ -324,7 +304,7 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 
 | Unit | Профиль | Ownership paths | Зависит от | Verification | contextFiles |
 |---|---|---|---|---|---|
-| `CB-BE-1` | Backend | ... | — | `make test` | `design.md#execution-units`, `specs/callback-storage/spec.md` |
+| `CB-BE-1` | Backend | <slice + tests/fixtures/wiring/inventories> | — | targeted tests + scoped static | `design.md#execution-units`, `specs/callback-storage/spec.md` |
 
 ## 1. CB-BE-1 — схема, модели, миграция (профиль: Backend)
 
@@ -341,12 +321,12 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 **Правила:**
 
 - Заголовок каждого unit содержит **ID, название и профиль исполнителя**: `## <N>. <UnitID> — <название> (профиль: Backend | Frontend | Site Consumer | Quality Gate)`.
-- В одном unit — примерно **8–12 содержательных пунктов**, включая финальный verification/handoff. Больше — делить unit.
+- В одном unit ориентир **5–12 существенных действий**, включая verification/handoff: эвристика контекста, не счётчик файлов. Реальное превышение требует bounded split, не искусственное дробление связанных fixtures.
 - Каждый пункт — атомарное действие агента (один файл или связанный набор файлов).
 - Тестовые пункты **группируются по ID матрицы**: `Реализовать и прогнать UT-CB-01..UT-CB-18`. Разворачивать матрицу в один checklist-пункт на сценарий **запрещено**.
 - Последний пункт каждого unit — `<UnitID>.V`: verification этого unit + handoff Router.
 - Smoke-пункты явно указывают реальную PostgreSQL и скилл `.claude/skills/api-smoke-test`.
-- В том unit, который первым выполняет smoke, обязателен пункт discovery DB-параметров через `docker inspect`.
+- До первого smoke/infra acceptance обязательны безопасная test-target identity, isolation, отдельный permit и stop при missing prerequisites по единой policy; никакого discovery credentials app DB.
 - Quality Gate планируется по профилю: `QG-DOCS` и `QG-LITE` — **один** unit `QG` (один агент, все применимые lanes + отчёт) и, при UI behavior diff, unit `QG-FE-MANUAL` (1366×768); `QG-FULL` — units-lanes по DAG без отдельного `QG-FORMAT` (scoped format/lint/test входит в `QG-BE`/`QG-FE-AUTO`). Чистый worktree не требуется. UI diff сам по себе не переводит change в `QG-FULL`. Неприменимые lanes — одной строкой `неприменимо — <причина>`.
 - Не планируй отдельные units для чекпоинтов, фиксаций, коммитов, подготовки рабочего дерева или установки зависимостей ради проверок.
 - Плоские секции `### Backend` / `### Frontend` / `### Quality Gate` сохраняются **только** в разделе доработки отчёта Quality Gate `docs/reports/<change>.md` (совместимость с оркестратором). В `tasks.md` структура — по execution units.
@@ -361,7 +341,7 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 - [ ] CB-BE-4.1 Реализовать и прогнать `UT-CB-01..UT-CB-08` (валидация входа и граничные значения) из `design.md` → `## Test matrix`
 - [ ] CB-BE-4.2 Реализовать и прогнать `UT-CB-09..UT-CB-14` (access matrix: anonymous GET, write без auth, write с ролью, чужой ресурс)
 - [ ] CB-BE-4.3 Реализовать и прогнать `UT-CB-15..UT-CB-18` (идемпотентность и ошибки внешних зависимостей)
-- [ ] CB-BE-4.V Прогнать `make test` из `services/backend`, отметить выполненные task IDs и вернуть handoff
+- [ ] CB-BE-4.V Выполнить targeted UT-CB-01..18; если это назначенная финальная граница сервиса — полный make test/make lint/canonical format-check по policy; отметить выполненные task IDs и вернуть handoff
 ```
 
 Восемнадцать сценариев — это восемнадцать строк матрицы и **три** checklist-пункта, а не восемнадцать.
@@ -374,7 +354,7 @@ OpenSpec `tasks.md` — единственный изменяемый чекли
 - ❌ Планировать шаги, нарушающие FSD из `agents/frontend.md`
 - ❌ Оставлять `tasks.md` без execution units, без их профилей или без DAG зависимостей
 - ❌ Оставлять `design.md` без разделов `## Execution units` и `## Test matrix`
-- ❌ Выдавать execution unit, выходящий за бюджет из `AGENTS.md` (один сервис/slice, ~8–12 существенных действий, одна группа verification)
+- ❌ Выдавать execution unit, выходящий за бюджет из `AGENTS.md` (один сервис/slice, ~5–12 существенных действий, одна группа verification)
 - ❌ Разворачивать test matrix в отдельные checklist-пункты по одному сценарию на строку
 - ❌ Оставлять backend-фичу без test matrix или с непокрытыми применимыми осями (happy path, валидация, внешние ошибки, транзакционность/идемпотентность, access matrix, реальная PostgreSQL, контракт ответа, регрессии)
 - ❌ Дублировать в `tasks.md` содержимое test matrix, manual QA steps или DAG вместо ссылки на `design.md`

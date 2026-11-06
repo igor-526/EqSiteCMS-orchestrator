@@ -890,13 +890,57 @@ services/email-service/src/
 |--------|---------|------------|------|
 | SITE_EVENTS | events.site.callback.requested | Публикация события запроса обратного звонка | исходящий |
 | NOTIFICATION_COMMANDS | commands.notification.email.send | Команда на отправку email | входящий |
+```
 
 ## Real-broker acceptance gate
 
-Canonical AsyncAPI и runtime config должны совпадать по stream, subject, durable, filter и payload/header contract. Blocking integration gate использует реальный NATS JetStream без mocked broker и проверяет создание/lookup stream, durable/filter, explicit ack, nak/redelivery, max-deliver, duplicate idempotency и backend→notification→email compatibility. Ресурсы имеют уникальные имена, bounded timeout и обязательный cleanup.
+Канон границ — [verification policy](verification-policy.md); интерфейсы:
+[paired wire](../../scripts/qa/contracts/README.md),
+[isolated infra](../../scripts/qa/infra/README.md).
 
-Default unit suite может исключать marker `infrastructure`. Однако canonical real-broker command обязан завершаться ошибкой при отсутствии env, NATS или JetStream; skip/absence не является PASS и не может использоваться как release evidence. Любая требуемая смена topology (subject/stream/durable/filter/payload) требует обновления OpenSpec/AsyncAPI и повторного approval до runtime-изменений.
+Разделяй два свойства с одним QG evidence owner у каждого:
+- WIRE-02 → CONTRACTS: production serializer bytes/headers → production handler в
+  двух свежих service lockfile env; storage/ACK spies фиксируют реальные вызовы.
+  Valid path и invalid headers/identity/timestamps проверяются до storage:
+  invalid storageEffects=0, disposition — по реальному handler contract, не mock expectation.
+  Копия DTO/local matching mocks не является paired acceptance. Broker spy не доказывает topology.
+- NATS-01 → BE: отдельный real test broker/account, compatible existing config reuse,
+  incompatible TTL/discard/durable/filter reject без silent topology repair, config
+  до/после неизменён при reject; canonical serializer headers в replay, explicit
+  ACK/NAK/redelivery/max-deliver и duplicate idempotency по registry.
+  CONTRACTS ссылается на topology evidence BE, BE на WIRE-02, не создают второй harness.
+
+Canonical AsyncAPI/runtime stream, subject, durable, filter, payload/header должны
+совпадать. Любая смена контракта требует OpenSpec/AsyncAPI и approval до runtime изменений.
+Этот test-only протокол не разрешает менять canonical topology/settings.
+
+Перед соединением/setup/publish/teardown нужны отдельное согласие пользователя,
+manifest/permit exact target/resource/runId с expiry и isolated broker. Approval
+change не permit. Unique owned stream/durable/subject, без canonical resources,
+wildcard delete или app fallback. Только runner создаёт/удаляет root resource;
+fixture использует `from infra import load_context`, `load_context("nats")` и
+обязательную dependency `qa_infra_context`, не генерирует второй stream.
+Cleanup bounded/finally только confirmed-owned; crash/residual — manifest и решение
+оператора, не auto-delete чужих ресурсов. Expired permit не разрешает cleanup.
+
+Executable CLI (только после prerequisites; пути — свежие exact inputs):
+
+```bash
+node scripts/qa/contracts/run.mjs --manifest <wire-manifest> --scenario-ids <finite-ids> --output-dir .qa/<change>/QG-CONTRACTS/wire
+python3 scripts/qa/infra/run.py preflight --kind nats --manifest <fresh-manifest> --permit <exact-permit>
+# real acceptance, только отдельное разрешение; serialize shared target через flock
+python3 scripts/qa/infra/run.py run --kind nats --manifest <fresh-manifest> --permit <exact-permit>
 ```
+
+Preflight — offline validation, не readiness/real PASS. Default standalone unit suite
+может исключать infrastructure marker, но acceptance missing peer/env/permit/broker,
+0 scenarios, skip/xfail/partial IDs или teardown failure — не PASS. Scenario ≤120s,
+suite ≤15min; no-skip completeness и exact selected node IDs обязательны. Не использовать
+legacy make test-infra в обход allowlist. Два infrastructure repairs суммарно,
+один targeted recheck, затем stop с failed/blocked/unchecked и причиной.
+Credentials только env/in-memory; report содержит allowlisted IDs/counts/status,
+никаких raw bytes/headers/env/DSN/exception text. Real evidence нельзя заменить mocks.
+
 ## Лучшие практики
 
 ### 1. Используйте Dependency Injection

@@ -24,7 +24,7 @@ scripts/stackctl logs app --since 5m
 scripts/stackctl doctor app
 ```
 
-`status`, `logs`, `doctor` не занимают lock и могут выполняться параллельно.
+`status`, `logs`, `doctor`, `endpoints` не занимают lock и могут выполняться параллельно.
 
 ## Mutating-команды
 
@@ -70,7 +70,9 @@ Alias `app` соответствует Compose service key `backend`. CLI сам
 - `notification-service`
 - `email-service`, `email-celery-worker`
 - `vk-service`, `vk-celery-worker`, `vk-bot`
-- `db`, `db-notifications`, `db-email`, `db-vk`
+- `yandex-service`, `ya-metrica-service`
+- `seo-service`, `seo-scheduler`, `seo-maintenance`
+- `db`, `db-notifications`, `db-email`, `db-vk`, `db-yandex`, `db-ya-metrica`, `db-seo`
 - `redis`, `nats`, `minio`
 - `site-ad` — публичный сайт объявлений (контейнер `ad-site`, порт 5100)
 - `site-ksk-inlove` — публичный сайт КСК INLOVE (контейнер `site-ksk-inlove`, порт 3000 по умолчанию)
@@ -83,6 +85,10 @@ Alias `app` соответствует Compose service key `backend`. CLI сам
 - `notification` — notification, проект `eqsitecms-notification`
 - `email` — infra + email, проект `eqsitecms-email`
 - `vk` — infra + VK, проект `eqsitecms-vk`
+- `yandex` — Яндекс API, проект `eqsitecms-yandex`
+- `ya-metrica` — API Метрики, проект `eqsitecms-ya-metrica`
+- `seo` — только API/scheduler/maintenance, проект `eqsitecms-seo`, без migration key
+- `infra` — только `db-yandex`, `db-ya-metrica`, `db-seo`, проект `eqsitecms-infra`
 - `site-ad` — сайт объявлений, проект `eqsitecms-site-ad`
 - `site-ksk-inlove` — сайт КСК INLOVE, проект `eqsitecms-site-ksk-inlove`
 
@@ -115,3 +121,55 @@ scripts/stackctl ready <alias...> [--dry-run] [--no-migrate]
 - Инфраструктурный сбой — максимум **две** repair-попытки (`doctor`, `logs`), затем infrastructure finding.
 
 **--dry-run:** план операций (rebuild, migrate) без мутаций и без lock.
+
+
+## SEO: ограниченный runtime scope
+
+```bash
+scripts/stackctl doctor seo-service
+scripts/stackctl logs seo-maintenance --since 5m
+scripts/stackctl ready seo-service seo-scheduler seo-maintenance --no-migrate --dry-run
+scripts/stackctl ready seo-service seo-scheduler seo-maintenance --no-migrate
+scripts/stackctl endpoints seo-service seo-scheduler seo-maintenance
+```
+
+`ready` для любого SEO alias **обязательно** требует `--no-migrate`.
+Без флага — exit 1 до Docker, lock и build, включая dry-run и смешанные aliases.
+Dry-run с флагом — `{ok:true,dryRun:true,plan:[{alias,profile,rebuild:true,migrate:false}]}`;
+он не занимает lock и не выполняет build/up/exec/migration даже при занятом lock.
+Миграции SEO не реализованы и не объявляются применёнными: `migrate seo` отказывает.
+
+Exact aliases используют `.docker-compose/docker-compose.seo.yml`,
+`services/seo-service/.env` и соответствующие service keys/контейнеры
+`seo-service` → `eqsitecms-seo-service`, `seo-scheduler` → `eqsitecms-seo-scheduler`,
+`seo-maintenance` → `eqsitecms-seo-maintenance`. Существующая project label сохраняется,
+даже если project нестандартный; rebuild/ready используют `up --no-deps` только выбранного key.
+`up seo` ограничен тремя runtime keys, не запускает migration и зависимости.
+
+`db-seo` non-buildable: rebuild/ready (включая mixed/dry-run) отказывают до build.
+SQL readiness всех `db-seo`, `db-yandex`, `db-ya-metrica` использует один доказанный
+runtime TCP target, immutable container ID и credentials только внутри контейнера.
+Положительная проба SELECT 1 и отрицательная с неправильным паролем обязательны:
+trust/timeout/connection/exec/SQL errors не доказывают password-auth и дают отказ.
+Raw diagnostics/credentials не выводятся и не передаются host argv. Не меняй auth/env/network.
+
+## Read-only endpoints
+
+```bash
+scripts/stackctl endpoints seo-service seo-scheduler
+```
+
+JSON: `{ok:true,services:[{alias,urls:["http://localhost:49152"],internalOnly:false},
+{alias,urls:[],internalOnly:true}]}` (alias содержит запрошенное имя).
+Это отдельная read-only команда без lock/Compose/exec: inspect получает только identity и Ports,
+не Env/logs. URL берётся только из текущего published mapping, без default портов,
+query/userinfo/секретов. Wildcard IPv4/IPv6 одного порта нормализуются в localhost;
+конкретный IP сохраняется (IPv6 в скобках). Внутренние workers получают пустой urls.
+Неизвестный alias, отсутствующий/чужой контейнер, malformed port/host/protocol,
+несколько published container ports или разные URL — exit 1, безопасный `{ok:false,error,...}`.
+Опубликованный не-HTTP worker/DB не превращается в HTTP URL. Ошибка Docker — exit 2.
+Вывод discovery не является доказательством HTTP readiness. Для нового consumer используй
+этот результат, не hardcoded defaults; legacy URLs команды ready сохранены для совместимости.
+
+Все прежние exit 0/1/2, JSON stdout, namespace allowlist и mutation flock сохраняются.
+Никаких down, удаления volumes, автомиграций SEO или изменения Compose этот scope не добавляет.

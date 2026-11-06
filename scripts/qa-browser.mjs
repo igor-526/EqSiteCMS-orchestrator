@@ -11,7 +11,8 @@
  *   node scripts/qa-browser.mjs --service=site-ksk-inlove --page=/ --checks=smoke,responsive
  */
 
-import { chromium } from 'playwright';
+import { loadPlaywright } from './qa/browser/dependencies.mjs';
+import { main as runScenarios } from './qa/run-scenarios.mjs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { resolve, join } from 'path';
@@ -35,9 +36,7 @@ const SERVICE_CONFIGS = {
     baseUrl: process.env.QA_BASE_URL || 'http://localhost:3000',
     defaultChecks: ['smoke', 'table', 'accessibility'],
     viewports: {
-      desktop: { width: 1920, height: 1080 },
-      tablet: { width: 768, height: 1024 },
-      mobile: { width: 375, height: 667 }
+      desktop: { width: 1366, height: 768 }
     }
   },
   
@@ -71,7 +70,8 @@ const SERVICE_CONFIGS = {
 // ═════════════════════════════════════════════════════════
 
 const args = process.argv.slice(2).reduce((acc, arg) => {
-  const [key, value] = arg.replace(/^--/, '').split('=');
+  const [key, ...parts] = arg.replace(/^--/, '').split('=');
+  const value = parts.join('=');
   acc[key] = value || true;
   return acc;
 }, {});
@@ -96,6 +96,25 @@ if (!SERVICE_NAME || !SERVICE_CONFIGS[SERVICE_NAME]) {
 
 const CONFIG = SERVICE_CONFIGS[SERVICE_NAME];
 const SERVICE_DIR = resolve(PROJECT_ROOT, CONFIG.dir);
+
+// CMS has one canonical desktop runner. Never start a product server implicitly.
+if (SERVICE_NAME === 'frontend') {
+  let code = 1;
+  try {
+    if (!args.scenarios || args.checks || args.page) throw new Error('cms_scenarios_required');
+    const forwarded = ['--service', 'frontend'];
+    for (const key of ['scenarios', 'auth', 'output-dir', 'base-url', 'backend-url', 'mode', 'scenario-ids', 'timeout-ms', 'max-scenarios', 'viewports']) {
+      if (args[key] !== undefined) forwarded.push(`--${key}`, String(args[key]));
+    }
+    if (!args['base-url']) forwarded.push('--base-url', CONFIG.baseUrl);
+    code = await runScenarios(forwarded);
+  } catch {
+    console.log(JSON.stringify({ ok: false, blocker: 'cms_runner_error' }));
+  }
+  process.exit(code);
+}
+const { chromium } = loadPlaywright();
+
 
 // ═════════════════════════════════════════════════════════
 // Check Definitions

@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Synthetic browser acceptance fixture</title>
+<style>
+body { margin: 16px; font: 16px Arial; background: white; color: black; }
+button, select { font: inherit; padding: 8px; } button:focus-visible { outline: 3px solid #005fcc; }
+dialog { color: black; background: white; padding: 24px; border: 2px solid black; }
+#sizing { display: none; } #toolbar { width: 500px; padding: 8px; } #error { overflow-wrap: anywhere; }
+#clip { position: relative; width: 200px; height: 50px; overflow: hidden; } #clipText { width: 100px; height: 20px; }
+#contrast, #alpha, #gradient { display: block; padding: 8px; background: white; color: black; }
+#contrast:hover { color: #111; } #contrast:focus { color: #222; } #contrast[aria-invalid=true] { color: #600; }
+#alpha { color: rgba(0,0,0,.8); background: rgba(255,255,255,.5); }
+#gradient { background: linear-gradient(white, gray); } #boundary { background: black; color: white; border: 2px solid black; }
+#scrollbox { width: 200px; height: 60px; overflow: auto; } #scrollcontent { height: 300px; } #scrolltarget { margin-top: 220px; }
+</style></head><body><main id="surface"><h1>Browser helper fixture</h1>
+<button id="open">Open wizard</button><dialog id="wizard" aria-label="Wizard"><h2>Wizard</h2>
+<button id="confirmTrigger">Confirm</button><button id="cancelWizard">Cancel wizard</button>
+<dialog id="confirm" aria-label="Confirmation" data-pending="false"><h3>Confirm</h3><button id="save">Save</button></dialog></dialog>
+<div id="sizing" aria-hidden="true"><table><tbody><tr><td>Sizing</td></tr></tbody></table></div>
+<section aria-label="Table"><button id="sort">Sort</button><label>Page size <select id="size"><option>10</option><option>20</option></select></label>
+<table id="table" data-offset="20" data-sort="none"><caption>Fixture rows</caption><thead><tr><th>Value</th></tr></thead><tbody><tr><td>Beta</td></tr></tbody></table></section>
+<div id="toolbar"><div id="error" role="alert"></div></div><div id="clip"><div id="clipText">Not clipped</div></div>
+<button id="contrast">Contrast</button><div id="alpha">Alpha text</div><div id="gradient">Unsupported gradient</div><button id="boundary">UI boundary</button>
+<div id="scrollbox" tabindex="0" aria-label="Scroll area"><div id="scrollcontent"><button id="scrolltarget">Scroll target</button></div></div>
+<div id="outside"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="></div>
+</main><script>
+const variant = '__FIXTURE_VARIANT__';
+const el = id => document.getElementById(id);
+el('error').textContent = 'LongSyntheticError'.repeat(12);
+el('open').onclick = () => el('wizard').showModal();
+el('confirmTrigger').onclick = () => { el('confirm').dataset.pending = String(variant.includes('pending')); el('confirm').showModal(); };
+el('cancelWizard').onclick = () => { el('wizard').close(); el('open').focus(); };
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || !el('confirm').open) return;
+  event.preventDefault(); event.stopPropagation();
+  if (variant.startsWith('bad')) { el('confirm').close(); el('wizard').close(); el('open').focus(); return; }
+  if (el('confirm').dataset.pending === 'true') return;
+  el('confirm').close(); el('confirmTrigger').focus();
+}, true);
+el('sort').onclick = () => setTimeout(() => {
+  const old = el('table'), table = old.cloneNode(true);
+  table.dataset.sort = 'asc'; table.dataset.offset = '0'; table.querySelector('td').textContent = 'Alpha'; old.replaceWith(table);
+}, 30);
+el('size').onchange = () => { el('table').dataset.offset = '0'; el('table').dataset.limit = el('size').value; };
+if (variant === 'geometry-bad') { el('error').style.whiteSpace = 'nowrap'; }
+if (variant === 'clipping-bad') { el('clipText').style.marginLeft = '-30px'; }
+if (variant === 'contrast-bad') { el('contrast').style.color = '#aaa'; }
+if (variant === 'image-bad') { el('contrast').style.backgroundImage = 'url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==)'; }
+if (variant === 'compositing-bad') { el('contrast').style.opacity = '.5'; }
+if (variant === 'sizing-bad') { el('sizing').style.display = 'block'; }
+</script></body></html>

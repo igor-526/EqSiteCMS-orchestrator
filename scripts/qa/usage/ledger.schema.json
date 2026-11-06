@@ -1,0 +1,824 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline execution ledger v1",
+  "type": "object",
+  "required": [
+    "changeId",
+    "eventId",
+    "eventType",
+    "invocationId",
+    "role",
+    "schemaVersion",
+    "sessionId",
+    "timestamp",
+    "unitId"
+  ],
+  "properties": {
+    "aliases": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+      }
+    },
+    "category": {
+      "enum": [
+        "model",
+        "tool",
+        "user",
+        "external-blocker"
+      ]
+    },
+    "changeId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "class": {
+      "enum": [
+        "product-blocking",
+        "nonblocking",
+        "infrastructure",
+        "unknown"
+      ]
+    },
+    "codeFingerprint": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "command": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "commandClass": {
+      "enum": [
+        "targeted",
+        "full-suite",
+        "exact",
+        "static",
+        "alias"
+      ]
+    },
+    "end": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "environmentFingerprint": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "eventType": {
+      "enum": [
+        "session-start",
+        "resume",
+        "handoff",
+        "finding",
+        "verification",
+        "wait"
+      ]
+    },
+    "evidenceOwner": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "evidencePath": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "exactAfter": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "exactBefore": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "findingId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "finishedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "invocationId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "options": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$"
+      }
+    },
+    "parentUnit": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "partialReason": {
+      "anyOf": [
+        {
+          "enum": [
+            "scope",
+            "ownership",
+            "infrastructure",
+            "other",
+            "unknown"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "previousRunId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "qgRound": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "enum": [
+            "scope",
+            "ownership",
+            "infrastructure",
+            "other",
+            "unknown",
+            "initial",
+            "independent-qg",
+            "code-changed",
+            "fixture-changed",
+            "environment-changed",
+            "tool-changed",
+            "options-changed",
+            "common-code",
+            "unknown-blast-radius",
+            "broken-gate",
+            "scoped-command-unavailable",
+            "exact-reproducer",
+            "impacted-regression",
+            "alias",
+            "missing-evidence",
+            "not-applicable"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reopened": {
+      "type": "boolean"
+    },
+    "revision": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "role": {
+      "enum": [
+        "Router",
+        "Planner",
+        "Backend",
+        "Frontend",
+        "Site Consumer",
+        "Quality Gate",
+        "unknown"
+      ]
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "scenarioId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "service": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    },
+    "sessionId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "splitFrom": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stage": {
+      "enum": [
+        "unit",
+        "final-service",
+        "owner-self-check",
+        "fix",
+        "QG",
+        "docs-only"
+      ]
+    },
+    "start": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "startedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "passed",
+        "failed",
+        "blocked",
+        "not-applicable",
+        "unchecked",
+        "done",
+        "partial"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "unitId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_./-]{0,127}$",
+      "not": {
+        "pattern": "\\.\\."
+      }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "session-start"
+          }
+        }
+      },
+      "then": {
+        "required": [],
+        "properties": {
+          "stage": false,
+          "exactBefore": false,
+          "revision": false,
+          "category": false,
+          "service": false,
+          "exactAfter": false,
+          "aliases": false,
+          "class": false,
+          "codeFingerprint": false,
+          "qgRound": false,
+          "environmentFingerprint": false,
+          "startedAt": false,
+          "reopened": false,
+          "command": false,
+          "runId": false,
+          "reason": false,
+          "finishedAt": false,
+          "evidenceOwner": false,
+          "scenarioId": false,
+          "options": false,
+          "parentUnit": false,
+          "commandClass": false,
+          "partialReason": false,
+          "evidencePath": false,
+          "end": false,
+          "findingId": false,
+          "previousRunId": false,
+          "splitFrom": false,
+          "start": false,
+          "status": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "resume"
+          }
+        }
+      },
+      "then": {
+        "required": [],
+        "properties": {
+          "stage": false,
+          "exactBefore": false,
+          "revision": false,
+          "category": false,
+          "service": false,
+          "exactAfter": false,
+          "aliases": false,
+          "class": false,
+          "codeFingerprint": false,
+          "qgRound": false,
+          "environmentFingerprint": false,
+          "startedAt": false,
+          "reopened": false,
+          "command": false,
+          "runId": false,
+          "reason": false,
+          "finishedAt": false,
+          "evidenceOwner": false,
+          "scenarioId": false,
+          "options": false,
+          "parentUnit": false,
+          "commandClass": false,
+          "partialReason": false,
+          "evidencePath": false,
+          "end": false,
+          "findingId": false,
+          "previousRunId": false,
+          "splitFrom": false,
+          "start": false,
+          "status": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "handoff"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "exactBefore": false,
+          "revision": false,
+          "category": false,
+          "service": false,
+          "exactAfter": false,
+          "aliases": false,
+          "class": false,
+          "codeFingerprint": false,
+          "environmentFingerprint": false,
+          "startedAt": false,
+          "reopened": false,
+          "command": false,
+          "runId": false,
+          "reason": false,
+          "finishedAt": false,
+          "evidenceOwner": false,
+          "scenarioId": false,
+          "options": false,
+          "commandClass": false,
+          "evidencePath": false,
+          "end": false,
+          "findingId": false,
+          "previousRunId": false,
+          "start": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "finding"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "findingId",
+          "class",
+          "reopened"
+        ],
+        "properties": {
+          "stage": false,
+          "revision": false,
+          "category": false,
+          "service": false,
+          "aliases": false,
+          "codeFingerprint": false,
+          "environmentFingerprint": false,
+          "startedAt": false,
+          "command": false,
+          "runId": false,
+          "reason": false,
+          "finishedAt": false,
+          "evidenceOwner": false,
+          "scenarioId": false,
+          "options": false,
+          "parentUnit": false,
+          "commandClass": false,
+          "partialReason": false,
+          "evidencePath": false,
+          "end": false,
+          "previousRunId": false,
+          "splitFrom": false,
+          "start": false,
+          "status": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "verification"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "aliases",
+          "codeFingerprint",
+          "command",
+          "commandClass",
+          "environmentFingerprint",
+          "evidenceOwner",
+          "evidencePath",
+          "finishedAt",
+          "options",
+          "previousRunId",
+          "reason",
+          "revision",
+          "runId",
+          "scenarioId",
+          "stage",
+          "startedAt",
+          "status"
+        ],
+        "properties": {
+          "exactBefore": false,
+          "category": false,
+          "exactAfter": false,
+          "class": false,
+          "qgRound": false,
+          "reopened": false,
+          "parentUnit": false,
+          "partialReason": false,
+          "end": false,
+          "findingId": false,
+          "splitFrom": false,
+          "start": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "wait"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "start",
+          "end",
+          "category"
+        ],
+        "properties": {
+          "stage": false,
+          "exactBefore": false,
+          "revision": false,
+          "service": false,
+          "exactAfter": false,
+          "aliases": false,
+          "class": false,
+          "codeFingerprint": false,
+          "qgRound": false,
+          "environmentFingerprint": false,
+          "startedAt": false,
+          "reopened": false,
+          "command": false,
+          "runId": false,
+          "reason": false,
+          "finishedAt": false,
+          "evidenceOwner": false,
+          "scenarioId": false,
+          "options": false,
+          "parentUnit": false,
+          "commandClass": false,
+          "partialReason": false,
+          "evidencePath": false,
+          "findingId": false,
+          "previousRunId": false,
+          "splitFrom": false,
+          "status": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "handoff"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "done",
+              "partial",
+              "passed",
+              "failed",
+              "blocked",
+              "unchecked"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "handoff"
+          },
+          "status": {
+            "const": "partial"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "partialReason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "verification"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "planned",
+              "passed",
+              "failed",
+              "blocked",
+              "not-applicable",
+              "unchecked"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "verification"
+          },
+          "commandClass": {
+            "const": "full-suite"
+          }
+        },
+        "required": [
+          "commandClass"
+        ]
+      },
+      "then": {
+        "required": [
+          "service"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "verification"
+          },
+          "status": {
+            "enum": [
+              "blocked",
+              "unchecked",
+              "not-applicable"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "verification"
+          },
+          "previousRunId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "previousRunId"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "not": {
+              "const": "initial"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -23,6 +23,7 @@
 ## Ownership и декомпозиция
 
 - Один файл, spec или tightly-coupled зона получает одного владельца. Пересекающиеся задания выполняются последовательно.
+- Ownership включает closure непосредственно зависимых tests, fixtures/conftest, wiring, migration/head fixtures, DTO snapshots, inventories/generators и outputs. Неназначенный необходимый путь сначала согласуется с Router; чужой pre-existing diff не включается автоматически.
 - Ownership отвечает на вопрос «кто имеет право менять файлы». Он **не** задаёт объём одного запуска агента — для этого есть execution unit.
 - Исполнитель читает `contextFiles` своего execution unit, меняет только назначенные пути, сразу отмечает только фактически выполненные OpenSpec tasks и возвращает Router handoff.
 
@@ -48,13 +49,13 @@ OpenSpec Change → Deliverable (ownership) → Execution Unit (одна аге�
 Один execution unit — это:
 
 - один сервис **или** один архитектурный slice (schema/storage, repository/domain, API/access control, интеграция, тесты, live verification);
-- примерно **8–12 существенных действий** (новый/переписанный файл, миграция, endpoint, интеграция; правка импорта или переименование не считаются);
+- примерно **5–12 существенных действий** (новый/переписанный файл, миграция, endpoint, интеграция; правка импорта или переименование не считаются);
 - **одна группа verification** (например `make test` в одном сервисе или один smoke-прогон);
 - один результат, который проверяется и сдаётся независимо от остальных units.
 
-Если хотя бы один критерий нарушен, unit делится **до** делегирования. Это эвристика-предохранитель, а не точная метрика.
+Бюджет — эвристика контекста, не счётчик файлов: две связанные fixtures не основание для split. Реальное превышение требует деления **до** делегирования, обнаруженное в работе — atomic partial с причиной и bounded split; героическое завершение запрещено.
 
-**Нижняя граница.** Каждый запуск агента имеет фиксированную стоимость bootstrap (system prompt, правила роли, контекст change), поэтому слишком мелкие units так же вредны, как слишком крупные:
+**Нижняя граница.** Каждый запуск агента имеет накладные расходы bootstrap (system prompt, правила роли, контекст change); их измеряют по первому запросу, не по накопленному usage сессии. Слишком мелкие units так же вредны, как слишком крупные:
 
 - не создавай unit меньше ~5 существенных действий;
 - чекпоинт, фиксация решений, отметка tasks, короткая verification и коммит своих путей — часть того unit, который выполнил работу, а не отдельный unit;
@@ -67,7 +68,7 @@ OpenSpec Change → Deliverable (ownership) → Execution Unit (одна аге�
 Агент завершает execution unit так:
 
 1. Выполняет только назначенные task IDs.
-2. Запускает verification, относящуюся **к этому unit**, а не весь набор проверок change: targeted тесты изменённых модулей, typecheck/lint. Полный test suite сервиса — один раз в последнем unit этого сервиса (Quality Gate всё равно прогонит его).
+2. Применяет [единую verification policy](agents/howto/verification-policy.md#границы-verification): targeted/scoped проверки unit, полный suite в final-service и независимо в QG, exact reproducer для fix; без повторов aliases. Docs-only — static checks. Policy задаёт invalidation evidence и canonical formatter.
 3. Отмечает в OpenSpec `tasks.md` только фактически выполненные checkbox.
 4. Возвращает Router короткий handoff **финальным сообщением** и **останавливается**. Промежуточных сообщений родителю нет (`send_message` у дочерних агентов отключён): каждое сообщение будило бы Router и стоило ему полного прочтения контекста. Блокер, требующий решения, — финальный handoff со статусом `blocked`; Router возобновит агента через `send_message`.
 
@@ -83,6 +84,10 @@ Verification: <команда → результат>
 ```
 
 Router не начинает следующий unit, не прочитав handoff предыдущего. Handoff — основной канал передачи контекста между units: следующий агент стартует со свежим контекстом и не восстанавливает состояние по diff и не перечитывает работу предыдущего.
+
+### Acceptance prerequisites и evidence owner
+
+Design связывает `riskId, scenarioId, unit, testPath/command, evidenceOwner, prerequisites, isolation, permission, budget, stopCondition, status` по [единой policy](agents/howto/verification-policy.md#ownership-closure-и-prerequisites). Один QG evidence owner на пересекающееся свойство; owner PASS не заменяет независимый QG. Missing infra/permit — blocked/unchecked с причиной; approval change не разрешает setup/teardown PG/NATS. Checkpoint units запрещены.
 
 ### Артефакты и evidence
 

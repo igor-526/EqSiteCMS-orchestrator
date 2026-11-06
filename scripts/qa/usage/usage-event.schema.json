@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Recognized terminal assistant message (other event types are ignored)",
+  "type": "object",
+  "required": ["type", "data"],
+  "properties": {
+    "type": {"const": "assistant/message"},
+    "sessionId": {"type": ["string", "null"], "minLength": 1, "maxLength": 256},
+    "eventId": {"type": ["string", "null"], "minLength": 1, "maxLength": 256},
+    "messageId": {"type": ["string", "null"], "minLength": 1, "maxLength": 256},
+    "data": {
+      "type": "object",
+      "properties": {
+        "usage": {
+          "type": ["object", "null"],
+          "properties": {
+            "totalTokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "inputTokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "outputTokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "cacheReadTokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "cacheWriteTokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "total_tokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "input_tokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "output_tokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "cache_read_tokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000},
+            "cache_write_tokens": {"type": ["integer", "null"], "minimum": 0, "maximum": 1000000000000000}
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,8 +6,6 @@
 
 Источники E1..E10, baseline и нерешённые вопросы находятся в [proposal](<../../proposal.md#source-anchors>). Это WIP ретроспективного slice; static evidence не означает runtime PASS. Общие ошибки/HTTP outcomes не переопределяются.
 
-
-
 ## Requirements
 
 ### Requirement: Инициация OAuth с tenant state
@@ -103,16 +101,15 @@
 - **THEN** границы нормализуются, total считается с тем же tenant/search без limit/offset; вне страницы items пуст, total не обнуляется
 
 ### Requirement: Удаление аккаунта и storage identity
-
-Удаление SHALL завершаться `204` без тела для валидного UUID, включая отсутствующий аккаунт, без предварительного existence lookup. Storage ограничивает уникальность пары tenant/Yandex ID для non-null tenant; физическое удаление аккаунта имеет существующий FK cascade на привязанный счётчик. Эта storage связь не специфицирует gateway/binding API (E4,E5,E6).
+Удаление аккаунта SHALL завершаться `204` без тела для валидного UUID, включая отсутствующий аккаунт. До FK cascade сервис SHALL определить связанные привязки и атомарно сохранить по конюшне запрос очистки статистик Метрики. Удаление несвязанного аккаунта MUST NOT очищать статистики другой активной привязки. Уникальность non-null пары tenant/Yandex ID сохраняется.
 
 #### Scenario: Y1-16 Повторное удаление
 - **WHEN** запрошено удаление существующего либо уже отсутствующего UUID
-- **THEN** выполняется delete по ID и возвращается пустой 204; malformed UUID следует validation clause main peer contract
+- **THEN** существующий аккаунт удаляется, связанные привязки порождают устойчивые операции очистки; повтор возвращает пустой 204 без новых операций; malformed UUID даёт 400
 
 #### Scenario: Y1-17 Конкурентное создание и cascade
 - **WHEN** две записи имеют одну non-null пару tenant/Yandex ID либо удаляется запись со связанным счётчиком
-- **THEN** DDL задаёт unique index и соответственно FK ON DELETE CASCADE; успешный конкурентный upsert/retry не гарантирован, real PostgreSQL исполнение этих outcomes в Y1 не доказано
+- **THEN** unique constraint сохраняется, FK cascade удаляет привязку только в транзакции с сохранением её tenant-контекста и запроса очистки; конкурентный DELETE счётчика не дублирует эффект
 
 ### Requirement: Транзакция завершается до успешного HTTP ответа
 
@@ -152,3 +149,20 @@ OAuth/accounts routes SHALL завершать request transaction до отпр
 - **WHEN** те же запросы несут fake Cookie/Authorization или UUID другой конюшни
 - **THEN** прочитанные тесты фиксируют отсутствие изменения прав от заголовков и проверки ownership; это не тест валидной аутентификации, а gap для S1; token route требует отдельной сверки anonymous/authenticated Y5
 
+### Requirement: Границы каскада и доступа
+Удаление аккаунта SHALL сохранять матрицу доступа ниже. Private peer write — существующее исключение для внутреннего сервиса, не публичный CMS API; network isolation остаётся production gate. Отсутствие user auth в peer MUST NOT считаться проверкой роли или ownership.
+
+#### Scenario: YA-01 Несвязанный аккаунт
+- **WHEN** конюшня удаляет аккаунт B, а её счётчик привязан через аккаунт A
+- **THEN** аккаунт B исчезает, привязка A и её статистики не меняются, очистка не создаётся
+
+#### Scenario: YA-02 Парные access tests
+- **WHEN** DELETE вызывается anonymous, с SEO-only, SEO+ADMIN, ADMIN-only, без SEO и с чужим account; прямой peer — без/с Cookie/Bearer
+- **THEN** применяются outcomes matrix; gateway изолирует tenant, peer не приобретает новых permissions от Cookie
+
+##### Access matrix
+
+| method | path | access class | roles | expected without auth | expected with auth |
+|---|---|---|---|---|---|
+| DELETE | backend `/api/yandex/accounts/{account_id}` | Protected Write | строго SEO, свой tenant | 401 | SEO 204; без SEO 403; чужой/неизвестный account 404; malformed 400 |
+| DELETE | yandex `/api/accounts/{account_id}` | Internal Trusted Network Write, exception | доверенный peer | 204, включая absent; malformed/storage failure 400 | то же, Cookie/Bearer игнорируются |

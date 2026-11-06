@@ -45,14 +45,30 @@ Quality Gate — **один** gate с одним отчётом и одним в
 
 ## Lanes
 
+Канон границ, dedup, invalidation и exact reproducer — [verification policy](howto/verification-policy.md).
+До gate Router передаёт конечный registry: `riskId, scenarioId, unit, testPath/command,
+evidenceOwner, prerequisites, isolation, permission, budget, stopCondition, status`.
+Один QG evidence owner на свойство; соседние lanes используют ссылку, не второй harness.
+Owner PASS не заменяет независимое исполнение QG на актуальной revision.
+Для harden-agent-verification-pipeline registry —
+`.qa/harden-agent-verification-pipeline/PROTOCOL-1/qg-registry.json`; matrix — design change.
+ENV проверяет prerequisites (включая разрешённую test infra), BE — INF/PG/topology,
+CONTRACTS — POL/FIX/BR/WIRE/STACK/USG; SYNTH только сводит.
+Без product UI/API diff FE-AUTO/FE-MANUAL/LIVE неприменимы; Chromium helper fixtures
+принадлежат CONTRACTS, не product manual lane. Real PG/NATS не называются API smoke.
+Конечный budget: scenario ≤120s, suite ≤15min, не более двух infrastructure repair
+attempts суммарно и одного targeted recheck тем же агентом; затем stop с unchecked IDs
+и решением Router/пользователя. Нет permit — blocked до setup/teardown, даже при Full Access.
+
+
 | Lane | Что проверяет | Применим, когда |
 |---|---|---|
-| `QG-ENV` | Docker runtime: status, rebuild изменённых сервисов, миграции, health и readiness | есть runtime/API/UI diff |
+| `QG-ENV` | Prerequisites, разрешения/изоляция test infra; для runtime status/health/readiness по scope | есть runtime/API/UI diff или обязательная real test infra |
 | `QG-BE` | backend/runtime: Clean Architecture, unit/integration тесты, миграции, access policy на коде, Celery/Redis | есть diff в Python-сервисах |
-| `QG-FE-AUTO` | frontend/automated: `npm test`, lint, `tsc --noEmit`, build, E2E тесты | есть diff в `services/frontend` или `services/site-*` |
+| `QG-FE-AUTO` | frontend/automated: один canonical test/lint/typecheck/build, без повторных aliases; E2E тесты | есть diff в `services/frontend` или `services/site-*` |
 | `QG-FE-MANUAL` | browser QA агентом: scripted Playwright, CMS — один viewport 1366×768, screenshots, console/network/axe и визуальная инспекция | есть UI/UX behavior diff |
 | `QG-CONTRACTS` | архитектура и контракты между сервисами: AsyncAPI, access matrix, ownership, Makefile-контракт, соответствие diff утверждённым specs/tasks | всегда |
-| `QG-LIVE` | live verification: SMOKE через `.agents/skills/api-smoke-test`, реальные PostgreSQL/NATS, endpoint timings | есть runtime API diff |
+| `QG-LIVE` | live verification: SMOKE через `.agents/skills/api-smoke-test`, endpoint timings (test PG/NATS относятся к BE) | есть runtime API diff |
 | `QG-FORMAT` | процедура scoped format/lint/test затронутых сервисов; отдельным агентом **не** запускается — выполняется внутри `QG-BE` / `QG-FE-AUTO` / агента `QG-LITE` | есть diff в коде или Makefile/tooling |
 | `QG-SYNTH` | synthesis: сведение findings, единый вердикт, отчёт `docs/reports/<change>.md` | всегда (в `QG-DOCS`/`QG-LITE` — последний агент gate) |
 
@@ -167,6 +183,10 @@ SMOKE-тесты обязательны в lane `QG-LIVE` для каждого 
 - [ ] Нет набивки однотипными happy-path проверками ради количества
 - [ ] Сервисы протестированы с `AsyncMock` для `IRepository`
 - [ ] Coverage не упал (если настроен threshold)
+- [ ] По риску DTO/envelope: production serialize→parse/handler в отдельных lockfile env, invalid-before-storage; реальный broker не подменяется spy
+- [ ] Recovery/rollback: persisted attempts/error_code проверены новой независимой session; lease/concurrency — двумя sessions с bounded synchronization
+- [ ] Startup topology: compatible/incompatible existing config и canonical replay headers, reject без silent repair; отдельный permit/isolated target
+- [ ] Config/time/lifecycle diff: constructor kwargs/config boundary, task_expires, midnight внутри long batch; bounded waits/cleanup без повышения workers ради зелёного теста
 - [ ] При runtime API diff: SMOKE-тесты запущены через `.agents/skills/api-smoke-test` после прочтения `SKILL.md`, в результатах указано время каждого эндпоинта
 - [ ] Approve невозможен без успешных unit-тестов затронутых сервисов и (при runtime API diff) SMOKE с endpoint timings
 
@@ -204,16 +224,21 @@ Approve невозможен, если CMS frontend behavior diff не соде�
 
 ### Required commands
 
-Для CMS frontend behavior diff Quality Gate обязан проверить успешный запуск из `services/frontend`:
-
-```bash
-npm test
-npm run lint
-npx tsc --noEmit
-npm run build
-```
+Для CMS frontend behavior diff QG независимо запускает один full suite на revision:
+`make test`, `make lint`, `npm run build` в `services/frontend`, canonical non-mutating
+format-check по конфигурации. Сначала сверь Makefile/package.json: эквивалентные
+`npm test`/`npm run lint` не повторять; `npx tsc --noEmit` запускать только если
+он не включён в lint. Effective commands и aliases фиксируются в ledger по policy.
 
 Если diff documentation-only и не затрагивает runtime frontend behavior, report должен явно зафиксировать non-behavior основание и применимые documentation checks.
+
+### Owner self-check до QG
+
+Owner передаёт конечные scenario IDs выбранных по diff keyboard/focus/contrast/scroll/
+geometry механизмов и report `--mode self-check`. Это не полный browser gate и не
+замена независимому QG. Fix требует exact исходный FAIL→PASS в эквивалентной среде,
+включая Space → Escape, оба слоя/pending/focus return, затем impacted regression;
+уже зелёный before — unreproduced/blocked closure, не искусственный FAIL.
 
 ### Required self-checks
 
@@ -262,9 +287,8 @@ Quality Gate обязан ставить `REWORK`, если:
 ```
 Unit: QG-FE-AUTO | Профиль: Quality Gate | Статус: done / rework
 Verification:
-  - npm test: <результат>
-  - npm run lint: <результат>
-  - tsc --noEmit: <результат>
+  - canonical test: <команда, результат; npm alias не повторён>
+  - canonical lint/typecheck: <команда, результат; tsc отдельно только если не включён>
   - npm run build: <результат>
   - E2E: <результат | неприменимо с причиной>
 Findings: <список проблем или "нет">
@@ -325,7 +349,7 @@ AsyncAPI-спека должна соответствовать реальном
 - [ ] Dockerfile включает `workers/` в сборку
 ## Формат отчёта — lane `QG-SYNTH`
 
-Отчёт создаёт только `QG-SYNTH`, один файл на change. Остальные lanes возвращают Router handoff и findings, но файлов не создают.
+Отчёт создаёт только `QG-SYNTH`, один файл на change. Остальные lanes возвращают Router handoff и findings; evidence/ledger пишут только в `.qa/<change>/<lane>/`.
 
 Сохрани результат в `docs/reports/<change>.md` (для задачи без change — `docs/reports/<TICKET-ID>-review.md`). Для отчёта после разработки используй `docs/reports/TEMPLATE.md`.
 
@@ -337,6 +361,7 @@ AsyncAPI-спека должна соответствовать реальном
 - разделы `Pre-existing` (с предложением задачи в `docs/tasks`) и `Waivers` (цитата решения пользователя), если есть;
 - для `QG-ENV`: status/rebuild/migrations/health evidence и число repair attempts;
 - для `QG-FE-MANUAL`: сценарии (viewport 1366×768), пути к report/screenshots/traces, console/network/axe evidence и результат визуальной инспекции агентом;
+- registry с единственным evidenceOwner, code/environment fingerprints/options, reason/previousRunId повторов, passed/failed/blocked/unchecked и причинами gaps; ссылки соседних lanes вместо duplicate suites;
 - трассировку покрытия: ID из `## Test matrix` → фактический тест/smoke-сценарий, с перечислением непокрытых ID;
 - ссылку на OpenSpec change, proposal/specs/tasks и approval;
 - ссылку на задачу, если она была передана как md-файл;
@@ -344,7 +369,7 @@ AsyncAPI-спека должна соответствовать реальном
 - список изменённых файлов от корня монорепозитория (для `shipctl plan`);
 - ветку по конвенции из `design.md`, если она задана;
 - результаты unit/integration тестов;
-- раздел `Frontend test gate`, если diff затрагивает `services/frontend`, с командами `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`, количеством tests, self-check results, test quality review и access verification;
+- раздел `Frontend test gate`, если diff затрагивает `services/frontend`, с effective canonical test/lint/typecheck, aliases и `npm run build`, количеством tests, self-check results, test quality review и access verification;
 - результаты SMOKE-тестов с временем работы каждого эндпоинта;
 - раздел `Access verification results` (anonymous/public checks + authenticated/protected checks + исключения).
 
@@ -441,27 +466,27 @@ Findings оформляются как **новые execution units** с про�
 ### Scope
 
 - Сервисы = директории `services/<svc>` и корневой tooling, в которых есть файлы change (по handoff'ам units / path-scoped diff).
-- Корневые цели (`make format/lint/test` из корня) запускаются только если change меняет корневой `Makefile` или корневой tooling, и тогда их падения в незатронутых сервисах классифицируются как `pre-existing`.
+- Root tooling проверяет назначенный CONTRACTS через собственные scoped suites. Изменение helper не запускает aggregate четырёх core сервисов. Root aggregate применим только при изменении самого aggregate контракта; unrelated failures — pre-existing.
 
 ### Рабочее дерево
 
 - Проверка выполняется **в текущем рабочем дереве**. Чистый worktree не требуется: посторонние dirty-файлы пользователя — не finding.
 - Запрещено: изолированные копии репозитория, `git stash`, `git restore`/`checkout` чужих файлов, коммиты ради проверки, установка зависимостей во все сервисы.
-- Перед `make format` сними снимок `git status --porcelain` затронутых репозиториев; после — сравни. Значим только diff **в путях change**.
+- QG не выполняет mutating format и не меняет чужие пути. Снимок status и path-scoped diff сохраняет baseline; canonical check берётся из Makefile/config сервиса.
 
 ### Процедура (для каждого затронутого сервиса)
 
 ```bash
-make -C services/<svc> format
+# canonical non-mutating format-check на paths change по Makefile/config
 make -C services/<svc> lint
 make -C services/<svc> test
 ```
 
-Независимые сервисы можно прогонять параллельно (несколько `bash` в одном сообщении).
+Каждая effective команда — один раз независимо в QG, не повтор aliases. Drift, ломающий canonical gate, возвращается владельцу на один scoped repair; unknown blast radius/full-suite repeat требует reason в ledger. Независимые сервисы можно прогонять параллельно (несколько `bash` в одном сообщении).
 
 **PASS:**
 
-- `format` не изменил файлы change (или изменил только whitespace/imports — тогда агент оставляет форматирование на месте и отмечает это как `minor`, без REWORK);
+- canonical format-check зелёный; whitespace/import ordering без смены смысла — minor, без отдельного fix/recheck; второй formatter Black↔Ruff не добавляется;
 - `lint` вернул exit 0 (warnings — `minor`);
 - `test` зелёный, либо все падения классифицированы как `pre-existing`.
 

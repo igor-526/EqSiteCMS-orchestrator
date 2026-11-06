@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "eqsite-qa-infra-manifest-v1",
+  "description": "Structural schema; contracts.validate additionally enforces expiry, exact binding, resource/run prefix, command allowlist and credential endpoint binding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "change",
+    "runId",
+    "kind",
+    "target",
+    "resource",
+    "service",
+    "nodeIds",
+    "timeout",
+    "cleanupTimeout",
+    "cleanup"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "change": {
+      "const": "harden-agent-verification-pipeline"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "kind": {
+      "enum": [
+        "pg",
+        "nats"
+      ]
+    },
+    "target": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "host",
+            "port",
+            "isolation",
+            "database",
+            "role"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "isolation": {
+              "const": "dedicated-test-db-role"
+            },
+            "database": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*_test$"
+            },
+            "role": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*_test$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "host",
+            "port",
+            "isolation"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "isolation": {
+              "const": "dedicated-test-broker"
+            }
+          }
+        }
+      ]
+    },
+    "resource": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema"
+          ],
+          "properties": {
+            "schema": {
+              "type": "string",
+              "pattern": "^qa_[0-9a-f]{32}_[0-9a-f]{12}$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "stream",
+            "durable",
+            "subject"
+          ],
+          "properties": {
+            "stream": {
+              "type": "string"
+            },
+            "durable": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "service": {
+      "enum": [
+        "seo-service",
+        "ya-metrica-service"
+      ]
+    },
+    "nodeIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 40,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 900
+    },
+    "cleanupTimeout": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    },
+    "cleanup": {
+      "const": true
+    }
+  }
+}

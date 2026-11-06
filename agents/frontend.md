@@ -524,26 +524,20 @@ Access tests для Protected Admin UI обязательны, когда behavi
 
 ### 13.2. Обязательные команды
 
-В `services/frontend/Makefile` обязательны `.PHONY` цели `test`, `lint`, `format`.
-Перед передачей CMS frontend diff на Quality Gate выполни из `services/frontend`:
+Канонический контракт — [единая verification policy](howto/verification-policy.md#границы-verification). В `services/frontend/Makefile` сохраняются цели `test`, `lint`, `format`.
 
-```bash
-make format
-make test
-make lint
-```
-
-`make test` запускает unit/component suite с mocks/jsdom и не должен требовать
-live backend, Docker или установку зависимостей. `make lint` остаётся non-mutating
-полным ESLint/typecheck gate, `make format` делегирует существующему ESLint `--fix`.
-Для CMS frontend behavior diff также сохраняются обязательные `npm run build` и test-quality/access
-проверки этого раздела.
-
-Если diff documentation-only и не затрагивает runtime `services/frontend`, эти команды можно не запускать, но completion report должен явно указать, что runtime tests/checks не применимы.
+- Промежуточный unit: targeted tests и scoped non-mutating ESLint/typecheck/format-check по изменённым paths и зависимым fixtures.
+- Финальный unit CMS frontend: `make test`, `make lint`, canonical format/check и `npm run build`; `make format` (ESLint `--fix`) — подготовка владельца перед evidence.
+- `make test` — unit/component mocks/jsdom без live backend; `make lint` — полный non-mutating ESLint/typecheck gate. Не повторять `npm test` после `make test`, `npm run lint`/`npx tsc --noEmit` после включающего их gate: сверить Makefile/config, записать aliases вместо дубликата run.
+- Documentation-only вне runtime: static checks, product suites/build не применимы с объяснением.
 
 ## 14. Self-check
 
-Перед передачей на Quality Gate выполни применимые проверки. Для документационных правок по агентским инструкциям достаточно checks по измененным markdown-файлам.
+Перед первым QG выполни scoped browser self-check выбранных по diff механизмов: controls — keyboard/contrast, modals — focus/keyboard/scroll, tables — geometry/overflow по риску. Chromium 1366×768; передай конечные scenario IDs и evidencePath, неприменимое объясни. Это не весь browser gate и не замена независимого QG.
+
+Fix требует [exact reproducer](howto/verification-policy.md#exact-reproducer-для-fix): Space → Escape внутри nested wizard с состоянием обоих слоёв/pending/focus return, если finding об этом, а не общий Escape test. До/после — безопасные reproducer JSON; unreproduced FAIL означает blocked closure, не искусственный FAIL. Затем impacted regression и один QG recheck.
+
+Ниже — каталог статических поисков: ограничивай paths своим diff/closure, полный scan не является обязательным каждым unit. Для документационных правок достаточно checks изменённых markdown-файлов.
 
 | Проверка | Команда | Что ловит |
 |---|---|---|
@@ -555,19 +549,9 @@ live backend, Docker или установку зависимостей. `make l
 | Локальные DTO/domain types | `rg -n "type .*Dto|interface .*Dto|type .*Query|interface .*Query" services/frontend/src -g '*.{ts,tsx}'` | DTO/query/filter типы вне `src/types` |
 | Scope registry | `rg -n "SCOPES_ACTIONS|ScopesRegistry|hasPermission|KNOWN_USER_SCOPES" services/frontend/src/features services/frontend/src/contexts` | Наличие прав для feature actions |
 | Page orchestration | `rg -n "useState|useEffect|useMemo|useCallback|from ['\\\"]@/api|from ['\\\"]@/features/.*/services" services/frontend/src/app -g 'page.tsx'` | Рост логики в `page.tsx` |
-| Markdown diff | `git diff --check -- agents/planner.md agents/frontend.md agents/quality_gate.md docs/plans/frontend_testing_mandatory_agents_26_05_11.md` | Whitespace/errors в документационных правках |
+| Markdown diff | `git diff --check -- agents/frontend.md` | Whitespace/errors в документационных правках |
 
-Обязательные проектные команды для CMS frontend behavior diff:
-
-```bash
-cd services/frontend
-npm test
-npm run lint
-npx tsc --noEmit
-npm run build
-```
-
-Если изменение не затрагивает runtime frontend-код, явно укажи, что lint/typecheck/build не запускались как не применимые к documentation-only diff.
+Проверки запускаются по stage §13.2 и [единой policy](howto/verification-policy.md#evidence-invalidation-и-dedup), без повторов Make/npm aliases. При отсутствии scoped команды — нативный вызов на своих paths; full fallback требует ledger reason `scoped-command-unavailable`. Новый diff инвалидирует impacted evidence, не все независимые сервисы.
 
 ---
 
@@ -645,7 +629,7 @@ npm run build
 0. Убедись, что закрываешь **именно назначенный execution unit**, а не расширенный scope.
 1. Проверь, что изменены только назначенные OpenSpec task и файлы/specs твоего ownership.
 2. Проверь access/scopes последствия: Protected Admin CMS, Protected Write mutations, auth exception, отсутствие смешения с `site-*`.
-3. Запусти применимые self-check/test команды: для CMS frontend behavior diff обязательны `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`; для documentation-only diff явно объясни, почему runtime checks не применимы.
+3. Выполни stage checks по §13.2 и scoped browser selection по §14; final-service gate обязателен, aliases не дублируй. Для documentation-only объясни неприменимость runtime checks.
 4. Укажи test gaps и инфраструктурные ограничения, если они есть.
 5. Укажи добавленные/обновленные tests, `rg` self-checks, access/scopes результат и готовность к единому общему Quality Gate.
 6. Отметь только выполненные тобой checkbox в OpenSpec `tasks.md`; перечисли их Router в отчёте.
@@ -657,7 +641,7 @@ npm run build
 Unit: <ID> — <название> | Профиль: Frontend | Статус: done / partial / blocked
 Задача: <краткое описание>
 Изменены файлы: <список>
-Verification: npm test → <результат>; npm run lint → <результат>; npx tsc --noEmit → <результат>; npm run build → <результат>
+Verification: <stage; scenario IDs; фактические команды → результат; evidencePath; неприменимое с причиной>
 Тесты: <ID из test matrix>
 Access/scopes: <что проверено, исключения>
 Отмеченные tasks: <IDs>
