@@ -6,7 +6,11 @@
 
 ### Requirement: Единственный тип ошибки на границе клиента
 
-`YandexOAuthClient` и `YaMetricaServiceClient` в yandex-service, а также `YandexMetricaClient` в ya-metrica-service SHALL при любой обычной неудаче выполнения запроса или обработки его ответа выбрасывать локальный `core.exceptions.yandex.YandexClientException`, а не HTTP/framework/domain исключение. Контракт распространяется на `make_request` и высокоуровневые методы, включая DTO validation. Клиент SHALL сохранять исходную причину через chaining и закрывать HTTP client. Повторный `YandexClientException` MUST NOT оборачиваться повторно. Отмена задачи и системные `BaseException` SHALL распространяться без превращения в интеграционную ошибку; клиент MUST NOT перехватывать `BaseException`.
+Клиенты Яндекс и Метрики SHALL выдавать только локальный `YandexClientException` при обычных отказах запроса и обработки ответа, включая DTO validation, сохраняя причину и закрывая HTTP client. Повторная обёртка и перехват `BaseException` MUST NOT выполняться; отмена и системные исключения распространяются без преобразования.
+
+#### Scenario: Единая граница ошибок всех клиентских методов
+- **WHEN** любой из клиентов выполняет `make_request` или высокоуровневый метод и обрабатывает ответ
+- **THEN** `YandexOAuthClient` и `YaMetricaServiceClient` в yandex-service, а также `YandexMetricaClient` в ya-metrica-service SHALL при любой обычной неудаче выполнения запроса или обработки его ответа выбрасывать локальный `core.exceptions.yandex.YandexClientException`, а не HTTP/framework/domain исключение. Контракт распространяется на `make_request` и высокоуровневые методы, включая DTO validation. Клиент SHALL сохранять исходную причину через chaining и закрывать HTTP client. Повторный `YandexClientException` MUST NOT оборачиваться повторно. Отмена задачи и системные `BaseException` SHALL распространяться без превращения в интеграционную ошибку; клиент MUST NOT перехватывать `BaseException`.
 
 #### Scenario: Успешный запрос
 - **WHEN** upstream возвращает 2xx с корректными JSON и схемой ожидаемого метода
@@ -30,7 +34,11 @@
 
 ### Requirement: Локальные исключения и безопасная диагностика
 
-Оба сервиса SHALL использовать собственный уже существующий класс `YandexClientException`; cross-service Python import и новая общая runtime-библиотека MUST NOT вводиться. Поле `status` конструктора SHALL допускать отсутствие HTTP-ответа (`None`), сохраняя совместимость существующих вызовов с числом и `.message`. Никакой фиктивный upstream HTTP status для timeout SHALL не создаваться. Тексты исключения, HTTP payload, stdout и контролируемые приложением логи MUST NOT содержать code, client_secret, access/refresh token, Authorization, полный URL с токеном, полный upstream body или персональные данные.
+Оба сервиса SHALL сохранять собственные совместимые `YandexClientException`, отсутствие HTTP status при отсутствии ответа и безопасную диагностику без секретов и персональных данных. Cross-service Python import, новая общая runtime-библиотека и фиктивный upstream status MUST NOT вводиться.
+
+#### Scenario: Совместимость локальных исключений и полный запрет утечек
+- **WHEN** любой сервис создаёт клиентское исключение или выводит связанную диагностику
+- **THEN** Оба сервиса SHALL использовать собственный уже существующий класс `YandexClientException`; cross-service Python import и новая общая runtime-библиотека MUST NOT вводиться. Поле `status` конструктора SHALL допускать отсутствие HTTP-ответа (`None`), сохраняя совместимость существующих вызовов с числом и `.message`. Никакой фиктивный upstream HTTP status для timeout SHALL не создаваться. Тексты исключения, HTTP payload, stdout и контролируемые приложением логи MUST NOT содержать code, client_secret, access/refresh token, Authorization, полный URL с токеном, полный upstream body или персональные данные.
 
 #### Scenario: Ответ не получен
 - **WHEN** возникает timeout до получения HTTP-ответа
@@ -54,7 +62,11 @@ OAuth service SHALL ловить `YandexClientException` отдельно при
 
 ### Requirement: Валидация ответа Метрики с сохранением частичного списка
 
-`YandexMetricaClient.get_counters` SHALL проверять top-level структуру upstream `rows/counters`, сохраняя wire-compatible dict-контракт Protocol и успешное преобразование числовых строк. Отсутствующий/null/нечисловой `rows`, отсутствующий или не-list `counters` SHALL считаться неудачей всего вызова с `YandexClientException`. Некорректный отдельный счётчик (не-object элемент, некорректные `id/site`) MUST NOT превращать весь клиентский вызов в отказ: существующее пропускание таких элементов и частичный список корректных элементов SHALL сохраняться. Обработка элементов MUST NOT выпускать наружу raw TypeError/ValueError. Конвертация в прежний API DTO `total/items` остаётся в сервисе; существующая семантика `total` и пустого результата, в том числе после пропуска элементов, SHALL сохраняться без новых правил пересчёта или отказа. Общее требование об ошибках схемы относится к непригодному целиком ответу/DTO, а не к допускаемому пропуску отдельного счётчика.
+`YandexMetricaClient.get_counters` SHALL проверять top-level ответ, сохраняя wire-compatible dict-контракт, числовые строки и пропуск отдельных некорректных счётчиков без raw TypeError/ValueError. Непригодный целиком ответ SHALL завершаться `YandexClientException`; сервис сохраняет прежние `total/items` и семантику пустого результата без новых правил пересчёта или отказа.
+
+#### Scenario: Полный контракт структуры Метрики и частичного результата
+- **WHEN** `YandexMetricaClient.get_counters` получает upstream ответ и сервис преобразует результат
+- **THEN** `YandexMetricaClient.get_counters` SHALL проверять top-level структуру upstream `rows/counters`, сохраняя wire-compatible dict-контракт Protocol и успешное преобразование числовых строк. Отсутствующий/null/нечисловой `rows`, отсутствующий или не-list `counters` SHALL считаться неудачей всего вызова с `YandexClientException`. Некорректный отдельный счётчик (не-object элемент, некорректные `id/site`) MUST NOT превращать весь клиентский вызов в отказ: существующее пропускание таких элементов и частичный список корректных элементов SHALL сохраняться. Обработка элементов MUST NOT выпускать наружу raw TypeError/ValueError. Конвертация в прежний API DTO `total/items` остаётся в сервисе; существующая семантика `total` и пустого результата, в том числе после пропуска элементов, SHALL сохраняться без новых правил пересчёта или отказа. Общее требование об ошибках схемы относится к непригодному целиком ответу/DTO, а не к допускаемому пропуску отдельного счётчика.
 
 #### Scenario: Некорректный отдельный счётчик
 - **WHEN** top-level ответ валиден, но среди корректных счётчиков есть повреждённый элемент

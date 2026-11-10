@@ -20,7 +20,7 @@
 - **THEN** выводится отдельное SSR error state с ссылкой повторить запрос и noindex, ошибка не представляется пустым архивом или успешной cached выдачей чужого tenant
 
 ### Requirement: Отдельная серверная деталь новости
-`/novosti/[slug]` MUST получать `/api/news/by-slug/{slug}` с tenant selector без CMS credentials и рендерить название, дату, фотографии, полный безопасный content, ссылку на архив. `generateMetadata` MUST формировать title из новости, description из snippet/безопасного текста и canonical с точным slug; metadata/page используют согласованные данные одного запроса. `404` upstream MUST приводить к настоящему route 404; 401/5xx/timeout — к error state с noindex, без ложного 404. Неизвестные маршруты остаются 404.
+Маршрут `/novosti/[slug]` MUST серверно выводить безопасную полную новость с согласованными metadata. Lookup с tenant selector без CMS credentials, состав страницы, canonical и различение 404 и технических сбоев MUST соответствовать сценарию «Получение и серверный контракт детали новости».
 
 #### Scenario: Прямой вход в опубликованную новость
 - **WHEN** crawler без JavaScript открывает ссылку опубликованной новости
@@ -33,6 +33,10 @@
 #### Scenario: Сбой backend
 - **WHEN** lookup возвращает 401/5xx либо timeout
 - **THEN** страница показывает техническое состояние с повторным переходом и noindex; content другой новости не используется
+
+#### Scenario: Получение и серверный контракт детали новости
+- **WHEN** сервер обрабатывает прямой запрос к `/novosti/[slug]`
+- **THEN** `/novosti/[slug]` MUST получать `/api/news/by-slug/{slug}` с tenant selector без CMS credentials и рендерить название, дату, фотографии, полный безопасный content, ссылку на архив. `generateMetadata` MUST формировать title из новости, description из snippet/безопасного текста и canonical с точным slug; metadata/page используют согласованные данные одного запроса. `404` upstream MUST приводить к настоящему route 404; 401/5xx/timeout — к error state с noindex, без ложного 404. Неизвестные маршруты остаются 404.
 
 ### Requirement: Три демонстрационные новости INLOVE
 В рамках промежуточной заметки 070 реальная БД tenant INLOVE MUST содержать три идентифицируемые опубликованные mock новости с полным редакционным текстом и стабильными slug. Повторное применение seed SHALL обновлять только свои записи без создания дублей и без удаления существующих новостей. Записи MUST читаться через существующие Public Read API и SSR archive/detail, без mock-only browser transport.

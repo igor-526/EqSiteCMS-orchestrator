@@ -7,7 +7,12 @@
 
 ### Requirement: Сервис vk-service создаётся копированием email-service
 
-Каталог `services/vk-service` SHALL создаваться копированием `services/email-service` без `.git`, `.venv`, `.env`, `.mypy_cache`, `.ruff_cache` и `.pytest_cache`. Копия MUST сохранять переиспользуемый каркас: `Dockerfile`, `.dockerignore`, `.flake8`, `.gitignore`, `.python-version`, `.vscode/settings.json`, `Makefile`, `scripts/check-format-excludes.sh`, `pyproject.toml`, `uv.lock`, `.env.example`, `docker-compose.yaml`, `.github/workflows/check_and_deploy.yml`, `.helm/**`, а в `src/` — `main.py`, `settings.py`, `alembic.ini`, `migration/env.py`, `migration/script.py.mako`, `migration/versions/20260710_0001_initial.py`, `containers/`, `core/entities/base.py`, `core/exceptions/`, `core/schemas/base.py`, `core/schemas/messaging/base_event_data.py`, `clients/nats/client.py`, `clients/main_backend/client.py`, `depends/`, `utils/**`, `workers/celery_app.py`, `workers/tasks/integration_probe.py`. Каталоги `.helm/**` и `.github/**` MUST копироваться побайтово и MUST NOT редактироваться. Внутри `services/vk-service` MUST выполняться `git init` без настройки remote. Исходный `services/email-service` MUST оставаться неизменным.
+Каталог `services/vk-service` SHALL создаваться копированием `services/email-service` с исключением служебных данных и сохранением каркаса по сценарию. `.helm/**` и `.github/**` MUST копироваться побайтово без редактирования; локальный git создаётся без remote, источник остаётся неизменным.
+
+#### Scenario: Точный состав копии и ограничения создания
+
+- **WHEN** проверяется создание копии `services/vk-service` из `services/email-service`
+- **THEN** Каталог `services/vk-service` SHALL создаваться копированием `services/email-service` без `.git`, `.venv`, `.env`, `.mypy_cache`, `.ruff_cache` и `.pytest_cache`. Копия MUST сохранять переиспользуемый каркас: `Dockerfile`, `.dockerignore`, `.flake8`, `.gitignore`, `.python-version`, `.vscode/settings.json`, `Makefile`, `scripts/check-format-excludes.sh`, `pyproject.toml`, `uv.lock`, `.env.example`, `docker-compose.yaml`, `.github/workflows/check_and_deploy.yml`, `.helm/**`, а в `src/` — `main.py`, `settings.py`, `alembic.ini`, `migration/env.py`, `migration/script.py.mako`, `migration/versions/20260710_0001_initial.py`, `containers/`, `core/entities/base.py`, `core/exceptions/`, `core/schemas/base.py`, `core/schemas/messaging/base_event_data.py`, `clients/nats/client.py`, `clients/main_backend/client.py`, `depends/`, `utils/**`, `workers/celery_app.py`, `workers/tasks/integration_probe.py`. Каталоги `.helm/**` и `.github/**` MUST копироваться побайтово и MUST NOT редактироваться. Внутри `services/vk-service` MUST выполняться `git init` без настройки remote. Исходный `services/email-service` MUST оставаться неизменным.
 
 #### Scenario: Скелет создан и не затронул источник
 
@@ -28,7 +33,12 @@
 
 ### Requirement: Email-специфичный код полностью удалён
 
-Скелет `vk-service` MUST NOT содержать email-логику. Удалению подлежат: пакет `src/api/` целиком, `src/infrastructure/`, `src/core/services/{email_confirmation,email_processing,user_email,notification_command_send_email}.py`, `src/core/protocols/{email_publisher,email_sender}.py`, `src/core/protocols/messaging/handlers/notification_command_send_email.py`, `src/core/schemas/messaging/notification_command_send_email.py`, `src/models/{email_confirmation,email_log,user_email}.py`, `src/repositories/{email_confirmation,email_log,user_email,protocols}.py`, `src/migration/versions/{20260710_0002_add_email_logs,20260814_0003_add_user_emails_and_confirmations}.py`, `src/clients/nats/consumers/notification_commands_send_email.py`, `src/clients/nats/handlers/notification_commands_send_email.py`, `src/workers/tasks/{email,confirmation}.py`, а также тесты `tests/api/test_emails.py`, `tests/models/**`, `tests/services/**`, `tests/integration/test_email_log_concurrency.py`, `tests/clients/nats/test_notification_commands_send_email_consumer.py`. Пакеты `src/models`, `src/repositories`, `src/core/services`, `src/clients/nats/consumers`, `src/clients/nats/handlers`, `src/core/protocols/messaging/handlers`, `src/workers/tasks` SHALL сохраняться как точки расширения с пустым `__all__` и без неиспользуемых импортов. Guard-проверка на остатки email-домена SHALL применяться только к реализации — `src/`, `pyproject.toml`, `.env.example` — и MUST NOT распространяться на `tests/**`, `README.md`, `.helm/**`, `.github/**` и `uv.lock`.
+Скелет `vk-service` MUST NOT содержать email-логику. Email-модули и тесты MUST быть удалены, пакеты-точки расширения сохранены с пустым `__all__` без неиспользуемых импортов. Guard SHALL проверять только реализацию; точные пути и исключения определены сценарием.
+
+#### Scenario: Полный перечень удалений и границы guard
+
+- **WHEN** проверяется удаление email-домена из скелета `vk-service`
+- **THEN** Скелет `vk-service` MUST NOT содержать email-логику. Удалению подлежат: пакет `src/api/` целиком, `src/infrastructure/`, `src/core/services/{email_confirmation,email_processing,user_email,notification_command_send_email}.py`, `src/core/protocols/{email_publisher,email_sender}.py`, `src/core/protocols/messaging/handlers/notification_command_send_email.py`, `src/core/schemas/messaging/notification_command_send_email.py`, `src/models/{email_confirmation,email_log,user_email}.py`, `src/repositories/{email_confirmation,email_log,user_email,protocols}.py`, `src/migration/versions/{20260710_0002_add_email_logs,20260814_0003_add_user_emails_and_confirmations}.py`, `src/clients/nats/consumers/notification_commands_send_email.py`, `src/clients/nats/handlers/notification_commands_send_email.py`, `src/workers/tasks/{email,confirmation}.py`, а также тесты `tests/api/test_emails.py`, `tests/models/**`, `tests/services/**`, `tests/integration/test_email_log_concurrency.py`, `tests/clients/nats/test_notification_commands_send_email_consumer.py`. Пакеты `src/models`, `src/repositories`, `src/core/services`, `src/clients/nats/consumers`, `src/clients/nats/handlers`, `src/core/protocols/messaging/handlers`, `src/workers/tasks` SHALL сохраняться как точки расширения с пустым `__all__` и без неиспользуемых импортов. Guard-проверка на остатки email-домена SHALL применяться только к реализации — `src/`, `pyproject.toml`, `.env.example` — и MUST NOT распространяться на `tests/**`, `README.md`, `.helm/**`, `.github/**` и `uv.lock`.
 
 #### Scenario: Текстовый поиск email не находит совпадений в реализации
 
@@ -49,7 +59,12 @@
 
 ### Requirement: Запрещённые токены в тестах и документации пишутся обычными литералами
 
-Тесты `services/vk-service/tests/**` и документация `services/vk-service/README.md` SHALL называть email-сущности (`email`, `smtp`, `aiosmtplib`, пути `/emails*`, имена `SMTPSettings`, `smtp_settings`) **обычными строковыми литералами**. Склейка токенов из фрагментов (`"e" + "mail"`, `"smt" + "p"`, `"aio" + "smt" + "p" + "lib"`), кодирование, форматирование через f-string из частей и любые иные приёмы обхода guard-проверки MUST быть запрещены. Причина: guard ограничен реализацией, поэтому обфускация в тестах и документации не требуется, ломает grep-ability и маскирует проверку вместо её выполнения. Тесты MUST оставаться читаемыми и находимыми поиском по имени проверяемой сущности, включая самосканирующий тест, который использует искомые токены как данные.
+Тесты `services/vk-service/tests/**` и `services/vk-service/README.md` SHALL называть email-сущности обычными строковыми литералами без обфускации и обхода guard. Тесты MUST оставаться читаемыми и находимыми по имени сущности, включая самосканирующий тест; формы записи и причина определены сценарием.
+
+#### Scenario: Прямые литералы и запрет способов обхода guard
+
+- **WHEN** проверяется запись email-сущностей в тестах и README
+- **THEN** Тесты `services/vk-service/tests/**` и документация `services/vk-service/README.md` SHALL называть email-сущности (`email`, `smtp`, `aiosmtplib`, пути `/emails*`, имена `SMTPSettings`, `smtp_settings`) **обычными строковыми литералами**. Склейка токенов из фрагментов (`"e" + "mail"`, `"smt" + "p"`, `"aio" + "smt" + "p" + "lib"`), кодирование, форматирование через f-string из частей и любые иные приёмы обхода guard-проверки MUST быть запрещены. Причина: guard ограничен реализацией, поэтому обфускация в тестах и документации не требуется, ломает grep-ability и маскирует проверку вместо её выполнения. Тесты MUST оставаться читаемыми и находимыми поиском по имени проверяемой сущности, включая самосканирующий тест, который использует искомые токены как данные.
 
 #### Scenario: Тесты называют отсутствующие endpoints напрямую
 
@@ -69,7 +84,12 @@
 
 ### Requirement: Идентичность и зависимости сервиса приведены к VK
 
-`services/vk-service/pyproject.toml` MUST объявлять `[project].name = "vk-service"` и описание VK-сервиса, MUST NOT содержать `aiosmtplib` и MUST использовать `pydantic` без extra `email`. `pyproject.toml` MUST объявлять зависимость `vkbottle` (`>=4.11,<5`), `aiohttp>=3.14.3` и `pydantic>=2.13.4` согласно spec `vk-bot-longpolling`. `uv.lock` MUST быть пересобран так, чтобы `uv sync --locked` завершался успешно. `known-first-party` в конфигурации isort MUST отражать фактические пакеты сервиса, включая новые пакеты `api` и `bot`.
+Идентичность проекта, зависимости и `known-first-party` в `services/vk-service/pyproject.toml` MUST соответствовать VK-сервису согласно сценарию. SMTP-зависимость и extra `email` MUST отсутствовать; `uv.lock` MUST обеспечивать успешный `uv sync --locked`.
+
+#### Scenario: Точные идентичность и версии зависимостей
+
+- **WHEN** проверяются метаданные и зависимости `services/vk-service`
+- **THEN** `services/vk-service/pyproject.toml` MUST объявлять `[project].name = "vk-service"` и описание VK-сервиса, MUST NOT содержать `aiosmtplib` и MUST использовать `pydantic` без extra `email`. `pyproject.toml` MUST объявлять зависимость `vkbottle` (`>=4.11,<5`), `aiohttp>=3.14.3` и `pydantic>=2.13.4` согласно spec `vk-bot-longpolling`. `uv.lock` MUST быть пересобран так, чтобы `uv sync --locked` завершался успешно. `known-first-party` в конфигурации isort MUST отражать фактические пакеты сервиса, включая новые пакеты `api` и `bot`.
 
 #### Scenario: Lock соответствует зависимостям
 
@@ -98,7 +118,12 @@
 
 ### Requirement: Деплой-конфигурация копируется без изменений и помечается как неготовая
 
-`services/vk-service/.helm/**` и `services/vk-service/.github/**` MUST быть побайтово идентичны соответствующим каталогам `services/email-service` и MUST NOT редактироваться в этом change. Это означает, что release name `eqcms-email-service`, образ `ghcr.io/igor-526/eqsitecms-email-service`, ссылка на k8s-секрет `eqsitecms-email-service-secret`, worker-команда `-Q email` и имена файлов `.helm/templates/email-service-*` сознательно сохраняются. Деплой `vk-service` в рамках этого change MUST NOT выполняться: ветка `release` для нового сервиса не создаётся, k8s-секрет не заводится. `services/vk-service/README.md` MUST содержать раздел техдолга, который **прямо называет `email-service`** сервисом-донором `.helm/**` и `.github/**` — без обобщённых формулировок вида «сервис-донор» без имени — и перечисляет конкретные следствия: release name `eqcms-email-service`, образ `ghcr.io/igor-526/eqsitecms-email-service`, worker-очередь `-Q email`, k8s-секрет `eqsitecms-email-service-secret`, имена шаблонов `.helm/templates/email-service-*`. Раздел MUST содержать явный запрет выкатки `vk-service` этой конфигурацией. `SERVICES.md` MUST фиксировать тот же техдолг. Приведение конфигурации к VK выполняется отдельным change вместе с созданием remote-репозитория, записи в `services.manifest` и секрета в кластере.
+`.helm/**` и `.github/**` в `vk-service` MUST оставаться побайтовой копией `email-service` без редактирования и выкатки. README и `SERVICES.md` MUST фиксировать техдолг и запрет деплоя; конкретные унаследованные значения и границы отдельного change определены сценарием.
+
+#### Scenario: Унаследованные значения и запрет выкатки
+
+- **WHEN** проверяется деплой-конфигурация и её документирование
+- **THEN** `services/vk-service/.helm/**` и `services/vk-service/.github/**` MUST быть побайтово идентичны соответствующим каталогам `services/email-service` и MUST NOT редактироваться в этом change. Это означает, что release name `eqcms-email-service`, образ `ghcr.io/igor-526/eqsitecms-email-service`, ссылка на k8s-секрет `eqsitecms-email-service-secret`, worker-команда `-Q email` и имена файлов `.helm/templates/email-service-*` сознательно сохраняются. Деплой `vk-service` в рамках этого change MUST NOT выполняться: ветка `release` для нового сервиса не создаётся, k8s-секрет не заводится. `services/vk-service/README.md` MUST содержать раздел техдолга, который **прямо называет `email-service`** сервисом-донором `.helm/**` и `.github/**` — без обобщённых формулировок вида «сервис-донор» без имени — и перечисляет конкретные следствия: release name `eqcms-email-service`, образ `ghcr.io/igor-526/eqsitecms-email-service`, worker-очередь `-Q email`, k8s-секрет `eqsitecms-email-service-secret`, имена шаблонов `.helm/templates/email-service-*`. Раздел MUST содержать явный запрет выкатки `vk-service` этой конфигурацией. `SERVICES.md` MUST фиксировать тот же техдолг. Приведение конфигурации к VK выполняется отдельным change вместе с созданием remote-репозитория, записи в `services.manifest` и секрета в кластере.
 
 #### Scenario: Helm и CI побайтово идентичны источнику
 
@@ -124,9 +149,13 @@
 
 ### Requirement: Настройки очищены от email и содержат VK-конфигурацию
 
-`services/vk-service/src/settings.py` MUST NOT содержать класс `SMTPSettings`, экспорт `smtp_settings`, поля `email_confirmation_ttl_hours` и `frontend_url`. Список обязательных production-секретов MUST состоять из `POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `CELERY_APP_BROKER`, `CELERY_APP_BACKEND`, `MAIN_BACKEND_SERVICE_KEY`, `NATS_SERVERS`, `VK_GROUP_TOKEN` и MUST NOT включать `SMTP_PASSWORD`. `APP_TITLE` SHALL иметь значение по умолчанию `VK Service`, `CELERY_APP_MAIN` — `vk-service`, `CELERY_APP_BROKER` — Redis DB `3`, `CELERY_APP_BACKEND` — Redis DB `4`. `NatsSettings` MUST содержать зарезервированные `NATS_SUBJECT_NOTIFICATION_COMMANDS_SEND_VK` со значением `commands.notification.vk.send` и `NATS_CONSUMER_NOTIFICATION_COMMANDS_SEND_VK` со значением `vk-service-commands-send-vk`, и MUST NOT содержать email-эквиваленты.
+Настройки `vk-service` MUST исключать email-конфигурацию и содержать обязательные production-секреты, значения приложения/Celery, резерв NATS и `VkSettings` по сценарию. `.env.example` MUST перечислять полный набор переменных с placeholder-значениями без реальных секретов.
 
-Дополнительно MUST существовать класс `VkSettings` с полями и значениями по умолчанию: `VK_GROUP_TOKEN` (пусто), `VK_GROUP_ID` (`0`), `VK_GROUP_SCREEN_NAME` (пусто), `VK_API_VERSION` (`5.199`), `VK_BOT_LINK_COMMAND` (`/link`), `VK_CONFIRMATION_TTL_MINUTES` (`30`), `VK_CONFIRMATION_CODE_LENGTH` (`8`), `VK_CONFIRMATION_MAX_ATTEMPTS` (`5`), `VK_CONFIRMATION_ATTEMPT_WINDOW_MINUTES` (`10`), `VK_LONGPOLL_WAIT_SECONDS` (`25`). `.env.example` MUST перечислять полный набор переменных сервиса, включая VK-переменные, с placeholder-значениями и без реальных секретов.
+#### Scenario: Полный состав настроек и значений по умолчанию
+
+- **WHEN** проверяются `src/settings.py` и `.env.example` сервиса `vk-service`
+- **THEN** `services/vk-service/src/settings.py` MUST NOT содержать класс `SMTPSettings`, экспорт `smtp_settings`, поля `email_confirmation_ttl_hours` и `frontend_url`. Список обязательных production-секретов MUST состоять из `POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `CELERY_APP_BROKER`, `CELERY_APP_BACKEND`, `MAIN_BACKEND_SERVICE_KEY`, `NATS_SERVERS`, `VK_GROUP_TOKEN` и MUST NOT включать `SMTP_PASSWORD`. `APP_TITLE` SHALL иметь значение по умолчанию `VK Service`, `CELERY_APP_MAIN` — `vk-service`, `CELERY_APP_BROKER` — Redis DB `3`, `CELERY_APP_BACKEND` — Redis DB `4`. `NatsSettings` MUST содержать зарезервированные `NATS_SUBJECT_NOTIFICATION_COMMANDS_SEND_VK` со значением `commands.notification.vk.send` и `NATS_CONSUMER_NOTIFICATION_COMMANDS_SEND_VK` со значением `vk-service-commands-send-vk`, и MUST NOT содержать email-эквиваленты.
+- **AND** Дополнительно MUST существовать класс `VkSettings` с полями и значениями по умолчанию: `VK_GROUP_TOKEN` (пусто), `VK_GROUP_ID` (`0`), `VK_GROUP_SCREEN_NAME` (пусто), `VK_API_VERSION` (`5.199`), `VK_BOT_LINK_COMMAND` (`/link`), `VK_CONFIRMATION_TTL_MINUTES` (`30`), `VK_CONFIRMATION_CODE_LENGTH` (`8`), `VK_CONFIRMATION_MAX_ATTEMPTS` (`5`), `VK_CONFIRMATION_ATTEMPT_WINDOW_MINUTES` (`10`), `VK_LONGPOLL_WAIT_SECONDS` (`25`). `.env.example` MUST перечислять полный набор переменных сервиса, включая VK-переменные, с placeholder-значениями и без реальных секретов.
 
 #### Scenario: Production-валидация без SMTP
 
@@ -167,9 +196,14 @@
 
 ### Requirement: Адрес main backend указывает на существующий контейнер
 
-`MAIN_BACKEND_URL` в `services/vk-service/.env.example` и в локальном `services/vk-service/.env` MUST указывать на фактически существующий main backend. Каноническое значение — `http://eqsitecms-app:8000`. Значение `http://eqsitecms-backend:8000` MUST NOT использоваться: контейнера с таким именем в `eqsitecms_network` не существует, поэтому клиент `clients/main_backend/client.py` не сможет установить соединение.
+`MAIN_BACKEND_URL` в `.env.example` и локальном `.env` MUST указывать на `http://eqsitecms-app:8000`, а не `http://eqsitecms-backend:8000`, и MUST быть описан в README. Полные условия адресации и обоснование выбора DNS-имени определены сценарием.
 
-Обоснование выбора: main backend публикуется в `eqsitecms_network` под двумя DNS-именами — `eqsitecms-app` (`container_name`) и `backend` (compose-alias). Выбирается `eqsitecms-app`, потому что остальные адреса сервиса уже записаны через полные имена контейнеров (`POSTGRES_HOST=eqsitecms-db-vk`, `NATS_SERVERS=nats://eqsitecms-nats:4222`, Redis `eqsitecms-redis:6379`); compose-alias `backend` устойчив только пока сервис поднят тем же compose-проектом, а `vk-service` запускается отдельным проектом `eqsitecms-vk`. `MAIN_BACKEND_URL` MUST быть задокументирован в `services/vk-service/README.md`.
+#### Scenario: Точный адрес main backend и обоснование DNS
+
+- **WHEN** проверяются MAIN_BACKEND_URL и его документирование
+- **THEN** `MAIN_BACKEND_URL` в `services/vk-service/.env.example` и в локальном `services/vk-service/.env` MUST указывать на фактически существующий main backend. Каноническое значение — `http://eqsitecms-app:8000`. Значение `http://eqsitecms-backend:8000` MUST NOT использоваться: контейнера с таким именем в `eqsitecms_network` не существует, поэтому клиент `clients/main_backend/client.py` не сможет установить соединение.
+
+- **AND** Обоснование выбора: main backend публикуется в `eqsitecms_network` под двумя DNS-именами — `eqsitecms-app` (`container_name`) и `backend` (compose-alias). Выбирается `eqsitecms-app`, потому что остальные адреса сервиса уже записаны через полные имена контейнеров (`POSTGRES_HOST=eqsitecms-db-vk`, `NATS_SERVERS=nats://eqsitecms-nats:4222`, Redis `eqsitecms-redis:6379`); compose-alias `backend` устойчив только пока сервис поднят тем же compose-проектом, а `vk-service` запускается отдельным проектом `eqsitecms-vk`. `MAIN_BACKEND_URL` MUST быть задокументирован в `services/vk-service/README.md`.
 
 #### Scenario: Значение указывает на существующий контейнер
 
@@ -188,7 +222,12 @@
 
 ### Requirement: Приложение поднимается без email-роутера и без активной NATS-топологии
 
-`services/vk-service/src/main.py` MUST NOT импортировать и подключать email-роутер и MUST NOT запускать email-consumer. `main.py` SHALL подключать VK-роутер `api/endpoints/vks.py`. Lifespan SHALL выполнять `nats_client.connect()`, запускать production metrics runtime, а при завершении — закрывать NATS-соединение, БД и metrics runtime. Lifespan MUST NOT запускать long-poll цикл: bot runtime является отдельным процессом согласно spec `vk-bot-longpolling`. `NatsJetstreamClient` нового сервиса SHALL подключаться с `name="vk-service"`, а его `setup_streams()` и `setup_consumers()` MUST быть no-op: сервис MUST NOT создавать stream `NOTIFICATION_COMMANDS` и MUST NOT регистрировать durable consumer. DI-контейнер `containers/application.py` SHALL предоставлять `nats_settings`, `nats_client`, `celery_settings`, `celery_app` и VK-провайдеры (`vk_settings`, VK API-клиент), MUST NOT содержать `smtp_settings`, `email_sender` и email-провайдеры, и MUST NOT храниться в `app.state`.
+Приложение SHALL подключать VK-роутер и управлять NATS, БД и metrics runtime без email-логики и long-poll цикла. NATS setup MUST оставаться no-op; DI MUST содержать только предусмотренные провайдеры и не храниться в `app.state`. Полный контракт определён сценарием.
+
+#### Scenario: Полный контракт lifespan NATS и DI
+
+- **WHEN** проверяются приложение, NATS-клиент и DI-контейнер vk-service
+- **THEN** `services/vk-service/src/main.py` MUST NOT импортировать и подключать email-роутер и MUST NOT запускать email-consumer. `main.py` SHALL подключать VK-роутер `api/endpoints/vks.py`. Lifespan SHALL выполнять `nats_client.connect()`, запускать production metrics runtime, а при завершении — закрывать NATS-соединение, БД и metrics runtime. Lifespan MUST NOT запускать long-poll цикл: bot runtime является отдельным процессом согласно spec `vk-bot-longpolling`. `NatsJetstreamClient` нового сервиса SHALL подключаться с `name="vk-service"`, а его `setup_streams()` и `setup_consumers()` MUST быть no-op: сервис MUST NOT создавать stream `NOTIFICATION_COMMANDS` и MUST NOT регистрировать durable consumer. DI-контейнер `containers/application.py` SHALL предоставлять `nats_settings`, `nats_client`, `celery_settings`, `celery_app` и VK-провайдеры (`vk_settings`, VK API-клиент), MUST NOT содержать `smtp_settings`, `email_sender` и email-провайдеры, и MUST NOT храниться в `app.state`.
 
 #### Scenario: Приложение импортируется без email-зависимостей
 
@@ -228,7 +267,12 @@
 
 ### Requirement: Baseline-тесты подтверждают чистоту скелета
 
-`services/vk-service/tests/` SHALL содержать тесты, применимые к сервису: `conftest.py` с отключением Sentry, health/HTTP-контракт, отсутствие email-поверхности, observability, конфигурация настроек, Celery-конфигурация, no-op NATS setup, DI-wiring, а также тесты VK-домена — репозитории, доменные сервисы, API-контракт и bot runtime против stub VK API. `make test` (`pytest -m "not infrastructure"`) MUST проходить без поднятой инфраструктуры, без `VK_GROUP_TOKEN` и без доступа в интернет. Infrastructure-тесты, требующие реальных Redis/NATS/PostgreSQL или реальной VK-группы, SHALL быть помечены маркером `infrastructure` и запускаться только целью `make test-infra`.
+Baseline-тесты `vk-service` SHALL покрывать каркас и VK-домен по сценарию. `make test` MUST проходить без инфраструктуры, VK-токена и интернета; тесты реальных зависимостей SHALL иметь маркер `infrastructure` и запускаться только через `make test-infra`.
+
+#### Scenario: Полный состав baseline и изоляция infrastructure-тестов
+
+- **WHEN** проверяются состав тестов и условия их запуска
+- **THEN** `services/vk-service/tests/` SHALL содержать тесты, применимые к сервису: `conftest.py` с отключением Sentry, health/HTTP-контракт, отсутствие email-поверхности, observability, конфигурация настроек, Celery-конфигурация, no-op NATS setup, DI-wiring, а также тесты VK-домена — репозитории, доменные сервисы, API-контракт и bot runtime против stub VK API. `make test` (`pytest -m "not infrastructure"`) MUST проходить без поднятой инфраструктуры, без `VK_GROUP_TOKEN` и без доступа в интернет. Infrastructure-тесты, требующие реальных Redis/NATS/PostgreSQL или реальной VK-группы, SHALL быть помечены маркером `infrastructure` и запускаться только целью `make test-infra`.
 
 #### Scenario: Автономный тестовый прогон
 
@@ -247,7 +291,12 @@
 
 ### Requirement: Документация сервиса описывает границы скелета
 
-`services/vk-service/README.md` SHALL описывать VK-сервис и MUST NOT содержать email-инструкций по работе сервиса; упоминания email допускаются и требуются только в разделе техдолга деплой-конфигурации и в описании границ сервиса. README MUST включать: стек, структуру `src/` (включая `api/`, `bot/`, `clients/vk/`, `models/`, `repositories/`), инструкции локального и docker-запуска приложения и bot runtime, таблицу переменных окружения приложения (включая `MAIN_BACKEND_URL` и все VK-переменные с пояснением, какие из них заполняет владелец группы) и таблицу инфраструктурных переменных, необходимых для запуска — `EXPOSE_VK_SERVICE_PORT=8004`, `POSTGRES_VK_USER=eqsitecmsvk`, `POSTGRES_VK_PASSWORD`, `POSTGRES_VK_NAME=eqsitecmsvk`, `EXPOSE_VK_DB_PORT=5436` из gitignored `.docker-compose/.env` — а также `VK_TEST_CELERY_BROKER` и `VK_TEST_CELERY_BACKEND`, требуемые infrastructure-тестом `tests/integration/test_real_celery.py`, таблицу API с `GET /health` и маршрутами `/vks*`, раздел Celery с очередью `vk`, раздел «NATS JetStream (зарезервировано)» с планируемыми stream `NOTIFICATION_COMMANDS`, subject `commands.notification.vk.send`, durable `vk-service-commands-send-vk` и явной пометкой, что контракт не активирован и `docs/asyncapi.yaml` появится отдельным change, раздел «Границы сервиса» с перечнем того, что сознательно отсутствует (доставка уведомлений в VK, потребление `commands.notification.vk.send`, рассылки, клавиатуры и вложения бота), раздел «Привязка пользователя VK» с описанием пайплайна подтверждения, а также раздел-предупреждение, прямо называющий `email-service` источником `.helm/**` и `.github/**`, перечисляющий унаследованные email-значения и запрещающий выкатку. Токены `email`/`smtp` в README MUST записываться обычными литералами: guard-проверка на README не распространяется.
+README `vk-service` SHALL описывать VK-сервис и MUST содержать разделы, переменные, контракты и границы по сценарию. Email-инструкции MUST отсутствовать; упоминания email допустимы только в техдолге деплоя и границах сервиса, обычными литералами без обфускации.
+
+#### Scenario: Полное содержание README и ограничения документирования
+
+- **WHEN** проверяются обязательные разделы README сервиса vk-service
+- **THEN** `services/vk-service/README.md` SHALL описывать VK-сервис и MUST NOT содержать email-инструкций по работе сервиса; упоминания email допускаются и требуются только в разделе техдолга деплой-конфигурации и в описании границ сервиса. README MUST включать: стек, структуру `src/` (включая `api/`, `bot/`, `clients/vk/`, `models/`, `repositories/`), инструкции локального и docker-запуска приложения и bot runtime, таблицу переменных окружения приложения (включая `MAIN_BACKEND_URL` и все VK-переменные с пояснением, какие из них заполняет владелец группы) и таблицу инфраструктурных переменных, необходимых для запуска — `EXPOSE_VK_SERVICE_PORT=8004`, `POSTGRES_VK_USER=eqsitecmsvk`, `POSTGRES_VK_PASSWORD`, `POSTGRES_VK_NAME=eqsitecmsvk`, `EXPOSE_VK_DB_PORT=5436` из gitignored `.docker-compose/.env` — а также `VK_TEST_CELERY_BROKER` и `VK_TEST_CELERY_BACKEND`, требуемые infrastructure-тестом `tests/integration/test_real_celery.py`, таблицу API с `GET /health` и маршрутами `/vks*`, раздел Celery с очередью `vk`, раздел «NATS JetStream (зарезервировано)» с планируемыми stream `NOTIFICATION_COMMANDS`, subject `commands.notification.vk.send`, durable `vk-service-commands-send-vk` и явной пометкой, что контракт не активирован и `docs/asyncapi.yaml` появится отдельным change, раздел «Границы сервиса» с перечнем того, что сознательно отсутствует (доставка уведомлений в VK, потребление `commands.notification.vk.send`, рассылки, клавиатуры и вложения бота), раздел «Привязка пользователя VK» с описанием пайплайна подтверждения, а также раздел-предупреждение, прямо называющий `email-service` источником `.helm/**` и `.github/**`, перечисляющий унаследованные email-значения и запрещающий выкатку. Токены `email`/`smtp` в README MUST записываться обычными литералами: guard-проверка на README не распространяется.
 
 #### Scenario: README описывает VK-сервис
 
@@ -278,7 +327,12 @@
 
 ### Requirement: Миграционная цепочка содержит VK-домен и применима
 
-`services/vk-service/src/migration/versions/` MUST содержать ревизию `20260710_0001_initial.py` и единственную новую ревизию VK-домена, описанную в spec `vk-user-storage`. `alembic upgrade head` на пустой БД `eqsitecmsvk` SHALL завершаться успешно и SHALL создавать `alembic_version`, `user_vks`, `vk_confirmations`, `vk_logs` и ничего кроме них. `src/migration/env.py` SHALL продолжать импортировать `models` и использовать `utils.basemodel.metadata`. Email-таблицы MUST NOT создаваться ни на одном шаге цепочки.
+Цепочка миграций MUST содержать исходную ревизию и единственную новую ревизию VK-домена по `vk-user-storage`. `alembic upgrade head` SHALL успешно создавать только предусмотренные таблицы; email-таблицы MUST отсутствовать на каждом шаге. Полный состав и wiring определены сценарием.
+
+#### Scenario: Точная цепочка миграций и границы схемы
+
+- **WHEN** проверяются миграционная цепочка и её применение к пустой БД
+- **THEN** `services/vk-service/src/migration/versions/` MUST содержать ревизию `20260710_0001_initial.py` и единственную новую ревизию VK-домена, описанную в spec `vk-user-storage`. `alembic upgrade head` на пустой БД `eqsitecmsvk` SHALL завершаться успешно и SHALL создавать `alembic_version`, `user_vks`, `vk_confirmations`, `vk_logs` и ничего кроме них. `src/migration/env.py` SHALL продолжать импортировать `models` и использовать `utils.basemodel.metadata`. Email-таблицы MUST NOT создаваться ни на одном шаге цепочки.
 
 #### Scenario: Миграции применяются на реальной PostgreSQL
 
@@ -298,9 +352,14 @@
 
 ### Requirement: HTTP-поверхность сервиса ограничена health и VK-домены
 
-`vk-service` SHALL предоставлять `GET /health`, возвращающий `200` и тело `{"status": "ok"}`, и маршруты VK-домена с префиксом `/vks`, контракт которых определён в spec `vk-api-endpoints`. Унаследованные от `email-service` endpoints `/emails*` MUST отсутствовать и MUST возвращать `404`. Prometheus-метрики MUST NOT публиковаться как FastAPI-маршрут на порту приложения: отдельный listener `0.0.0.0:9000` SHALL запускаться только при `ENVIRONMENT=production` и оставаться доступным только внутри `eqsitecms_network`. CORS-конфигурация и auth-маршруты MUST отсутствовать.
+`vk-service` SHALL предоставлять health и VK-маршруты по сценарию и сохранённой access matrix. Email-endpoints MUST возвращать `404`; CORS и auth-маршруты MUST отсутствовать. Метрики MUST быть отдельным production-only listener внутри сети без публикации на host.
 
-Access matrix инфраструктурной и унаследованной поверхности:
+#### Scenario: Полный HTTP-контракт и неизменная access matrix
+
+- **WHEN** проверяются HTTP-поверхность сервиса и границы metrics listener
+- **THEN** `vk-service` SHALL предоставлять `GET /health`, возвращающий `200` и тело `{"status": "ok"}`, и маршруты VK-домена с префиксом `/vks`, контракт которых определён в spec `vk-api-endpoints`. Унаследованные от `email-service` endpoints `/emails*` MUST отсутствовать и MUST возвращать `404`. Prometheus-метрики MUST NOT публиковаться как FastAPI-маршрут на порту приложения: отдельный listener `0.0.0.0:9000` SHALL запускаться только при `ENVIRONMENT=production` и оставаться доступным только внутри `eqsitecms_network`. CORS-конфигурация и auth-маршруты MUST отсутствовать.
+
+- **AND** Access matrix инфраструктурной и унаследованной поверхности:
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
@@ -314,7 +373,7 @@ Access matrix инфраструктурной и унаследованной �
 | `PATCH` | `/emails/confirm` | endpoint отсутствует | — | `404` | `404` |
 | `POST` | `/api/auth/register` | endpoint отсутствует | — | `404` | `404` |
 
-`GET /health` остаётся Public Read как инфраструктурный readiness-контракт, используемый docker healthcheck и Quality Gate. `:9000/metrics` является исключением из HTTP-маршрутизации приложения и защищается сетевой изоляцией, а не авторизацией; публикация этого порта на host запрещена. Access matrix маршрутов `/vks*`, включая их access-классы и исключения, зафиксирована в spec `vk-api-endpoints` и MUST NOT дублироваться здесь.
+- **AND** `GET /health` остаётся Public Read как инфраструктурный readiness-контракт, используемый docker healthcheck и Quality Gate. `:9000/metrics` является исключением из HTTP-маршрутизации приложения и защищается сетевой изоляцией, а не авторизацией; публикация этого порта на host запрещена. Access matrix маршрутов `/vks*`, включая их access-классы и исключения, зафиксирована в spec `vk-api-endpoints` и MUST NOT дублироваться здесь.
 
 #### Scenario: Anonymous health
 

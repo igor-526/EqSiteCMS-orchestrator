@@ -2,10 +2,11 @@
   "name": "dsh-profile-web",
   "private": true,
   "dependencies": {
+    "@eqcms/dsh-devops": "link:/srv/EqCMS_Infra/.dsh/devops-preset",
     "@eqsite/dsh-agents": "link:/srv/eqSiteCMS/dsh/bundles/eqsite-agents",
     "@eqsite/playwright-mcp": "link:./bundles/playwright-mcp",
     "@local/dsh-review-loop-services-v2": "link:../../../bundles/dsh-review-loop-services-v2",
-    "dsh-codex-connect": "0.2.0-alpha.10"
+    "dsh-codex-connect": "0.2.0-alpha.12"
   },
   "dsh": {
     "profile": {
@@ -15,7 +16,8 @@
         "dsh-codex-connect",
         "@eqsite/playwright-mcp",
         "@local/dsh-review-loop-services-v2",
-        "@eqsite/dsh-agents"
+        "@eqsite/dsh-agents",
+        "@eqcms/dsh-devops"
       ]
     }
   }

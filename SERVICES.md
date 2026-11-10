@@ -23,13 +23,13 @@ EqSiteCMS поддерживает два контура доступа к API:
 
 Каждый `services/<name>` — отдельный git-репозиторий со своим `origin` (см. `services.manifest`); корневой репозиторий их не отслеживает (`/services/` в `.gitignore`).
 
-Когда задача требует изменений внутри любого `services/<name>`:
+Для подтверждённой автоматизации финализации база — **main**, не dev (main-default явно принят пользователем). Работа и shipping следуют [WORKFLOW](WORKFLOW.md#шаг-6-финализация-skill-task-finalize) и [task-finalize](.agents/skills/task-finalize/SKILL.md):
 
-- **Никогда** не коммитить и не пушить напрямую в `main` или `dev` сервисного репозитория; `dev` — самая актуальная ветка (разработка идёт в ней, из `dev` операторы льют в `main`).
-- Создать в сервисном репозитории отдельную feature-ветку от актуального `dev`; для связанной работы во всех репозиториях использовать одинаковое имя ветки, если оператор не указал иное.
-- Не делать `git push` и не сливать feature-ветку в `dev` самостоятельно. После успешного Quality Gate локальное слияние и последующий push выполняет оператор.
-- Перед слиянием оператор проверяет staged-изменения, пересечения локального diff и возможные конфликты.
-- Локальная ветка `dev` сервисного репозитория создаётся и обновляется оператором; агент её напрямую не изменяет.
+- До первой мутации корень и **все** клоны manifest должны существовать, иметь корректный origin, находиться на main без detached HEAD и незавершённых Git-операций. Dev/missing clone — блокер, не повод для автоматического switch/clone или скрытой миграции веток.
+- Backend пишет код; Router координирует. Не создавать feature-ветки вручную и не коммитить/пушить напрямую в main/dev. После QG → ready → sync/archive Router предлагает точные `BRANCH`/`MESSAGE` и `PATHS_FILE`, создаёт план через `make services-autogit` и показывает included/foreign, origin, whole-file scope и strict sync.
+- Только явное согласие пользователя на конкретный `PLAN_TOKEN` позволяет `CONFIRM_PUSH`; предупреждение gate: feature и main будут отправлены в origin. Правка ветки, сообщения или scope требует replan и нового gate. Коммитятся только included файлы целиком; foreign staged блокируют, foreign unstaged сохраняются, ignored/секреты не добавляются принудительно.
+- `RELEASE=1` — только намерение, не deploy. После полного merge нужен отдельный gate по `RELEASE_TOKEN`, repo/SHA и предупреждению о CI/CD; корень не релизится. При отсутствии кнопки Router задаёт текстовый вопрос и останавливается до ответа.
+- Lock, strict sync и durable partial state сохраняются. Конфликт разрешает пользователь вручную; продолжение только явным `shipctl merge --resume`, без auto-retry/rollback или generic checkout-main после конфликта. Успешный путь остаётся на main; release не делает checkout release. CI отслеживается отдельно.
 
 ---
 
@@ -282,6 +282,23 @@ claim/lease сериализуют задания одного аккаунта.
 по умолчанию +3); runtime не читает чужие env и не зависит от оркестратора.
 Подробности агрегации, API и тестов — [README ya-metrica](services/ya-metrica-service/README.md).
 
+#### История задач для CMS
+
+CMS читает `GET /api/seo/metrica/tasks` через отдельный backend client →
+`GET /api/metrica/tasks` Метрики, не через seo-service/yandex-service.
+Backend `YA_METRICA_SERVICE_URL` default —
+`http://eqsitecms-ya-metrica-service:8000`; timeout 4s, trust_env=false,
+без retry/credentials forwarding. Gateway — Protected GET exception: только
+SEO, anonymous 401, без SEO 403 (ADMIN не override), до query/peer;
+invalid limit/offset 400, transport/status/JSON/DTO error — safe 502.
+Tenant только actor; selector браузера игнорируется. Peer — Internal Trusted
+Network Read: UUID selector обязателен (missing/invalid 401 до query),
+credentials игнорируются. Ответ `{items,total}` с безопасными
+`id/type/status/is_active/created_at`, общая limit/offset пагинация
+(20/0 по умолчанию, limit 1..100), история tenant включая старые привязки.
+Никакого нового HTTP запуска: POST остаётся через seo-service и NATS.
+Внешняя недоступность peer и БД — обязательный отдельный production gate.
+
 #### Агрегаты страниц для SEO
 
 ya-metrica предоставляет seo-service Private Peer Read M3
@@ -371,7 +388,7 @@ Registry/discovery границы приведены по [design §2 и ист�
 - API peer: public `GET /health`; все 13 операций `/api/**` требуют только UUID `X-Equestrian-Id`, missing/invalid selector — `401`. Credentials не требуются и игнорируются: это **Internal Trusted Network Read/Write**, явное исключение из обычного Public Read/Protected Write. Resolve: `POST /api/search-queries/resolve`, `POST /api/pages/resolve`; списки: `GET /api/search-queries`, `GET /api/pages`; настройки: GET/POST и PATCH/DELETE по ID под `/api/page-normalization/blacklisted-query-params` и `/api/page-normalization/blacklisted-hashes`. Подробности — [README SEO](<services/seo-service/README.md>).
 - Метрики страниц: `GET /api/pages` принимает mode/metric/date_from/date_to и сортировку по page/created_at/metric-колонке; возвращает `items/total/metrics_table`. SEO разрешает период, вызывает ya-metrica M4 при существующей колонке сортировки, выполняет SQL с рангом, поиском и пагинацией, затем M3 для непустой выборки и builder. «Запросы» (`GET /api/search-queries`) возвращают тот же обязательный `metrics_table` через общий resolver/registry/builder: M6 `/api/metrica/search-query-stats/ranking` → SQL list/count → M5 `/api/metrica/search-query-stats/table` для UUID текущей страницы и всех buckets. SQL tenant/search/rank применяется до пагинации, без агрегации/сортировки в Python; ровно два SEO SQL и ≤2 peer-вызовов. Без существующей metric-колонки нет M6 (stale key → default/null), пустая страница не вызывает M5. Query pagination сохраняет clamp limit 1..100/offset ≥0; invalid параметры → 400 до данных/peer. Selector обязателен, credentials его не заменяют. Env остаются `SEO_UTC_OFFSET_HOURS`, `YA_METRICA_SERVICE_URL`, `YA_METRICA_TIMEOUT_SECONDS=4`; согласование timezone ручное. Production isolation peers/БД — отдельный блокирующий release gate, новые внешние порты не добавляются. Сбой ya-metrica → безопасный `502` с rollback.
 - Env SEO: `SEO_UTC_OFFSET_HOURS=3` (целое −12..14) необходимо согласовать с `YA_METRICA_UTC_OFFSET_HOURS`; чужой env не читается. `YA_METRICA_SERVICE_URL=http://eqsitecms-ya-metrica-service:8000`, `YA_METRICA_TIMEOUT_SECONDS=4` (до двух последовательных вызовов, ≤8 с при backend timeout 10 с). Это read-зависимость seo → ya-metrica в дополнение к resolve-зависимости ya-metrica → seo.
-- CMS обращается только через 11 маршрутов backend `/api/seo/**`: **только SEO**, включая GET; anonymous — `401`, без SEO (включая ADMIN/SUPERUSER/DEVELOPER) — `403`. Tenant берется из actor, не из клиентского selector; чужие элементы — `404`. Успешный CRUD черных списков — `201/200/204`, дубль — `409`, validation — `400`.
+- CMS обращается только через 12 маршрутов backend `/api/seo/**`: **только SEO**, включая GET; anonymous — `401`, без SEO (включая ADMIN/SUPERUSER/DEVELOPER) — `403`. Tenant берется из actor, не из клиентского selector; чужие элементы — `404`. Успешный CRUD черных списков — `201/200/204`, дубль — `409`, validation — `400`.
 - Ручной parse API: `POST /api/parse-jobs`, тело только `{provider:"ya_metrica"}`, `X-Equestrian-Id` обязателен до body (`401` без/invalid selector); credentials игнорируются (Internal Trusted Network Write). Ответ после PubAck и аудита `202 {job_id,provider,status:"accepted"}`, это не завершение парсинга; body/unknown/disabled provider/нет привязки `400`, yandex `502`, очередь `503`. CMS backend `POST /api/seo/parse-jobs` — Protected Write, только SEO: anonymous `401`, без SEO `403` до downstream/body; tenant только из actor, успех `202`, безопасные ошибки `400/502/503`.
 - Расписание: `python -m scheduler.main` в единственном `seo-scheduler` (локально `PYTHONPATH=src uv run python -m scheduler.main`), service env тот же, что API; SIGTERM/SIGINT → graceful NATS/DB cleanup. `PARSE_SCHEDULE_ENABLED=true`, `PARSE_SCHEDULE_TIME=03:00` (строго HH:MM), `PARSE_SCHEDULER_TICK_SECONDS=30`, `PARSE_PROVIDERS_ENABLED=ya_metrica` (CSV), `PARSE_TARGETS_PAGE_SIZE=100` (1..500), `PARSE_DISPATCH_MAX_ATTEMPTS=5`. Локальная дата/время берутся из `SEO_UTC_OFFSET_HOURS`, обязательное ручное согласование с `YA_METRICA_UTC_OFFSET_HOURS`: иначе окно может сместиться на сутки. Слот догоняется только до конца текущих локальных суток; disabled отключает только расписание. Цели через `YANDEX_SERVICE_URL=http://eqsitecms-yandex-service:8000`, `YANDEX_SERVICE_TIMEOUT_SECONDS=4`, без credentials. Ошибка списка не завершает слот, ошибка цели изолируется.
 - Ledger PostgreSQL `parse_dispatches` (`20261028_0003_parse_dispatches`): partial unique `(provider,equestrian_id,schedule_date)` для schedule, claim → publish → mark короткими транзакциями, pending/published/failed, retries до cap и stale lease recovery. Manual audit после PubAck, не занимает ежедневный слот. Рестарт не повторяет published-цели; in-memory кэш — только оптимизация, не источник истины. Provider registry через `ParseProviderProtocol` позволяет добавлять реализацию/DI, enabled code, subject/durable и AsyncAPI без изменения scheduler/envelope/ledger/API — руководство в README SEO.

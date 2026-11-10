@@ -1,354 +1,158 @@
-/**
- * release.mjs — RELEASE phase: fast-forward main → release without worktree.
- *
- * Only repos with stage 'pushed' in merge-state.json and existing origin/release.
- * Root is 'not-applicable', service without origin/release is 'no-release-branch'.
- *
- * Preflight all selected repos before any push:
- *   git fetch origin main release
- *   sha := origin/main; sha ≠ merge-state.mainSha → main_moved
- *   origin/release == sha                        → noop
- *   merge-base --is-ancestor origin/release sha  → ready for ff
- *   else                                         → release_diverged
- * Any blocker → exit 3, no pushes.
- *
- * Push per repo:
- *   git push origin <sha>:refs/heads/release  # no force
- *   Failure → stop exit 1
- *
- * Working clones stay on main, no local release branch, no worktree.
- *
- * Exit codes:
- *   0 — success
- *   1 — push failure
- *   3 — preflight blocker (no mutations)
- */
-
-import { readFile, writeFile } from 'node:fs/promises';
+/** Release is a separate approval gate; preview never fetches or changes refs. */
+import { readFile, lstat, realpath } from 'node:fs/promises';
 import { join } from 'node:path';
-import { git, parseRemoteUrl, getOriginUrl } from './git.mjs';
-import { ensureStateDir, jsonOut, progress, writeStateFile } from './common.mjs';
+import { git, lsRemoteHeads, getOriginUrl, originIdentity, parseRemoteUrl } from './git.mjs';
+import { digest } from './plan.mjs';
+import { jsonOut, writeStateFile } from './common.mjs';
 
-/**
- * Parse release command arguments.
- */
-function parseReleaseArgs(args) {
-  const opts = {
-    dryRun: false,
-    change: null,
-    repos: null
-  };
-
+const canonical = name => name === 'root' ? '.' : name;
+const validName = name => typeof name === 'string' && (name === '.' || /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(name));
+const validSha = sha => typeof sha === 'string' && /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(sha);
+function options(args) {
+  const result = { dryRun: false, change: null, repos: null, token: null };
+  const seen = new Set();
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--dry-run') {
-      opts.dryRun = true;
-    } else if (args[i] === '--change' && i + 1 < args.length) {
-      opts.change = args[++i];
-    } else if (args[i] === '--repos' && i + 1 < args.length) {
-      opts.repos = args[++i].split(',').map(r => r.trim()).filter(Boolean);
-    }
+    const flag = args[i];
+    if (seen.has(flag)) throw new Error('duplicate_argument');
+    seen.add(flag);
+    if (flag === '--dry-run') { result.dryRun = true; continue; }
+    const key = { '--change': 'change', '--repos': 'repos', '--release-token': 'token' }[flag];
+    if (!key || !args[i + 1] || args[i + 1].startsWith('--')) throw new Error('invalid_argument');
+    result[key] = args[++i];
   }
-
-  return opts;
+  if (result.change && !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(result.change)) throw new Error('invalid_change');
+  if (result.repos !== null) {
+    const names = result.repos.split(',').map(n => canonical(n.trim()));
+    if (names.some(n => !validName(n))) throw new Error('invalid_repo');
+    result.repos = [...new Set(names)].sort();
+  }
+  if (!result.change && (!result.dryRun || !result.repos || result.token)) throw new Error('change_required');
+  return result;
 }
 
-/**
- * Read merge-state.json.
- */
-async function readMergeState(stateDir) {
+async function readState(ROOT, change) {
+  const raw = await readFile(join(ROOT, '.qa/ship', change, 'merge-state.json'), 'utf8');
+  const state = JSON.parse(raw);
+  if (state.change !== change || !Array.isArray(state.repos) || !state.repos.length) throw new Error('invalid_merge_state');
+  const names = new Set();
+  const repos = state.repos.map(r => {
+    const name = canonical(r.name);
+    if (!validName(name) || names.has(name)) throw new Error('ambiguous_repo_identity');
+    names.add(name);
+    if (r.pushedSha && r.mainSha && r.pushedSha !== r.mainSha) throw new Error('ambiguous_main_sha');
+    return { ...r, name, mainSha: r.pushedSha || r.mainSha };
+  });
+  if (state.phase !== 'phase2-complete' || repos.some(r => r.stage !== 'pushed' || !validSha(r.mainSha))) throw new Error('merge_incomplete');
+  return { hash: digest(raw), repos };
+}
+
+/** Resolve only declared services, never paths supplied by the caller/state. */
+async function declaredRepos(ROOT) {
+  const text = await readFile(join(ROOT, 'services.manifest'), 'utf8');
+  const names = new Set(['.']);
+  for (const line of text.split('\n')) {
+    const clean = line.trim();
+    if (!clean || clean.startsWith('#')) continue;
+    const [name, url, extra] = clean.split(/\s+/);
+    if (!validName(name) || name === '.' || name === 'root' || !url || extra || names.has(name)) throw new Error('invalid_manifest');
+    names.add(name);
+  }
+  return names;
+}
+
+async function preview(ROOT, opts) {
+  const state = opts.change ? await readState(ROOT, opts.change) : null;
+  const names = await declaredRepos(ROOT);
+  const repos = state?.repos || opts.repos.map(name => ({ name }));
+  for (const name of [...repos.map(r => r.name), ...(opts.repos || [])]) {
+    if (!names.has(name) || (state && !repos.some(r => r.name === name))) throw new Error('unknown_repo');
+  }
+  const plan = [], blockers = [];
+  for (const repo of repos) {
+    const row = { repo: repo.name, status: 'skipped', sha: repo.mainSha || null };
+    plan.push(row);
+    if (repo.name === '.') { row.status = 'not-applicable'; continue; }
+    if (opts.repos && !opts.repos.includes(repo.name)) continue;
+    const repoPath = join(ROOT, 'services', repo.name);
+    const block = blocker => { row.status = 'blocked'; blockers.push({ repo: repo.name, blocker }); };
+    try {
+      if ((await lstat(join(ROOT, 'services'))).isSymbolicLink() || (await lstat(repoPath)).isSymbolicLink()) throw new Error('invalid_clone');
+      const top = git(repoPath, 'rev-parse', '--show-toplevel');
+      if (top.status !== 0 || await realpath(top.stdout.trim()) !== await realpath(repoPath)) throw new Error('invalid_clone');
+      const originUrl = getOriginUrl(repoPath);
+      if (!originUrl) throw new Error('missing_origin');
+      row.origin = originIdentity(originUrl, repoPath);
+      const pushes = git(repoPath, 'remote', 'get-url', '--push', '--all', 'origin');
+      if (pushes.status !== 0) throw new Error('remote_probe_failed');
+      row.pushOrigins = pushes.stdout.trim().split('\n').map(url => originIdentity(url, repoPath));
+      if (row.pushOrigins.length !== 1 || row.pushOrigins[0] !== row.origin) throw new Error('push_origin_mismatch');
+      const heads = lsRemoteHeads(repoPath);
+      row.remoteMain = heads.get('main') || null;
+      row.remoteRelease = heads.get('release') || null;
+      if (!row.remoteMain) throw new Error('main_missing');
+      if (state && row.remoteMain !== repo.mainSha) throw new Error('main_moved');
+      row.sha = row.remoteMain;
+      if (!row.remoteRelease) { row.status = 'no-release-branch'; continue; }
+      if (row.remoteRelease === row.sha) { row.status = 'noop'; continue; }
+      const ancestor = git(repoPath, 'merge-base', '--is-ancestor', row.remoteRelease, row.sha);
+      if (ancestor.status === 0) { row.status = 'ff'; continue; }
+      // Unknown remote objects must never be fetched as a side effect of preview.
+      if (ancestor.status !== 1) throw new Error('ancestry_unavailable');
+      const commits = git(repoPath, 'log', '--format=%H', `${row.sha}..${row.remoteRelease}`);
+      row.status = 'diverged';
+      blockers.push({ repo: repo.name, blocker: 'release_diverged', commits: commits.stdout.trim().split('\n').filter(Boolean) });
+    } catch (e) {
+      const safe = ['invalid_clone', 'missing_origin', 'remote_probe_failed', 'push_origin_mismatch', 'main_missing', 'main_moved', 'ancestry_unavailable'];
+      block(safe.includes(e.message) ? e.message : 'release_probe_failed');
+    }
+  }
+  const material = { version: 1, change: opts.change, subset: opts.repos, mergeStateHash: state?.hash || null, plan };
+  const result = { ...material, blockers };
+  if (state && !blockers.length) result.RELEASE_TOKEN = digest(material);
+  return result;
+}
+
+export async function release(args, { ROOT }) {
+  let mutating = false;
   try {
-    const data = await readFile(join(stateDir, 'merge-state.json'), 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return null;
-  }
-}
+    const opts = options(args);
+    const current = await preview(ROOT, opts);
+    if (current.blockers.length) return { code: 3, payload: jsonOut(false, current) };
+    // A missing approval is always a safe preview/stop, not implicit permission.
+    if (opts.dryRun || !opts.token) return { code: 0, payload: jsonOut(true, {
+      ...current, dryRun: true, release_pending: !!opts.change
+    }) };
+    if (opts.token !== current.RELEASE_TOKEN) return { code: 3, payload: jsonOut(false, { error: 'release_plan_stale', ...current }) };
 
-/**
- * Select repos for release: pushed + origin/release exists.
- */
-function selectReposForRelease(mergeState, repoFilter, ROOT) {
-  const selected = [];
-
-  for (const repo of mergeState.repos || []) {
-    // Root is not-applicable
-    if (repo.name === 'root') {
-      selected.push({ ...repo, releaseStatus: 'not-applicable', reason: 'Root repo is not releasable' });
-      continue;
-    }
-
-    // Only pushed stage
-    if (repo.stage !== 'pushed') {
-      continue;
-    }
-
-    // Check user filter
-    if (repoFilter && !repoFilter.includes(repo.name)) {
-      selected.push({ ...repo, releaseStatus: 'skipped', reason: 'Excluded by --repos' });
-      continue;
-    }
-
-    // Check if origin/release exists
-    const repoPath = join(ROOT, 'services', repo.name);
-    const fetchResult = git(repoPath, 'ls-remote', '--heads', 'origin', 'release');
-    
-    if (fetchResult.status !== 0 || !fetchResult.stdout.trim()) {
-      selected.push({ ...repo, releaseStatus: 'no-release-branch', reason: 'origin/release does not exist' });
-      continue;
-    }
-
-    selected.push({ ...repo, releaseStatus: 'candidate' });
-  }
-
-  return selected;
-}
-
-/**
- * Preflight check for all candidate repos.
- * Returns { ok: true } or { ok: false, blockers: [...] }
- */
-async function preflightRelease(repos, ROOT) {
-  const blockers = [];
-
-  for (const repo of repos) {
-    if (repo.releaseStatus !== 'candidate') continue;
-
-    const repoPath = join(ROOT, 'services', repo.name);
-
-    // Fetch origin main and release
-    progress(`Preflight ${repo.name}: fetching origin/main and origin/release...`);
-    const fetchResult = git(repoPath, 'fetch', 'origin', 'main', 'release');
-    if (fetchResult.status !== 0) {
-      blockers.push({
-        repo: repo.name,
-        blocker: 'fetch_failed',
-        detail: fetchResult.stderr.trim()
-      });
-      continue;
-    }
-
-    // Get origin/main SHA
-    const mainResult = git(repoPath, 'rev-parse', 'origin/main');
-    if (mainResult.status !== 0) {
-      blockers.push({
-        repo: repo.name,
-        blocker: 'main_missing',
-        detail: 'Cannot resolve origin/main'
-      });
-      continue;
-    }
-    const mainSha = mainResult.stdout.trim();
-
-    // Check main_moved
-    if (mainSha !== repo.mainSha) {
-      blockers.push({
-        repo: repo.name,
-        blocker: 'main_moved',
-        detail: `origin/main is now ${mainSha}, expected ${repo.mainSha}`
-      });
-      continue;
-    }
-
-    // Get origin/release SHA
-    const releaseResult = git(repoPath, 'rev-parse', 'origin/release');
-    if (releaseResult.status !== 0) {
-      blockers.push({
-        repo: repo.name,
-        blocker: 'release_missing',
-        detail: 'Cannot resolve origin/release after fetch'
-      });
-      continue;
-    }
-    const releaseSha = releaseResult.stdout.trim();
-
-    // Check noop
-    if (releaseSha === mainSha) {
-      repo.releaseStatus = 'noop';
-      repo.reason = 'origin/release already equals origin/main';
-      continue;
-    }
-
-    // Check fast-forward
-    const isAncestorResult = git(repoPath, 'merge-base', '--is-ancestor', releaseSha, mainSha);
-    if (isAncestorResult.status !== 0) {
-      // Collect commits in release but not in main
-      const divergedResult = git(repoPath, 'log', '--oneline', `${mainSha}..${releaseSha}`);
-      const divergedCommits = divergedResult.stdout.trim().split('\n').filter(Boolean);
-
-      blockers.push({
-        repo: repo.name,
-        blocker: 'release_diverged',
-        detail: `origin/release contains commits not in main`,
-        commits: divergedCommits
-      });
-      continue;
-    }
-
-    // Ready for ff
-    repo.releaseStatus = 'ready';
-    repo.mainSha = mainSha;
-  }
-
-  if (blockers.length > 0) {
-    return { ok: false, blockers };
-  }
-
-  return { ok: true };
-}
-
-/**
- * Push release refs.
- */
-async function pushRelease(repos, ROOT) {
-  const results = [];
-
-  for (const repo of repos) {
-    if (repo.releaseStatus !== 'ready') {
-      results.push({
-        repo: repo.name,
-        status: repo.releaseStatus,
-        reason: repo.reason || null
-      });
-      continue;
-    }
-
-    const repoPath = join(ROOT, 'services', repo.name);
-    const sha = repo.mainSha;
-
-    progress(`Pushing ${repo.name}: ${sha} → origin/release...`);
-    const pushResult = git(repoPath, 'push', 'origin', `${sha}:refs/heads/release`);
-
-    if (pushResult.status !== 0) {
-      // Stop on push failure
-      results.push({
-        repo: repo.name,
-        status: 'push_failed',
-        error: pushResult.stderr.trim()
-      });
-
-      return {
-        ok: false,
-        stopped: true,
-        results
-      };
-    }
-
-    // Get owner/repo from origin URL
-    const originUrl = getOriginUrl(repoPath);
-    const ownerRepo = parseRemoteUrl(originUrl);
-
-    results.push({
-      repo: repo.name,
-      ownerRepo: ownerRepo ? `${ownerRepo.owner}/${ownerRepo.repo}` : null,
-      sha,
-      status: 'pushed'
-    });
-  }
-
-  return { ok: true, results };
-}
-
-/**
- * Main release command.
- */
-export async function release(args, context) {
-  const { ROOT } = context;
-  const opts = parseReleaseArgs(args);
-
-  if (!opts.change && !opts.dryRun) {
-    return { code: 3, payload: jsonOut(false, { error: '--change required (or --dry-run with --repos)' }) };
-  }
-
-  // Dry-run without merge-state
-  if (opts.dryRun && !opts.change) {
-    if (!opts.repos) {
-      return { code: 3, payload: jsonOut(false, { error: '--dry-run without --change requires --repos' }) };
-    }
-
-    // Classify repos by current remote-tracking refs
-    const plan = [];
-    for (const repoName of opts.repos) {
-      const repoPath = repoName === 'root' ? ROOT : join(ROOT, 'services', repoName);
-
-      // Check if origin/release exists
-      const fetchResult = git(repoPath, 'ls-remote', '--heads', 'origin', 'release');
-      if (fetchResult.status !== 0 || !fetchResult.stdout.trim()) {
-        plan.push({ repo: repoName, status: 'no-release-branch' });
-        continue;
+    const statePath = join(ROOT, '.qa/ship', opts.change, 'release-state.json');
+    const state = { change: opts.change, repos: current.plan.map(r => ({
+      repo: r.repo, status: r.status === 'ff' ? 'untouched' : r.status, sha: r.sha
+    })) };
+    // Publish the full table before pushing, then persist every success/failure.
+    mutating = true;
+    await writeStateFile(statePath, state, 'release-state');
+    for (const row of current.plan) {
+      if (row.status !== 'ff') continue;
+      const result = state.repos.find(r => r.repo === row.repo);
+      const repoPath = join(ROOT, 'services', row.repo);
+      const push = git(repoPath, 'push', 'origin', `${row.sha}:refs/heads/release`);
+      if (push.status !== 0) {
+        result.status = 'push_failed';
+        result.error = 'release_push_failed';
+        state.stopped = true;
+        await writeStateFile(statePath, state, 'release-state');
+        return { code: 1, payload: jsonOut(false, state) };
       }
-
-      // Get origin/main and origin/release SHAs
-      const mainResult = git(repoPath, 'rev-parse', 'origin/main');
-      const releaseResult = git(repoPath, 'rev-parse', 'origin/release');
-
-      if (mainResult.status !== 0 || releaseResult.status !== 0) {
-        plan.push({ repo: repoName, status: 'cannot_resolve' });
-        continue;
-      }
-
-      const mainSha = mainResult.stdout.trim();
-      const releaseSha = releaseResult.stdout.trim();
-
-      if (mainSha === releaseSha) {
-        plan.push({ repo: repoName, status: 'noop' });
-        continue;
-      }
-
-      const isAncestorResult = git(repoPath, 'merge-base', '--is-ancestor', releaseSha, mainSha);
-      if (isAncestorResult.status === 0) {
-        plan.push({ repo: repoName, status: 'ff', sha: mainSha });
-      } else {
-        const divergedResult = git(repoPath, 'log', '--oneline', `${mainSha}..${releaseSha}`);
-        const divergedCommits = divergedResult.stdout.trim().split('\n').filter(Boolean);
-        plan.push({ repo: repoName, status: 'diverged', commits: divergedCommits });
-      }
+      result.status = 'pushed';
+      const ownerRepo = row.origin.startsWith('/') ? null : parseRemoteUrl(`https://${row.origin}`);
+      result.ownerRepo = ownerRepo ? `${ownerRepo.owner}/${ownerRepo.repo}` : null;
+      await writeStateFile(statePath, state, 'release-state');
     }
-
-    return { code: 0, payload: jsonOut(true, { dryRun: true, plan }) };
+    return { code: 0, payload: jsonOut(true, state) };
+  } catch (e) {
+    if (mutating) return { code: 1, payload: jsonOut(false, { error: 'release_state_or_execution_failed', stopped: true }) };
+    const safe = ['duplicate_argument', 'invalid_argument', 'invalid_change', 'invalid_repo', 'change_required', 'invalid_merge_state',
+      'ambiguous_repo_identity', 'ambiguous_main_sha', 'merge_incomplete', 'invalid_manifest', 'unknown_repo'];
+    return { code: 3, payload: jsonOut(false, { error: safe.includes(e.message) ? e.message : 'release_input_or_probe_failed' }) };
   }
-
-  // Real run or dry-run with merge-state
-  const stateDir = await ensureStateDir(ROOT, opts.change);
-  const mergeState = await readMergeState(stateDir);
-
-  if (!mergeState) {
-    return { code: 3, payload: jsonOut(false, { error: 'merge-state.json not found' }) };
-  }
-
-  // Select repos
-  const repos = selectReposForRelease(mergeState, opts.repos, ROOT);
-
-  // Preflight
-  const preflightResult = await preflightRelease(repos, ROOT);
-  if (!preflightResult.ok) {
-    return { code: 3, payload: jsonOut(false, { blockers: preflightResult.blockers }) };
-  }
-
-  // Dry-run stops here
-  if (opts.dryRun) {
-    const plan = repos.map(r => ({
-      repo: r.name,
-      status: r.releaseStatus,
-      sha: r.mainSha || null,
-      reason: r.reason || null
-    }));
-    return { code: 0, payload: jsonOut(true, { dryRun: true, plan }) };
-  }
-
-  // Push
-  const pushResult = await pushRelease(repos, ROOT);
-
-  // Write release-state.json
-  const releaseState = {
-    change: opts.change,
-    repos: pushResult.results
-  };
-
-  await writeStateFile(join(stateDir, 'release-state.json'), releaseState, 'release-state');
-
-  if (!pushResult.ok) {
-    return { code: 1, payload: jsonOut(false, { ...releaseState, stopped: true }) };
-  }
-
-  return { code: 0, payload: jsonOut(true, releaseState) };
 }

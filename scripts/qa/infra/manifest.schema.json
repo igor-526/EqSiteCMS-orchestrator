@@ -22,7 +22,10 @@
       "const": 1
     },
     "change": {
-      "const": "harden-agent-verification-pipeline"
+      "enum": [
+        "harden-agent-verification-pipeline",
+        "seo-metrica-task-monitor"
+      ]
     },
     "runId": {
       "type": "string",
@@ -165,5 +168,157 @@
     "cleanup": {
       "const": true
     }
-  }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "change": {
+          "const": "harden-agent-verification-pipeline"
+        },
+        "service": {
+          "const": "seo-service"
+        },
+        "kind": {
+          "const": "pg"
+        },
+        "nodeIds": {
+          "anyOf": [
+            {
+              "const": [
+                "selftest"
+              ]
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "pattern": "^tests/integration/test_acceptance_boundaries\\.py::test_[a-z0-9_]+(\\[[a-zA-Z0-9_-]+\\])?$"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "change": {
+          "const": "harden-agent-verification-pipeline"
+        },
+        "service": {
+          "const": "seo-service"
+        },
+        "kind": {
+          "const": "nats"
+        },
+        "nodeIds": {
+          "anyOf": [
+            {
+              "const": [
+                "selftest"
+              ]
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "pattern": "^tests/integration/test_nats_broker\\.py::test_[a-z0-9_]+(\\[[a-zA-Z0-9_-]+\\])?$"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "change": {
+          "const": "harden-agent-verification-pipeline"
+        },
+        "service": {
+          "const": "ya-metrica-service"
+        },
+        "kind": {
+          "const": "pg"
+        },
+        "nodeIds": {
+          "anyOf": [
+            {
+              "const": [
+                "selftest"
+              ]
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "pattern": "^tests/integration/test_acceptance_helpers\\.py::test_[a-z0-9_]+(\\[[a-zA-Z0-9_-]+\\])?$"
+                  },
+                  {
+                    "pattern": "^tests/integration/test_cleanup_worker_postgres\\.py::test_[a-z0-9_]+(\\[[a-zA-Z0-9_-]+\\])?$"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "change": {
+          "const": "harden-agent-verification-pipeline"
+        },
+        "service": {
+          "const": "ya-metrica-service"
+        },
+        "kind": {
+          "const": "nats"
+        },
+        "nodeIds": {
+          "anyOf": [
+            {
+              "const": [
+                "selftest"
+              ]
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "pattern": "^tests/integration/test_nats_broker\\.py::test_[a-z0-9_]+(\\[[a-zA-Z0-9_-]+\\])?$"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "change": {
+          "const": "seo-metrica-task-monitor"
+        },
+        "service": {
+          "const": "ya-metrica-service"
+        },
+        "kind": {
+          "const": "pg"
+        },
+        "nodeIds": {
+          "items": {
+            "enum": [
+              "tests/integration/test_metrica_task_list_postgres.py::test_aggregate_identity",
+              "tests/integration/test_metrica_task_list_postgres.py::test_consistent_read_snapshot",
+              "tests/integration/test_metrica_task_list_postgres.py::test_history_survives_cleanup",
+              "tests/integration/test_metrica_task_list_postgres.py::test_status_order_pagination"
+            ]
+          }
+        }
+      }
+    }
+  ]
 }

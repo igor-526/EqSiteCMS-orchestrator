@@ -49,3 +49,26 @@ export const goodScenarios = [nested(), nested('pending', true),
     { action: 'checkContrast', selector: '#boundary', kind: 'ui', property: 'backgroundColor', threshold: 3 },
   ], { riskId: 'BR-02' }),
 ];
+
+// Independent analytic expectations, not calculated by the implementation under test.
+export const contrastCases = [
+  { id: 'CT-01-normal', selector: '#ct-state', state: 'normal', ratio: 21 },
+  { id: 'CT-01-hover', selector: '#ct-state', state: 'hover', ratio: 12.6347 },
+  { id: 'CT-01-focus', selector: '#ct-state', state: 'focus', ratio: 5.7418 },
+  { id: 'CT-01-error', selector: '#ct-error', state: 'error', ratio: 13.4189 },
+  { id: 'CT-01-transparent', selector: '#ct-transparent', ratio: 21 },
+  { id: 'CT-01-alpha', selector: '#alpha', ratio: 12.6347 },
+  { id: 'CT-01-large', selector: '#ct-large', kind: 'largeText', threshold: 3, ratio: 21 },
+  { id: 'CT-01-ui', selector: '#ct-ui', kind: 'ui', property: 'backgroundColor', threshold: 3, ratio: 21 },
+];
+export const unsupportedCases = [
+  ['image', 'background-image'], ['gradient', 'background-image'], ['opacity', 'opacity'],
+  ['filter', 'filter-or-blend'], ['blend', 'filter-or-blend'], ['backdrop', 'filter-or-blend'],
+  ['pseudo', 'pseudo-paint'], ['ancestor-pseudo', 'pseudo-paint'], ['covered', 'overlap'],
+  ['color', 'color-format'], ['hidden', 'not-visible'],
+].map(([name, reason]) => ({ id: `CT-02-${name}`, selector: `#ct-${name}`, reason }));
+// These scopes isolate the unchanged existing known-good control. Numeric/paint
+// assertions above are mandatory; axe exclusions are not added for paint negatives.
+export const contrastScenario = (c, extra = {}) => scenario(c.id, [
+  { action: 'checkContrast', threshold: 4.5, ...Object.fromEntries(Object.entries(c).filter(([k]) => !['id', 'ratio', 'reason'].includes(k))) },
+], { riskId: c.id.startsWith('CT-01') ? 'R-COLOR' : 'R-PAINT', axeScope: { include: ['#open'] }, ...extra });

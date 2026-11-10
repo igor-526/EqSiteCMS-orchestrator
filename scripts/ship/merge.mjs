@@ -10,8 +10,10 @@
  *   3 — precondition violated or stale plan (no mutations)
  */
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import Ajv from 'ajv';
+import { digest, fileSafety, inventorySafety, parseManifest } from './plan.mjs';
 import { spawnSync } from 'node:child_process';
 import { git } from './git.mjs';
 import { ensureStateDir, jsonOut, progress, writeStateFile } from './common.mjs';
@@ -23,6 +25,8 @@ function parseMergeArgs(args) {
   const opts = {
     dryRun: false,
     planFile: null,
+    planToken: null,
+    error: null,
     resume: false,
     change: null
   };
@@ -34,6 +38,12 @@ function parseMergeArgs(args) {
       opts.resume = true;
     } else if (args[i] === '--plan' && i + 1 < args.length) {
       opts.planFile = args[++i];
+    } else if (args[i] === '--plan-token') {
+      const token = args[++i];
+      if (opts.planToken !== null || !/^[a-f0-9]{64}$/.test(token || '')) opts.error = 'invalid_plan_token';
+      opts.planToken = token;
+    } else if (args[i].startsWith('--plan-token=')) {
+      opts.error = 'invalid_plan_token';
     } else if (args[i] === '--change' && i + 1 < args.length) {
       opts.change = args[++i];
     }
@@ -46,7 +56,7 @@ function parseMergeArgs(args) {
  * Detect resume state for a repo in conflict.
  */
 async function detectResumeState(repo, plan, ROOT) {
-  const repoPath = repo.name === 'root' ? ROOT : join(ROOT, 'services', repo.name);
+  const repoPath = isRoot(repo.name) ? ROOT : join(ROOT, 'services', repo.name);
   
   // Check if MERGE_HEAD still exists
   const mergeHeadResult = await git(repoPath, 'rev-parse', '--verify', 'MERGE_HEAD');
@@ -82,8 +92,8 @@ async function detectResumeState(repo, plan, ROOT) {
   }
 
   // Check merge commit does not include foreign files
-  const mergeFilesResult = await git(repoPath, 'diff', '--name-only', 'HEAD^1', 'HEAD');
-  const mergeFiles = mergeFilesResult.stdout.trim().split('\n').filter(Boolean);
+  const mergeFilesResult = await git(repoPath, 'diff', '--no-renames', '--name-only', '-z', 'HEAD^1', 'HEAD');
+  const mergeFiles = mergeFilesResult.stdout.split('\0').filter(Boolean);
   const includedPaths = (repo.included || []).map(f => f.path);
   const foreignInMerge = mergeFiles.filter(f => !includedPaths.includes(f));
   
@@ -99,131 +109,89 @@ async function detectResumeState(repo, plan, ROOT) {
  * Read and validate plan.json.
  * Normalizes repos from object {".": {...}, "backend": {...}} to array [{name: ".", ...}, {name: "backend", ...}].
  */
+const isRoot = name => name === '.' || name === 'root';
+const repoPathFor = (ROOT, name) => isRoot(name) ? ROOT : join(ROOT, 'services', name);
+const checked = (cwd, ...args) => {
+  const result = git(cwd, '--no-optional-locks', ...args);
+  if (result.status !== 0) throw new Error('git_probe_failed');
+  return result.stdout;
+};
+
 async function readPlan(planFile) {
-  const content = await readFile(planFile, 'utf8');
-  const plan = JSON.parse(content);
-
-  if (!plan || !plan.repos || !plan.branchName) {
-    throw new Error('Invalid plan.json structure');
+  const plan = JSON.parse(await readFile(planFile, 'utf8'));
+  const schema = JSON.parse(await readFile(new URL('./schemas/plan.json', import.meta.url), 'utf8'));
+  if (!new Ajv({ strict: true }).validate(schema, plan)) throw new Error('plan_stale');
+  const { PLAN_TOKEN, ...material } = plan;
+  if (PLAN_TOKEN !== digest(material)) throw new Error('plan_stale');
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(plan.change)) throw new Error('plan_stale');
+  if (Object.hasOwn(plan.repos, '.') && Object.hasOwn(plan.repos, 'root')) throw new Error('plan_stale');
+  if (plan.hasBlockers || plan.blockers.length || Object.values(plan.repos).some(r => r.blockers.length)) throw new Error('plan_stale');
+  for (const data of Object.values(plan.repos)) {
+    const { fingerprint, ...rest } = data;
+    if (fingerprint !== digest({ ...rest, branchName: plan.branchName }) ||
+        !data.statusHash || !data.indexHash ||
+        (data.status === 'changed') !== (data.included.length > 0)) throw new Error('plan_stale');
   }
-
-  // Normalize repos: plan.json stores as object, merge consumes as array
-  if (!Array.isArray(plan.repos)) {
-    plan.repos = Object.entries(plan.repos).map(([name, data]) => ({ name, ...data }));
-  }
-
+  plan.repos = Object.entries(plan.repos).map(([name, data]) => ({ ...data, name: isRoot(name) ? '.' : name }));
+  plan.inventory = plan.inventory.map(r => ({ ...r, name: isRoot(r.name) ? '.' : r.name }));
   return plan;
 }
 
-/**
- * Recompute fingerprint and validate plan is still current.
- */
-async function validateFingerprint(repo, plan, ROOT) {
-  const repoPath = repo.name === 'root' ? ROOT : join(ROOT, 'services', repo.name);
-
-  // Check HEAD matches
-  const headResult = await git(repoPath, 'rev-parse', 'HEAD');
-  const currentHead = headResult.stdout.trim();
-  if (currentHead !== repo.head) {
-    return { valid: false, reason: 'head_changed' };
-  }
-
-  // Check branch name is still free locally
-  const localCheckResult = await git(repoPath, 'rev-parse', '--verify', `refs/heads/${plan.branchName}`);
-  if (localCheckResult.status === 0) {
-    return { valid: false, reason: 'branch_exists_local' };
-  }
-
-  // Check branch name is still free on origin
-  const remoteResult = await git(repoPath, 'ls-remote', '--heads', 'origin', plan.branchName);
-  if (remoteResult.stdout.trim()) {
-    return { valid: false, reason: 'branch_exists_remote' };
-  }
-
-  // Check included files haven't changed (compare blob hashes if available)
-  // blobHash is optional in schema but may be present for validation
-  if (repo.included) {
-    for (const file of repo.included) {
-      if (file.blobHash) {
-        const hashResult = await git(repoPath, 'hash-object', file.path);
-        const currentHash = hashResult.status === 0 ? hashResult.stdout.trim() : null;
-        if (currentHash !== file.blobHash) {
-          return { valid: false, reason: 'included_file_changed' };
-        }
-      }
-    }
-  }
-
-  return { valid: true };
-}
-
-/**
- * Run preflight checks on all changed repositories before any mutations.
- * Accumulates ALL blockers from ALL repos (F-083-02: full list for --dry-run).
- * Returns array of blockers or null if all clear.
- */
+/** Read-only, whole-inventory validation. The dispatcher holds the common flock. */
 async function runPreflight(plan, ROOT) {
   const blockers = [];
-
-  const changedRepos = plan.repos.filter(r => r.status === 'changed');
-
-  // F-083-02: accumulate all blockers, do not exit early
-  for (const repo of changedRepos) {
-    const repoPath = repo.name === 'root' ? ROOT : join(ROOT, 'services', repo.name);
-
-    // Validate fingerprint and free branch
-    const fpCheck = await validateFingerprint(repo, plan, ROOT);
-    if (!fpCheck.valid) {
-      blockers.push({ repo: repo.name, blocker: 'plan_stale', detail: fpCheck.reason });
-      continue;
-    }
-
-    // Check not detached (must be before not_on_main, as detached HEAD returns "HEAD")
-    const symbolicResult = await git(repoPath, 'symbolic-ref', '-q', 'HEAD');
-    if (symbolicResult.status !== 0) {
-      blockers.push({ repo: repo.name, blocker: 'detached_head' });
-      continue;
-    }
-
-    // Check current branch is main
-    const branchResult = await git(repoPath, 'rev-parse', '--abbrev-ref', 'HEAD');
-    const currentBranch = branchResult.stdout.trim();
-    if (currentBranch !== 'main') {
-      blockers.push({ repo: repo.name, blocker: 'not_on_main', detail: currentBranch });
-      continue;
-    }
-
-    // Check no MERGE_HEAD
-    const mergeHeadResult = await git(repoPath, 'rev-parse', '--verify', 'MERGE_HEAD');
-    if (mergeHeadResult.status === 0) {
-      blockers.push({ repo: repo.name, blocker: 'merge_in_progress' });
-      continue;
-    }
-
-    // Check no foreign files are staged
-    const stagedResult = await git(repoPath, 'diff', '--cached', '--name-only');
-    if (stagedResult.stdout.trim()) {
-      const staged = stagedResult.stdout.split('\n').filter(Boolean);
-      const includedPaths = (repo.included || []).map(f => f.path);
-      const foreignStaged = staged.filter(s => !includedPaths.includes(s));
-      if (foreignStaged.length > 0) {
-        blockers.push({ repo: repo.name, blocker: 'foreign_staged', files: foreignStaged });
-        continue;
-      }
-    }
-
-    // Check main is not ahead of origin/main
-    const mainResult = await git(repoPath, 'rev-parse', 'main');
-    const originMainResult = await git(repoPath, 'rev-parse', 'origin/main');
-    const mainSha = mainResult.stdout.trim();
-    const originMainSha = originMainResult.stdout.trim();
-    if (mainSha !== originMainSha) {
-      blockers.push({ repo: repo.name, blocker: 'main_ahead' });
-      continue;
-    }
+  const stale = (repo, detail) => blockers.push({ repo, blocker: 'plan_stale', detail });
+  let manifest;
+  try {
+    manifest = await parseManifest(ROOT);
+    // A symlinked services parent is not an inventory boundary.
+    const { lstat } = await import('node:fs/promises');
+    if ((await lstat(join(ROOT, 'services')).catch(e => { if (e.code === 'ENOENT') return null; throw e; }))?.isSymbolicLink()) throw new Error('invalid_inventory');
+  } catch { return [{ blocker: 'plan_stale', detail: 'inventory_invalid' }]; }
+  const names = ['.', ...Object.keys(manifest)];
+  if (digest([...plan.repos.map(r => r.name)].sort()) !== digest([...names].sort()) ||
+      digest(plan.inventory.map(r => r.name).sort()) !== digest([...names].sort())) {
+    return [{ blocker: 'plan_stale', detail: 'inventory_changed' }];
   }
-
-  return blockers.length > 0 ? blockers : null;
+  if (['main', 'release', 'dev'].includes(plan.branchName) || plan.branchName.startsWith('-') ||
+      /[\x00-\x1f\x7f]/.test(plan.branchName) ||
+      git(ROOT, 'check-ref-format', `refs/heads/${plan.branchName}`).status !== 0) {
+    return [{ blocker: 'plan_stale', detail: 'invalid_branch' }];
+  }
+  for (const name of names) {
+    const repo = plan.repos.find(r => r.name === name);
+    const repoPath = repoPathFor(ROOT, name);
+    try {
+      const safety = await inventorySafety(repoPath, manifest[name]);
+      for (const blocker of safety.blockers) blockers.push({ repo: name, blocker });
+      if (safety.blockers.includes('missing_or_invalid_clone')) continue;
+      if (repo.path !== repoPath) stale(name, 'repository_path_changed');
+      for (const key of ['head', 'branch', 'origin', 'pushOrigins', 'remoteHeads']) {
+        if (digest(repo[key]) !== digest(safety[key])) stale(name, `${key}_changed`);
+      }
+      if (plan.inventory.find(r => r.name === name).origin !== safety.origin) stale(name, 'inventory_origin_changed');
+      const status = checked(repoPath, 'status', '--porcelain=v1', '-z', '--untracked-files=all');
+      if (repo.statusHash !== digest(status)) stale(name, 'status_changed');
+      if (repo.indexHash !== digest(checked(repoPath, 'ls-files', '--stage', '-z'))) stale(name, 'index_changed');
+      for (const file of [...repo.included, ...repo.foreign]) {
+        if (digest(await fileSafety(repoPath, file.path, file.status)) !== digest(file)) stale(name, 'file_changed');
+      }
+      const included = new Set(repo.included.map(f => f.path));
+      const staged = checked(repoPath, 'diff', '--cached', '--no-renames', '--name-only', '-z').split('\0').filter(Boolean);
+      if (staged.some(file => !included.has(file))) blockers.push({ repo: name, blocker: 'foreign_staged' });
+      if (repo.status === 'changed' && (git(repoPath, 'show-ref', '--verify', '--quiet', `refs/heads/${plan.branchName}`).status === 0 ||
+          Object.hasOwn(safety.remoteHeads, plan.branchName))) stale(name, 'branch_occupied');
+      // Strict sync may update untouched clones: refuse overlaps with any dirty path.
+      if (safety.head && safety.remoteHeads.main && safety.head !== safety.remoteHeads.main) {
+        const upstream = checked(repoPath, 'diff', '--name-only', '-z', safety.head, safety.remoteHeads.main).split('\0').filter(Boolean);
+        const dirty = [...repo.included, ...repo.foreign, ...repo.excluded].map(f => f.path);
+        if (upstream.some(p => dirty.some(f => f === p || f.startsWith(p + '/') || p.startsWith(f + '/')))) blockers.push({ repo: name, blocker: 'unsafe_dirty_sync' });
+      }
+    } catch { stale(name, 'safety_probe_failed'); }
+  }
+  // The execution order remains manifest order, with root moved last by phase 1.
+  plan.repos.sort((a, b) => names.indexOf(a.name) - names.indexOf(b.name));
+  return blockers.length ? blockers : null;
 }
 
 /**
@@ -249,7 +217,7 @@ async function executeSyncBarrier(ROOT, change, changedRepoNames, dryRun = false
   const result = spawnSync(makeBin, ['sync', `SYNC_FLAGS=${syncFlags}`], {
     cwd: ROOT,
     encoding: 'utf8',
-    stdio: 'inherit'
+    stdio: ['ignore', 2, 2]
   });
 
   if (result.status !== 0) {
@@ -265,6 +233,7 @@ async function executeSyncBarrier(ROOT, change, changedRepoNames, dryRun = false
     const failedRepos = syncReport.filter(r => r.result === 'failed');
     const failedInChanged = failedRepos.filter(r => changedRepoNames.includes(r.name) || r.name === 'root');
     
+    if (!failedRepos.length) throw new Error('Sync failed without a usable failure report');
     if (failedInChanged.length > 0) {
       throw new Error(`Sync failed in changed repositories: ${failedInChanged.map(r => r.name).join(', ')}`);
     } else {
@@ -279,8 +248,8 @@ async function executeSyncBarrier(ROOT, change, changedRepoNames, dryRun = false
  * Execute phase 2 for a single repository.
  * Returns: { success: true } | { conflict: true, files: [...] } | throws on error
  */
-async function executePhase2ForRepo(repo, plan, ROOT, dryRun = false) {
-  const repoPath = repo.name === 'root' ? ROOT : join(ROOT, 'services', repo.name);
+async function executePhase2ForRepo(repo, plan, ROOT, dryRun = false, checkpoint = async () => {}) {
+  const repoPath = isRoot(repo.name) ? ROOT : join(ROOT, 'services', repo.name);
   const steps = [];
 
   const branchName = plan.branchName;
@@ -298,15 +267,17 @@ async function executePhase2ForRepo(repo, plan, ROOT, dryRun = false) {
       
       if (mergeHeadResult.status === 0) {
         // Conflict: MERGE_HEAD exists, get conflicted files
-        const conflictResult = await git(repoPath, 'diff', '--name-only', '--diff-filter=U');
-        const conflictedFiles = conflictResult.stdout.trim().split('\n').filter(Boolean);
+        const conflictResult = await git(repoPath, 'diff', '--name-only', '-z', '--diff-filter=U');
+        const conflictedFiles = conflictResult.stdout.split('\0').filter(Boolean);
         
         return { conflict: true, files: conflictedFiles };
       }
       
-      throw new Error(`Merge failed: ${mergeResult.stderr}`);
+      return { failed: true, error: `Merge failed: ${mergeResult.stderr}` };
     }
   }
+
+  if (!dryRun) await checkpoint();
 
   // Step 2: git push origin main
   steps.push({ cmd: 'git', args: ['push', 'origin', 'main'] });
@@ -328,15 +299,12 @@ async function executePhase2ForRepo(repo, plan, ROOT, dryRun = false) {
 /**
  * Execute phase 1 for a single repository.
  */
-async function executePhase1ForRepo(repo, plan, ROOT, dryRun = false) {
-  const repoPath = repo.name === 'root' ? ROOT : join(ROOT, 'services', repo.name);
+async function executePhase1ForRepo(repo, plan, ROOT, dryRun = false, checkpoint = async () => {}) {
+  const repoPath = isRoot(repo.name) ? ROOT : join(ROOT, 'services', repo.name);
   const steps = [];
 
   const branchName = plan.branchName;
-  const commitPrefix = plan.commitMessage?.subject?.match(/^(feat|fix)/)?.[1] || plan.commitPrefix || 'feat';
-  const summary = plan.commitMessage?.subject?.replace(/^(feat|fix)\([^)]+\):\s*/, '') || plan.summary || 'Change';
-  
-  const commitMessage = `${commitPrefix}(${plan.change}): ${summary}`;
+  const commitMessage = plan.commitMessage.subject;
   const trailers = plan.commitMessage?.trailers?.join('\n') || `OpenSpec: ${plan.change}`;
 
   // Step 1: git switch -c <branch>
@@ -349,11 +317,16 @@ async function executePhase1ForRepo(repo, plan, ROOT, dryRun = false) {
   }
 
   // Step 2: git add -A -- <included paths>
-  const includedPaths = (repo.included || []).map(f => f.path);
+  // Already-staged deletions (including rename sources) no longer exist in
+  // either the index or worktree. Their deletion is already staged; passing
+  // such a path to git add would fail. Other paths are staged whole-file.
+  const includedPaths = (repo.included || [])
+    .filter(f => !(f.blobHash === null && f.indexHash === digest('')))
+    .map(f => f.path);
   if (includedPaths.length > 0) {
-    steps.push({ cmd: 'git', args: ['add', '-A', '--', ...includedPaths] });
+    steps.push({ cmd: 'git', args: ['--literal-pathspecs', 'add', '-A', '--', ...includedPaths] });
     if (!dryRun) {
-      const addResult = await git(repoPath, 'add', '-A', '--', ...includedPaths);
+      const addResult = await git(repoPath, '--literal-pathspecs', 'add', '-A', '--', ...includedPaths);
       if (addResult.status !== 0) {
         throw new Error(`Failed to add files: ${addResult.stderr}`);
       }
@@ -370,6 +343,8 @@ async function executePhase1ForRepo(repo, plan, ROOT, dryRun = false) {
     }
   }
 
+  if (!dryRun) await checkpoint('committed');
+
   // Step 4: git switch main
   steps.push({ cmd: 'git', args: ['switch', 'main'] });
   if (!dryRun) {
@@ -378,6 +353,8 @@ async function executePhase1ForRepo(repo, plan, ROOT, dryRun = false) {
       throw new Error(`Failed to switch to main: ${switchMainResult.stderr}`);
     }
   }
+
+  if (!dryRun) await checkpoint('switched');
 
   // Step 5: git push origin <branch>
   steps.push({ cmd: 'git', args: ['push', 'origin', branchName] });
@@ -388,7 +365,165 @@ async function executePhase1ForRepo(repo, plan, ROOT, dryRun = false) {
     }
   }
 
+  if (!dryRun) await checkpoint('branch-pushed');
   return steps;
+}
+
+async function checkpointRepo(ROOT, repo) {
+  const cwd = repoPathFor(ROOT, repo.name);
+  repo.checkpointHead = checked(cwd, 'rev-parse', 'HEAD').trim();
+  repo.checkpointBranch = checked(cwd, 'branch', '--show-current').trim();
+}
+
+function stopped(mergeState, error, detail) {
+  return { code: 1, payload: jsonOut(false, {
+    error, detail, mergeState, stopped: true,
+    resumeCommand: `shipctl merge --resume --change ${mergeState.change}`
+  }) };
+}
+
+async function finishPhase2(ROOT, plan, state, statePath) {
+  for (const repo of state.repos) {
+    const cwd = repoPathFor(ROOT, repo.name);
+    if (repo.stage === 'pushed') continue;
+    state.phase = 'phase2-partial';
+    try {
+      if (repo.stage === 'merged') {
+        const push = git(cwd, 'push', 'origin', 'main');
+        if (push.status !== 0) throw new Error(`push origin main failed: ${push.stderr}`);
+      } else {
+        repo.preMergeMain = checked(cwd, 'rev-parse', 'main').trim();
+        await writeStateFile(statePath, state, 'merge-state');
+        const result = await executePhase2ForRepo(repo, plan, ROOT, false, async () => {
+          repo.stage = 'merged';
+          repo.mergedSha = checked(cwd, 'rev-parse', 'main').trim();
+          await checkpointRepo(ROOT, repo);
+          await writeStateFile(statePath, state, 'merge-state');
+        });
+        if (result.conflict) {
+          repo.stage = 'conflict';
+          repo.conflictFiles = result.files;
+          await checkpointRepo(ROOT, repo);
+          await writeStateFile(statePath, state, 'merge-state');
+          const response = stopped(state, `Conflict in ${repo.name}`);
+          response.payload.conflictFiles = result.files;
+          return response;
+        }
+        if (result.error) {
+          if (result.failed) {
+            repo.lastSuccessfulStage = repo.stage;
+            repo.stage = 'failed';
+          }
+          throw new Error(result.error);
+        }
+      }
+      repo.stage = 'pushed';
+      repo.pushedSha = checked(cwd, 'rev-parse', 'main').trim();
+      delete repo.error;
+      await checkpointRepo(ROOT, repo);
+      await writeStateFile(statePath, state, 'merge-state');
+    } catch (error) {
+      repo.error = error.message;
+      await checkpointRepo(ROOT, repo);
+      await writeStateFile(statePath, state, 'merge-state');
+      return stopped(state, `Phase 2 failed for ${repo.name}`, error.message);
+    }
+  }
+  state.phase = 'phase2-complete';
+  await writeStateFile(statePath, state, 'merge-state');
+  return { code: 0, payload: jsonOut(true, {
+    message: 'Phase 2 complete: all repositories merged and pushed to main', mergeState: state
+  }) };
+}
+
+async function resumeMerge(ROOT, change, dryRun) {
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(change)) {
+    return { code: 3, payload: jsonOut(false, { error: 'invalid_change' }) };
+  }
+  const statePath = join(ROOT, '.qa/ship', change, 'merge-state.json');
+  let state, plan;
+  try {
+    plan = await readPlan(join(ROOT, '.qa/ship', change, 'plan.json'));
+    state = JSON.parse(await readFile(statePath, 'utf8'));
+    const schema = JSON.parse(await readFile(new URL('./schemas/merge-state.json', import.meta.url), 'utf8'));
+    if (!new Ajv({ strict: true }).validate(schema, state)) throw new Error('invalid_state');
+    if (state.version !== 2 || state.change !== change || plan.change !== change ||
+        state.branchName !== plan.branchName || state.planToken !== plan.PLAN_TOKEN) throw new Error('state_mismatch');
+    const names = state.repos.map(r => isRoot(r.name) ? '.' : r.name);
+    const expected = plan.repos.filter(r => r.status === 'changed').map(r => r.name);
+    if (new Set(names).size !== names.length || digest([...names].sort()) !== digest(expected.sort())) throw new Error('state_mismatch');
+    state.repos.forEach((r, i) => { r.name = names[i]; });
+  } catch {
+    return { code: 3, payload: jsonOut(false, { error: 'plan_stale',
+      blockers: [{ blocker: 'state_mismatch', detail: 'Replan required for legacy/incomplete plan; review existing partial state manually' }] }) };
+  }
+  const blockers = [];
+  const block = (name, detail) => blockers.push({ repo: name, blocker: 'state_mismatch', detail });
+  if (state.phase === 'phase2-complete' || state.phase === 'phase1' || state.repos.some(r =>
+      !['merged', 'pushed', 'conflict', 'synced', 'branch-pushed'].includes(r.stage))) {
+    block('.', 'No resumable phase-2 work; review failed phase-1 locally, never retry automatically');
+  }
+  try {
+    const manifest = await parseManifest(ROOT);
+    const { lstat } = await import('node:fs/promises');
+    if ((await lstat(join(ROOT, 'services'))).isSymbolicLink()) throw new Error('invalid_inventory');
+    const names = ['.', ...Object.keys(manifest)];
+    if (digest([...names].sort()) !== digest(plan.repos.map(r => r.name).sort())) block('.', 'inventory_changed');
+    for (const name of names) {
+      const original = plan.repos.find(r => r.name === name);
+      if (!original) { block(name, 'inventory_changed'); continue; }
+      const cwd = repoPathFor(ROOT, name);
+      const safety = await inventorySafety(cwd, manifest[name]);
+      const repo = state.repos.find(r => r.name === name);
+      if (safety.origin !== original.origin || digest(safety.pushOrigins) !== digest(original.pushOrigins)) block(name, 'origin_changed');
+      // Local main may be ahead after a failed push; no other operation blocker
+      // is waived. A pending conflict is inspected below without modifying it.
+      const allowed = new Set();
+      if (repo && safety.remoteHeads.main && git(cwd, 'merge-base', '--is-ancestor', safety.remoteHeads.main, safety.head).status === 0) allowed.add('main_ahead_or_diverged');
+      if (repo?.stage === 'conflict' && git(cwd, 'rev-parse', '--verify', 'MERGE_HEAD').status === 0 &&
+          safety.blockers.filter(b => b === 'operation_in_progress').length === 1) allowed.add('operation_in_progress');
+      if (safety.blockers.some(b => !allowed.has(b))) block(name, 'unsafe_repository');
+      if (!repo) {
+        if (safety.head !== original.head || safety.branch !== 'main' ||
+            digest(checked(cwd, 'status', '--porcelain=v1', '-z', '--untracked-files=all')) !== original.statusHash ||
+            digest(checked(cwd, 'ls-files', '--stage', '-z')) !== original.indexHash) block(name, 'untouched_repository_changed');
+        continue;
+      }
+      if (checked(cwd, 'branch', '--show-current').trim() !== 'main') block(name, 'branch_changed');
+      if (checked(cwd, 'rev-parse', plan.branchName).trim() !== repo.featureSha || safety.remoteHeads[plan.branchName] !== repo.featureSha) block(name, 'feature_changed');
+      if (repo.stage === 'conflict') {
+        const result = await detectResumeState({ ...repo, included: original.included }, plan, ROOT);
+        if (!result.valid) blockers.push({ repo: name, ...result });
+        else {
+          repo.stage = 'merged';
+          repo.mergedSha = checked(cwd, 'rev-parse', 'HEAD').trim();
+          await checkpointRepo(ROOT, repo);
+        }
+      } else if (safety.head !== repo.checkpointHead || safety.branch !== repo.checkpointBranch) block(name, 'head_or_branch_changed');
+      const dirty = [...checked(cwd, 'diff', '--name-only', '-z', 'HEAD').split('\0'),
+        ...checked(cwd, 'ls-files', '--others', '--exclude-standard', '-z').split('\0')].filter(Boolean);
+      if (repo.stage !== 'conflict' && dirty.some(p => !original.foreign.some(f => f.path === p))) block(name, 'worktree_changed');
+      if (repo.stage !== 'conflict' && checked(cwd, 'diff', '--cached', '--name-only', '-z')) block(name, 'index_changed');
+      // Foreign worktree/index bytes must still match the approved plan.
+      for (const file of original.foreign) {
+        if (digest(await fileSafety(cwd, file.path, file.status)) !== digest(file)) block(name, 'foreign_changed');
+      }
+      if (repo.stage === 'pushed' && safety.remoteHeads.main !== repo.pushedSha) block(name, 'remote_main_changed');
+      if (repo.stage !== 'pushed' && safety.remoteHeads.main !== repo.preMergeMain &&
+          safety.remoteHeads.main !== repo.checkpointHead) block(name, 'remote_main_changed');
+    }
+  } catch { block('.', 'resume_probe_failed'); }
+  if (blockers.length) return { code: 3, payload: jsonOut(false, { error: 'Resume validation failed', blockers }) };
+  if (dryRun) return { code: 0, payload: jsonOut(true, { message: 'Resume validated (no mutations)', mergeState: state }) };
+  await writeStateFile(statePath, state, 'merge-state');
+  try {
+    await executeSyncBarrier(ROOT, change, state.repos.map(r => r.name), false);
+  } catch (error) {
+    state.phase = 'sync-failed';
+    await writeStateFile(statePath, state, 'merge-state');
+    return stopped(state, 'Sync barrier failed', error.message);
+  }
+  return await finishPhase2(ROOT, plan, state, statePath);
 }
 
 /**
@@ -399,7 +534,10 @@ export async function merge(args, context) {
 
   try {
     const opts = parseMergeArgs(args);
-    const { dryRun, planFile, resume, change } = opts;
+    const { dryRun, planFile, planToken, resume, change } = opts;
+    if (opts.error || (resume && planToken !== null)) {
+      return { code: 3, payload: jsonOut(false, { error: opts.error || 'plan_token_not_allowed_with_resume' }) };
+    }
 
     // Handle --resume
     if (resume) {
@@ -410,168 +548,7 @@ export async function merge(args, context) {
         };
       }
 
-      const stateDir = join(ROOT, '.qa/ship', change);
-      const statePath = join(stateDir, 'merge-state.json');
-      const planPath = join(stateDir, 'plan.json');
-
-      let mergeState, plan;
-      try {
-        mergeState = JSON.parse(await readFile(statePath, 'utf8'));
-        plan = JSON.parse(await readFile(planPath, 'utf8'));
-      } catch {
-        return {
-          code: 3,
-          payload: jsonOut(false, { error: 'No merge state found for this change' })
-        };
-      }
-
-      // Process resume
-      const blockers = [];
-      const resumeRepos = [];
-
-      for (const repoState of mergeState.repos) {
-        const planRepo = plan.repos.find(r => r.name === repoState.name);
-        if (!planRepo) continue;
-
-        if (repoState.stage === 'conflict') {
-          // Validate conflict resolution
-          const resumeCheck = await detectResumeState(repoState, plan, ROOT);
-          if (!resumeCheck.valid) {
-            blockers.push({ repo: repoState.name, ...resumeCheck });
-            continue;
-          }
-          
-          // Accept user's merge commit
-          repoState.stage = 'merged';
-          repoState.mergedSha = (await git(
-            repoState.name === 'root' ? ROOT : join(ROOT, 'services', repoState.name),
-            'rev-parse', 'HEAD'
-          )).stdout.trim();
-        } else if (repoState.stage !== 'pushed' && repoState.stage !== 'merged' && repoState.stage !== 'branch-pushed' && repoState.stage !== 'synced') {
-          // Validate other repos haven't changed
-          const repoPath = repoState.name === 'root' ? ROOT : join(ROOT, 'services', repoState.name);
-          const currentHead = (await git(repoPath, 'rev-parse', 'HEAD')).stdout.trim();
-          const currentBranch = (await git(repoPath, 'rev-parse', '--abbrev-ref', 'HEAD')).stdout.trim();
-          
-          if (currentHead !== repoState.head || currentBranch !== 'main') {
-            blockers.push({ 
-              repo: repoState.name, 
-              blocker: 'state_mismatch',
-              detail: 'Repository state changed since last run'
-            });
-          }
-        }
-
-        resumeRepos.push(repoState);
-      }
-
-      if (blockers.length > 0) {
-        return {
-          code: 3,
-          payload: jsonOut(false, { error: 'Resume validation failed', blockers })
-        };
-      }
-
-      // Repeat sync barrier
-      const changedRepoNames = plan.repos.filter(r => r.status === 'changed').map(r => r.name);
-      try {
-        await executeSyncBarrier(ROOT, change, changedRepoNames, false);
-      } catch (error) {
-        return {
-          code: 1,
-          payload: jsonOut(false, { error: 'Sync barrier failed', detail: error.message })
-        };
-      }
-
-      // Push main for merged repos
-      for (const repoState of resumeRepos) {
-        if (repoState.stage === 'merged') {
-          progress(`Pushing main for ${repoState.name}...`);
-          const repoPath = repoState.name === 'root' ? ROOT : join(ROOT, 'services', repoState.name);
-          const pushResult = await git(repoPath, 'push', 'origin', 'main');
-          
-          if (pushResult.status !== 0) {
-            repoState.error = `push origin main failed: ${pushResult.stderr}`;
-            await writeStateFile(statePath, mergeState, 'merge-state');
-            return {
-              code: 1,
-              payload: jsonOut(false, {
-                error: `Push failed for ${repoState.name}`,
-                mergeState,
-                detail: pushResult.stderr
-              })
-            };
-          }
-
-          repoState.stage = 'pushed';
-          repoState.pushedSha = repoState.mergedSha;
-        }
-      }
-
-      // Continue phase 2 for remaining repos
-      for (const repoState of resumeRepos) {
-        if (repoState.stage === 'synced' || repoState.stage === 'branch-pushed') {
-          progress(`Merging ${repoState.name}...`);
-          const planRepo = plan.repos.find(r => r.name === repoState.name);
-          
-          const repoPath = repoState.name === 'root' ? ROOT : join(ROOT, 'services', repoState.name);
-          const preMergeMain = (await git(repoPath, 'rev-parse', 'main')).stdout.trim();
-          repoState.preMergeMain = preMergeMain;
-
-          const phase2Result = await executePhase2ForRepo(planRepo, plan, ROOT, false);
-
-          if (phase2Result.conflict) {
-            repoState.stage = 'conflict';
-            repoState.conflictFiles = phase2Result.files;
-            mergeState.phase = 'phase2-partial';
-            await writeStateFile(statePath, mergeState, 'merge-state');
-
-            return {
-              code: 1,
-              payload: jsonOut(false, {
-                error: `Conflict in ${repoState.name}`,
-                mergeState,
-                conflictFiles: phase2Result.files,
-                resumeCommand: `shipctl merge --resume --change ${change}`
-              })
-            };
-          }
-
-          if (phase2Result.error) {
-            // Push failed, but merge succeeded - record the merged SHA
-            const mergedSha = (await git(repoPath, 'rev-parse', 'main')).stdout.trim();
-            repoState.stage = 'merged';
-            repoState.mergedSha = mergedSha;
-            repoState.error = phase2Result.error;
-            mergeState.phase = 'phase2-partial';
-            await writeStateFile(statePath, mergeState, 'merge-state');
-
-            return {
-              code: 1,
-              payload: jsonOut(false, {
-                error: `Phase 2 failed for ${repoState.name}`,
-                mergeState,
-                detail: phase2Result.error
-              })
-            };
-          }
-
-          repoState.stage = 'pushed';
-          const pushedSha = (await git(repoPath, 'rev-parse', 'main')).stdout.trim();
-          repoState.pushedSha = pushedSha;
-        }
-      }
-
-      mergeState.phase = 'phase2-complete';
-      await writeStateFile(statePath, mergeState, 'merge-state');
-
-      return {
-        code: 0,
-        payload: jsonOut(true, {
-          message: 'Resume completed: all repositories merged and pushed',
-          mergeState
-        })
-      };
+      return await resumeMerge(ROOT, change, dryRun);
     }
 
     // Normal flow (not resume)
@@ -582,23 +559,35 @@ export async function merge(args, context) {
       };
     }
 
-    const plan = await readPlan(planFile);
-    const changedRepos = plan.repos.filter(r => r.status === 'changed');
-
-    if (changedRepos.length === 0) {
-      return {
-        code: 0,
-        payload: jsonOut(true, { message: 'No changed repositories' })
-      };
+    let plan;
+    try { plan = await readPlan(planFile); } catch {
+      return { code: 3, payload: jsonOut(false, { error: 'plan_stale', blockers: [{ blocker: 'plan_stale', detail: 'Replan required: invalid or incomplete safety material' }] }) };
     }
-
-    // Preflight all changed repos
+    // The dispatcher holds the common flock here. Compare the caller's approval
+    // with the very same validated in-memory plan that execution will consume;
+    // a read-only replan can replace the path even while this lock is held.
+    // Omission preserves the historical direct CLI (explicit operator action).
+    if (planToken !== null && planToken !== plan.PLAN_TOKEN) {
+      return { code: 3, payload: jsonOut(false, { error: 'plan_approval_mismatch' }) };
+    }
+    // Preflight the whole manifest inventory
     progress('Running preflight checks...');
     const blockers = await runPreflight(plan, ROOT);
     if (blockers) {
       return {
         code: 3,
         payload: jsonOut(false, { error: 'Preflight failed', blockers })
+      };
+    }
+
+    // Preflight established current manifest order; root executes last.
+    const changedRepos = plan.repos.filter(r => r.status === 'changed')
+      .sort((a, b) => Number(isRoot(a.name)) - Number(isRoot(b.name)));
+
+    if (changedRepos.length === 0) {
+      return {
+        code: 0,
+        payload: jsonOut(true, { message: 'No changed repositories' })
       };
     }
 
@@ -637,53 +626,39 @@ export async function merge(args, context) {
     // Execute phase 1 for all changed repos (services in manifest order, root last)
     const stateDir = await ensureStateDir(ROOT, plan.change);
 
+    const statePath = join(stateDir, 'merge-state.json');
+    // Persist the complete table before touching any clone. Later rows remain
+    // untouched on phase-1 failure; no failed command is retried automatically.
     const mergeState = {
-      phase: 'phase1',
-      change: plan.change,
-      branchName: plan.branchName,
-      repos: []
+      version: 2, planToken: plan.PLAN_TOKEN,
+      phase: 'phase1', change: plan.change, branchName: plan.branchName,
+      repos: changedRepos.map(repo => ({
+        name: repo.name, stage: 'untouched', head: repo.head,
+        included: repo.included, foreign: repo.foreign,
+        checkpointHead: repo.head, checkpointBranch: 'main'
+      }))
     };
-
-    // Sort: root last
-    const orderedRepos = [...changedRepos].sort((a, b) => {
-      if (a.name === 'root') return 1;
-      if (b.name === 'root') return -1;
-      return 0;
-    });
-
-    // Phase 1: create branches, commit, push
-    for (const repo of orderedRepos) {
-      progress(`Phase 1: ${repo.name}...`);
-
-      const repoState = {
-        name: repo.name,
-        stage: 'planned',
-        head: repo.head,
-        included: repo.included,
-        foreign: repo.foreign
-      };
-
+    await writeStateFile(statePath, mergeState, 'merge-state');
+    for (const repoState of mergeState.repos) {
+      const repo = changedRepos.find(r => r.name === repoState.name);
+      const repoPath = repoPathFor(ROOT, repo.name);
+      repoState.stage = 'planned';
+      await writeStateFile(statePath, mergeState, 'merge-state');
       try {
-        await executePhase1ForRepo(repo, plan, ROOT, false);
-        repoState.stage = 'branch-pushed';
-        progress(`✓ ${repo.name}: feature branch pushed`);
+        await executePhase1ForRepo(repo, plan, ROOT, false, async stage => {
+          repoState.stage = stage;
+          repoState.featureSha = checked(repoPath, 'rev-parse', plan.branchName).trim();
+          await checkpointRepo(ROOT, repoState);
+          await writeStateFile(statePath, mergeState, 'merge-state');
+        });
       } catch (error) {
-        repoState.error = error.message;
+        repoState.lastSuccessfulStage = repoState.stage;
         repoState.stage = 'failed';
-        mergeState.repos.push(repoState);
-
-        await writeStateFile(join(stateDir, 'merge-state.json'), mergeState, 'merge-state');
-        return {
-          code: 1,
-          payload: jsonOut(false, {
-            error: `Phase 1 failed for ${repo.name}`,
-            mergeState,
-            detail: error.message
-          })
-        };
+        repoState.error = error.message;
+        await checkpointRepo(ROOT, repoState);
+        await writeStateFile(statePath, mergeState, 'merge-state');
+        return stopped(mergeState, `Phase 1 failed for ${repo.name}`, error.message);
       }
-
-      mergeState.repos.push(repoState);
     }
 
     // Sync barrier
@@ -694,88 +669,16 @@ export async function merge(args, context) {
     } catch (error) {
       mergeState.phase = 'sync-failed';
       await writeStateFile(join(stateDir, 'merge-state.json'), mergeState, 'merge-state');
-      return {
-        code: 1,
-        payload: jsonOut(false, {
-          error: 'Sync barrier failed',
-          mergeState,
-          detail: error.message
-        })
-      };
+      return stopped(mergeState, 'Sync barrier failed', error.message);
     }
 
-    // Mark all as synced
     for (const repoState of mergeState.repos) {
       repoState.stage = 'synced';
+      await checkpointRepo(ROOT, repoState);
     }
+    await writeStateFile(statePath, mergeState, 'merge-state');
+    return await finishPhase2(ROOT, plan, mergeState, statePath);
 
-    // Phase 2: merge and push main
-    for (const repoState of mergeState.repos) {
-      progress(`Phase 2: merging ${repoState.name}...`);
-      
-      const planRepo = plan.repos.find(r => r.name === repoState.name);
-      const repoPath = repoState.name === 'root' ? ROOT : join(ROOT, 'services', repoState.name);
-      
-      // Record pre-merge main SHA
-      const preMergeMain = (await git(repoPath, 'rev-parse', 'main')).stdout.trim();
-      repoState.preMergeMain = preMergeMain;
-
-      const phase2Result = await executePhase2ForRepo(planRepo, plan, ROOT, false);
-
-      if (phase2Result.conflict) {
-        repoState.stage = 'conflict';
-        repoState.conflictFiles = phase2Result.files;
-        mergeState.phase = 'phase2-partial';
-        await writeStateFile(join(stateDir, 'merge-state.json'), mergeState, 'merge-state');
-
-        return {
-          code: 1,
-          payload: jsonOut(false, {
-            error: `Conflict in ${repoState.name}`,
-            mergeState,
-            conflictFiles: phase2Result.files,
-            resumeCommand: `shipctl merge --resume --change ${plan.change}`
-          })
-        };
-      }
-
-      if (phase2Result.error) {
-        // Push failed, but merge succeeded - record the merged SHA
-        const mergedSha = (await git(repoPath, 'rev-parse', 'main')).stdout.trim();
-        repoState.stage = 'merged';
-        repoState.mergedSha = mergedSha;
-        repoState.error = phase2Result.error;
-        mergeState.phase = 'phase2-partial';
-        await writeStateFile(join(stateDir, 'merge-state.json'), mergeState, 'merge-state');
-
-        return {
-          code: 1,
-          payload: jsonOut(false, {
-            error: `Phase 2 failed for ${repoState.name}`,
-            mergeState,
-            detail: phase2Result.error
-          })
-        };
-      }
-
-      const pushedSha = (await git(repoPath, 'rev-parse', 'main')).stdout.trim();
-      repoState.stage = 'pushed';
-      repoState.pushedSha = pushedSha;
-      
-      progress(`✓ ${repoState.name}: merged and pushed`);
-    }
-
-    // All phase 2 complete
-    mergeState.phase = 'phase2-complete';
-    await writeStateFile(join(stateDir, 'merge-state.json'), mergeState, 'merge-state');
-
-    return {
-      code: 0,
-      payload: jsonOut(true, {
-        message: 'Phase 2 complete: all repositories merged and pushed to main',
-        mergeState
-      })
-    };
   } catch (error) {
     return {
       code: 2,

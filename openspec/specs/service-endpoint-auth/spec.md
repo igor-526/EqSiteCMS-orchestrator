@@ -46,13 +46,17 @@ Backend SHALL принимать заголовок `X-Service-Key` для ав�
 ### Requirement: Access Matrix сервисных эндпоинтов
 Backend MUST обеспечивать изолированный доступ к сервисным эндпоинтам только для микросервисов с валидным `X-Service-Key`. Сервисные эндпоинты MUST образовывать отдельный класс Service Read/Write, не зависящий от cookie или equestrian key авторизации.
 
-| Метод | Путь | Access class | Роли | Без авторизации | С авторизацией |
-|-------|------|-------------|------|-----------------|----------------|
-| `GET` | `/api/service/users` | Service Read | Микросервисы с валидным `X-Service-Key` | `401` | `200` с пагинированным списком пользователей |
-
 #### Scenario: Проверка access matrix
 - **WHEN** Quality Gate выполняет ревью сервисных эндпоинтов
 - **THEN** каждая строка matrix подтверждена кодом и тестами
+
+#### Scenario: Неизменная access matrix и основания её применения
+- **WHEN** проверяется доступ по строкам следующей матрицы
+- **THEN** действует следующий исходный контракт без изменения условий и outcomes:
+
+| Метод | Путь | Access class | Роли | Без авторизации | С авторизацией |
+|-------|------|-------------|------|-----------------|----------------|
+| `GET` | `/api/service/users` | Service Read | Микросервисы с валидным `X-Service-Key` | `401` | `200` с пагинированным списком пользователей |
 
 ### Requirement: Private peer HTTP boundary
 Email-service и notification-service SHALL быть доступны другим core-сервисам только внутри private compose network; production/default exposure MUST NOT публиковать их HTTP API на внешнем host interface. Loopback exposure допускается только явным dev profile.

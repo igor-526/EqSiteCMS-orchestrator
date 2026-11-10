@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadPlaywright, axePath } from './dependencies.mjs';
-import { CheckError, fail, safeUrl, selectScenarios } from './schema.mjs';
+import { CheckError, CONTRAST_UNSUPPORTED_REASONS, fail, safeUrl, selectScenarios } from './schema.mjs';
 import { runStep, unique } from './assertions.mjs';
 
 export const CMS_VIEWPORT = Object.freeze({ width: 1366, height: 768 });
@@ -124,7 +124,10 @@ async function runScenario(browser, scenario, viewport, options) {
   } catch (error) {
     const code = error instanceof CheckError ? error.code : 'browser_operation_failed';
     result.reasons.push(code);
-    result.steps.push({ stepId: currentStep, status: 'failed', code });
+    const step = scenario.steps.find((s, i) => (s.id ?? `step-${i + 1}`) === currentStep);
+    const contrast = step?.action === 'checkContrast' ? { state: step.state ?? 'normal' } : {};
+    if (code === 'contrast_unsupported' && CONTRAST_UNSUPPORTED_REASONS.includes(error.unsupportedReason)) contrast.unsupportedReason = error.unsupportedReason;
+    result.steps.push({ stepId: currentStep, status: 'failed', code, ...contrast });
   } finally {
     clearTimeout(timer);
     result.finalUrl = safeUrl(page.url());

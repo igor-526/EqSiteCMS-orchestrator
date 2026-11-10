@@ -13,9 +13,8 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync, realpathSync } from 'node:fs';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -24,7 +23,9 @@ const SHIPCTL = join(__dirname, '..', 'shipctl');
 const FAKE_GH = join(__dirname, 'helpers', 'fake-gh.mjs');
 
 function setup(name, scenario) {
-  const root = mkdtempSync(join(tmpdir(), `ci-${name}-`));
+  const base = resolve('.qa/add-safe-services-autogit/OPS-3/ci-fixtures');
+  mkdirSync(base, { recursive: true });
+  const root = realpathSync(mkdtempSync(join(base, `ci-${name}-`)));
   const changeDir = join(root, '.qa/ship/test-change');
   const scenarioPath = join(root, 'scenario.json');
   const logPath = join(root, 'gh-log.jsonl');
@@ -32,13 +33,20 @@ function setup(name, scenario) {
   writeFileSync(scenarioPath, JSON.stringify(scenario), 'utf8');
 
   const env = {
+    PATH: process.env.PATH,
+    HOME: root,
     SHIPCTL_ROOT: root,
     SHIPCTL_GH_BIN: FAKE_GH,
     FAKE_GH_SCENARIO: scenarioPath,
     FAKE_GH_LOG: logPath
   };
 
-  return { root, changeDir, scenarioPath, logPath, env, cleanup: () => rmSync(root, { recursive: true, force: true }) };
+  return { root, changeDir, scenarioPath, logPath, env, cleanup: () => {
+    const target = realpathSync(root);
+    assert.equal(target, root);
+    assert.ok(target.startsWith(realpathSync(base) + '/'));
+    rmSync(target, { recursive: true, force: true });
+  } };
 }
 
 function writeReleaseState(changeDir, repos) {

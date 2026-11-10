@@ -10,6 +10,21 @@ dialog { color: black; background: white; padding: 24px; border: 2px solid black
 #alpha { color: rgba(0,0,0,.8); background: rgba(255,255,255,.5); }
 #gradient { background: linear-gradient(white, gray); } #boundary { background: black; color: white; border: 2px solid black; }
 #scrollbox { width: 200px; height: 60px; overflow: auto; } #scrollcontent { height: 300px; } #scrolltarget { margin-top: 220px; }
+
+#ct-fixtures { background: white; color: black; }
+.ct { display: block; padding: 8px; background: white; color: black; }
+#ct-state:hover { color: #333; } #ct-state:focus { color: #666; }
+#ct-error[data-state=error] { color: #600; }
+#ct-transparent-parent { background: transparent; } #ct-transparent { background: transparent; }
+#ct-large { font-size: 24px; } #ct-small { font-size: 16px; }
+#ct-identical { color: white; } #ct-ui { background: black; color: white; }
+#ct-image { background-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==); }
+#ct-gradient { background-image: linear-gradient(white,gray); }
+#ct-opacity { opacity: .5; } #ct-filter { filter: blur(1px); }
+#ct-blend { mix-blend-mode: multiply; } #ct-backdrop { backdrop-filter: blur(1px); }
+#ct-pseudo::before, #ct-pseudo-parent::after { content: ''; position: absolute; width: 4px; height: 4px; background: red; }
+#ct-overlay-parent { position: relative; } #ct-overlay { position: absolute; inset: 0; background: rgba(255,0,0,.5); }
+#ct-color { color: oklch(50% .1 90); } #ct-hidden { display: none; }
 </style></head><body><main id="surface"><h1>Browser helper fixture</h1>
 <button id="open">Open wizard</button><dialog id="wizard" aria-label="Wizard"><h2>Wizard</h2>
 <button id="confirmTrigger">Confirm</button><button id="cancelWizard">Cancel wizard</button>
@@ -21,7 +36,20 @@ dialog { color: black; background: white; padding: 24px; border: 2px solid black
 <button id="contrast">Contrast</button><div id="alpha">Alpha text</div><div id="gradient">Unsupported gradient</div><button id="boundary">UI boundary</button>
 <div id="scrollbox" tabindex="0" aria-label="Scroll area"><div id="scrollcontent"><button id="scrolltarget">Scroll target</button></div></div>
 <div id="outside"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="></div>
-</main><script>
+</main><section id="ct-fixtures" aria-label="Contrast fixtures">
+<button class="ct" id="ct-state">Independent states</button>
+<div class="ct" id="ct-error" data-state="error">Error state</div>
+<div id="ct-transparent-parent"><div class="ct" id="ct-transparent">Transparent ancestors</div></div>
+<div class="ct" id="ct-identical">Identical colors</div>
+<div class="ct" id="ct-large">Large text</div><div class="ct" id="ct-small">Small text</div>
+<button class="ct" id="ct-ui">UI paint</button>
+<div class="ct" id="ct-image">Image</div><div class="ct" id="ct-gradient">Gradient</div>
+<div class="ct" id="ct-opacity">Opacity</div><div class="ct" id="ct-filter">Filter</div>
+<div class="ct" id="ct-blend">Blend</div><div class="ct" id="ct-backdrop">Backdrop</div>
+<div class="ct" id="ct-pseudo">Pseudo</div><div id="ct-pseudo-parent"><div class="ct" id="ct-ancestor-pseudo">Ancestor pseudo</div></div>
+<div id="ct-overlay-parent"><div class="ct" id="ct-covered">Covered text</div><div id="ct-overlay"></div></div>
+<div class="ct" id="ct-color">Unsupported color</div><div class="ct" id="ct-hidden">Hidden text</div>
+</section><script>
 const variant = '__FIXTURE_VARIANT__';
 const el = id => document.getElementById(id);
 el('error').textContent = 'LongSyntheticError'.repeat(12);

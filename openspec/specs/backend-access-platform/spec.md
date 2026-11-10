@@ -90,6 +90,18 @@ Backend SHALL применять public CORS к обычным Public Read GET �
 ### Requirement: Access matrix backend access platform
 Backend SHALL сохранять следующую evidence-based access matrix. `Успешный 2xx` для доменных классов означает точный success-код соответствующего endpoint; BE-1 не переопределяет доменный контракт BE-2.
 
+#### Scenario: Access reviewer проверяет anonymous и authenticated ветви
+- **WHEN** пакет проходит review перед sync
+- **THEN** reviewer сопоставляет каждую строку matrix с указанным code/test/report evidence и блокирует неподтверждённое изменение access class или статусов
+
+#### Scenario: Доменный endpoint уточняет success-код
+- **WHEN** BE-2 фиксирует конкретный доменный endpoint
+- **THEN** его spec уточняет точный `2xx` и scope outcome, не меняя Public Read или Protected Write класс BE-1 без отдельного evidence-based change
+
+#### Scenario: Неизменная access matrix и основания её применения
+- **WHEN** проверяется доступ по строкам следующей матрицы
+- **THEN** действует следующий исходный контракт без изменения условий и outcomes:
+
 | method | path | access class | roles | expected without auth | expected with auth | связанные evidence/tests |
 |---|---|---|---|---|---|---|
 | `GET` | tenant-aware public/dual-mode routes (`/api/horses*`, `/api/prices*`, `/api/site_settings*`, `/api/photos*`, public `/api/news*`) | Public Read с tenant key; dual-mode допускает CMS cookie | anonymous consumer с service key; authenticated tenant user | `200/2xx` с валидным key; `400` без key; `404` с неизвестным key; refresh-only без key — `401` | успешный `2xx` в tenant пользователя | report `003`; `test_auth_dependencies.py`; `test_auth_cookie_contract.py` |
@@ -103,14 +115,6 @@ Backend SHALL сохранять следующую evidence-based access matrix
 | `POST` | `/api/auth/logout` | Public Auth Write для идемпотентного удаления cookie | anonymous или authenticated browser | `204` | `204` | `api/auth.py`; `test_auth_cookie_contract.py`; CORS tests |
 
 Публичность auth POST является исключением, потому что login/register создают аутентифицированное состояние, refresh восстанавливает его по refresh cookie, а logout должен безопасно очищать cookie даже при истёкшем access token. `GET /api/auth/me` и другие cookie-only GET являются исключением из Public Read, потому что возвращают пользовательские или CMS-only данные.
-
-#### Scenario: Access reviewer проверяет anonymous и authenticated ветви
-- **WHEN** пакет проходит review перед sync
-- **THEN** reviewer сопоставляет каждую строку matrix с указанным code/test/report evidence и блокирует неподтверждённое изменение access class или статусов
-
-#### Scenario: Доменный endpoint уточняет success-код
-- **WHEN** BE-2 фиксирует конкретный доменный endpoint
-- **THEN** его spec уточняет точный `2xx` и scope outcome, не меняя Public Read или Protected Write класс BE-1 без отдельного evidence-based change
 
 ### Requirement: Ограничение evidence backfill
 Backfill SHALL трассироваться к задачам `003`, `012` и `018` и MUST NOT объявлять полное live smoke-покрытие mutation/photo/pedigree endpoint, поскольку report `003` оставляет это follow-up.

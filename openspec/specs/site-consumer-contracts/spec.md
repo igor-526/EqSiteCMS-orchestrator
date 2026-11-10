@@ -5,7 +5,11 @@
 ## Requirements
 
 ### Requirement: Public Read boundary для site-ksk-inlove
-`site-ksk-inlove` SHALL использовать существующий Public Read API client с `NEXT_PUBLIC_API_BASE_URL`/`API_BASE_URL` и non-secret tenant selector `NEXT_PUBLIC_EQUESTRIAN_SERVICE_KEY`. Consumer MUST NOT отправлять CMS cookie, access token или обращаться к CMS-only endpoint. Missing или invalid selector SHALL приводить к ожидаемому backend `401`, без клиентского fallback на tenant другого сайта.
+`site-ksk-inlove` SHALL использовать существующий Public Read client с non-secret tenant selector без CMS credentials и CMS-only endpoints; SHALL сохранять перечисленную матрицу и явное public callback POST exception, без обхода selector policy.
+
+#### Scenario: InLove сохраняет Public Read boundary и полную access matrix
+- **WHEN** retained consumer layer формирует запрос к endpoint из следующей матрицы
+- **THEN** `site-ksk-inlove` SHALL использовать существующий Public Read API client с `NEXT_PUBLIC_API_BASE_URL`/`API_BASE_URL` и non-secret tenant selector `NEXT_PUBLIC_EQUESTRIAN_SERVICE_KEY`. Consumer MUST NOT отправлять CMS cookie, access token или обращаться к CMS-only endpoint. Missing или invalid selector SHALL приводить к ожидаемому backend `401`, без клиентского fallback на tenant другого сайта.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
@@ -74,7 +78,11 @@
 - **THEN** запрос использует Public Read GET с tenant key без CMS cookie, access token и CMS-only read endpoint
 
 ### Requirement: Consumer access matrix
-`site-ad` SHALL сохранять следующую evidence-based consumer matrix. Она описывает вызовы публичного сайта и MUST NOT переопределять backend access contract.
+`site-ad` SHALL сохранять evidence-based consumer matrix публичных вызовов и её ограничения доказательств; она MUST NOT переопределять backend access contract.
+
+#### Scenario: Матрица site-ad сохраняет исторические outcomes и границы evidence
+- **WHEN** reviewer сопоставляет публичные вызовы site-ad с evidence и tests матрицы
+- **THEN** `site-ad` SHALL сохранять следующую evidence-based consumer matrix. Она описывает вызовы публичного сайта и MUST NOT переопределять backend access contract.
 
 | method | path | access class | roles | expected without auth | expected with auth | связанные evidence/tests |
 |---|---|---|---|---|---|---|
@@ -154,7 +162,11 @@ Backfill MUST трассировать задачи `003`, `017`, `019` и SHALL
 - **THEN** reviewer отдельно проверяет anonymous GET без CMS cookie, отсутствие CMS-only endpoint, серверную загрузку основного контента, metadata и фактическую caching strategy
 
 ### Requirement: Эффективная кличка родословной без изменения consumer
-Public horse read contract SHALL возвращать для каждого horse node в поле `name` значение `pedigree_name`, если оно задано, иначе основную кличку. Nullable `pedigree_name` MUST оставаться отдельным raw-полем public JSON. `site-ad` MUST продолжить использовать существующие endpoints и поле `name` без runtime-изменений.
+Public horse read contract SHALL возвращать эффективную кличку каждого node в `name`, сохраняя nullable raw `pedigree_name`, существующие endpoints и consumer без runtime-изменений; SHALL сохранять матрицу Public Read и raw admin projection.
+
+#### Scenario: Эффективная кличка сохраняет raw-поле и access matrix
+- **WHEN** consumer получает public horse read response либо reviewer сверяет его access contract
+- **THEN** Public horse read contract SHALL возвращать для каждого horse node в поле `name` значение `pedigree_name`, если оно задано, иначе основную кличку. Nullable `pedigree_name` MUST оставаться отдельным raw-полем public JSON. `site-ad` MUST продолжить использовать существующие endpoints и поле `name` без runtime-изменений.
 
 | method | path | access class | roles | expected without auth | expected with auth | связанные тесты |
 |---|---|---|---|---|---|---|

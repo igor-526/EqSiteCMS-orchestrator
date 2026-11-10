@@ -1,7 +1,7 @@
 # nats-resilience Specification
 
 ## Purpose
-TBD - created by archiving change fix-bugs-085-glitchtip-ci. Update Purpose after archive.
+Определить устойчивость подключения VK-сервиса к NATS: ограниченные повторные подключения с заданным интервалом, успешное восстановление связи и запуск в деградированном режиме при недоступности брокера без блокировки независимых от NATS HTTP-запросов.
 ## Requirements
 ### Requirement: NATS client connection resilience
 

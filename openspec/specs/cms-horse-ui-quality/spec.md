@@ -27,7 +27,7 @@ Hotspots `HorsesDeveloperDocumentationView`, `PriceEditModal`, `PricesDeveloperD
 - **THEN** tests покрывают loading/data/empty/error, interactions, validation, success invalidation, pagination `limit/offset`, scopes и `401/403`
 
 ### Requirement: Защищённый CMS-контур управления лошадьми
-CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. Вкладка «Лошади» SHALL отображать raw nullable `pedigree_name` отдельной колонкой «Кличка в родословной», причём `null` MUST отображаться как явное пустое состояние без fallback к `name`. Create/edit modal SHALL предоставлять одноимённое строковое поле длиной не более 63 символов, сохраняющее допустимые значения и позволяющее очистить существующее значение. Типы, validators, hooks и документация MUST удалить horse `code`. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
+CMS SHALL предоставлять защищённое управление лошадьми с корректными сессией, scopes и nullable pedigree_name без consumer mixing по сценарию «Полный контракт защищённого horse UI».
 
 #### Scenario: Неавторизованный пользователь открывает CMS
 - **WHEN** загрузка текущего пользователя для защищённого CMS-маршрута не возвращает успешную сессию
@@ -60,10 +60,13 @@ CMS SHALL предоставлять маршрут `/horses` только в au
 #### Scenario: Consumer isolation
 - **WHEN** reviewer проверяет change
 - **THEN** изменения horse UI ограничены `services/frontend`, отсутствуют `site-*` imports/service key и `services/site-ad` не изменён
-### Requirement: Scope-aware UX для действий с лошадьми и родословной
-CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. В колонке «Действия» кнопки фотографий, родословной и услуг SHALL использовать единый компактный серый count badge по стилю существующего service indicator; каждая кнопка SHALL вызывать только собственный handler. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree и relation hooks MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
 
-Create/edit modal SHALL гарантировать отображение имени выбранной масти, породы и владельца в селекторах, используя данные из DTO лошади (`selectedHorse.coat_color`, `selectedHorse.breed`, `selectedHorse.horse_owner`) для формирования options, даже если эти сущности не загружены на текущей странице соответствующих вкладок.
+#### Scenario: Полный контракт защищённого horse UI
+- **WHEN** проверяется доступ к horse UI, его данные и граница CMS-клиента
+- **THEN** CMS SHALL предоставлять маршрут `/horses` только в authenticated admin-контексте, SHALL получать пользователя и scopes через `UserContext` и SHALL перенаправлять на `/login`, если загрузка пользовательской сессии завершилась ошибкой. Вкладка «Лошади» SHALL отображать raw nullable `pedigree_name` отдельной колонкой «Кличка в родословной», причём `null` MUST отображаться как явное пустое состояние без fallback к `name`. Create/edit modal SHALL предоставлять одноимённое строковое поле длиной не более 63 символов, сохраняющее допустимые значения и позволяющее очистить существующее значение. Типы, validators, hooks и документация MUST удалить horse `code`. CMS client MUST NOT добавлять consumer service key и MUST NOT импортировать или смешивать runtime `site-*`.
+### Requirement: Scope-aware UX для действий с лошадьми и родословной
+CMS SHALL обеспечивать scope-aware действия лошадей, родословной и связанных услуг, независимые handlers и DTO-backed селекторы по сценарию «Полный контракт действий и селекторов».
+
 #### Scenario: Пользователь без scope видит read-only pedigree
 - **WHEN** scopes пользователя не разрешают `UPDATE_HORSE_PEDIGREE`
 - **THEN** pedigree mutation controls disabled, hook не отправляет mutation и показывает сообщение о недостатке прав
@@ -122,6 +125,12 @@ Create/edit modal SHALL гарантировать отображение име
 #### Scenario: Отображение владельца из DTO при редактировании
 - **WHEN** пользователь открывает модальное окно редактирования лошади, у которой `horse_owner` существует, но не загружен на текущей странице вкладки «Владельцы»
 - **THEN** селектор владельца SHALL отображать имя владельца из `selectedHorse.horse_owner.name`, а не UUID
+
+#### Scenario: Полный контракт действий и селекторов
+- **WHEN** пользователь работает с действиями лошади, родословной, услугами или create/edit modal
+- **THEN** CMS SHALL связывать действия создания, изменения, удаления лошади и изменения родословной с явным registry `FeatureAction -> scopes`. В колонке «Действия» кнопки фотографий, родословной и услуг SHALL использовать единый компактный серый count badge по стилю существующего service indicator; каждая кнопка SHALL вызывать только собственный handler. Drawer с таблицей связанных услуг SHALL открываться при нажатии на кнопку. Модальное окно добавления/редактирования связи SHALL открываться при нажатии на кнопку «Добавить» или строку таблицы. Mutation UI MUST быть скрыт или disabled без требуемого scope, а pedigree и relation hooks MUST повторно проверять permission перед submit; UI-проверка MUST NOT считаться заменой backend-авторизации.
+
+- **AND** Create/edit modal SHALL гарантировать отображение имени выбранной масти, породы и владельца в селекторах, используя данные из DTO лошади (`selectedHorse.coat_color`, `selectedHorse.breed`, `selectedHorse.horse_owner`) для формирования options, даже если эти сущности не загружены на текущей странице соответствующих вкладок.
 ### Requirement: Tenant-aware horse и breed представление
 CMS horse UI SHALL использовать существующий tenant context authenticated session, SHALL отображать horse CRUD и справочники из CMS API и SHALL представлять классификацию вида лошади через `breed.kind`, не отправляя устаревшее поле `kind` в create/update body лошади.
 
@@ -419,8 +428,7 @@ CMS Frontend SHALL использовать `useHorsePageActionScopes` hook дл
 - **THEN** поля «Описание», «Путь в URL» и «Цена» доступны для редактирования, а кнопка «Изменить» доступна
 
 ### Requirement: Поле slug в CMS-форме лошади
-
-CMS SHALL показывать редактируемое поле «Путь URL (генерируется автоматически)» в create/edit modal лошади, заполнять его текущим значением при редактировании и передавать `slug` через типизированные `HorseCreateInDto`/`HorseUpdateInDto`. Пустое поле SHALL запрашивать backend-автогенерацию. При изменении клички в edit modal CMS MUST очистить не изменённый вручную в текущей сессии slug, чтобы PATCH запросил backend-регенерацию из итогового `name`. Любое ручное изменение slug в текущей сессии, включая явную очистку, MUST иметь приоритет над последующими изменениями клички. UI MUST сохранять текущие scope/mutation guards, показывать `validationErrors.slug` у поля и сохранять состояние modal при ошибке.
+CMS SHALL поддерживать редактируемый slug в create/edit modal с backend-автогенерацией, приоритетом ручного изменения в текущей сессии и сохранением guards и ошибок по сценарию «Полные правила поля slug».
 
 #### Scenario: Создание с ручным slug
 - **WHEN** authenticated пользователь со scope вводит кличку и ручной slug и нажимает «Добавить»
@@ -477,3 +485,7 @@ CMS SHALL показывать редактируемое поле «Путь UR
 #### Scenario: Без смешения с site consumer
 - **WHEN** реализована синхронизация клички и slug в CMS
 - **THEN** frontend не импортирует `site-*`/Public Read consumer code и не выполняет live backend calls в unit/component tests
+
+#### Scenario: Полные правила поля slug
+- **WHEN** пользователь создаёт или редактирует лошадь и её slug
+- **THEN** CMS SHALL показывать редактируемое поле «Путь URL (генерируется автоматически)» в create/edit modal лошади, заполнять его текущим значением при редактировании и передавать `slug` через типизированные `HorseCreateInDto`/`HorseUpdateInDto`. Пустое поле SHALL запрашивать backend-автогенерацию. При изменении клички в edit modal CMS MUST очистить не изменённый вручную в текущей сессии slug, чтобы PATCH запросил backend-регенерацию из итогового `name`. Любое ручное изменение slug в текущей сессии, включая явную очистку, MUST иметь приоритет над последующими изменениями клички. UI MUST сохранять текущие scope/mutation guards, показывать `validationErrors.slug` у поля и сохранять состояние modal при ошибке.

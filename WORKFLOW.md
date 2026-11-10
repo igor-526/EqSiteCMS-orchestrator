@@ -120,20 +120,24 @@ Router возвращает findings владельцам как новые exec
 
 ## Шаг 6. Финализация (skill task-finalize)
 
-После `QG-SYNTH = APPROVED`:
+После `QG-SYNTH = APPROVED` (либо явно согласованного `APPROVED_WITH_WAIVER`) Router выполняет:
 
-1. **OPS-READY:** `stackctl ready <aliases>` (ожидаемо «нет runtime-изменений»)
-2. **OPS-SYNC:** синхронизация delta specs в main specs
-3. **OPS-ARCHIVE:** архивирование change
-4. **OPS-PLAN:** финальный `shipctl plan` с путями archive
-5. **Gate «Слить в main?»** — показывает план, варианты «Слить» / «Не сливать»
-6. **OPS-MERGE:** `shipctl merge` — создание feature-веток, commit included-файлов, push веток и main
-7. **Gate «Релизить?»** (только при успехе merge и наличии release-репозиториев)
-8. **OPS-RELEASE:** fast-forward `main → release` (пока не реализован)
-9. **OPS-CI:** контроль CI через `gh` (пока не реализован)
-10. **Итоговый отчёт**
+1. **OPS-READY:** preliminary plan по union путей handoff, затем `stackctl ready <aliases>`; пустой runtime scope — ready не нужен.
+2. **OPS-SYNC:** синхронизация delta specs в main specs, strict validate.
+3. **OPS-ARCHIVE:** штатное архивирование change, проверка archived artifacts.
+4. **OPS-PLAN:** после archive Router предлагает точные `BRANCH` и `MESSAGE`, дополняет `PATHS_FILE` путями sync/archive и создаёт свежий финальный план через `make services-autogit CHANGE=... BRANCH=... MESSAGE="..." PATHS_FILE=...`. Default `ACTION=plan`, `RELEASE=0`: никаких commit/push.
+5. **Gate «Слить в main?»** — показать repo/origin, included/foreign/exclusions, branch, subject/trailers, whole-file scope и strict sync; предупредить: feature и main будут отправлены в origin. Правки пользователя → replan → новый gate. Только ответ для конкретного `PLAN_TOKEN` разрешает `CONFIRM_PUSH`.
+6. **OPS-MERGE:** `make services-autogit ACTION=merge PLAN=... CONFIRM_PUSH='PLAN_TOKEN' RELEASE=1` после согласия; `RELEASE=1` лишь запрашивает read-only preview после полного успеха, не запускает deploy. Lock/global preflight и двухфазный strict sync сохранены.
+7. **Gate «Релизить?»** — только полный merge (все pushed), release repo/SHA, ff/noop, root not-applicable/no-release. Push release запускает workflow и возможный deploy; это отдельное согласие по `RELEASE_TOKEN` и точному subset `REPOS`, не QG/approval change. Без `CONFIRM_RELEASE` ACTION=release — только preview.
+8. **OPS-RELEASE:** `make services-autogit ACTION=release CHANGE=... CONFIRM_RELEASE='RELEASE_TOKEN'` с тем же `REPOS`, если subset задан; fast-forward `main → release`, без checkout release. Поздний отдельно подтверждённый release возможен и при `RELEASE=0`.
+9. **OPS-CI:** `scripts/shipctl ci --change ... --wait` фоном, затем собрать результат. Успешный shipping оставляет клоны на main; отдельный generic checkout-main не нужен.
+10. **Итоговый отчёт:** state по repo/SHA, опубликованные стадии, skipped/blocked и CI.
 
-См. `.agents/skills/task-finalize/SKILL.md`.
+Если кнопка ask_user_question недоступна — текстовый вопрос и остановка до ответа; auto-yes запрещён. Отказ — остановка без rollback. При partial/conflict показать durable state, pushed/merged/failed/untouched и `resumeCommand`, остановиться. После ручного разрешения — только явно согласованный `shipctl merge --resume --change ...` при выполненных предусловиях; никакого повтора старого ACTION=merge, auto-retry/release или generic checkout-main после конфликта.
+
+Все inventory repo (корень + manifest) должны быть на main; missing/dev/detached/unsafe dirty — блокер без auto-repair. Included dirty допустимы, whole-file commit не сохраняет их partial staging; foreign staged блокируют, foreign unstaged не коммитятся. Пути — literal, ignored/секреты исключаются либо блокируют, scanner не заменяет review. GNU Make `-b`/`-m`/`--release` не являются параметрами задачи; `$` в CLI экранируется как `$$` с shell single quotes. stdout адаптера — JSON с `adapter_exit_code`, Make при ошибке рецепта возвращает exit 2.
+
+Рабочие шаблоны — [README](README.md#безопасная-финализация-через-make); полный протокол — [task-finalize](.agents/skills/task-finalize/SKILL.md). Approval на change не разрешает реальные push/deploy во время apply/QG.
 
 ---
 
@@ -141,23 +145,11 @@ Router возвращает findings владельцам как новые exec
 
 ### Имена веток
 
-Создаются автоматически `shipctl merge`:
-```
-feature/<change-id>
-bug/<change-id>
-```
-
-Автосуффикс `-2`, `-3` при занятости.
+В этой автоматизации база — main (main-default принят). `shipctl merge` создаёт ветки из плана. Явный `BRANCH` используется точно, занятое имя блокирует без суффикса. Без override прямой CLI сохраняет `feature/<change-id>`/`bug/<change-id>` и автосуффикс `-2`, `-3`.
 
 ### Коммит-сообщения
 
-```
-feat(<change-id>): <summary>
-fix(<change-id>): <summary>
-
-OpenSpec: <change-id>
-Task: docs/tasks/<file>
-```
+Явный `MESSAGE` — точный однострочный subject до 72 символов, без автоматического feat/fix-префикса. Без override прямой CLI сохраняет `feat(<change-id>): <summary>`/`fix(<change-id>): <summary>`. Trailers `OpenSpec: <change-id>` и `Task: docs/tasks/<file>` сохраняются в обоих случаях.
 
 ### Файлы OpenSpec
 

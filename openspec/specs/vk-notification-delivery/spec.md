@@ -6,7 +6,8 @@
 ## Requirements
 
 ### Requirement: Каноническая VK notification command
-Notification Service MUST публиковать `NotificationVkCommand` в subject `commands.notification.vk.send` существующего stream `NOTIFICATION_COMMANDS`. Payload MUST содержать `occurred_at`, `event_uuid`, `callback_request_id`, непустой уникальный массив `user_ids` и непустой plain-text `text`, MUST запрещать дополнительные поля и MUST использовать `Nats-Msg-Id`, детерминированно производный от пары `callback_request_id` и кода канала и уникальный в пределах stream `NOTIFICATION_COMMANDS`. `Nats-Msg-Id` VK-команды MUST NOT совпадать с `Nats-Msg-Id` email-команды того же callback. VK Service MUST валидировать заголовок по тому же правилу производности и MUST NOT требовать равенства `Nats-Msg-Id` и `callback_request_id`. Notification Service producer schema и VK Service consumer schema MUST быть идентичны.
+
+Notification Service MUST публиковать каноническую `NotificationVkCommand`, а VK Service MUST проверять идентичный контракт payload и заголовка; идентификаторы email- и VK-команд одного callback MUST различаться в общем stream.
 
 #### Scenario: Валидная команда опубликована
 - **WHEN** callback имеет хотя бы одного eligible пользователя с включённым VK-каналом
@@ -29,6 +30,11 @@ Notification Service MUST публиковать `NotificationVkCommand` в subj
 #### Scenario: PII и внутренние UUID в тексте
 - **WHEN** формируется текст VK notification
 - **THEN** он содержит только отображаемые поля заявки с fallback-значениями и MUST NOT содержать callback, tenant, event или user UUID
+
+#### Scenario: Полный контракт payload и заголовка VK-команды
+
+- **WHEN** Notification Service формирует команду VK и VK Service проверяет её контракт
+- **THEN** Notification Service MUST публиковать `NotificationVkCommand` в subject `commands.notification.vk.send` существующего stream `NOTIFICATION_COMMANDS`. Payload MUST содержать `occurred_at`, `event_uuid`, `callback_request_id`, непустой уникальный массив `user_ids` и непустой plain-text `text`, MUST запрещать дополнительные поля и MUST использовать `Nats-Msg-Id`, детерминированно производный от пары `callback_request_id` и кода канала и уникальный в пределах stream `NOTIFICATION_COMMANDS`. `Nats-Msg-Id` VK-команды MUST NOT совпадать с `Nats-Msg-Id` email-команды того же callback. VK Service MUST валидировать заголовок по тому же правилу производности и MUST NOT требовать равенства `Nats-Msg-Id` и `callback_request_id`. Notification Service producer schema и VK Service consumer schema MUST быть идентичны.
 
 ### Requirement: Durable VK consumer
 VK Service MUST регистрировать и запускать pull consumer `vk-service-commands-send-vk` с filter subject `commands.notification.vk.send`, explicit ack, настраиваемыми `ack_wait` и `max_deliver`. Сервис MUST NOT создавать stream `NOTIFICATION_COMMANDS`, владельцем stream остаётся Notification Service.
@@ -94,7 +100,8 @@ Change MUST NOT добавлять или изменять HTTP endpoints. Су�
 - **THEN** public callback exception, protected private settings и protected service endpoints отвечают по существующему контракту без нового доступа
 
 ### Requirement: Изолированный local smoke harness
-Система MUST предоставлять отдельный one-shot local CLI composition root для live проверки VK consumer/handler/repository через реальный JetStream и PostgreSQL с детерминированным scripted messenger. Harness MUST быть disabled by default, MUST отказать до внешних подключений вне явно подтверждённого local режима, MUST принимать только точные synthetic targets и MUST использовать отдельные run-scoped stream/subject/durable. Он MUST NOT входить в production DI/lifespan, создавать HTTP endpoints, вызывать VK API, подписываться на production subject/durable либо выводить payload, text, phone, token, peer ID или user IDs.
+
+Система MUST предоставлять отключённый по умолчанию изолированный one-shot local CLI harness для проверки доставки через реальные JetStream и PostgreSQL со scripted messenger; harness MUST проверять local opt-in и точные synthetic targets до подключений и MUST NOT затрагивать production или раскрывать чувствительные данные.
 
 #### Scenario: Полный отказ provider
 - **WHEN** local harness получает synthetic recipient с планом `fail-always`
@@ -107,6 +114,11 @@ Change MUST NOT добавлять или изменять HTTP endpoints. Су�
 #### Scenario: Guard или cleanup нарушен
 - **WHEN** отсутствует local opt-in, target не точный либо runner завершается успешно/с ошибкой
 - **THEN** до подключения выполняется fail-fast, а после запуска удаляются только перечисленные fixture IDs и run-scoped topology; production resources не изменяются
+
+#### Scenario: Границы и изоляция local smoke harness
+
+- **WHEN** запускается local CLI harness для live проверки VK delivery
+- **THEN** Система MUST предоставлять отдельный one-shot local CLI composition root для live проверки VK consumer/handler/repository через реальный JetStream и PostgreSQL с детерминированным scripted messenger. Harness MUST быть disabled by default, MUST отказать до внешних подключений вне явно подтверждённого local режима, MUST принимать только точные synthetic targets и MUST использовать отдельные run-scoped stream/subject/durable. Он MUST NOT входить в production DI/lifespan, создавать HTTP endpoints, вызывать VK API, подписываться на production subject/durable либо выводить payload, text, phone, token, peer ID или user IDs.
 
 ### Requirement: Per-recipient идемпотентность не зависит от Nats-Msg-Id
 VK Service MUST определять повторную обработку только по паре `(event_uuid, user_id)` из payload и MUST NOT использовать `Nats-Msg-Id` как ключ идемпотентности доставки. Изменение схемы формирования `Nats-Msg-Id` MUST NOT приводить к повторной отправке уже `SENT` получателям.

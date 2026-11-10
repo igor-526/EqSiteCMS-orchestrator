@@ -1,384 +1,253 @@
-/**
- * Tests for shipctl release command.
- *
- * Coverage:
- *   UT-REL-01: Selection (pushed + origin/release; root; no-release; --repos)
- *   UT-REL-02: Happy path ff push
- *   UT-REL-03: Idempotency (release == main)
- *   UT-REL-04: Divergence (release contains commit not in main)
- *   UT-REL-05: Dry-run without merge-state
- *   UT-REL-06: Races (main_moved; push rejected)
- */
-
-import { describe, it, before, after } from 'node:test';
+/** Release preview/gate regression: AG-09/10 and release side of AG-11/12. */
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile, readFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, writeFile, readFile, chmod } from 'node:fs/promises';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { createFixture, gitInRepo, createCommit } from './helpers/fixture.mjs';
+import { createMonorepoFixture, cleanup, createCommit, gitInRepo,
+  captureMonorepoSnapshot, guardNonLocalRemote } from './helpers/fixture.mjs';
 
+for (const key of ['GIT_DIR', 'GIT_COMMON_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_CONFIG_PARAMETERS']) delete process.env[key];
+Object.assign(process.env, { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_COUNT: '0', GIT_TERMINAL_PROMPT: '0' });
+const BASE = join(process.cwd(), '.qa/add-safe-services-autogit/OPS-2c/fixtures');
 const SHIPCTL = join(process.cwd(), 'scripts/shipctl');
-
-function runShipctl(fixtureRoot, args) {
-  return spawnSync('node', [SHIPCTL, ...args], {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    env: { ...process.env, SHIPCTL_ROOT: fixtureRoot }
+const CHANGE = 'release-test';
+const statePath = f => join(f.root, '.qa/ship', CHANGE, 'merge-state.json');
+function run(f, ...args) {
+  assert.ok(f.root.startsWith(BASE + '/'));
+  for (const svc of Object.values(f.services)) {
+    for (const flags of [[], ['--push']]) {
+      const url = git(svc.clonePath, 'remote', 'get-url', ...flags, 'origin');
+      guardNonLocalRemote(url);
+      assert.ok(url.startsWith(f.baresRoot + '/'));
+    }
+  }
+  const r = spawnSync('node', [SHIPCTL, 'release', ...args], {
+    cwd: f.root, encoding: 'utf8', env: { ...process.env, SHIPCTL_ROOT: f.root }
   });
+  return { code: r.status, payload: JSON.parse(r.stdout || '{}'), stderr: r.stderr };
+}
+function git(p, ...args) {
+  if (args[0] === 'push') guardNonLocalRemote(git(p, 'remote', 'get-url', '--push', 'origin'));
+  const r = gitInRepo(p, ...args);
+  assert.equal(r.status, 0, r.stderr);
+  return r.stdout.trim();
+}
+async function fixture(services = ['backend', 'frontend']) {
+  const f = await createMonorepoFixture({ services, withRootOrigin: true, fixtureBase: BASE });
+  await mkdir(join(f.root, '.qa/ship', CHANGE), { recursive: true });
+  f.state = { phase: 'phase2-complete', change: CHANGE, branchName: 'feature/release-test', repos: [] };
+  for (const name of [...services, '.']) {
+    const p = name === '.' ? f.root : f.services[name].clonePath;
+    if (name !== '.') {
+      await createCommit(p, 'main', 'Merged change', { 'selected.txt': name });
+      git(p, 'push', 'origin', 'main');
+    }
+    f.state.repos.push({ name, stage: 'pushed', pushedSha: git(p, 'rev-parse', 'HEAD') });
+  }
+  await save(f);
+  return f;
+}
+const save = f => writeFile(statePath(f), JSON.stringify(f.state));
+const preview = (f, ...args) => run(f, '--change', CHANGE, '--dry-run', ...args);
+async function snapshot(f) {
+  const clones = await captureMonorepoSnapshot(f);
+  const remotes = { root: git(join(f.baresRoot, 'root.git'), 'show-ref') };
+  for (const [name, svc] of Object.entries(f.services)) remotes[name] = git(svc.barePath, 'show-ref');
+  return { clones, remotes };
 }
 
-describe('shipctl release', () => {
-  let tmpRoot;
-  let fixture;
+test('AG-09/10: deterministic read-only preview, no-token stop, root not-applicable', async () => {
+  const f = await fixture();
+  try {
+    await writeFile(join(f.services.backend.clonePath, 'foreign.txt'), 'foreign');
+    const before = await snapshot(f);
+    const r = preview(f);
+    assert.equal(r.code, 0, JSON.stringify(r));
+    assert.match(r.payload.RELEASE_TOKEN, /^[a-f0-9]{64}$/);
+    assert.equal(r.payload.plan.find(r => r.repo === '.').status, 'not-applicable');
+    assert.equal(r.payload.plan.find(r => r.repo === 'backend').status, 'ff');
+    assert.equal(preview(f).payload.RELEASE_TOKEN, r.payload.RELEASE_TOKEN);
+    assert.deepEqual(await snapshot(f), before);
+    const noToken = run(f, '--change', CHANGE);
+    assert.equal(noToken.code, 0);
+    assert.equal(noToken.payload.release_pending, true);
+    assert.deepEqual(await snapshot(f), before);
+  } finally { await cleanup(f); }
+});
 
-  before(async () => {
-    tmpRoot = await mkdtemp(join(tmpdir(), 'release-test-'));
-  });
-
-  after(async () => {
-    if (tmpRoot) await rm(tmpRoot, { recursive: true, force: true });
-  });
-
-  // UT-REL-01: Selection
-  it('UT-REL-01: selects only pushed repos with origin/release; root not-applicable; no-release-branch; --repos filter', async () => {
-    fixture = await createFixture(tmpRoot, {
-      services: {
-        backend: { branches: ['main', 'release'] },
-        frontend: { branches: ['main', 'release'] },
-        vk: { branches: ['main'] } // no release branch
-      }
-    });
-
-    // Get actual SHAs
-    const backendSha = gitInRepo(join(fixture.root, 'services/backend'), 'rev-parse', 'origin/main').stdout.trim();
-    const frontendSha = gitInRepo(join(fixture.root, 'services/frontend'), 'rev-parse', 'origin/main').stdout.trim();
-    const vkSha = gitInRepo(join(fixture.root, 'services/vk'), 'rev-parse', 'origin/main').stdout.trim();
-    const rootSha = gitInRepo(fixture.root, 'rev-parse', 'HEAD').stdout.trim();
-
-    // Create merge-state.json
-    const stateDir = join(fixture.root, '.qa/ship/test-change');
-    const { mkdir } = await import('node:fs/promises');
-    await mkdir(stateDir, { recursive: true });
-    
-    await writeFile(join(stateDir, 'merge-state.json'), JSON.stringify({
-      change: 'test-change',
-      repos: [
-        { name: 'root', stage: 'pushed', mainSha: rootSha },
-        { name: 'backend', stage: 'pushed', mainSha: backendSha },
-        { name: 'frontend', stage: 'pushed', mainSha: frontendSha },
-        { name: 'vk', stage: 'pushed', mainSha: vkSha }
-      ]
-    }, null, 2));
-
-    // Run release --dry-run --repos backend,frontend,vk,root
-    const result = runShipctl(fixture.root, ['release', '--change', 'test-change', '--dry-run', '--repos', 'backend,frontend,vk,root']);
-
-    assert.equal(result.status, 0, `Expected exit 0, got ${result.status}: ${result.stderr}`);
-
-    const output = JSON.parse(result.stdout);
-    assert.equal(output.ok, true);
-    assert.equal(output.dryRun, true);
-
-    const plan = output.plan;
-    const root = plan.find(r => r.repo === 'root');
-    const backend = plan.find(r => r.repo === 'backend');
-    const frontend = plan.find(r => r.repo === 'frontend');
-    const vk = plan.find(r => r.repo === 'vk');
-
-    assert.equal(root.status, 'not-applicable', 'Root should be not-applicable');
-    assert.ok(backend.status === 'ready' || backend.status === 'noop' || backend.status === 'ff', 'Backend should be candidate/ready/noop');
-    assert.ok(frontend.status === 'ready' || frontend.status === 'noop' || frontend.status === 'ff', 'Frontend should be candidate/ready/noop');
-    assert.equal(vk.status, 'no-release-branch', 'VK should be no-release-branch');
-
-    // Check --repos filter (only backend)
-    const filterResult = runShipctl(fixture.root, ['release', '--change', 'test-change', '--dry-run', '--repos', 'backend']);
-
-    const filterOutput = JSON.parse(filterResult.stdout);
-    const skippedFrontend = filterOutput.plan.find(r => r.repo === 'frontend');
-    assert.equal(skippedFrontend.status, 'skipped', 'Frontend should be skipped when not in --repos');
-  });
-
-  // UT-REL-02: Happy path
-  it('UT-REL-02: ff push; origin/release == SHA main; clone on main; no local release; no worktree; foreign untouched', async () => {
-    fixture = await createFixture(tmpRoot, {
-      services: {
-        backend: { branches: ['main', 'release'] }
-      }
-    });
-
-    const backendPath = join(fixture.root, 'services/backend');
-
-    // Create commits: release is ancestor of main
-    // First commit on main
-    const firstCommit = await createCommit(backendPath, 'main', 'First commit');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-
-    // Point release to same commit
-    await gitInRepo(backendPath, 'push', 'origin', `${firstCommit}:refs/heads/release`);
-
-    // Now advance main ahead of release
-    const mainCommit = await createCommit(backendPath, 'main', 'Main commit after release');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-
-    // Create merge-state.json
-    const stateDir = join(fixture.root, '.qa/ship/rel-happy');
-    const { mkdir } = await import('node:fs/promises');
-    await mkdir(stateDir, { recursive: true });
-    
-    await writeFile(join(stateDir, 'merge-state.json'), JSON.stringify({
-      change: 'rel-happy',
-      repos: [
-        { name: 'backend', stage: 'pushed', mainSha: mainCommit }
-      ]
-    }, null, 2));
-
-    // Snapshot before
-    const beforeBranch = await gitInRepo(backendPath, 'rev-parse', '--abbrev-ref', 'HEAD');
-    const beforeHead = await gitInRepo(backendPath, 'rev-parse', 'HEAD');
-
-    // Run release
-    const result = runShipctl(fixture.root, ['release', '--change', 'rel-happy']);
-
-    if (result.status !== 0) {
-      console.error('JSON output:', result.stdout);
+test('UT-REL-02/03: token permits ff without checkout; repeat is noop', async () => {
+  const f = await fixture();
+  try {
+    const p = f.services.backend.clonePath;
+    await writeFile(join(p, 'foreign.txt'), 'foreign');
+    const before = (await snapshot(f)).clones;
+    const r = run(f, '--change', CHANGE, '--release-token', preview(f).payload.RELEASE_TOKEN);
+    assert.equal(r.code, 0, JSON.stringify(r));
+    assert.equal(r.payload.repos.find(r => r.repo === 'backend').status, 'pushed');
+    const after = (await snapshot(f)).clones;
+    for (const name of Object.keys(before)) {
+      const { refs: _old, ...oldTree } = before[name];
+      const { refs: _new, ...newTree } = after[name];
+      assert.deepEqual(newTree, oldTree);
     }
-    assert.equal(result.status, 0, `Expected exit 0, got ${result.status}: ${result.stderr}`);
+    assert.equal(git(f.services.backend.barePath, 'rev-parse', 'release'), f.state.repos[0].pushedSha);
+    assert.notEqual(gitInRepo(p, 'show-ref', '--verify', 'refs/heads/release').status, 0);
+    assert.equal(await readFile(join(p, 'foreign.txt'), 'utf8'), 'foreign');
+    const next = preview(f);
+    assert.equal(next.payload.plan.find(r => r.repo === 'backend').status, 'noop');
+    const noopBefore = await snapshot(f);
+    assert.equal(run(f, '--change', CHANGE, '--release-token', next.payload.RELEASE_TOKEN).code, 0);
+    assert.deepEqual(await snapshot(f), noopBefore);
+    const persisted = JSON.parse(await readFile(join(f.root, '.qa/ship', CHANGE, 'release-state.json'), 'utf8'));
+    assert.equal(persisted.repos.find(r => r.repo === 'backend').status, 'noop');
+  } finally { await cleanup(f); }
+});
 
-    const output = JSON.parse(result.stdout);
-    assert.equal(output.ok, true);
+test('AG-10: wrong token, changed subset, state bytes, origin or release SHA cannot mutate', async () => {
+  const f = await fixture();
+  try {
+    const token = preview(f).payload.RELEASE_TOKEN;
+    assert.notEqual(preview(f, '--repos', 'backend').payload.RELEASE_TOKEN, token);
+    for (const args of [ ['--release-token', 'bad'], ['--release-token', token, '--repos', 'backend'] ]) {
+      const before = await snapshot(f);
+      assert.equal(run(f, '--change', CHANGE, ...args).code, 3);
+      assert.deepEqual(await snapshot(f), before);
+    }
+    f.state.branchName = 'feature/changed-state';
+    await save(f);
+    assert.notEqual(preview(f).payload.RELEASE_TOKEN, token);
+    assert.equal(run(f, '--change', CHANGE, '--release-token', token).code, 3);
+    const token2 = preview(f).payload.RELEASE_TOKEN;
+    git(f.services.backend.barePath, 'update-ref', 'refs/heads/release', f.state.repos[0].pushedSha);
+    let before = await snapshot(f);
+    assert.notEqual(preview(f).payload.RELEASE_TOKEN, token2);
+    assert.equal(run(f, '--change', CHANGE, '--release-token', token2).code, 3);
+    assert.deepEqual(await snapshot(f), before);
+    const token3 = preview(f).payload.RELEASE_TOKEN;
+    const replacement = join(f.baresRoot, 'replacement.git');
+    git(f.root, 'clone', '--bare', f.services.backend.barePath, replacement);
+    git(f.services.backend.clonePath, 'remote', 'set-url', 'origin', replacement);
+    before = await snapshot(f);
+    assert.notEqual(preview(f).payload.RELEASE_TOKEN, token3);
+    assert.equal(run(f, '--change', CHANGE, '--release-token', token3).code, 3);
+    assert.deepEqual(await snapshot(f), before);
+  } finally { await cleanup(f); }
+});
 
-    const backendResult = output.repos.find(r => r.repo === 'backend');
-    assert.equal(backendResult.status, 'pushed');
-    assert.equal(backendResult.sha, mainCommit);
+test('UT-REL-01/05: subset/no-release/stateless preview; strict args', async () => {
+  const f = await fixture();
+  try {
+    git(f.services.backend.barePath, 'update-ref', '-d', 'refs/heads/release');
+    const r = preview(f, '--repos', 'backend,root');
+    assert.equal(r.code, 0);
+    assert.equal(r.payload.plan.find(r => r.repo === 'backend').status, 'no-release-branch');
+    assert.equal(r.payload.plan.find(r => r.repo === 'frontend').status, 'skipped');
+    const before = await snapshot(f);
+    const stateless = run(f, '--dry-run', '--repos', 'backend,frontend,root');
+    assert.equal(stateless.code, 0);
+    assert.equal(stateless.payload.RELEASE_TOKEN, undefined);
+    assert.deepEqual(await snapshot(f), before);
+    assert.equal(preview(f, '--repos', '../outside').code, 3);
+    assert.equal(preview(f, '--unknown').code, 3);
+  } finally { await cleanup(f); }
+});
 
-    // Verify origin/release == main
-    const releaseSha = (await gitInRepo(backendPath, 'rev-parse', 'origin/release')).stdout.trim();
-    assert.equal(releaseSha, mainCommit, 'origin/release should equal main SHA');
+test('AG-12: partial merge never gets token even for pushed subset', async () => {
+  const f = await fixture();
+  try {
+    f.state.phase = 'phase2-partial';
+    f.state.repos[1].stage = 'failed';
+    await save(f);
+    const before = await snapshot(f);
+    const r = preview(f, '--repos', 'backend');
+    assert.equal(r.code, 3);
+    assert.equal(r.payload.RELEASE_TOKEN, undefined);
+    assert.deepEqual(await snapshot(f), before);
+  } finally { await cleanup(f); }
+});
 
-    // Verify clone still on main
-    const afterBranch = (await gitInRepo(backendPath, 'rev-parse', '--abbrev-ref', 'HEAD')).stdout.trim();
-    const afterHead = (await gitInRepo(backendPath, 'rev-parse', 'HEAD')).stdout.trim();
-    assert.equal(afterBranch, beforeBranch.stdout.trim(), 'Clone should stay on same branch');
-    assert.equal(afterHead, beforeHead.stdout.trim(), 'Clone HEAD should not change');
+test('UT-REL-04/06: divergence, remote main movement and failed probes fail closed', async () => {
+  const f = await fixture();
+  try {
+    const p = f.services.backend.clonePath;
+    await createCommit(p, 'main', 'Remote advance', { 'later.txt': 'later' });
+    git(p, 'push', 'origin', 'HEAD:refs/heads/release');
+    let before = await snapshot(f);
+    let r = preview(f);
+    assert.equal(r.code, 3);
+    assert.ok(r.payload.blockers.some(b => b.blocker === 'release_diverged'));
+    assert.equal(r.payload.RELEASE_TOKEN, undefined);
+    assert.deepEqual(await snapshot(f), before);
+    git(p, 'push', 'origin', 'main');
+    r = preview(f);
+    assert.ok(r.payload.blockers.some(b => b.blocker === 'main_moved'));
+    f.state.repos[0].pushedSha = git(p, 'rev-parse', 'HEAD');
+    await save(f);
+    git(p, 'remote', 'set-url', 'origin', join(f.baresRoot, 'missing.git'));
+    before = await snapshot(f);
+    r = preview(f);
+    assert.equal(r.code, 3);
+    assert.ok(r.payload.blockers.some(b => b.blocker === 'remote_probe_failed'));
+    assert.deepEqual(await snapshot(f), before);
+  } finally { await cleanup(f); }
+});
 
-    // Verify no local release branch
-    const localReleaseResult = await gitInRepo(backendPath, 'rev-parse', '--verify', 'release');
-    assert.equal(localReleaseResult.status, 128, 'Local release branch should not exist');
+test('AG-12: rejecting hook preserves durable pushed/failed/untouched table, no auto retry', async () => {
+  const f = await fixture(['backend', 'frontend', 'worker']);
+  try {
+    const hook = join(f.services.frontend.barePath, 'hooks/pre-receive');
+    await writeFile(hook, '#!/bin/sh\nexit 1\n');
+    await chmod(hook, 0o755);
+    const r = run(f, '--change', CHANGE, '--release-token', preview(f).payload.RELEASE_TOKEN);
+    assert.equal(r.code, 1, JSON.stringify(r));
+    assert.equal(r.payload.repos[0].status, 'pushed');
+    assert.equal(r.payload.repos[1].status, 'push_failed');
+    assert.equal(r.payload.repos[2].status, 'untouched');
+    assert.notEqual(git(f.services.worker.barePath, 'rev-parse', 'release'), f.state.repos[2].pushedSha);
+    const disk = JSON.parse(await readFile(join(f.root, '.qa/ship', CHANGE, 'release-state.json'), 'utf8'));
+    assert.equal(disk.stopped, true);
+    assert.deepEqual(disk.repos, r.payload.repos);
+    assert.equal(git(f.services.backend.barePath, 'rev-parse', 'release'), f.state.repos[0].pushedSha);
+    assert.notEqual(git(f.services.frontend.barePath, 'rev-parse', 'release'), f.state.repos[1].pushedSha);
+    const before = await snapshot(f);
+    assert.equal(run(f, '--change', CHANGE).payload.release_pending, true);
+    assert.deepEqual(await snapshot(f), before);
+  } finally { await cleanup(f); }
+});
 
-    // Verify release-state.json
-    const releaseState = JSON.parse(await readFile(join(stateDir, 'release-state.json'), 'utf8'));
-    assert.equal(releaseState.change, 'rel-happy');
-    assert.equal(releaseState.repos[0].repo, 'backend');
-    assert.equal(releaseState.repos[0].status, 'pushed');
-  });
+test('AG-11: normalize legacy root/mainSha; reject duplicate root and conflicting SHA', async () => {
+  const f = await fixture();
+  try {
+    f.state.repos[2].name = 'root';
+    for (const r of f.state.repos) { r.mainSha = r.pushedSha; delete r.pushedSha; }
+    await save(f);
+    assert.equal(preview(f).payload.plan.find(r => r.repo === '.').status, 'not-applicable');
+    f.state.repos.push({ ...f.state.repos[2], name: '.' });
+    await save(f);
+    assert.equal(preview(f).code, 3);
+    f.state.repos.pop();
+    f.state.repos[0].pushedSha = '0'.repeat(40);
+    await save(f);
+    assert.equal(preview(f).code, 3);
+  } finally { await cleanup(f); }
+});
 
-  // UT-REL-03: Idempotency
-  it('UT-REL-03: release already == main; noop; no push', async () => {
-    fixture = await createFixture(tmpRoot, {
-      services: {
-        backend: { branches: ['main', 'release'] }
-      }
+test('AG-09: token execution takes existing lock; preview remains read-only under lock', async () => {
+  const f = await fixture();
+  try {
+    const token = preview(f).payload.RELEASE_TOKEN;
+    const before = await snapshot(f);
+    const locked = args => spawnSync('flock', ['-n', join(f.root, '.qa/ship/shipctl.lock'),
+      'node', SHIPCTL, 'release', '--change', CHANGE, ...args], {
+      encoding: 'utf8', env: { ...process.env, SHIPCTL_ROOT: f.root }
     });
-
-    const backendPath = join(fixture.root, 'services/backend');
-
-    // Make release == main
-    const mainCommit = await createCommit(backendPath, 'main', 'Same commit');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-    await gitInRepo(backendPath, 'push', 'origin', `${mainCommit}:refs/heads/release`);
-
-    // Create merge-state.json
-    const stateDir = join(fixture.root, '.qa/ship/rel-noop');
-    const { mkdir } = await import('node:fs/promises');
-    await mkdir(stateDir, { recursive: true });
-    
-    await writeFile(join(stateDir, 'merge-state.json'), JSON.stringify({
-      change: 'rel-noop',
-      repos: [
-        { name: 'backend', stage: 'pushed', mainSha: mainCommit }
-      ]
-    }, null, 2));
-
-    // Run release
-    const result = runShipctl(fixture.root, ['release', '--change', 'rel-noop']);
-
-    assert.equal(result.status, 0);
-
-    const output = JSON.parse(result.stdout);
-    assert.equal(output.ok, true);
-
-    const backendResult = output.repos.find(r => r.repo === 'backend');
-    assert.equal(backendResult.status, 'noop');
-  });
-
-  // UT-REL-04: Divergence
-  it('UT-REL-04: release contains commit not in main; release_diverged; exit 3; no push; commits list', async () => {
-    fixture = await createFixture(tmpRoot, {
-      services: {
-        backend: { branches: ['main', 'release'] },
-        frontend: { branches: ['main', 'release'] }
-      }
-    });
-
-    const backendPath = join(fixture.root, 'services/backend');
-    const frontendPath = join(fixture.root, 'services/frontend');
-
-    // Backend: main and release share history
-    const backendMain = await createCommit(backendPath, 'main', 'Backend main');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-    const backendRelease = await createCommit(backendPath, 'release', 'Backend release old');
-    await gitInRepo(backendPath, 'push', 'origin', 'release');
-
-    // Frontend: release has diverged commit
-    const frontendBase = await createCommit(frontendPath, 'main', 'Frontend base');
-    await gitInRepo(frontendPath, 'push', 'origin', 'main');
-    
-    await gitInRepo(frontendPath, 'checkout', 'release');
-    const divergedCommit = await createCommit(frontendPath, 'release', 'Diverged hotfix');
-    await gitInRepo(frontendPath, 'push', 'origin', 'release');
-    await gitInRepo(frontendPath, 'checkout', 'main');
-
-    // Create merge-state.json
-    const stateDir = join(fixture.root, '.qa/ship/rel-diverged');
-    const { mkdir } = await import('node:fs/promises');
-    await mkdir(stateDir, { recursive: true });
-    
-    await writeFile(join(stateDir, 'merge-state.json'), JSON.stringify({
-      change: 'rel-diverged',
-      repos: [
-        { name: 'backend', stage: 'pushed', mainSha: backendMain },
-        { name: 'frontend', stage: 'pushed', mainSha: frontendBase }
-      ]
-    }, null, 2));
-
-    // Run release
-    const result = runShipctl(fixture.root, ['release', '--change', 'rel-diverged']);
-
-    assert.equal(result.status, 3, 'Should exit 3 on divergence');
-
-    const output = JSON.parse(result.stdout);
-    assert.equal(output.ok, false);
-    assert.ok(output.blockers.length > 0);
-
-    const frontendBlocker = output.blockers.find(b => b.repo === 'frontend');
-    assert.equal(frontendBlocker.blocker, 'release_diverged');
-    assert.ok(frontendBlocker.commits.length > 0, 'Should list diverged commits');
-    assert.ok(frontendBlocker.commits[0].includes('Diverged hotfix'), 'Should show hotfix commit');
-  });
-
-  // UT-REL-05: Dry-run without merge-state
-  it('UT-REL-05: --dry-run --repos without merge-state; classify ff/noop/diverged; snapshots equal', async () => {
-    fixture = await createFixture(tmpRoot, {
-      services: {
-        backend: { branches: ['main', 'release'] },
-        frontend: { branches: ['main', 'release'] }
-      }
-    });
-
-    const backendPath = join(fixture.root, 'services/backend');
-    const frontendPath = join(fixture.root, 'services/frontend');
-
-    // Backend: ff ready (release is ancestor of main)
-    const backendOld = await createCommit(backendPath, 'main', 'Backend old');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-    await gitInRepo(backendPath, 'push', 'origin', `${backendOld}:refs/heads/release`);
-    
-    const backendMain = await createCommit(backendPath, 'main', 'Backend new');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-
-    // Frontend: noop
-    const frontendCommit = await createCommit(frontendPath, 'main', 'Frontend same');
-    await gitInRepo(frontendPath, 'push', 'origin', 'main');
-    await gitInRepo(frontendPath, 'push', 'origin', `${frontendCommit}:refs/heads/release`);
-
-    // Snapshots before
-    const backendBefore = (await gitInRepo(backendPath, 'status', '--porcelain')).stdout;
-    const frontendBefore = (await gitInRepo(frontendPath, 'status', '--porcelain')).stdout;
-
-    // Run dry-run
-    const result = runShipctl(fixture.root, ['release', '--dry-run', '--repos', 'backend,frontend']);
-
-    assert.equal(result.status, 0);
-
-    const output = JSON.parse(result.stdout);
-    assert.equal(output.ok, true);
-    assert.equal(output.dryRun, true);
-
-    const backend = output.plan.find(r => r.repo === 'backend');
-    const frontend = output.plan.find(r => r.repo === 'frontend');
-
-    assert.equal(backend.status, 'ff');
-    assert.equal(backend.sha, backendMain);
-
-    assert.equal(frontend.status, 'noop');
-
-    // Snapshots after
-    const backendAfter = (await gitInRepo(backendPath, 'status', '--porcelain')).stdout;
-    const frontendAfter = (await gitInRepo(frontendPath, 'status', '--porcelain')).stdout;
-
-    assert.equal(backendAfter, backendBefore, 'Backend should not mutate');
-    assert.equal(frontendAfter, frontendBefore, 'Frontend should not mutate');
-  });
-
-  // UT-REL-06: Races
-  it('UT-REL-06: main_moved; push rejected; exit 3 no push / exit 1 table', async () => {
-    fixture = await createFixture(tmpRoot, {
-      services: {
-        backend: { branches: ['main', 'release'] },
-        frontend: { branches: ['main', 'release'] }
-      }
-    });
-
-    const backendPath = join(fixture.root, 'services/backend');
-    const frontendPath = join(fixture.root, 'services/frontend');
-
-    // Backend: main will be moved
-    const backendOld = await createCommit(backendPath, 'main', 'Backend old main');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-    const backendRelease = await createCommit(backendPath, 'release', 'Backend release');
-    await gitInRepo(backendPath, 'push', 'origin', 'release');
-
-    // Frontend: normal
-    const frontendRelease = await createCommit(frontendPath, 'release', 'Frontend release');
-    await gitInRepo(frontendPath, 'push', 'origin', 'release');
-    const frontendMain = await createCommit(frontendPath, 'main', 'Frontend main');
-    await gitInRepo(frontendPath, 'push', 'origin', 'main');
-
-    // Create merge-state.json with OLD backend main
-    const stateDir = join(fixture.root, '.qa/ship/rel-race');
-    const { mkdir } = await import('node:fs/promises');
-    await mkdir(stateDir, { recursive: true });
-    
-    await writeFile(join(stateDir, 'merge-state.json'), JSON.stringify({
-      change: 'rel-race',
-      repos: [
-        { name: 'backend', stage: 'pushed', mainSha: backendOld },
-        { name: 'frontend', stage: 'pushed', mainSha: frontendMain }
-      ]
-    }, null, 2));
-
-    // Move backend main
-    const backendNew = await createCommit(backendPath, 'main', 'Backend moved main');
-    await gitInRepo(backendPath, 'push', 'origin', 'main');
-
-    // Run release
-    const result = runShipctl(fixture.root, ['release', '--change', 'rel-race']);
-
-    assert.equal(result.status, 3, 'Should exit 3 on main_moved');
-
-    const output = JSON.parse(result.stdout);
-    assert.equal(output.ok, false);
-
-    const backendBlocker = output.blockers.find(b => b.repo === 'backend');
-    assert.equal(backendBlocker.blocker, 'main_moved');
-    assert.ok(backendBlocker.detail.includes(backendNew), 'Should show new SHA');
-
-    // Verify no push happened (origin/release unchanged)
-    const backendReleaseSha = (await gitInRepo(backendPath, 'rev-parse', 'origin/release')).stdout.trim();
-    assert.equal(backendReleaseSha, backendRelease, 'Backend release should not change');
-
-    const frontendReleaseSha = (await gitInRepo(frontendPath, 'rev-parse', 'origin/release')).stdout.trim();
-    assert.equal(frontendReleaseSha, frontendRelease, 'Frontend release should not change');
-  });
+    const attempt = locked(['--release-token', token]);
+    assert.equal(attempt.status, 2, attempt.stdout + attempt.stderr);
+    assert.match(JSON.parse(attempt.stdout).error, /Lock is held/);
+    const readOnly = locked(['--dry-run']);
+    assert.equal(readOnly.status, 0);
+    assert.equal(JSON.parse(readOnly.stdout).RELEASE_TOKEN, token);
+    assert.deepEqual(await snapshot(f), before);
+  } finally { await cleanup(f); }
 });

@@ -1,7 +1,7 @@
 # callback-requests-admin-ui Specification
 
 ## Purpose
-TBD - synchronized from change callback-requests-management-055.
+CMS-раздел заявок на обратный звонок предоставляет пользователям ADMIN и SUPERUSER защищённые таблицу и детальный просмотр заявок, фильтрацию, сортировку, пагинацию, изменение статуса и spam, а также инструкцию по работе и явные состояния загрузки, отсутствия данных и ошибок доступа.
 
 ## Requirements
 ### Requirement: Защищённый CMS-раздел callback-заявок
@@ -34,7 +34,11 @@ Page SHALL содержать вкладки «Заявки» и «Инстру�
 - **THEN** UI показывает различимое сообщение и сохраняет применимое состояние filters/page/modal
 
 ### Requirement: Filters, sorting и pagination
-UI SHALL отправлять backend-параметры для date range, multi-status, multi-spam, name/phone/comment regex, sort и `{limit, offset}`; phone input MUST запрещать буквы, кроме синтаксиса regex. Каждый фильтр, имеющий собственную колонку, MUST находиться в `filterDropdown` заголовка этой колонки по общему CMS table-паттерну: date range — «Дата и время», multi-status — «Статус», multi-spam — «Спам», name — «Имя», phone — «Телефон», comment — «Комментарий». Активный фильтр SHALL визуально выделять `filterIcon`. Видимые placeholder и accessibility labels поисковых полей MUST называться «Имя», «Телефон» и «Комментарий» без технической подписи `(regex)`; это требование не меняет regex-семантику и имена backend query parameters. На вкладке «Заявки» UI MUST показывать ровно одну пагинацию в верхней управляющей строке справа от вкладок по общему CMS-паттерну разделов «Новости» и «Лошади»; нижняя и встроенная table pagination MUST отсутствовать. На вкладке «Инструкция» пагинация MUST быть скрыта. На desktop вкладки и пагинация SHALL находиться в одной строке, а на tablet/mobile контролы MAY переноситься без overlap и потери доступности. Любое изменение filter/search/sort/page-size SHALL reset-ить offset согласно UX (page change меняет только offset).
+UI SHALL передавать прежние параметры фильтрации, сортировки и пагинации, размещать фильтры в заголовках колонок и сохранять правила labels, phone input, offset и единственной верхней пагинации согласно сценариям ниже.
+
+#### Scenario: Полный контракт фильтров и размещения пагинации
+- **WHEN** пользователь работает с фильтрами, сортировкой, вкладками или пагинацией callback-заявок
+- **THEN** UI SHALL отправлять backend-параметры для date range, multi-status, multi-spam, name/phone/comment regex, sort и `{limit, offset}`; phone input MUST запрещать буквы, кроме синтаксиса regex. Каждый фильтр, имеющий собственную колонку, MUST находиться в `filterDropdown` заголовка этой колонки по общему CMS table-паттерну: date range — «Дата и время», multi-status — «Статус», multi-spam — «Спам», name — «Имя», phone — «Телефон», comment — «Комментарий». Активный фильтр SHALL визуально выделять `filterIcon`. Видимые placeholder и accessibility labels поисковых полей MUST называться «Имя», «Телефон» и «Комментарий» без технической подписи `(regex)`; это требование не меняет regex-семантику и имена backend query parameters. На вкладке «Заявки» UI MUST показывать ровно одну пагинацию в верхней управляющей строке справа от вкладок по общему CMS-паттерну разделов «Новости» и «Лошади»; нижняя и встроенная table pagination MUST отсутствовать. На вкладке «Инструкция» пагинация MUST быть скрыта. На desktop вкладки и пагинация SHALL находиться в одной строке, а на tablet/mobile контролы MAY переноситься без overlap и потери доступности. Любое изменение filter/search/sort/page-size SHALL reset-ить offset согласно UX (page change меняет только offset).
 
 #### Scenario: Фильтрация и сортировка
 - **WHEN** пользователь применяет или очищает filters/sort
@@ -80,7 +84,11 @@ Status tag и spam value SHALL открывать dropdown только при �
 - **THEN** action скрыт/disabled/guarded, mutation не выполняется либо denial показан без optimistic corruption
 
 ### Requirement: Frontend test matrix и Manual QA
-Реализация MUST пройти component/API-boundary tests на MSW без live backend calls и browser Manual QA.
+Реализация MUST пройти component/API-boundary tests на MSW без live backend calls и browser Manual QA по матрице и сценариям ниже.
+
+#### Scenario: Полная матрица frontend-проверок
+- **WHEN** выполняются frontend-проверки раздела callback-заявок
+- **THEN** Реализация MUST пройти component/API-boundary tests на MSW без live backend calls и browser Manual QA.
 
 | Area | Behavior diff | Required tests | Access scenario | Commands |
 |---|---|---|---|---|

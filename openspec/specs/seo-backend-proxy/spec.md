@@ -54,7 +54,7 @@ Backend SHALL обращаться к seo-service по адресу из нас�
 - **THEN** seo-service отвечает `404`, backend возвращает `404`, элемент B не удалён
 
 ### Requirement: Проксирование списков
-Оба маршрута `GET /api/seo/search-queries` и `GET /api/seo/pages` SHALL передавать в seo-service `search`, `ordering`, `limit`, `offset`, а также `mode`, `metric`, `date_from`, `date_to` и возвращать `{"items", "total", "metrics_table"}`, где `metrics_table` проверяется по схеме capability `metrics-table-contract` (неизвестные поля допускаются и передаются без изменений). `limit` MUST приводиться к 1..100, отрицательный `offset` — к 0 до вызова peer. Неизвестные `mode`/`metric`, некорректная дата, одна дата без другой и `date_from > date_to` MUST давать `400` без вызова seo-service; значение `ordering` проверяет seo-service, а для списка запросов его синтаксис также проверяет backend до downstream; правила периода (выравнивание, лимит, сегодняшний день по часовому поясу seo-service) применяет seo-service.
+Backend SHALL проксировать списки запросов и страниц с параметрами, валидацией и ответами согласно сценарию «Полный контракт проксирования списков».
 
 #### Scenario: Параметры передаются
 - **WHEN** SEO запрашивает `/api/seo/search-queries?search=лошад&ordering=-query&limit=500&offset=-1`
@@ -75,6 +75,12 @@ Backend SHALL обращаться к seo-service по адресу из нас�
 #### Scenario: Метрики запросов и неизвестные поля
 - **WHEN** SEO передаёт mode/metric/обе даты для списка запросов, а SEO возвращает metrics_table версии 1 с новым необязательным полем
 - **THEN** backend передаёт параметры и сохраняет неизвестное поле в ответе; при отсутствии metrics_table или обязательного поля отвечает 502
+
+#### Scenario: Полный контракт проксирования списков
+- **WHEN** проверяется сохранение существующего контракта capability
+- **THEN** MUST соблюдаться все следующие исходные условия без изменения поведения:
+
+Оба маршрута `GET /api/seo/search-queries` и `GET /api/seo/pages` SHALL передавать в seo-service `search`, `ordering`, `limit`, `offset`, а также `mode`, `metric`, `date_from`, `date_to` и возвращать `{"items", "total", "metrics_table"}`, где `metrics_table` проверяется по схеме capability `metrics-table-contract` (неизвестные поля допускаются и передаются без изменений). `limit` MUST приводиться к 1..100, отрицательный `offset` — к 0 до вызова peer. Неизвестные `mode`/`metric`, некорректная дата, одна дата без другой и `date_from > date_to` MUST давать `400` без вызова seo-service; значение `ordering` проверяет seo-service, а для списка запросов его синтаксис также проверяет backend до downstream; правила периода (выравнивание, лимит, сегодняшний день по часовому поясу seo-service) применяет seo-service.
 
 ### Requirement: Проксирование настроек нормализации
 Маршруты `/api/seo/page-normalization/blacklisted-query-params` и `/api/seo/page-normalization/blacklisted-hashes` SHALL проксировать list/create/update/delete в одноимённые маршруты seo-service с теми же телами и статусами успеха (`200`, `201`, `204`). Не-UUID `item_id` MUST давать `400` без вызова peer.

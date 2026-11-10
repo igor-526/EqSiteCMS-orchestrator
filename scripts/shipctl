@@ -33,6 +33,7 @@ const READ_ONLY_COMMANDS = new Set(['status', 'plan']);
 function isReadOnly(command, args) {
   if (READ_ONLY_COMMANDS.has(command)) return true;
   if (args.includes('--dry-run')) return true;
+  if (command === 'release' && !args.includes('--release-token')) return true;
   // ci with --repo (no --change) is read-only
   if (command === 'ci' && args.includes('--repo') && !args.includes('--change')) return true;
   return false;

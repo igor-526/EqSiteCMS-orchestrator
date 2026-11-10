@@ -13,11 +13,19 @@ Backend SHALL хранить nullable `display_order` связи цены с г�
 - **THEN** backend возвращает Public Read представление с подтверждённым порядком элементов
 
 ### Requirement: Безопасный HTML page data
-Backend SHALL поддерживать `page_data` для breeds, coat colors, horse services и prices, SHALL возвращать поле в detail GET только при `page_data=true` и MUST отклонять HTML с `script`, event-handler или `javascript:` содержимым с `400`. Требование трассируется к задаче `006`.
+Backend SHALL предоставлять безопасный HTML `page_data` для breeds, coat colors, horse services и prices и сохранять правила slug, необязательного описания и permission checks услуг. Полный контракт задачи `006` задаётся сценариями ниже.
 
-Backend SHALL автоматически генерировать slug из name при создании или обновлении horse service, если slug не передан или передана пустая строка. Backend SHALL принимать пустое описание услуги (`description=null` или `description=""`) без возврата ошибки валидации.
+#### Scenario: Обработка и выдача HTML четырёх сущностей
+- **WHEN** detail GET или запись page data затрагивает breeds, coat colors, horse services либо prices
+- **THEN** Backend SHALL поддерживать `page_data` для breeds, coat colors, horse services и prices, SHALL возвращать поле в detail GET только при `page_data=true` и MUST отклонять HTML с `script`, event-handler или `javascript:` содержимым с `400`. Требование трассируется к задаче `006`.
 
-Backend SHALL реализовать permission checks для horse services: только пользователи с `SUPERUSER` или `DEVELOPER` scope могут создавать и удалять услуги. Пользователи с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) могут обновлять услуги (кроме наименования) и читать их.
+#### Scenario: Обработка slug и пустого описания услуги
+- **WHEN** клиент создаёт или обновляет horse service
+- **THEN** Backend SHALL автоматически генерировать slug из name при создании или обновлении horse service, если slug не передан или передана пустая строка. Backend SHALL принимать пустое описание услуги (`description=null` или `description=""`) без возврата ошибки валидации.
+
+#### Scenario: Разграничение операций услуг по scope
+- **WHEN** пользователь создаёт, удаляет, обновляет или читает horse service
+- **THEN** Backend SHALL реализовать permission checks для horse services: только пользователи с `SUPERUSER` или `DEVELOPER` scope могут создавать и удалять услуги. Пользователи с `ADMIN` scope (без `DEVELOPER`/`SUPERUSER`) могут обновлять услуги (кроме наименования) и читать их.
 
 #### Scenario: Публичное чтение page data
 - **WHEN** consumer с tenant service key вызывает detail GET одной из четырёх сущностей с `page_data=true` без CMS cookie
@@ -129,7 +137,15 @@ Backend SHALL подключать S3-compatible media storage через Protoc
 - **THEN** backend проверяет все photo ID в tenant, заменяет список связей, возвращает обновлённый horse DTO и не предоставляет неподдерживаемое действие main-photo
 
 ### Requirement: Управление лошадьми в tenant-контексте
-Backend SHALL предоставлять tenant-scoped CRUD лошадей, фильтрацию, сортировку и пагинацию; mutations MUST требовать CMS-аутентификацию и требуемый scope. Каждая лошадь SHALL поддерживать nullable `pedigree_name` длиной не более 63 символов вместо удалённого `code`; поле SHALL приниматься create/partial update и SHALL присутствовать во всех полных horse response-схемах, включая public JSON, list/detail, pedigree/foal/parent/candidate и mutation responses. Отсутствующее поле PATCH MUST сохранять прежнее значение, а явный `null` MUST очищать его. Только при Public Read через `X-Equestrian-Service-Key` backend MUST рекурсивно возвращать `name = pedigree_name`, когда поле задано, иначе исходную `name`; само поле `pedigree_name` остаётся raw nullable. При CMS cookie-аутентификации backend MUST возвращать исходную `name` и raw `pedigree_name` без подмены, включая явный JSON `null`. Alembic migration MUST удалить `code` без переноса данных и добавить nullable `pedigree_name VARCHAR(63)`.
+Backend SHALL предоставлять tenant-scoped CRUD, фильтрацию, сортировку и пагинацию лошадей с CMS-аутентификацией и scope для mutations, nullable `pedigree_name` и различными public/CMS-проекциями имени. Миграция и все API outcomes MUST соответствовать сценариям и матрице ниже.
+
+#### Scenario: CRUD и полный контракт клички родословной
+- **WHEN** backend обрабатывает horse CRUD или формирует horse response
+- **THEN** Backend SHALL предоставлять tenant-scoped CRUD лошадей, фильтрацию, сортировку и пагинацию; mutations MUST требовать CMS-аутентификацию и требуемый scope. Каждая лошадь SHALL поддерживать nullable `pedigree_name` длиной не более 63 символов вместо удалённого `code`; поле SHALL приниматься create/partial update и SHALL присутствовать во всех полных horse response-схемах, включая public JSON, list/detail, pedigree/foal/parent/candidate и mutation responses. Отсутствующее поле PATCH MUST сохранять прежнее значение, а явный `null` MUST очищать его. Только при Public Read через `X-Equestrian-Service-Key` backend MUST рекурсивно возвращать `name = pedigree_name`, когда поле задано, иначе исходную `name`; само поле `pedigree_name` остаётся raw nullable. При CMS cookie-аутентификации backend MUST возвращать исходную `name` и raw `pedigree_name` без подмены, включая явный JSON `null`. Alembic migration MUST удалить `code` без переноса данных и добавить nullable `pedigree_name VARCHAR(63)`.
+
+#### Scenario: Матрица доступа tenant-scoped CRUD
+- **WHEN** клиент обращается к horse endpoints из матрицы
+- **THEN** backend соблюдает следующую исходную матрицу доступа без изменения outcomes
 
 | method | path | access class | roles | expected without auth | expected with auth | связанные тесты |
 |---|---|---|---|---|---|---|
@@ -140,7 +156,9 @@ Backend SHALL предоставлять tenant-scoped CRUD лошадей, фи
 | `PATCH` | `/api/horses/{horse_id}` | Protected Write | user с horse write scope | `401` | `200`; без scope `403`; foreign tenant текущий `400`; invalid length `400` | U-07..U-12, SM-27..SM-32 |
 | `DELETE` | `/api/horses/{horse_id}` | Protected Write | user с horse write scope | `401` | `204`; без scope `403`; foreign tenant текущий `400` | regression, SM-33..SM-35 |
 
-Исключений из дефолтной access policy нет. Tenant selector является identity hint: missing/invalid selector возвращает `401`.
+#### Scenario: Политика доступа и tenant selector CRUD
+- **WHEN** клиент выбирает tenant context для horse endpoints
+- **THEN** Исключений из дефолтной access policy нет. Tenant selector является identity hint: missing/invalid selector возвращает `401`.
 
 #### Scenario: Public list использует кличку родословной
 - **WHEN** consumer с валидным tenant service key без CMS cookie вызывает `GET /api/horses` для лошадей с заполненным и пустым `pedigree_name`
@@ -174,7 +192,11 @@ Backend SHALL предоставлять tenant-scoped CRUD лошадей, фи
 - **WHEN** authenticated пользователь изменяет horse вне своего tenant
 - **THEN** lookup остаётся tenant-scoped, backend возвращает текущий `400`, и чужая запись не изменяется
 ### Requirement: Управление родословной
-Backend SHALL позволять читать кандидатов sire/dam/children публично в tenant context и SHALL позволять устанавливать, заменять и очищать pedigree relations только через Protected Write. Ни поиск кандидатов, ни установка связей MUST NOT фильтровать, загружать для проверки или отклонять участников по `breed_id`, наличию/отсутствию породы, конкретной породе либо `breed.kind`. Backend SHALL сохранять tenant isolation, запрет self-link и конфликтующих immediate relations, требования к полу родителей, правила дат рождения/смерти, занятость соответствующего родительского слота ребёнка, partial-update semantics, поиск, сортировку и пагинацию. Требование трассируется к задачам `011`, `014` и change `remove-pedigree-breed-validation`.
+Backend SHALL предоставлять Public Read кандидатов и Protected Write связей родословной без breed-based фильтрации, загрузки для проверки или отказов. Tenant isolation, остальные pedigree-инварианты и partial-update semantics MUST сохраняться по полному контракту сценариев ниже.
+
+#### Scenario: Полный контракт кандидатов и связей родословной
+- **WHEN** backend читает кандидатов или устанавливает, заменяет либо очищает pedigree relations
+- **THEN** Backend SHALL позволять читать кандидатов sire/dam/children публично в tenant context и SHALL позволять устанавливать, заменять и очищать pedigree relations только через Protected Write. Ни поиск кандидатов, ни установка связей MUST NOT фильтровать, загружать для проверки или отклонять участников по `breed_id`, наличию/отсутствию породы, конкретной породе либо `breed.kind`. Backend SHALL сохранять tenant isolation, запрет self-link и конфликтующих immediate relations, требования к полу родителей, правила дат рождения/смерти, занятость соответствующего родительского слота ребёнка, partial-update semantics, поиск, сортировку и пагинацию. Требование трассируется к задачам `011`, `014` и change `remove-pedigree-breed-validation`.
 
 #### Scenario: Чтение кандидатов родословной независимо от породы
 - **WHEN** consumer с валидным tenant selector вызывает `GET /api/horses/{id}/pedigree/{mode}` для `sire`, `dam` или `children`, а подходящие по не-breed правилам кандидаты имеют другую породу, другой `breed.kind` либо не имеют породы
@@ -244,7 +266,11 @@ Backend SHALL при `pedigree>0` включать в каждого foal нер
 - **THEN** backend возвращает `null` для отсутствующей стороны и корректный краткий DTO для известной стороны
 
 ### Requirement: Access matrix backend domain endpoints
-Backend capability SHALL сохранять следующую evidence-based access matrix. `Tenant key` означает `X-Equestrian-Service-Key` без CMS cookie; `gap` означает отсутствие назначенного live evidence и MUST NOT трактоваться как иной access class.
+Backend capability SHALL сохранять evidence-based access matrix доменных endpoints, включая роли, tenant context, HTTP outcomes, исключения и gaps. Отсутствие live evidence MUST NOT трактоваться как иной access class; полный контракт приведён в сценарии матрицы ниже.
+
+#### Scenario: Полная матрица доменных endpoints и границы evidence
+- **WHEN** клиент обращается к доменным endpoints, перечисленным в матрице
+- **THEN** Backend capability SHALL сохранять следующую evidence-based access matrix. `Tenant key` означает `X-Equestrian-Service-Key` без CMS cookie; `gap` означает отсутствие назначенного live evidence и MUST NOT трактоваться как иной access class.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
@@ -294,7 +320,11 @@ Backend SHALL принимать необязательный `short_name` в Pu
 - **THEN** backend сохраняет значение и возвращает его в DTO, anonymous write получает `401`, а breed write без требуемого scope получает `403`
 
 ### Requirement: Access matrix коротких наименований
-Backend SHALL сохранять access classes существующих routes без исключений из Public Read/Protected Write.
+Backend SHALL сохранять Public Read и Protected Write routes коротких наименований без новых исключений; роли, tenant isolation и anonymous/authenticated outcomes MUST соответствовать матрице в сценарии ниже.
+
+#### Scenario: Матрица доступа коротких наименований
+- **WHEN** клиент читает или изменяет породы либо масти через перечисленные routes
+- **THEN** Backend SHALL сохранять access classes существующих routes без исключений из Public Read/Protected Write.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
@@ -308,7 +338,11 @@ Backend SHALL сохранять access classes существующих routes 
 - **THEN** anonymous/authenticated tests подтверждают обе Public Read строки и Protected Write `401/403`, а review не объявляет нового access exception
 
 ### Requirement: Нормализация необязательных полей пород и мастей
-Backend SHALL принимать в create/update пород и мастей отсутствующие, `null`, пустые и состоящие только из пробелов значения `slug` и `description`. Пустой `slug` MUST интерпретироваться как отсутствие пользовательского slug, а пустое описание MUST сохраняться как `null`. При create без slug backend SHALL сгенерировать уникальный slug из нормализованного имени; при update с пустым slug backend SHALL не отклонять запрос и SHALL сохранить текущий slug, если имя не изменилось, либо применить действующую генерацию из нового имени, если имя изменилось.
+Backend SHALL нормализовать необязательные `slug` и `description` при create/update пород и мастей: принимать отсутствующие и пустые значения, сохранять пустое описание как `null` и применять существующую генерацию либо сохранение slug по сценариям ниже.
+
+#### Scenario: Полный контракт нормализации пород и мастей
+- **WHEN** клиент создаёт или обновляет породу либо масть со значениями необязательных полей
+- **THEN** Backend SHALL принимать в create/update пород и мастей отсутствующие, `null`, пустые и состоящие только из пробелов значения `slug` и `description`. Пустой `slug` MUST интерпретироваться как отсутствие пользовательского slug, а пустое описание MUST сохраняться как `null`. При create без slug backend SHALL сгенерировать уникальный slug из нормализованного имени; при update с пустым slug backend SHALL не отклонять запрос и SHALL сохранить текущий slug, если имя не изменилось, либо применить действующую генерацию из нового имени, если имя изменилось.
 
 #### Scenario: Создание породы без slug и описания
 - **WHEN** разрешённый пользователь отправляет `POST /horses/breeds` с валидным именем и пустыми либо отсутствующими `slug` и `description`
@@ -347,8 +381,11 @@ Backend MUST при `POST /api/horses` формировать уникальны
 - **THEN** backend не выдаёт его за slug-конфликт и сохраняет стандартную диагностику инфраструктурной ошибки
 
 ### Requirement: Access contract исправления создания лошади
+Исправление MUST сохранять Protected Write создания лошади, Public Read endpoints и все роли, tenant selector и HTTP outcomes исходного контракта. Матрица и отсутствие исключений задаются сценарием ниже.
 
-Исправление MUST сохранять существующий Protected Write контракт и не менять Public Read endpoints.
+#### Scenario: Полная матрица доступа исправления создания лошади
+- **WHEN** клиент создаёт лошадь через POST /api/horses
+- **THEN** Исправление MUST сохранять существующий Protected Write контракт и не менять Public Read endpoints.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
@@ -412,7 +449,11 @@ Backend MUST при `POST /api/horses` формировать уникальны
 - **THEN** backend возвращает контрактный отказ или отсутствие ресурса и не изменяет чужую запись
 
 ### Requirement: Фильтрация лошадей по оказываемым услугам
-Backend SHALL принимать в `GET /api/horses` optional повторяемый query-параметр `services: list[UUID]`. Несколько UUID SHALL иметь OR-семантику; data и count SHALL использовать одинаковый tenant-scoped predicate, не дублировать лошадей и сохранять `limit`/`offset`/sort.
+Backend SHALL фильтровать Public Read список лошадей по повторяемому `services: list[UUID]` с OR-семантикой и согласованными tenant-scoped data/count без дублей, сохраняя пагинацию, сортировку и исходный access contract по сценарию ниже.
+
+#### Scenario: Полный контракт фильтрации и доступа по услугам
+- **WHEN** клиент читает GET /api/horses с необязательным фильтром услуг
+- **THEN** Backend SHALL принимать в `GET /api/horses` optional повторяемый query-параметр `services: list[UUID]`. Несколько UUID SHALL иметь OR-семантику; data и count SHALL использовать одинаковый tenant-scoped predicate, не дублировать лошадей и сохранять `limit`/`offset`/sort.
 
 | method | path | access class | roles | expected without auth | expected with auth | связанные тесты |
 |---|---|---|---|---|---|---|
@@ -476,7 +517,11 @@ Backend SHALL использовать NATS Jetstream для асинхронн�
 - **AND** все переменные окружения NATS начинаются с префикса `NATS_`
 
 ### Requirement: Имя фотографии безопасно укладывается в ограничение хранения
-Backend SHALL принимать имя фотографии любой длины и MUST до repository insert/update преобразовать его в tenant-scoped уникальное display name длиной не более 63 Unicode code points. Алгоритм SHALL нормализовать basename в NFC, удалить path/control components, сохранить безопасное extension и для длинного имени сформировать `<readable-prefix>-<digest12><extension>`, где `digest12` получен из SHA-256 полного нормализованного исходного имени и identity ресурса/содержимого. DB `StringDataRightTruncationError` и HTTP `500` не являются допустимым outcome длины имени.
+Backend SHALL до repository insert/update преобразовывать имя фотографии любой длины в tenant-scoped уникальное display name не длиннее 63 Unicode code points. Нормализация, digest и недопустимые ошибки длины MUST соответствовать полному контракту ниже.
+
+#### Scenario: Полный алгоритм безопасного имени фотографии
+- **WHEN** backend готовит имя фотографии к repository insert/update
+- **THEN** Backend SHALL принимать имя фотографии любой длины и MUST до repository insert/update преобразовать его в tenant-scoped уникальное display name длиной не более 63 Unicode code points. Алгоритм SHALL нормализовать basename в NFC, удалить path/control components, сохранить безопасное extension и для длинного имени сформировать `<readable-prefix>-<digest12><extension>`, где `digest12` получен из SHA-256 полного нормализованного исходного имени и identity ресурса/содержимого. DB `StringDataRightTruncationError` и HTTP `500` не являются допустимым outcome длины имени.
 
 #### Scenario: Граничное имя создаётся
 - **WHEN** authenticated tenant user отправляет `POST /api/photos` с валидным файлом и именем ровно 63 символа
@@ -546,7 +591,11 @@ Backend SHALL принимать имя фотографии любой длин
 - **THEN** unique constraint удаляется и неуникальный индекс восстанавливается, но детерминированные rename не обращаются автоматически и это явно отражено в migration metadata
 
 ### Requirement: Access matrix операций фотографий сохраняется
-Изменение SHALL сохранять существующие access classes и tenant isolation. Новых endpoint или исключений из default policy нет.
+Изменение SHALL сохранять access classes и tenant isolation операций фотографий без новых endpoints или исключений из default policy. Все роли и anonymous/authenticated outcomes MUST соответствовать исходной матрице в сценарии ниже.
+
+#### Scenario: Полная матрица доступа операций фотографий
+- **WHEN** клиент читает, создаёт, изменяет или удаляет фотографию
+- **THEN** Изменение SHALL сохранять существующие access classes и tenant isolation. Новых endpoint или исключений из default policy нет.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|
@@ -572,8 +621,11 @@ Backend SHALL принимать имя фотографии любой длин
 - **THEN** backend сохраняет существующий Public Read outcome без требования CMS cookie
 
 ### Requirement: Управляемый slug лошади
+Backend SHALL принимать и нормализовать необязательный slug при create/PATCH лошади с tenant-scoped уникальностью. Правила отсутствующего, пустого и явного slug, регенерации и управляемых ошибок MUST сохраняться по полному контракту ниже.
 
-Backend SHALL принимать необязательный `slug` в `POST /api/horses` и `PATCH /api/horses/{horse_id}`, нормализовать его доменным slug-алгоритмом и обеспечивать уникальность внутри текущего tenant. При create отсутствующий, `null` или пустой slug MUST генерироваться из `name`; при PATCH отсутствующее поле MUST сохранять текущий slug, а `null` или пустая строка MUST регенерировать его из итогового имени. Явная tenant-scoped коллизия или значение, нормализуемое в пустую строку, MUST возвращать управляемый `400`, а не `500`.
+#### Scenario: Полный контракт ручного и генерируемого slug
+- **WHEN** backend обрабатывает POST /api/horses или PATCH /api/horses/{horse_id}
+- **THEN** Backend SHALL принимать необязательный `slug` в `POST /api/horses` и `PATCH /api/horses/{horse_id}`, нормализовать его доменным slug-алгоритмом и обеспечивать уникальность внутри текущего tenant. При create отсутствующий, `null` или пустой slug MUST генерироваться из `name`; при PATCH отсутствующее поле MUST сохранять текущий slug, а `null` или пустая строка MUST регенерировать его из итогового имени. Явная tenant-scoped коллизия или значение, нормализуемое в пустую строку, MUST возвращать управляемый `400`, а не `500`.
 
 #### Scenario: Создание с ручным slug
 - **WHEN** разрешённый пользователь создаёт лошадь с `slug=" My Horse URL "`
@@ -616,8 +668,11 @@ Backend SHALL принимать необязательный `slug` в `POST /a
 - **THEN** unique constraint оставляет не более одной конфликтующей записи, а проигравший запрос получает управляемую клиентскую ошибку без `500`
 
 ### Requirement: Access contract управления slug лошади
+Изменение slug SHALL сохранять Protected Write, а чтение по новому slug — Public Read с tenant selector без исключений из default policy. Роли, tenant isolation и HTTP outcomes MUST соответствовать полной матрице в сценарии ниже.
 
-Изменение slug SHALL сохранять стандартный Protected Write контракт, а чтение лошади по новому slug SHALL сохранять Public Read контракт с tenant selector. Исключений из дефолтной access policy нет.
+#### Scenario: Полная матрица доступа управления slug лошади
+- **WHEN** клиент создаёт или изменяет slug либо читает horse list/detail
+- **THEN** Изменение slug SHALL сохранять стандартный Protected Write контракт, а чтение лошади по новому slug SHALL сохранять Public Read контракт с tenant selector. Исключений из дефолтной access policy нет.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|

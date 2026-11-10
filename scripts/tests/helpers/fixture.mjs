@@ -4,16 +4,19 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { tmpdir } from 'node:os';
 import { execSync, spawnSync } from 'node:child_process';
 
 /**
  * Creates a temporary directory for fixtures.
  * @returns {Promise<string>} Path to the temporary directory
  */
-export async function createTempDir(prefix = 'fixture-') {
-  const tempPath = path.join(tmpdir(), `${prefix}${Date.now()}-${Math.random().toString(36).slice(2)}`);
-  await fs.mkdir(tempPath, { recursive: true });
+const ownedFixtures = new Set();
+export async function createTempDir(prefix = 'fixture-', base = path.resolve('.qa/ship-tests')) {
+  const resolved = path.resolve(base);
+  if (!resolved.startsWith(path.resolve('.qa') + path.sep)) throw new Error('Fixture must be under owned .qa');
+  await fs.mkdir(resolved, { recursive: true });
+  const tempPath = await fs.mkdtemp(path.join(resolved, prefix));
+  ownedFixtures.add(await fs.realpath(tempPath));
   return tempPath;
 }
 
@@ -23,7 +26,7 @@ export async function createTempDir(prefix = 'fixture-') {
  * @param {string} url
  */
 export function guardNonLocalRemote(url) {
-  if (url.match(/^(git@|https?:\/\/|ssh:\/\/)/)) {
+  if (!path.isAbsolute(url) || url.includes('\0')) {
     throw new Error(`Non-local remote URL detected: ${url}. Tests must use only local bare repositories.`);
   }
 }
@@ -35,8 +38,10 @@ export function guardNonLocalRemote(url) {
  * @returns {string} stdout
  */
 function git(cwd, ...args) {
-  const result = spawnSync('git', args, {
+  if (args[0] === 'push') guardNonLocalRemote(git(cwd, 'remote', 'get-url', args[1] === '-u' ? args[2] : args[1]));
+  const result = spawnSync('git', ['-c', 'core.hooksPath=/dev/null', ...args], {
     cwd,
+    env: { ...process.env, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0' },
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe']
   });
@@ -52,14 +57,15 @@ function git(cwd, ...args) {
  * @param {string} branchContent - Content for initial commit (default: branch name)
  * @returns {Promise<void>}
  */
-export async function createBareRepo(barePath, branchContent = null) {
+export async function createBareRepo(barePath, branchContent = null, fixtureBase) {
+  guardNonLocalRemote(barePath);
   await fs.mkdir(barePath, { recursive: true });
   
   // Initialize bare repo
   git(barePath, 'init', '--bare', '--initial-branch=main');
   
   // Create a temporary working directory to make commits
-  const tempWork = await createTempDir('bare-work-');
+  const tempWork = await createTempDir('bare-work-', fixtureBase);
   try {
     git(tempWork, 'clone', barePath, 'work');
     const workDir = path.join(tempWork, 'work');
@@ -80,7 +86,7 @@ export async function createBareRepo(barePath, branchContent = null) {
     git(workDir, 'push', 'origin', 'release');
     git(workDir, 'checkout', 'main');
   } finally {
-    await fs.rm(tempWork, { recursive: true, force: true });
+    await cleanup(tempWork);
   }
 }
 
@@ -92,9 +98,9 @@ export async function createBareRepo(barePath, branchContent = null) {
  * @returns {Promise<Object>} Fixture metadata
  */
 export async function createMonorepoFixture(options = {}) {
-  const { services = ['backend', 'frontend'], withRelease = true } = options;
+  const { services = ['backend', 'frontend'], withRelease = true, fixtureBase, withRootOrigin = false } = options;
   
-  const fixtureRoot = await createTempDir('monorepo-');
+  const fixtureRoot = await createTempDir('monorepo-', fixtureBase);
   const baresRoot = path.join(fixtureRoot, 'bare-repos');
   await fs.mkdir(baresRoot, { recursive: true });
   
@@ -109,7 +115,7 @@ export async function createMonorepoFixture(options = {}) {
   const serviceData = {};
   for (const svc of services) {
     const barePath = path.join(baresRoot, `${svc}.git`);
-    await createBareRepo(barePath, svc);
+    await createBareRepo(barePath, svc, fixtureBase);
     
     const clonePath = path.join(servicesDir, svc);
     git(servicesDir, 'clone', barePath, svc);
@@ -128,9 +134,18 @@ export async function createMonorepoFixture(options = {}) {
   git(fixtureRoot, 'init', '--initial-branch=main');
   git(fixtureRoot, 'config', 'user.name', 'Test User');
   git(fixtureRoot, 'config', 'user.email', 'test@example.com');
-  git(fixtureRoot, 'add', 'services.manifest');
+  await fs.writeFile(path.join(fixtureRoot, '.gitignore'), '.qa/\nservices/\nbare-repos/\n');
+  git(fixtureRoot, 'add', '.gitignore', 'services.manifest');
   git(fixtureRoot, 'commit', '-m', 'Initial root commit');
   
+  if (withRootOrigin) {
+    const rootBare = path.join(baresRoot, 'root.git');
+    guardNonLocalRemote(rootBare);
+    git(fixtureRoot, 'init', '--bare', rootBare);
+    git(fixtureRoot, 'remote', 'add', 'origin', rootBare);
+    git(fixtureRoot, 'push', '-u', 'origin', 'main');
+  }
+
   return {
     root: fixtureRoot,
     services: serviceData,
@@ -151,7 +166,8 @@ export async function captureGitSnapshot(repoPath) {
     const head = git(repoPath, 'rev-parse', 'HEAD');
     const branch = git(repoPath, 'rev-parse', '--abbrev-ref', 'HEAD');
     
-    return { status, refs, head, branch };
+    const index = git(repoPath, 'ls-files', '--stage', '-z');
+    return { status, refs, head, branch, index };
   } catch (error) {
     return { error: error.message };
   }
@@ -205,11 +221,10 @@ export async function makeDirty(repoPath, files) {
  */
 export async function cleanup(fixtureOrPath) {
   const rootPath = typeof fixtureOrPath === 'string' ? fixtureOrPath : fixtureOrPath.root;
-  try {
-    await fs.rm(rootPath, { recursive: true, force: true });
-  } catch (error) {
-    // Ignore cleanup errors
-  }
+  const resolved = await fs.realpath(rootPath);
+  if (!ownedFixtures.has(resolved)) throw new Error('Cleanup target is not an owned fixture');
+  await fs.rm(resolved, { recursive: true, force: true });
+  ownedFixtures.delete(resolved);
 }
 
 /**
@@ -316,7 +331,7 @@ export async function createFixture(tmpRoot, options = {}) {
         git(workDir, 'checkout', 'main');
       }
     } finally {
-      await fs.rm(tempWork, { recursive: true, force: true });
+      await cleanup(tempWork);
     }
     
     // Clone service

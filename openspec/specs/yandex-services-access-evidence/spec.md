@@ -214,6 +214,8 @@ Baseline MUST сохранять различие статического healt
 - **WHEN** S1 заканчивает status/strict и проверку собственных anchors
 - **THEN** меняется только эта delta; F1 получает context pack ниже, shared checklist здесь не редактируется, sync/archive/commit/deploy и security fixes не выполняются
 
+## Ненормативный ретроспективный контекст
+
 ### Контекст передачи — локальная декомпозиция и exact F1 context pack
 
 Deliverable S — эта access delta, один архитектурный access slice; 20 docs scenarios и 8 future-case групп. Девять групп действий S1: профиль/контекст, main access clauses, route/prefix inventory, dependency/middleware boundary, source tests, compose exposure, consolidated gaps/matrix, delta drafting, verification/handoff. Это не изменение общего checklist.

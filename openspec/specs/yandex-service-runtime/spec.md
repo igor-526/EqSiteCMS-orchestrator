@@ -161,6 +161,8 @@ Service HEAD подтверждён: `d3cf1dc5879d5ebc2f75bbdb437ca657cf1a4de4`,
 - **WHEN** создаётся module-level engine при DEBUG=true либо false
 - **THEN** используется соответственно NullPool либо стандартный pool без явно заданных pool sizing/pre_ping/recycle, а session factory имеет expire_on_commit=false и autoflush=false; настройки DB_POOL_* основного backend не считаются поддержанными здесь
 
+## Ненормативный ретроспективный контекст
+
 ### Coverage: source → requirement/scenario → evidence (контекст delta)
 
 Ссылки относятся к подтверждённому service HEAD; каждая строка даёт проверяемое static evidence, не runtime PASS.

@@ -21,6 +21,16 @@ Backend MUST проксировать `GET /api/emails/me` в private email-serv
 - **THEN** backend MUST вернуть `401` без downstream call
 
 ### Requirement: Расширенная access matrix email proxy
+Backend MUST сохранять расширенную матрицу доступа email proxy и её исключения согласно сценарию «Полный контракт расширенной матрицы».
+
+#### Scenario: Existing confirmation exceptions unchanged
+- **WHEN** anonymous caller использует `POST /api/emails/send-confirmation` или `PATCH /api/emails/confirm`
+- **THEN** существующий public confirmation-flow contract MUST сохраниться
+
+#### Scenario: Полный контракт расширенной матрицы
+- **WHEN** проверяется сохранение существующего контракта capability
+- **THEN** MUST соблюдаться все следующие исходные условия без изменения поведения:
+
 Backend MUST добавить следующую строку к существующей email access matrix; create/update/delete остаются owner-only без role override, а send-confirmation/confirm остаются public write exceptions.
 
 | method | path | access class | roles | expected without auth | expected with auth | foreign resource | tests |
@@ -28,10 +38,6 @@ Backend MUST добавить следующую строку к существ�
 | GET | `/api/emails/me` | Protected Sensitive Read | authenticated owner | `401` | `200` или `404` | owner derived from session, selector отсутствует | anonymous/owner/missing/downstream invalid/timeout |
 
 Protected GET является исключением из Public Read, поскольку email и confirmation state — персональные данные и не нужны consumer sites.
-
-#### Scenario: Existing confirmation exceptions unchanged
-- **WHEN** anonymous caller использует `POST /api/emails/send-confirmation` или `PATCH /api/emails/confirm`
-- **THEN** существующий public confirmation-flow contract MUST сохраниться
 
 ### Requirement: Безопасный live confirmation flow
 Live QA MUST получать строку/токен подтверждения только из разрешённого тестового источника, немедленно выполнять `PATCH /api/emails/confirm`, не раскрывать полный токен в отчётах и очищать временное значение после сценария; проверка фактического почтового ящика не требуется.
@@ -134,6 +140,16 @@ MUST добавить ENV `EMAIL_SERVICE_URL` в backend для адресаци
 - **THEN** MUST использовать `EMAIL_SERVICE_URL` для формирования запросов к email-service
 
 ### Requirement: Access matrix email proxy
+Backend MUST соблюдать неизменную матрицу email proxy, owner-only ограничения и публичные confirmation-flow исключения согласно сценарию «Полный контракт матрицы email».
+
+#### Scenario: Foreign denial precedes lookup
+- **WHEN** authenticated caller передаёт чужой `user_id` в owner-only route
+- **THEN** backend возвращает `403`, не вызывает downstream и не раскрывает наличие email
+
+#### Scenario: Полный контракт матрицы email
+- **WHEN** проверяется сохранение существующего контракта capability
+- **THEN** MUST соблюдаться все следующие исходные условия без изменения поведения:
+
 Backend MUST реализовать следующую access matrix.
 
 | method | path | access class | roles | tenant selector | owner rule | without auth | with auth | foreign resource | validation status | tests |
@@ -145,7 +161,3 @@ Backend MUST реализовать следующую access matrix.
 | PATCH | `/api/emails/confirm` | Public Confirmation Write | anonymous/authenticated | N/A | code lookup in email-service | public success or domain error | same contract | N/A | malformed/invalid `400` | anonymous/authenticated/valid/invalid/expired/reused |
 
 Public confirmation writes являются исключениями, потому что flow должен работать без CMS session и идентифицирует ресурс контрольной строкой. Create/update/delete не имеют privileged bypass.
-
-#### Scenario: Foreign denial precedes lookup
-- **WHEN** authenticated caller передаёт чужой `user_id` в owner-only route
-- **THEN** backend возвращает `403`, не вызывает downstream и не раскрывает наличие email

@@ -16,6 +16,12 @@
 - **THEN** результат равен утверждённому allowlist и не содержит ни одного action 1/action 5/legacy ключа
 
 ### Requirement: About хранится четырьмя строковыми настройками
+Tenant `inlove` SHALL хранить четыре отдельные строковые about-настройки с обязательной первой и необязательной второй парой title/text; начальная локальная коррекция SHALL записать утверждённые заглушки согласно сценарию полного контракта.
+
+#### Scenario: Полный контракт: About хранится четырьмя строковыми настройками
+- **WHEN** применяется контракт требования «About хранится четырьмя строковыми настройками»
+- **THEN** SHALL сохраняться весь следующий исходный контракт и его ограничения:
+
 Tenant `inlove` SHALL хранить `about_1_title`, `about_1_text`, `about_2_title`, `about_2_text` как отдельные значения типа `string`. Первый блок MUST иметь заполненные title и text; второй title и text MAY быть пустыми, но MUST сохраняться как отдельные ключи.
 
 Начальная локальная коррекция SHALL записать утверждённые заглушки: `О конном клубе «ИНЛав»`, `Здесь будет основной текст о клубе. Замените эту заглушку в настройках сайта.`, `Наша атмосфера`, `Здесь будет дополнительный текст о клубе. Замените эту заглушку в настройках сайта.` соответственно.
@@ -47,6 +53,12 @@ Read-only inventory подтвердил отсутствие строк `horse_
 - **THEN** ни одна команда не подключается к stand/production и перенос таблицы не выполняется
 
 ### Requirement: Существующая матрица доступа сохраняется
+Change MUST NOT изменять маршруты и существующую access policy site settings и профильных API; GET SHALL оставаться Public Read с tenant selector, а запись site settings — Protected Write с исходными ролями и outcomes согласно сценарию полного контракта.
+
+#### Scenario: Полный контракт: Существующая матрица доступа сохраняется
+- **WHEN** применяется контракт требования «Существующая матрица доступа сохраняется»
+- **THEN** SHALL сохраняться весь следующий исходный контракт и его ограничения:
+
 Change MUST NOT изменять маршруты или access policy site settings и профильных API: GET SHALL оставаться Public Read с tenant selector, а POST/PATCH/DELETE site settings SHALL оставаться Protected Write для `SUPERUSER`, `ADMIN`, `DEVELOPER`.
 
 | Method | Path | Access class | Roles | Expected without auth/selector | Expected with auth/valid selector |

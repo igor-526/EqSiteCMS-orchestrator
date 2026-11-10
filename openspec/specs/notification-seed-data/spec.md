@@ -1,7 +1,7 @@
 # notification-seed-data Specification
 
 ## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
+Инициализация данных уведомлений обеспечивает последовательный запуск сидеров без дублирования существующих записей, создание каналов и события обратного звонка и применение миграций с повторными попытками.
 ## Requirements
 ### Requirement: BaseSeeder
 The system MUST provide an abstract base class for seeders with common lifecycle methods.

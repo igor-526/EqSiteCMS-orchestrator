@@ -1,7 +1,7 @@
 # notification-repositories Specification
 
 ## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
+Репозитории уведомлений обеспечивают базовые операции с сущностями, постраничное чтение, выбор каналов и событий по коду и получение пользовательских подписок на события.
 ## Requirements
 ### Requirement: BaseRepository
 The system MUST provide a base repository with common CRUD operations.

@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "change": "restore-seo-qa-readiness",
+  "runId": null,
+  "ownerRef": null,
+  "isolationRef": null,
+  "residualJournalRef": null,
+  "targets": {
+    "gateway": {
+      "id": null,
+      "endpoint": {
+        "scheme": null,
+        "host": null,
+        "port": null
+      },
+      "projectRef": null,
+      "networkRef": null,
+      "isolation": "dedicated-test-api",
+      "attestationRef": null
+    },
+    "peer": {
+      "id": null,
+      "endpoint": {
+        "scheme": null,
+        "host": null,
+        "port": null
+      },
+      "projectRef": null,
+      "networkRef": null,
+      "isolation": "dedicated-test-api",
+      "attestationRef": null
+    },
+    "backendPg": {
+      "id": null,
+      "host": null,
+      "port": null,
+      "database": null,
+      "role": null,
+      "isolation": "dedicated-test-db-role",
+      "clusterAclAttestationRef": null
+    },
+    "metricaPg": {
+      "id": null,
+      "host": null,
+      "port": null,
+      "database": null,
+      "role": null,
+      "isolation": "dedicated-test-db-role",
+      "clusterAclAttestationRef": null
+    },
+    "acceptancePg": {
+      "id": null,
+      "host": null,
+      "port": null,
+      "database": null,
+      "role": null,
+      "isolation": "dedicated-test-db-role",
+      "clusterAclAttestationRef": null
+    }
+  },
+  "resources": {
+    "project": {
+      "id": null,
+      "targetRef": null,
+      "ownerRef": null
+    },
+    "network": {
+      "id": null,
+      "targetRef": null,
+      "ownerRef": null
+    },
+    "volume": {
+      "id": null,
+      "targetRef": null,
+      "ownerRef": null
+    },
+    "backendFixtures": {
+      "id": null,
+      "targetRef": null,
+      "ownerRef": null
+    },
+    "metricaFixtures": {
+      "id": null,
+      "targetRef": null,
+      "ownerRef": null
+    },
+    "acceptanceSchema": {
+      "id": null,
+      "targetRef": null,
+      "ownerRef": null
+    }
+  },
+  "source": {
+    "sourceRevision": null,
+    "runtimeRevision": null,
+    "buildSourceAttestationRef": null
+  },
+  "tenants": {
+    "A": null,
+    "B": null
+  },
+  "actors": {
+    "seoOnly": {
+      "id": null,
+      "tenantRef": null,
+      "credentialRef": null,
+      "roles": null
+    },
+    "seoAdmin": {
+      "id": null,
+      "tenantRef": null,
+      "credentialRef": null,
+      "roles": null
+    },
+    "nonSeo": {
+      "id": null,
+      "tenantRef": null,
+      "credentialRef": null,
+      "roles": null
+    },
+    "adminOnly": {
+      "id": null,
+      "tenantRef": null,
+      "credentialRef": null,
+      "roles": null
+    }
+  },
+  "anonymous": true,
+  "fixtures": {
+    "ids": null,
+    "ownerRef": null,
+    "historyRef": null,
+    "afterUnbindRef": null,
+    "totals": {
+      "A": null,
+      "B": null
+    },
+    "order": null,
+    "pages": null,
+    "bindingRef": null
+  },
+  "budgets": {
+    "setupSeconds": null,
+    "scenarioSeconds": null,
+    "httpSeconds": null,
+    "groupSeconds": null,
+    "cleanupSeconds": null
+  },
+  "permissions": {
+    "environment": {
+      "targetRefs": null,
+      "resourceRefs": null,
+      "actions": null,
+      "ownerRef": null,
+      "isolationRef": null,
+      "consentRef": null,
+      "manifestRef": null,
+      "permitRef": null,
+      "expiresAt": null
+    },
+    "actors": {
+      "targetRefs": null,
+      "resourceRefs": null,
+      "actions": null,
+      "ownerRef": null,
+      "isolationRef": null,
+      "consentRef": null,
+      "manifestRef": null,
+      "permitRef": null,
+      "expiresAt": null
+    },
+    "pg": {
+      "targetRefs": null,
+      "resourceRefs": null,
+      "actions": null,
+      "ownerRef": null,
+      "isolationRef": null,
+      "consentRef": null,
+      "manifestRef": null,
+      "permitRef": null,
+      "expiresAt": null
+    },
+    "read": {
+      "targetRefs": null,
+      "resourceRefs": null,
+      "actions": null,
+      "ownerRef": null,
+      "isolationRef": null,
+      "consentRef": null,
+      "manifestRef": null,
+      "permitRef": null,
+      "expiresAt": null
+    },
+    "cleanup": {
+      "targetRefs": null,
+      "resourceRefs": null,
+      "actions": null,
+      "ownerRef": null,
+      "isolationRef": null,
+      "consentRef": null,
+      "manifestRef": null,
+      "permitRef": null,
+      "expiresAt": null
+    }
+  },
+  "smoke": {
+    "diskPresent": true,
+    "runtimeLoadVerified": false,
+    "externalOwnerRef": null,
+    "ticketRef": null
+  },
+  "vendorStatus": "unchecked"
+}

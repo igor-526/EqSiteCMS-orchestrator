@@ -7,13 +7,20 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import {
-  createMonorepoFixture,
+  createMonorepoFixture as createBaseFixture,
   makeDirty,
   cleanup,
   captureMonorepoSnapshot,
   assertSnapshotsEqual,
   guardNonLocalRemote
 } from './helpers/fixture.mjs';
+
+// Fixture processes must not inherit production Git paths/configuration or hooks.
+for (const key of ['GIT_DIR', 'GIT_COMMON_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_CONFIG_PARAMETERS']) delete process.env[key];
+Object.assign(process.env, { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_COUNT: '0', GIT_TERMINAL_PROMPT: '0' });
+
+const FIXTURE_BASE = path.resolve('.qa/add-safe-services-autogit/OPS-1/fixtures');
+const createMonorepoFixture = options => createBaseFixture({ ...options, fixtureBase: FIXTURE_BASE, withRootOrigin: true });
 
 const SHIPCTL = path.join(process.cwd(), 'scripts/shipctl');
 
@@ -281,7 +288,9 @@ describe('UT-PLAN-04: конвенции / суффикс', async () => {
     await fs.writeFile(path.join(tempClone, 'dummy.txt'), 'dummy');
     spawnSync('git', ['add', 'dummy.txt'], { cwd: tempClone });
     spawnSync('git', ['commit', '-m', 'Occupy branch'], { cwd: tempClone });
+    guardNonLocalRemote(frontendBare);
     spawnSync('git', ['push', 'origin', 'bug/fix-bug-123-2'], { cwd: tempClone });
+    assert.strictEqual(await fs.realpath(tempClone), path.join(await fs.realpath(fixture.root), 'temp-frontend-clone'));
     await fs.rm(tempClone, { recursive: true, force: true });
     
     const pathsFile = path.join(fixture.root, '.qa/paths.txt');
@@ -583,5 +592,245 @@ describe('UT-PLAN-08: schema validation (F-083-01)', async () => {
     
     // Validate schema compliance would be checked by ajv at write time
     // If we got here without exit 2, schema validation passed
+  });
+});
+
+// AG groups use only local, owned fixtures. Every invocation is read-only Git.
+import { gitInRepo } from './helpers/fixture.mjs';
+import { parseStatusPorcelain, originIdentity } from '../ship/git.mjs';
+import Ajv from 'ajv';
+
+function g(cwd, ...args) {
+  const result = gitInRepo(cwd, '-c', 'core.hooksPath=/dev/null', ...args);
+  assert.strictEqual(result.status, 0, `fixture git ${args[0]} failed`);
+  return result.stdout.trim();
+}
+
+describe('AG-03..08/10: canonical safe planning', () => {
+  let fixture, backend, frontend, pathsFile;
+  beforeEach(async () => {
+    fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+    backend = fixture.services.backend.clonePath;
+    frontend = fixture.services.frontend.clonePath;
+    pathsFile = path.join(fixture.root, '.qa/paths.txt');
+    await fs.mkdir(path.dirname(pathsFile), { recursive: true });
+    await fs.writeFile(pathsFile, 'services/backend/src/\n');
+    await makeDirty(backend, { 'src/change.txt': 'new content' });
+    for (const repo of [fixture.root, backend, frontend]) guardNonLocalRemote(g(repo, 'remote', 'get-url', 'origin'));
+  });
+  afterEach(async () => { await cleanup(fixture); });
+  const runPlan = (...extra) => shipctl(fixture.root, 'plan', '--change', 'safe-test', '--message', 'Исправлено SEO', '--paths-file', pathsFile, ...extra);
+  const snapshot = () => captureMonorepoSnapshot(fixture);
+
+  it('AG-03/04: exact branch/message, trailers, collision and legacy fallback', async () => {
+    const before = await snapshot();
+    const result = runPlan('--branch', 'bugs/seo-improve', '--task', 'docs/tasks/108.md');
+    assert.strictEqual(result.status, 0, result.stdout);
+    assert.strictEqual(result.json.branchName, 'bugs/seo-improve');
+    assert.deepStrictEqual(result.json.commitMessage, { subject: 'Исправлено SEO', trailers: ['OpenSpec: safe-test', 'Task: docs/tasks/108.md'] });
+    g(backend, 'branch', 'bugs/seo-improve');
+    const collision = runPlan('--branch', 'bugs/seo-improve');
+    assert.strictEqual(collision.status, 3);
+    assert.ok(collision.json.blockers.includes('branch_occupied'));
+    g(backend, 'branch', '-D', 'bugs/seo-improve');
+    assertSnapshotsEqual(before, await snapshot());
+  });
+
+  it('AG-03: strict argument/ref/subject validation and Unicode boundary', async () => {
+    const before = await snapshot();
+    const invalid = [
+      ['--unknown', 'x'], ['--branch'], ['--branch', 'main'], ['--branch', 'release'], ['--branch', 'dev'],
+      ['--branch', '-option'], ['--branch', 'bad..ref'], ['--branch', '@{-1}'], ['--kind', 'other'], ['--message', 'x'],
+      ['--summary', 'line\nline'], ['--branch', 'feature/a\rB']
+    ];
+    for (const args of invalid) assert.strictEqual(runPlan(...args).status, 3, JSON.stringify(args));
+    for (const subject of ['', '   ', 'x\nvalue', 'x\rvalue', 'я'.repeat(73)]) {
+      assert.strictEqual(shipctl(fixture.root, 'plan', '--change', 'safe-test', '--message', subject).status, 3);
+    }
+    const exact = shipctl(fixture.root, 'plan', '--change', 'safe-test', '--message', 'я'.repeat(72), '--include', 'services/backend/src/');
+    assert.strictEqual(exact.status, 0, exact.stdout);
+    assert.strictEqual(exact.json.commitMessage.subject, 'я'.repeat(72));
+    assertSnapshotsEqual(before, await snapshot());
+  });
+
+  it('AG-05: clean outside-included inventory blockers fail closed without mutations', async () => {
+    const cases = [
+      { apply: async () => g(frontend, 'checkout', '-b', 'dev'), undo: async () => g(frontend, 'checkout', 'main'), rule: 'not_on_main' },
+      { apply: async () => g(frontend, 'checkout', '--detach'), undo: async () => g(frontend, 'checkout', 'main'), rule: 'detached_head' },
+      { apply: async () => fs.mkdir(path.join(frontend, '.git/rebase-merge')), undo: async () => fs.rmdir(path.join(frontend, '.git/rebase-merge')), rule: 'operation_in_progress' },
+      { apply: async () => g(frontend, 'remote', 'remove', 'origin'), undo: async () => g(frontend, 'remote', 'add', 'origin', fixture.services.frontend.barePath), rule: 'missing_origin' },
+      { apply: async () => g(frontend, 'remote', 'set-url', 'origin', path.join(fixture.root, 'nonexistent.git')), undo: async () => g(frontend, 'remote', 'set-url', 'origin', fixture.services.frontend.barePath), rule: 'remote_probe_failed' },
+      { apply: async () => g(frontend, 'update-ref', '-d', 'refs/heads/main'), undo: async () => g(frontend, 'update-ref', 'refs/heads/main', g(backend, 'rev-parse', 'HEAD')), rule: 'missing_main' }
+    ];
+    // Keep the original SHA when testing a missing local branch.
+    const frontHead = g(frontend, 'rev-parse', 'HEAD');
+    cases.at(-1).undo = async () => g(frontend, 'update-ref', 'refs/heads/main', frontHead);
+    for (const test of cases) {
+      await test.apply();
+      const before = await snapshot();
+      const result = runPlan();
+      assert.strictEqual(result.status, 3, result.stdout);
+      assert.ok(result.json.blockers.includes(test.rule), `${test.rule}: ${result.stdout}`);
+      assertSnapshotsEqual(before, await snapshot());
+      await test.undo();
+    }
+    // Missing clone: append a nonexistent manifest member, never clone it.
+    await fs.appendFile(fixture.manifestPath, `missing ${path.join(fixture.root, 'missing.git')}\n`);
+    const result = runPlan();
+    assert.strictEqual(result.status, 3);
+    assert.ok(result.json.repos.missing.blockers.includes('missing_or_invalid_clone'));
+  });
+
+  it('AG-05: invalid manifests and origin mismatch cannot be silently accepted', async () => {
+    const original = await fs.readFile(fixture.manifestPath, 'utf8');
+    for (const text of [original + original.split('\n')[0] + '\n', '../escape /local\n', 'broken\n']) {
+      await fs.writeFile(fixture.manifestPath, text);
+      assert.strictEqual(runPlan().status, 3);
+    }
+    await fs.writeFile(fixture.manifestPath, original);
+    g(frontend, 'remote', 'set-url', 'origin', fixture.services.backend.barePath);
+    assert.ok(runPlan().json.blockers.includes('origin_mismatch'));
+    g(frontend, 'remote', 'set-url', 'origin', fixture.services.frontend.barePath);
+    g(frontend, 'remote', 'set-url', '--push', 'origin', fixture.services.backend.barePath);
+    assert.ok(runPlan().json.blockers.includes('push_origin_mismatch'));
+    for (const remote of ['git://example/repo', 'ssh://example/repo', 'https://example/repo', 'git@example:repo', 'file:///etc/passwd']) assert.throws(() => guardNonLocalRemote(remote));
+    assert.strictEqual(originIdentity('git@github.com:org/repo.git'), originIdentity('https://user:secret@github.com/org/repo.git?token=secret'));
+  });
+
+  it('AG-06: included partial staging is whole-file; foreign index/content untouched', async () => {
+    g(backend, 'add', '--', 'src/change.txt');
+    await makeDirty(backend, { 'src/change.txt': 'working bytes', 'foreign.txt': 'foreign bytes' });
+    const before = await snapshot();
+    const indexBefore = g(backend, 'ls-files', '--stage');
+    const result = runPlan();
+    assert.strictEqual(result.status, 0, result.stdout);
+    assert.ok(result.json.repos.backend.warnings.includes('whole_file_commit'));
+    assert.strictEqual(await fs.readFile(path.join(backend, 'foreign.txt'), 'utf8'), 'foreign bytes');
+    assert.strictEqual(g(backend, 'ls-files', '--stage'), indexBefore);
+    assertSnapshotsEqual(before, await snapshot());
+    g(backend, 'add', '--', 'foreign.txt');
+    const stagedBefore = await snapshot();
+    assert.ok(runPlan().json.blockers.includes('foreign_staged'));
+    assertSnapshotsEqual(stagedBefore, await snapshot());
+  });
+
+  it('AG-07: hidden files, ignored and credential paths, redacted scanner', async () => {
+    await makeDirty(backend, {
+      '.github/workflows/check.yml': 'name: check', '.env': 'TOKEN=never-print-this-value',
+      '.env.example': 'TOKEN=your_token', '.npmrc': 'private', 'id_rsa': 'private',
+      'credentials.prod.json': '{}', 'secret.key': 'private', 'ignored.txt': 'ignored',
+      '.gitignore': 'ignored.txt\n'
+    });
+    await fs.writeFile(pathsFile, 'services/backend/.github/\nservices/backend/.env.example\nservices/backend/ignored.txt\n');
+    let result = runPlan();
+    assert.strictEqual(result.status, 0, result.stdout);
+    assert.ok(result.json.repos.backend.included.some(f => f.path === '.github/workflows/check.yml'));
+    assert.ok(!result.json.repos.backend.included.some(f => f.path === 'ignored.txt'));
+    for (const file of ['.env', '.npmrc', 'id_rsa', 'credentials.prod.json', 'secret.key']) {
+      await fs.writeFile(pathsFile, `services/backend/${file}\n`);
+      result = runPlan();
+      assert.strictEqual(result.status, 3, file);
+      assert.ok(!(result.stdout + result.stderr).includes('never-print-this-value'));
+    }
+    await fs.writeFile(pathsFile, 'services/backend/src/\n');
+    for (const content of ['TOKEN=never-print-this-value', '"TOKEN": "never-print-this-value"', '-----BEGIN RSA PRIVATE KEY-----\nnever-print-this-value']) {
+      await makeDirty(backend, { 'src/secret.txt': content });
+      result = runPlan();
+      assert.strictEqual(result.status, 3);
+      assert.ok(result.json.blockers.includes('secret_content'));
+      const disk = await fs.readFile(path.join(fixture.root, '.qa/ship/safe-test/plan.json'), 'utf8');
+      assert.ok(!(result.stdout + result.stderr + disk).includes('never-print-this-value'));
+    }
+    await fs.unlink(path.join(backend, 'src/secret.txt'));
+    await fs.writeFile(pathsFile, 'services/backend/\n');
+    // Broad directory: credential files are excluded with warnings, not force-added.
+    result = runPlan();
+    assert.strictEqual(result.status, 0, result.stdout);
+    assert.ok(result.json.repos.backend.excluded.some(x => x.path === '.env'));
+    assert.ok(!result.json.repos.backend.included.some(x => x.path === '.env'));
+  });
+
+  it('AG-08: literal spaces/dashes, rename directions, delete and clone ownership', async () => {
+    g(backend, 'mv', '--', 'README.md', 'renamed name.md');
+    await makeDirty(backend, { '-dash file.txt': 'dash', 'delete.txt': 'delete' });
+    g(backend, 'add', '--', 'delete.txt');
+    g(backend, 'commit', '-m', 'fixture baseline');
+    await fs.unlink(path.join(backend, 'delete.txt'));
+    // Return to exact remote main baseline by publishing this fixture-only commit.
+    guardNonLocalRemote(g(backend, 'remote', 'get-url', 'origin'));
+    g(backend, 'push', 'origin', 'main');
+    g(backend, 'mv', '--', 'renamed name.md', 'final name.md');
+    await fs.writeFile(pathsFile, 'services/backend/-dash file.txt\nservices/backend/delete.txt\nservices/backend/renamed name.md\nservices/backend/final name.md\n');
+    const before = await snapshot();
+    let result = runPlan();
+    assert.strictEqual(result.status, 0, result.stdout);
+    const files = result.json.repos.backend.included;
+    assert.deepStrictEqual(new Set(files.map(f => f.path)), new Set(['-dash file.txt', 'delete.txt', 'renamed name.md', 'final name.md']));
+    assert.strictEqual(files.find(f => f.path === 'delete.txt').blobHash, null);
+    assert.strictEqual(files.find(f => f.path === 'renamed name.md').blobHash, null);
+    assert.ok(!result.json.repos['.'].included.some(f => f.path.startsWith('services/')));
+    assertSnapshotsEqual(before, await snapshot());
+    await fs.writeFile(pathsFile, 'services/backend/final name.md\n');
+    result = runPlan();
+    assert.ok(result.json.blockers.includes('cross_scope_rename'));
+    assert.deepStrictEqual(parseStatusPorcelain('R  new name\0old name\0')[0], { status: 'R ', path: 'new name', oldPath: 'old name', isRename: true });
+  });
+
+  it('AG-08: reject traversal/pathspec/nested repo and symlink parents; stage symlink bytes', async () => {
+    for (const selector of ['/etc/passwd', '../outside', 'services/backend/../frontend/x', ':(glob)**', 'services/backend/src/*', '.qa/', 'services/unknown/x']) {
+      await fs.writeFile(pathsFile, selector + '\n');
+      assert.strictEqual(runPlan().status, 3, selector);
+    }
+    await fs.symlink(frontend, path.join(backend, 'link-dir'));
+    await fs.writeFile(pathsFile, 'services/backend/link-dir/README.md\n');
+    assert.strictEqual(runPlan().status, 3);
+    await fs.mkdir(path.join(backend, 'nested'));
+    g(path.join(backend, 'nested'), 'init');
+    await fs.writeFile(pathsFile, 'services/backend/nested/\n');
+    assert.strictEqual(runPlan().status, 3);
+    await fs.symlink('/nonexistent/secret', path.join(backend, 'src/safe-link'));
+    await fs.writeFile(pathsFile, 'services/backend/src/safe-link\n');
+    const result = runPlan();
+    assert.strictEqual(result.status, 0, result.stdout);
+    assert.strictEqual(result.json.repos.backend.included[0].mode, '120000');
+  });
+
+  it('AG-10: deterministic persisted v2 token binds content/index/subject/branch/HEAD/origin/inventory', async () => {
+    const first = runPlan('--branch', 'bugs/token');
+    assert.strictEqual(first.status, 0, first.stdout);
+    assert.strictEqual(first.json.version, 2);
+    assert.ok(first.json.repos['.']);
+    const same = runPlan('--branch', 'bugs/token');
+    assert.strictEqual(first.json.PLAN_TOKEN, same.json.PLAN_TOKEN);
+    for (const key of ['blobHash', 'indexHash', 'statusHash']) assert.ok(first.json.repos.backend.included[0][key]);
+    const tokens = [first.json.PLAN_TOKEN];
+    await makeDirty(backend, { 'src/change.txt': 'edited bytes' });
+    tokens.push(runPlan('--branch', 'bugs/token').json.PLAN_TOKEN);
+    g(backend, 'add', '--', 'src/change.txt');
+    tokens.push(runPlan('--branch', 'bugs/token').json.PLAN_TOKEN);
+    tokens.push(runPlan('--branch', 'bugs/new-token').json.PLAN_TOKEN);
+    const subject = shipctl(fixture.root, 'plan', '--change', 'safe-test', '--message', 'Новое сообщение', '--paths-file', pathsFile, '--branch', 'bugs/new-token');
+    tokens.push(subject.json.PLAN_TOKEN);
+    g(frontend, 'remote', 'set-url', 'origin', fixture.services.backend.barePath);
+    tokens.push(runPlan('--branch', 'bugs/token').json.PLAN_TOKEN);
+    g(frontend, 'remote', 'set-url', 'origin', fixture.services.frontend.barePath);
+    g(backend, 'commit', '-m', 'fixture new head');
+    tokens.push(runPlan('--branch', 'bugs/token').json.PLAN_TOKEN);
+    await fs.appendFile(fixture.manifestPath, `missing ${path.join(fixture.root, 'missing.git')}\n`);
+    tokens.push(runPlan('--branch', 'bugs/token').json.PLAN_TOKEN);
+    assert.strictEqual(new Set(tokens).size, tokens.length);
+    const schema = JSON.parse(await fs.readFile(path.resolve('scripts/ship/schemas/plan.json'), 'utf8'));
+    const validate = new Ajv({ strict: true }).compile(schema);
+    const disk = JSON.parse(await fs.readFile(path.join(fixture.root, '.qa/ship/safe-test/plan.json'), 'utf8'));
+    assert.ok(validate(disk), JSON.stringify(validate.errors));
+    delete disk.version;
+    assert.strictEqual(validate(disk), false);
+  });
+
+  it('AG-06: foreign-only clean included set is noop with no implicit feature operations', () => {
+    const result = shipctl(fixture.root, 'plan', '--change', 'noop', '--message', 'Noop');
+    assert.strictEqual(result.status, 0, result.stdout);
+    assert.strictEqual(result.json.noop, true);
+    assert.strictEqual(result.json.repos.backend.included.length, 0);
   });
 });

@@ -67,7 +67,7 @@ CMS frontend и `site-ad` SHALL использовать официальный 
 - **THEN** runbook требует пересборку image до применения значения в browser bundle
 
 ### Requirement: Защита чувствительных данных
-Все observability adapters MUST исключать auth cookies, authorization headers, tenant/service secrets, DB/SMTP credentials и request bodies из telemetry по умолчанию. Intended public browser DSN SHALL считаться endpoint identifier, а не секретом, и MAY присутствовать в client bundle как необходимая browser-конфигурация. `SENTRY_AUTH_TOKEN`, credential-bearing/private DSN и иные секреты MUST NOT попадать в frontend `.env`, browser bundle, Docker runtime image, tracked artifacts или документацию; полное значение public browser DSN MUST NOT выводиться в logs/evidence сверх минимально необходимой диагностики.
+Все observability adapters MUST соблюдать описанный в сценариях контракт исключения чувствительных данных, допустимости public browser DSN и запрета публикации секретов. Логи и evidence MUST ограничиваться минимально необходимой диагностикой.
 
 #### Scenario: Ошибка авторизованного CMS-запроса
 - **WHEN** Sentry фиксирует ошибку запроса с auth cookie или authorization header
@@ -80,6 +80,12 @@ CMS frontend и `site-ad` SHALL использовать официальный 
 #### Scenario: Sanitized logs и evidence
 - **WHEN** build, runtime или QA формируют logs и evidence с диагностикой Sentry
 - **THEN** полное значение public browser DSN, auth token и иные секреты не выводятся сверх минимально необходимой sanitized информации
+
+#### Scenario: Полный контракт исключения данных и допустимости DSN
+- **WHEN** reviewer проверяет observability adapters, frontend-конфигурацию, артефакты и диагностические данные
+- **THEN** Все observability adapters MUST исключать auth cookies, authorization headers, tenant/service secrets, DB/SMTP credentials и request bodies из telemetry по умолчанию.
+- **AND** Intended public browser DSN SHALL считаться endpoint identifier, а не секретом, и MAY присутствовать в client bundle как необходимая browser-конфигурация.
+- **AND** `SENTRY_AUTH_TOKEN`, credential-bearing/private DSN и иные секреты MUST NOT попадать в frontend `.env`, browser bundle, Docker runtime image, tracked artifacts или документацию; полное значение public browser DSN MUST NOT выводиться в logs/evidence сверх минимально необходимой диагностики.
 
 ### Requirement: Проверяемая эксплуатационная документация
 Проект SHALL иметь единый runbook, описывающий назначение Sentry и Prometheus, матрицу переменных, различие build/runtime, внутренние ports, startup/shutdown, локальную проверку, production rollout, sanitization, troubleshooting и rollback. Документ MUST соответствовать фактическому коду и командам.
@@ -104,8 +110,7 @@ Observability change MUST NOT добавлять или изменять busines
 - **THEN** metrics listener не опубликован во внешний host/public contour без отдельного утверждённого исключения
 
 ### Requirement: Шумоподавление транзиентной инфраструктурной телеметрии
-
-Backend Core, Email Service, Notification Service и VK Service SHALL исключать логгер `nats.aio.client` из Sentry LoggingIntegration через `ignore_logger`, чтобы собственное логирование клиентской библиотеки не порождало события мониторинга в обход политики эскалации сервиса. Единственным источником error-событий, связанных с доступностью брокера, MUST оставаться сервисный `error_cb` с порогом эскалации. Существующие `before_send` и sanitization MUST сохраняться без изменений, а шумоподавление MUST NOT распространяться на прикладные ошибки обработки сообщений.
+Backend Core, Email Service, Notification Service и VK Service SHALL подавлять библиотечную NATS-телеметрию в Sentry по контракту сценариев. Сервисный `error_cb` MUST сохранять пороговую эскалацию, а `before_send`, sanitization и видимость прикладных ошибок MUST сохраняться.
 
 #### Scenario: Перезапуск брокера не создаёт события
 - **WHEN** NATS перезапускается, а сервисы штатно переподключаются в пределах порога эскалации
@@ -120,6 +125,12 @@ Backend Core, Email Service, Notification Service и VK Service SHALL исклю
 #### Scenario: Наблюдаемость выключена
 - **WHEN** сервис запускается с `SENTRY_ENABLED=false`
 - **THEN** SDK не инициализируется и регистрация `ignore_logger` не приводит к ошибке startup
+
+#### Scenario: Полный контракт фильтрации NATS и сервисной эскалации
+- **WHEN** reviewer проверяет конфигурацию Sentry и обработку NATS-ошибок в Backend Core, Email Service, Notification Service и VK Service
+- **THEN** Backend Core, Email Service, Notification Service и VK Service SHALL исключать логгер `nats.aio.client` из Sentry LoggingIntegration через `ignore_logger`, чтобы собственное логирование клиентской библиотеки не порождало события мониторинга в обход политики эскалации сервиса.
+- **AND** Единственным источником error-событий, связанных с доступностью брокера, MUST оставаться сервисный `error_cb` с порогом эскалации.
+- **AND** Существующие `before_send` и sanitization MUST сохраняться без изменений, а шумоподавление MUST NOT распространяться на прикладные ошибки обработки сообщений.
 
 ### Requirement: In-process миграции не отключают логгеры сервиса
 Сервис, применяющий Alembic-миграции внутри собственного процесса, SHALL передавать в alembic config атрибут `configure_logger=False`, а `migration/env.py` SHALL уважать этот атрибут и вызывать `logging.config.fileConfig` только при `configure_logger=True`. Применение миграций MUST NOT отключать уже созданные логгеры приложения и веб-сервера: после старта сервис MUST продолжать писать в stdout/stderr прикладные записи уровня `INFO` и выше.

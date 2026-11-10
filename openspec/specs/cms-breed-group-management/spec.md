@@ -50,7 +50,15 @@ CMS MUST вывести колонки пород в порядке «Тип», 
 - **THEN** selector/filter не падают, показывают error feedback и не отправляют невалидный UUID
 
 ### Requirement: Frontend test matrix
-Frontend deliverable MUST иметь MSW/Vitest coverage без live backend calls и browser Manual QA для behavior diff.
+Frontend deliverable MUST обеспечивать изолированное автоматизированное покрытие и browser Manual QA behavior diff по матрице сценария «Матрица frontend-проверок».
+
+#### Scenario: Полный frontend gate
+- **WHEN** Quality Gate проверяет frontend deliverable
+- **THEN** проходят `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`, permission/access/MSW/pagination проверки и no-`site-*` mixing review
+
+#### Scenario: Матрица frontend-проверок
+- **WHEN** Quality Gate сверяет frontend deliverable
+- **THEN** Frontend deliverable MUST иметь MSW/Vitest coverage без live backend calls и browser Manual QA для behavior diff.
 
 | Area | Behavior diff | Required tests | Access scenario | Commands |
 |---|---|---|---|---|
@@ -61,8 +69,4 @@ Frontend deliverable MUST иметь MSW/Vitest coverage без live backend cal
 | таблица пород | group render/filter/sort и порядок колонок | component regression | Public Read data in protected UI | `npm test` |
 | modal пород | nullable selector assign/clear | component + MSW | scope guard, 401/403 | `npm test`, browser |
 | architecture boundary | отсутствие `site-*` mixing/live calls | static review | CMS admin vs consumer | `rg`, lint/build |
-
-#### Scenario: Полный frontend gate
-- **WHEN** Quality Gate проверяет frontend deliverable
-- **THEN** проходят `npm test`, `npm run lint`, `npx tsc --noEmit`, `npm run build`, permission/access/MSW/pagination проверки и no-`site-*` mixing review
 

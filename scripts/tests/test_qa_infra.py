@@ -6,6 +6,7 @@ import importlib
 import io
 import json
 import os
+import re
 import sys
 import types
 import unittest
@@ -17,16 +18,35 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts/qa"))
 from infra import load_context  # noqa: E402 - explicit test-support bootstrap
-from infra.contracts import GuardError, fingerprint, load, validate  # noqa: E402 - explicit test-support bootstrap
+from infra.contracts import (  # noqa: E402 - explicit test-support bootstrap
+    CHANGE,
+    REGISTRY,
+    GuardError,
+    evidence_dir,
+    fingerprint,
+    load,
+    validate,
+)
 from infra.lifecycle import Nats, Postgres, owned  # noqa: E402 - explicit test-support bootstrap
 from infra.run import main, service_environment  # noqa: E402 - explicit test-support bootstrap
 from infra.run import tests as run_tests  # noqa: E402 - explicit test-support bootstrap
 
-EVIDENCE = ROOT / ".qa/harden-agent-verification-pipeline/INFRA-1/offline"
+EVIDENCE = ROOT / ".qa/seo-metrica-task-monitor/T-1-FIX-1/offline"
+NEW_CHANGE = "seo-metrica-task-monitor"
+TASK_FILE = "tests/integration/test_metrica_task_list_postgres.py"
+TASK_NODES = [
+    TASK_FILE + "::" + name
+    for name in (
+        "test_aggregate_identity",
+        "test_status_order_pagination",
+        "test_consistent_read_snapshot",
+        "test_history_survives_cleanup",
+    )
+]
 SENTINEL = "SECRET_SENTINEL_DO_NOT_EXPORT"
 
 
-def case(kind="pg"):
+def case(kind="pg", change=CHANGE):
     run = uuid4().hex
     prefix = "qa_" + run + "_"
     target = {
@@ -44,7 +64,7 @@ def case(kind="pg"):
         raw = f"nats://user:{SENTINEL}@test.invalid:4222"
     m = {
         "version": 1,
-        "change": "harden-agent-verification-pipeline",
+        "change": change,
         "runId": run,
         "kind": kind,
         "target": target,
@@ -55,6 +75,8 @@ def case(kind="pg"):
         "cleanupTimeout": 1,
         "cleanup": True,
     }
+    if change == NEW_CHANGE:
+        m.update(service="ya-metrica-service", nodeIds=TASK_NODES.copy())
     p = {key: copy.deepcopy(m[key]) for key in ("version", "change", "runId", "kind", "target", "resource")}
     # Synthetic permit in memory for guard simulations. Not user authorization.
     p.update(
@@ -100,7 +122,7 @@ class Guards(unittest.TestCase):
             self.assertEqual(set(schema["required"]), set(schema["properties"]))
 
     def test_negative_contracts_before_adapter(self):
-        for kind in ("pg", "nats"):
+        for kind, change in (("pg", CHANGE), ("nats", CHANGE), ("pg", NEW_CHANGE)):
             mutations = [
                 lambda m, p: p.update(expiresAt="2000-01-01T00:00:00Z"),
                 lambda m, p: p.update(expiresAt="2099-01-01"),
@@ -136,7 +158,7 @@ class Guards(unittest.TestCase):
                 ]
             for index, mutate in enumerate(mutations):
                 with self.subTest(kind=kind, variant=index):
-                    m, p, env = case(kind)
+                    m, p, env = case(kind, change)
                     mutate(m, p)
                     factory = unittest.mock.Mock()
 
@@ -226,23 +248,199 @@ class Guards(unittest.TestCase):
 
     def test_runtime_failure_diagnostic_never_exports_secret(self):
         m, p, env = case()
-        args = write_case(directory(), m, p)
+        path = directory()
+        args = write_case(path, m, p)
         driver = types.ModuleType("asyncpg")
         with (
             patch.dict(os.environ, env, clear=True),
             patch.dict(sys.modules, {"asyncpg": driver}),
             patch("infra.run.execute", AsyncMock(side_effect=RuntimeError(SENTINEL))),
+            patch("infra.run.evidence_dir", return_value=path / "runtime"),
             redirect_stdout(io.StringIO()) as output,
         ):
             self.assertEqual(main(["run", *args, "--worker"]), 1)
         self.assertNotIn(SENTINEL, output.getvalue())
-        summary = ROOT / ".qa/harden-agent-verification-pipeline/INFRA-1" / m["runId"] / "summary.json"
+        summary = path / "runtime" / "summary.json"
         self.assertNotIn(SENTINEL, summary.read_text())
         self.assertEqual(load(summary)["status"], "failed")
 
     def test_bootstrap_fails_closed(self):
         with patch.dict(os.environ, {}, clear=True), self.assertRaises(GuardError):
             load_context("pg")
+
+
+class TaskMonitorRegistry(unittest.TestCase):
+    def test_exact_registry_and_old_regression(self):
+        self.assertEqual(set(REGISTRY), {CHANGE, NEW_CHANGE})
+        self.assertEqual(REGISTRY[NEW_CHANGE], {
+            ("ya-metrica-service", "pg"): set(TASK_NODES),
+        })
+        old = {
+            ("seo-service", "pg"): {"test_acceptance_boundaries.py"},
+            ("seo-service", "nats"): {"test_nats_broker.py"},
+            ("ya-metrica-service", "pg"): {"test_cleanup_worker_postgres.py", "test_acceptance_helpers.py"},
+            ("ya-metrica-service", "nats"): {"test_nats_broker.py"},
+        }
+        self.assertEqual(REGISTRY[CHANGE], old)
+        for (service, kind), files in old.items():
+            for nodes in (["selftest"], *[[f"tests/integration/{file}::test_probe[param_1]"] for file in files]):
+                m, p, env = case(kind)
+                m.update(service=service, nodeIds=nodes)
+                self.assertTrue(validate(m, p, kind, environ=env))
+                self.assertEqual(evidence_dir(m), ROOT / ".qa" / CHANGE / "INFRA-1" / m["runId"])
+
+    def test_new_change_accepts_only_exact_four_nodes(self):
+        for node in TASK_NODES:
+            m, p, env = case(change=NEW_CHANGE)
+            m["nodeIds"] = [node]
+            self.assertTrue(validate(m, p, "pg", environ=env))
+        m, p, env = case(change=NEW_CHANGE)
+        self.assertTrue(validate(m, p, "pg", environ=env))
+        invalid = [TASK_FILE + "::test_unregistered_probe", TASK_FILE + "::test_probe[param_1]"]
+        invalid += [node + suffix for node in TASK_NODES for suffix in ("[unregistered]", "_suffix", "[param_1]")]
+        for node in invalid:
+            with self.subTest(node=node):
+                m, p, env = case(change=NEW_CHANGE)
+                # A valid node alongside an invalid one must not mask the refusal.
+                m["nodeIds"] = [TASK_NODES[0], node]
+                factory = unittest.mock.Mock()
+
+                async def attempt():
+                    async with owned(m, p, adapter_factory=factory, directory=directory()):
+                        self.fail("unregistered node reached adapter")
+
+                with patch.dict(os.environ, env, clear=True), self.assertRaises(GuardError):
+                    asyncio.run(attempt())
+                factory.assert_not_called()
+
+    def test_tool_01_preflight_is_offline_and_routes_evidence(self):
+        m, p, env = case(change=NEW_CHANGE)
+        args = write_case(directory(), m, p)
+        with (
+            patch.dict(os.environ, env, clear=True),
+            patch("subprocess.Popen") as process,
+            patch("socket.socket") as socket,
+            patch("infra.run.service_environment", return_value=(ROOT, Path(sys.executable), {})),
+            redirect_stdout(io.StringIO()) as output,
+        ):
+            self.assertEqual(main(["preflight", *args]), 0)
+        process.assert_not_called()
+        socket.assert_not_called()
+        self.assertIn("offline-preflight-only", output.getvalue())
+        self.assertEqual(evidence_dir(m), ROOT / ".qa" / NEW_CHANGE / "INFRA-1" / m["runId"])
+
+    def test_tool_02_registry_rejects_before_adapter(self):
+        mutations = [
+            lambda m, p: (m.update(change="arbitrary"), p.update(change="arbitrary")),
+            lambda m, p: p.update(change=CHANGE),
+            lambda m, p: m.update(service="seo-service"),
+            lambda m, p: m.update(service="backend"),
+            lambda m, p: m.update(nodeIds=["selftest"]),
+            lambda m, p: m.update(nodeIds=["--help"]),
+            lambda m, p: m.update(nodeIds=[TASK_FILE]),
+            lambda m, p: m.update(nodeIds=[TASK_NODES[0] + " --help"]),
+            lambda m, p: m.update(nodeIds=[TASK_FILE + "::test_probe[../../bad]"]),
+            lambda m, p: m.update(nodeIds=["../" + TASK_NODES[0]]),
+            lambda m, p: m.update(nodeIds=["/" + TASK_NODES[0]]),
+            lambda m, p: m.update(nodeIds=[TASK_NODES[0].replace("task_list", "other")]),
+            lambda m, p: m.update(nodeIds=["tests/integration/test_cleanup_worker_postgres.py::test_probe"]),
+        ]
+        for mutate in mutations:
+            m, p, env = case(change=NEW_CHANGE)
+            mutate(m, p)
+            factory = unittest.mock.Mock()
+
+            async def attempt():
+                async with owned(m, p, adapter_factory=factory, directory=directory()):
+                    self.fail("unsafe body reached")
+
+            with patch.dict(os.environ, env, clear=True), self.assertRaises(GuardError):
+                asyncio.run(attempt())
+            factory.assert_not_called()
+        m, p, env = case("nats", NEW_CHANGE)
+        m["nodeIds"] = ["tests/integration/test_nats_broker.py::test_probe"]
+        with self.assertRaises(GuardError):
+            validate(m, p, "nats", environ=env)
+
+    def test_new_change_missing_required_fields_fail_closed(self):
+        original_m, original_p, _ = case(change=NEW_CHANGE)
+        for source, fields in (("manifest", original_m), ("permit", original_p)):
+            for field in fields:
+                with self.subTest(source=source, field=field):
+                    m, p, env = case(change=NEW_CHANGE)
+                    del (m if source == "manifest" else p)[field]
+                    with self.assertRaises(GuardError):
+                        validate(m, p, "pg", environ=env)
+
+    def test_new_change_endpoint_binding_and_scope_guards(self):
+        m, p, env = case(change=NEW_CHANGE)
+        raw = env["QA_INFRA_PG_URL"]
+        for bad in ("", raw.replace("test.invalid", "foreign.invalid"), raw + "?options=public",
+                    raw.replace("acceptance_test:", "foreign_test:"), raw.replace("/isolated_test", "/other_test")):
+            with self.assertRaises(GuardError):
+                validate(m, p, "pg", environ={"QA_INFRA_PG_URL": bad, "DATABASE_URL": raw})
+        for field, value in (("schema", "public"), ("schema", "qa_" + "b" * 32 + "_" + "a" * 12)):
+            m, p, env = case(change=NEW_CHANGE)
+            m["resource"][field] = value
+            p["resource"] = copy.deepcopy(m["resource"])
+            with self.assertRaises(GuardError):
+                validate(m, p, "pg", environ=env)
+
+    def test_evidence_rejects_traversal_foreign_root_and_symlink(self):
+        for field, values in (("change", ["../foreign", "/foreign", NEW_CHANGE + "/../foreign", "other-change"]),
+                              ("runId", ["../foreign", "/foreign", "a" * 32 + "/../foreign"])):
+            for value in values:
+                m, _, _ = case(change=NEW_CHANGE)
+                m[field] = value
+                with self.assertRaises(GuardError):
+                    evidence_dir(m)
+        m, _, _ = case(change=NEW_CHANGE)
+        with patch.object(Path, "resolve", return_value=EVIDENCE):
+            with self.assertRaises(GuardError):
+                evidence_dir(m)
+
+    def test_schemas_match_registry_and_keep_guards(self):
+        manifest = load(ROOT / "scripts/qa/infra/manifest.schema.json")
+        permit = load(ROOT / "scripts/qa/infra/permit.schema.json")
+        m, p, _ = case(change=NEW_CHANGE)
+        for schema, data in ((manifest, m), (permit, p)):
+            self.assertEqual(schema["properties"]["change"], {"enum": list(REGISTRY)})
+            self.assertEqual(set(schema["required"]), set(data))
+            self.assertFalse(schema["additionalProperties"])
+            self.assertEqual(schema["properties"]["version"], {"const": 1})
+            self.assertEqual(schema["properties"]["runId"]["pattern"], "^[0-9a-f]{32}$")
+        self.assertEqual(permit["properties"]["actions"], {"const": ["setup", "test", "teardown"]})
+        self.assertEqual(permit["properties"]["expiresAt"], {"type": "string", "format": "date-time"})
+        self.assertIn("consentRef", permit["required"])
+        self.assertEqual(manifest["properties"]["cleanup"], {"const": True})
+        self.assertEqual(manifest["properties"]["cleanupTimeout"]["maximum"], 30)
+        self.assertEqual(manifest["properties"]["timeout"]["maximum"], 900)
+        entries = manifest["oneOf"]
+        self.assertEqual(len(entries), sum(len(entries) for entries in REGISTRY.values()))
+        for entry in entries:
+            props = entry["properties"]
+            change, service, kind = (props[k]["const"] for k in ("change", "service", "kind"))
+            nodes = props["nodeIds"]
+            if change == NEW_CHANGE:
+                self.assertEqual(nodes, {"items": {"enum": sorted(TASK_NODES)}})
+                self.assertEqual(set(nodes["items"]["enum"]), REGISTRY[change][service, kind])
+                for node in (TASK_FILE + "::test_unregistered_probe", TASK_NODES[0] + "[unregistered]",
+                             TASK_FILE + "::test_probe[param_1]", TASK_NODES[0] + "_suffix"):
+                    self.assertNotIn(node, nodes["items"]["enum"])
+                continue
+            if change == CHANGE:
+                self.assertEqual(nodes["anyOf"][0], {"const": ["selftest"]})
+                nodes = nodes["anyOf"][1]
+            patterns = [item["pattern"] for item in nodes["items"]["anyOf"]]
+            for file in REGISTRY[change][service, kind]:
+                self.assertTrue(any(re.fullmatch(pattern, f"tests/integration/{file}::test_probe[param_1]")
+                                    for pattern in patterns))
+            for node in ("selftest", "--help", "../" + TASK_NODES[0], "tests/integration/test_unknown.py::test_probe"):
+                self.assertFalse(any(re.fullmatch(pattern, node) for pattern in patterns))
+        self.assertEqual(permit["allOf"], [{
+            "if": {"properties": {"change": {"const": NEW_CHANGE}}},
+            "then": {"properties": {"kind": {"const": "pg"}}},
+        }])
 
 
 class Lifecycle(unittest.IsolatedAsyncioTestCase):

@@ -38,9 +38,29 @@ DC_INFRA = docker compose -p eqsitecms-infra -f $(COMPOSE_INFRA) --env-file $(CO
 		vk-build vk-build-nc vk vk-attach vk-bot-logs vk-bot-restart check-vk fix-vk \
 		infra \
 		e2e-install e2e e2e-ui e2e-headed e2e-frontend e2e-report \
-		ship-test
+		ship-test services-autogit
 
 # =====MONOREPO COMMANDS=====
+
+# Capture raw inputs before GNU Make auto-export can expand $(shell ...).
+# Only command-line Make inputs use $$ escaping; environment values stay literal.
+ifneq ($(filter services-autogit,$(MAKECMDGOALS)),)
+override MAKEOVERRIDES :=
+override ACTION := $(if $(filter command line,$(origin ACTION)),$(subst $$$$,$$,$(value ACTION)),$(value ACTION))
+override CHANGE := $(if $(filter command line,$(origin CHANGE)),$(subst $$$$,$$,$(value CHANGE)),$(value CHANGE))
+override BRANCH := $(if $(filter command line,$(origin BRANCH)),$(subst $$$$,$$,$(value BRANCH)),$(value BRANCH))
+override MESSAGE := $(if $(filter command line,$(origin MESSAGE)),$(subst $$$$,$$,$(value MESSAGE)),$(value MESSAGE))
+override PATHS_FILE := $(if $(filter command line,$(origin PATHS_FILE)),$(subst $$$$,$$,$(value PATHS_FILE)),$(value PATHS_FILE))
+override PLAN := $(if $(filter command line,$(origin PLAN)),$(subst $$$$,$$,$(value PLAN)),$(value PLAN))
+override RELEASE := $(if $(filter command line,$(origin RELEASE)),$(subst $$$$,$$,$(value RELEASE)),$(value RELEASE))
+override REPOS := $(if $(filter command line,$(origin REPOS)),$(subst $$$$,$$,$(value REPOS)),$(value REPOS))
+override CONFIRM_PUSH := $(if $(filter command line,$(origin CONFIRM_PUSH)),$(subst $$$$,$$,$(value CONFIRM_PUSH)),$(value CONFIRM_PUSH))
+override CONFIRM_RELEASE := $(if $(filter command line,$(origin CONFIRM_RELEASE)),$(subst $$$$,$$,$(value CONFIRM_RELEASE)),$(value CONFIRM_RELEASE))
+export ACTION CHANGE BRANCH MESSAGE PATHS_FILE PLAN RELEASE REPOS CONFIRM_PUSH CONFIRM_RELEASE
+endif
+
+services-autogit:
+	@node scripts/services-autogit
 
 sync:
 	@echo "Syncing all services..."
@@ -331,4 +351,4 @@ e2e-report:
 
 ship-test: | Makefile
 	@echo "Running ship tooling tests..."
-	node --test scripts/tests/**/*.test.mjs
+	node --test scripts/tests/*.test.mjs

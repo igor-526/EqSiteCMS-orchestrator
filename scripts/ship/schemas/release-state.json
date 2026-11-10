@@ -37,7 +37,7 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pushed", "not-applicable", "skipped", "no-release-branch", "noop", "push_failed"],
+            "enum": ["pushed", "not-applicable", "skipped", "no-release-branch", "noop", "push_failed", "untouched"],
             "description": "Release status for this repository"
           },
           "reason": {

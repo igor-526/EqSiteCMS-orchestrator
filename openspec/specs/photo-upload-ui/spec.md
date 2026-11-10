@@ -1,7 +1,7 @@
 # photo-upload-ui Specification
 
 ## Purpose
-TBD - created by archiving change photos-selector-improve. Update Purpose after archive.
+Интерфейс выбора и загрузки фотографий в CMS: сетка по четыре фотографии в ряд, загрузка через выбор файлов и drag-and-drop с присоединением к текущей сущности, обработка результатов и сохранение существующих возможностей галереи.
 ## Requirements
 ### Requirement: Фиксированная сетка фотографий
 

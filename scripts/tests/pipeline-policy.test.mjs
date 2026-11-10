@@ -192,3 +192,56 @@ test('POL-01: documented static runner exists and matches this suite', () => {
   const example = policy.match(/git diff --check -- (.+)/)[1].split(' ');
   for (const path of example) assert.ok(existsSync(resolve(root, path)), path);
 });
+
+// AG-01/09/10: shipping documentation only; unrelated POL-01 stays unchanged.
+const shippingSkillPath = '.agents/skills/task-finalize/SKILL.md';
+const shippingSkill = load(shippingSkillPath);
+const readmeShipping = load('README.md').split('### Безопасная финализация через Make')[1].split('## Разработка')[0];
+const workflowShipping = load('WORKFLOW.md').split('## Шаг 6. Финализация')[1].split('### Файлы OpenSpec')[0];
+const servicesGit = load('SERVICES.md').split('## 🌿 Git-workflow')[1].split('\n---')[0];
+
+test('SHIP-POL AG-01: exact Make inputs, escaping and defaults documented', () => {
+  for (const doc of [readmeShipping, shippingSkill]) {
+    for (const part of ['CHANGE=task-108 BRANCH=feature/seo-improve', 'MESSAGE="Улучшено SEO" PATHS_FILE=.qa/task-108/paths.txt',
+      'ACTION=merge PLAN=.qa/ship/task-108/plan.json', "CONFIRM_PUSH='PLAN_TOKEN' RELEASE=1",
+      'ACTION=release CHANGE=task-108 REPOS=backend,frontend', "CONFIRM_RELEASE='RELEASE_TOKEN'",
+      'ACTION=plan', 'RELEASE=0', '-b', '-m', '--release', "MESSAGE='Цена $$5'", 'adapter_exit_code', '72']) assert.ok(doc.includes(part), part);
+    assert.match(doc, /fake-root\/local-only/);
+    assert.match(doc, /[Ww]hole-file/);
+    assert.match(doc, /[Ff]oreign staged/);
+    assert.match(doc, /[Ss]canner не заменяет review/);
+  }
+});
+
+test('SHIP-POL AG-09/10: two token-bound gates, fallback and replan', () => {
+  for (const doc of [readmeShipping, workflowShipping, shippingSkill, servicesGit]) {
+    for (const text of ['PLAN_TOKEN', 'RELEASE_TOKEN', 'RELEASE=1', 'replan', 'текстовый вопрос', 'до ответа']) assert.ok(doc.includes(text), text);
+    assert.match(doc, /feature и main будут отправлены в origin/);
+    assert.match(doc, /(?:возможный deploy|CI\/CD)/);
+  }
+  assert.match(shippingSkill, /\*\*После archive Router предлагает точные BRANCH и MESSAGE\*\*/);
+  assert.match(shippingSkill, /auto-yes запрещён/);
+  assert.match(shippingSkill, /CONFIRM_RELEASE в merge игнорируется/);
+  assert.match(shippingSkill, /новый preview\/token и согласие/);
+  assert.match(shippingSkill, /QG\/approval change\/merge approval не разрешают deploy/);
+});
+
+test('SHIP-POL AG-09/10: main default, lock, durable state, explicit resume and CI preserved', () => {
+  assert.match(servicesGit, /база — \*\*main\*\*, не dev/);
+  assert.doesNotMatch(servicesGit, /dev — самая актуальная|от актуального `dev`|выполняет оператор/);
+  for (const text of ['flock', 'global preflight', 'strict sync barrier', 'mergeState', 'resumeCommand',
+    'phase2-complete', 'phase1', 'failed/untouched', 'run_in_background: true', 'job_output',
+    '30 минут', '3 минуты', 'ci.json']) assert.ok(shippingSkill.toLowerCase().includes(text.toLowerCase()), text);
+  assert.match(shippingSkill, /только явный `scripts\/shipctl merge --resume --change <c>`/);
+  assert.match(shippingSkill, /generic checkout-main после конфликта запрещены/);
+  assert.doesNotMatch(shippingSkill, /git switch|OPS-CHECKOUT-MAIN/);
+  assert.match(workflowShipping, /Backend|Router/);
+  assert.doesNotMatch(workflowShipping, /пока не реализован/);
+});
+
+test('SHIP-POL: new shipping links resolve without reading Router rules', () => {
+  checkLinks(readmeShipping, 'README.md');
+  checkLinks(workflowShipping, 'WORKFLOW.md');
+  checkLinks(servicesGit, 'SERVICES.md');
+  checkLinks(shippingSkill, shippingSkillPath);
+});

@@ -1,7 +1,7 @@
 # celery-redis-protocols Specification
 
 ## Purpose
-TBD - created by archiving change celery-redis-architecture. Update Purpose after archive.
+Определить единый протокол применения Celery в микросервисах EqSiteCMS: настройки и DI-интеграцию, размещение и именование задач, изоляцию очередей и БД Redis, обработку повторов и ошибок, адресную проверку готовности воркеров и отдельный интеграционный контроль доставки, идемпотентности и конкурентного жизненного цикла сессий БД.
 ## Requirements
 ### Requirement: Протокол Celery в agents/howto
 Файл `agents/howto/celery-protocols.md` MUST содержать архитектурный протокол использования Celery в микросервисах EqSiteCMS. Протокол SHALL включать: архитектуру (диаграмма потоков), структуру настроек (`CelerySettings`), переменные окружения, реализацию Celery app, DI-интеграцию, определение задач, naming conventions, best practices и структуру файлов.

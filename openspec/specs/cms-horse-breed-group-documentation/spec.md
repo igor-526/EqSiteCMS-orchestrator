@@ -34,15 +34,7 @@ CMS MUST добавить во вкладку «Документация» от�
 - **THEN** он видит точные POST/PATCH/DELETE paths, поля `name`, `slug`, `page_data`, auto-slug, partial PATCH и форму response
 
 ### Requirement: Developer-документация access contract
-Developer-вкладка MUST описывать фактический access contract групп пород без изменения backend: GET является Public Read при валидном `X-Equestrian-Service-Key`; missing/invalid selector возвращает `401`; POST/PATCH/DELETE требуют CMS authentication и разрешённую роль, anonymous возвращает `401`, insufficient permission возвращает `403`.
-
-| method | path | access class | roles | expected without auth | expected with auth |
-|---|---|---|---|---|---|
-| GET | `/api/horses/breed-groups` | Public Read + tenant selector | anonymous/authenticated | `200` с валидным selector; `401` без/с invalid selector | `200` с валидным selector |
-| GET | `/api/horses/breed-groups/{slug_or_id}` | Public Read + tenant selector | anonymous/authenticated | `200` с валидным selector; `401` без/с invalid selector | `200` с валидным selector |
-| POST | `/api/horses/breed-groups` | Protected Write | SUPERUSER, ADMIN, DEVELOPER | `401` | success для разрешённой роли; `403` без разрешения |
-| PATCH | `/api/horses/breed-groups/{slug_or_id}` | Protected Write | SUPERUSER, ADMIN, DEVELOPER | `401` | success для разрешённой роли; `403` без разрешения |
-| DELETE | `/api/horses/breed-groups/{slug_or_id}` | Protected Write | SUPERUSER, ADMIN, DEVELOPER | `401` | success для разрешённой роли; `403` без разрешения |
+Developer-вкладка MUST описывать фактический access contract групп пород без изменения backend по матрице и условиям сценария «Полный документируемый access contract».
 
 #### Scenario: Public Read описан с selector
 - **WHEN** разработчик читает GET contract
@@ -51,6 +43,18 @@ Developer-вкладка MUST описывать фактический access c
 #### Scenario: Protected Write описан с denial outcomes
 - **WHEN** разработчик читает mutation contract
 - **THEN** документация фиксирует CMS authentication, разрешённые роли, anonymous `401` и insufficient-permission `403`
+
+#### Scenario: Полный документируемый access contract
+- **WHEN** разработчик сверяет документируемые условия доступа к группам пород
+- **THEN** Developer-вкладка MUST описывать фактический access contract групп пород без изменения backend: GET является Public Read при валидном `X-Equestrian-Service-Key`; missing/invalid selector возвращает `401`; POST/PATCH/DELETE требуют CMS authentication и разрешённую роль, anonymous возвращает `401`, insufficient permission возвращает `403`.
+
+| method | path | access class | roles | expected without auth | expected with auth |
+|---|---|---|---|---|---|
+| GET | `/api/horses/breed-groups` | Public Read + tenant selector | anonymous/authenticated | `200` с валидным selector; `401` без/с invalid selector | `200` с валидным selector |
+| GET | `/api/horses/breed-groups/{slug_or_id}` | Public Read + tenant selector | anonymous/authenticated | `200` с валидным selector; `401` без/с invalid selector | `200` с валидным selector |
+| POST | `/api/horses/breed-groups` | Protected Write | SUPERUSER, ADMIN, DEVELOPER | `401` | success для разрешённой роли; `403` без разрешения |
+| PATCH | `/api/horses/breed-groups/{slug_or_id}` | Protected Write | SUPERUSER, ADMIN, DEVELOPER | `401` | success для разрешённой роли; `403` без разрешения |
+| DELETE | `/api/horses/breed-groups/{slug_or_id}` | Protected Write | SUPERUSER, ADMIN, DEVELOPER | `401` | success для разрешённой роли; `403` без разрешения |
 
 ### Requirement: Developer-документация связи пород
 Раздел `/api/horses/breeds` MUST документировать repeatable filter `breed_group_ids`, sorting `group_name`/`-group_name`, nullable input `breed_group_id` и nullable nested response `group` с `id`, `name`, `slug`. PATCH semantics MUST различать отсутствующее поле, сохраняющее связь, и явный `null`, очищающий её; удаление группы MUST быть описано как очистка FK через `SET NULL` без удаления породы.
@@ -64,7 +68,7 @@ Developer-вкладка MUST описывать фактический access c
 - **THEN** документация различает omitted `breed_group_id`, UUID группы и явный `breed_group_id: null`
 
 ### Requirement: Regression coverage документационных вкладок
-Frontend deliverable MUST добавить component tests ключевого пользовательского и developer-контента без live backend calls. Quality Gate MUST также выполнить browser Manual QA на desktop, tablet и mobile и проверить protected route, существующие documentation scopes, отсутствие `site-*` mixing и отсутствие новых runtime API calls при чтении вкладок. Если browser runtime недоступен на текущей платформе, Quality Gate MAY завершить gate со статусом `APPROVED WITH ACCEPTED RISK` только при явном пользовательском waiver, успешности всех автоматизированных/content/access/architecture/validation проверок и полном документировании environment evidence, deferred checks, остаточного риска и follow-up рекомендации. Browser scenarios при waiver MUST оставаться отмеченными как невыполненные и MUST NOT называться passed.
+Frontend deliverable MUST сохранять component coverage документационных вкладок и условия Quality Gate, включая ограничения browser waiver, по сценарию «Полные условия документационного gate».
 
 #### Scenario: Component tests фиксируют пользовательский смысл
 - **WHEN** выполняются тесты `HorsesUserDocumentationView`
@@ -85,3 +89,7 @@ Frontend deliverable MUST добавить component tests ключевого п
 #### Scenario: Waiver не маскирует browser failure
 - **WHEN** browser runtime доступен либо browser-проверка обнаружила дефект
 - **THEN** platform-unavailable waiver неприменим, а failed scenario остаётся блокирующим до исправления и повторной проверки
+
+#### Scenario: Полные условия документационного gate
+- **WHEN** Quality Gate проверяет документационные вкладки и допустимость browser waiver
+- **THEN** Frontend deliverable MUST добавить component tests ключевого пользовательского и developer-контента без live backend calls. Quality Gate MUST также выполнить browser Manual QA на desktop, tablet и mobile и проверить protected route, существующие documentation scopes, отсутствие `site-*` mixing и отсутствие новых runtime API calls при чтении вкладок. Если browser runtime недоступен на текущей платформе, Quality Gate MAY завершить gate со статусом `APPROVED WITH ACCEPTED RISK` только при явном пользовательском waiver, успешности всех автоматизированных/content/access/architecture/validation проверок и полном документировании environment evidence, deferred checks, остаточного риска и follow-up рекомендации. Browser scenarios при waiver MUST оставаться отмеченными как невыполненные и MUST NOT называться passed.

@@ -21,7 +21,7 @@
 ## Requirements
 
 ### Requirement: Tenant isolation операций управления пользователями
-Все операции над пользователями под `/api/user-management/users` SHALL выполняться только в tenant boundary текущего авторизованного оператора, определяемой как `current_user.equestrian_id`. Роль `SUPERUSER` SHALL NOT предоставлять межтенантный доступ. Список, его фильтры, пагинация и `total` MUST учитывать только пользователей этой конюшни. Адресные чтение и mutation чужого пользователя MUST возвращать `404`, не раскрывая существование ресурса. При создании переданный `equestrian_id` MUST совпадать с `current_user.equestrian_id`, иначе endpoint MUST вернуть `403` до записи данных.
+Все операции над пользователями под `/api/user-management/users` SHALL выполняться только в tenant boundary текущего авторизованного оператора, определяемой как `current_user.equestrian_id`.
 
 #### Scenario: Список ограничен конюшней оператора
 - **WHEN** авторизованный `USER_MANAGER` или `SUPERUSER` вызывает `GET /api/user-management/users`, а в БД существуют пользователи нескольких конюшен
@@ -51,20 +51,14 @@
 - **WHEN** разрешённый оператор вызывает `DELETE /api/user-management/users/{id}` для существующего пользователя другой конюшни
 - **THEN** backend возвращает `404` и не устанавливает признаки soft-delete
 
+#### Scenario: Полный контракт tenant isolation без межтенантного override
+- **WHEN** выполняется операция под `/api/user-management/users`
+- **THEN** действует следующий исходный контракт без изменения условий и outcomes:
+
+Роль `SUPERUSER` SHALL NOT предоставлять межтенантный доступ. Список, его фильтры, пагинация и `total` MUST учитывать только пользователей этой конюшни. Адресные чтение и mutation чужого пользователя MUST возвращать `404`, не раскрывая существование ресурса. При создании переданный `equestrian_id` MUST совпадать с `current_user.equestrian_id`, иначе endpoint MUST вернуть `403` до записи данных.
+
 ### Requirement: Access matrix CMS user-management
 Endpoint'ы CMS user-management SHALL соответствовать следующей матрице. Защищённые `GET` являются явным исключением из Public Read, потому что ответы содержат учётные записи, роли и служебные статусы. Все writes являются Protected Write. Для каждой строки MUST существовать anonymous/authenticated проверка; а для адресных операций — проверка чужой конюшни.
-
-| method | path | access class | roles | expected without auth | expected with auth |
-|---|---|---|---|---|---|
-| GET | `/api/user-management/users` | Protected Admin Read (исключение) | `USER_MANAGER`, `SUPERUSER` | `401` | `200`, только свой tenant; без роли `403` |
-| GET | `/api/user-management/users/{id}` | Protected Admin Read (исключение) | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
-| POST | `/api/user-management/users` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `201` свой tenant; чужой tenant `403`; без роли `403` |
-| PATCH | `/api/user-management/users/{id}` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
-| DELETE | `/api/user-management/users/{id}` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `204` свой tenant; чужой tenant `404`; без роли `403` |
-| PATCH | `/api/user-management/users/{id}/block` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
-| PATCH | `/api/user-management/users/{id}/unblock` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
-| PATCH | `/api/user-management/users/{id}/password` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `204` свой tenant; чужой tenant `404`; без роли `403` |
-| GET | `/api/user-management/roles` | Protected Admin Read (исключение) | `USER_MANAGER`, `SUPERUSER` | `401` | `200`; без роли `403` |
 
 #### Scenario: Anonymous доступ запрещён
 - **WHEN** неавторизованный клиент вызывает любую строку access matrix
@@ -77,6 +71,22 @@ Endpoint'ы CMS user-management SHALL соответствовать следу�
 #### Scenario: Разрешённая роль не отменяет tenant boundary
 - **WHEN** аутентифицированный `SUPERUSER` или `USER_MANAGER` адресует пользователя другой конюшни
 - **THEN** backend применяет tenant outcomes из матрицы, не предоставляя глобального доступа
+
+#### Scenario: Неизменная access matrix и основания её применения
+- **WHEN** проверяется доступ по строкам следующей матрицы
+- **THEN** действует следующий исходный контракт без изменения условий и outcomes:
+
+| method | path | access class | roles | expected without auth | expected with auth |
+|---|---|---|---|---|---|
+| GET | `/api/user-management/users` | Protected Admin Read (исключение) | `USER_MANAGER`, `SUPERUSER` | `401` | `200`, только свой tenant; без роли `403` |
+| GET | `/api/user-management/users/{id}` | Protected Admin Read (исключение) | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
+| POST | `/api/user-management/users` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `201` свой tenant; чужой tenant `403`; без роли `403` |
+| PATCH | `/api/user-management/users/{id}` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
+| DELETE | `/api/user-management/users/{id}` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `204` свой tenant; чужой tenant `404`; без роли `403` |
+| PATCH | `/api/user-management/users/{id}/block` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
+| PATCH | `/api/user-management/users/{id}/unblock` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `200` свой tenant; чужой tenant `404`; без роли `403` |
+| PATCH | `/api/user-management/users/{id}/password` | Protected Write | `USER_MANAGER`, `SUPERUSER` | `401` | `204` свой tenant; чужой tenant `404`; без роли `403` |
+| GET | `/api/user-management/roles` | Protected Admin Read (исключение) | `USER_MANAGER`, `SUPERUSER` | `401` | `200`; без роли `403` |
 
 ### Requirement: Получение списка пользователей с фильтрацией
 `GET /api/user-management/users` SHALL возвращать пагинированный список пользователей с возможностью фильтрации и сортировки. Endpoint доступен только пользователям с ролью `USER_MANAGER` или `SUPERUSER`. MUST исключать удалённых пользователей из выдачи.

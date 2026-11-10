@@ -4,27 +4,25 @@ import { mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { selectScenarios, safeUrl } from '../qa/browser/schema.mjs';
+import { selectScenarios, safeUrl, contrastUnsupported, CONTRAST_UNSUPPORTED_REASONS } from '../qa/browser/schema.mjs';
 import { CMS_VIEWPORT, runSuite } from '../qa/browser/runner.mjs';
 import { parseArgs } from '../qa/run-scenarios.mjs';
 import { startFixtureServer } from '../qa/browser/fixtures/server.mjs';
-import { definition, scenario, nested, keyboardSteps, goodScenarios } from '../qa/browser/fixtures/scenarios.mjs';
+import { definition, scenario, nested, keyboardSteps, goodScenarios, contrastCases, unsupportedCases, contrastScenario } from '../qa/browser/fixtures/scenarios.mjs';
 import { loadPlaywright } from '../qa/browser/dependencies.mjs';
-import { runStep } from '../qa/browser/assertions.mjs';
+import { runStep, computedContrast } from '../qa/browser/assertions.mjs';
 
 import * as evidenceFs from 'node:fs';
 import * as evidencePath from 'node:path';
 import { fileURLToPath as evidenceFilePath } from 'node:url';
 
 // QA_EVIDENCE_ROOT contract: validated lane root + exclusive per-suite child.
-function suiteEvidence(defaultDir, suite, root) {
-  const raw = process.env.QA_EVIDENCE_ROOT;
-  if (raw === undefined) return evidencePath.resolve(defaultDir);
+function suiteEvidence(defaultDir, suite, root, raw = process.env.QA_EVIDENCE_ROOT ?? defaultDir) {
   const invalid = () => { throw new Error('Invalid or colliding QA_EVIDENCE_ROOT'); };
-  if (!raw || raw.includes('\\') || raw.split('/').some(p => p === '.' || p === '..')) invalid();
-  const base = evidencePath.join(root, '.qa/harden-agent-verification-pipeline');
+  if (!raw || evidencePath.isAbsolute(raw) || raw.includes('\\') || raw.split('/').some(p => p === '.' || p === '..')) invalid();
   const target = evidencePath.resolve(root, raw);
-  if (!target.startsWith(base + evidencePath.sep)) invalid();
+  const allowed = ['.qa/harden-agent-verification-pipeline', '.qa/restore-seo-qa-readiness/QA-BROWSER-1', '.qa/restore-seo-qa-readiness/QG'];
+  if (!allowed.some(base => target === evidencePath.join(root, base) && base !== allowed[0] || target.startsWith(evidencePath.join(root, base) + evidencePath.sep))) invalid();
   const parts = evidencePath.relative(root, target).split(evidencePath.sep);
   if (parts.some(p => !/^[a-zA-Z0-9_.-]+$/.test(p))) invalid();
   let current = root;
@@ -39,7 +37,7 @@ function suiteEvidence(defaultDir, suite, root) {
   return child;
 }
 // End QA_EVIDENCE_ROOT contract.
-const evidence = suiteEvidence('.qa/harden-agent-verification-pipeline/BROWSER-1', 'qa-browser', evidenceFilePath(new URL('../../', import.meta.url)));
+const evidence = suiteEvidence('.qa/restore-seo-qa-readiness/QA-BROWSER-1', process.env.QA_EVIDENCE_ROOT ? 'qa-browser' : `qa-browser-${Date.now()}-${process.pid}`, evidenceFilePath(new URL('../../', import.meta.url)));
 const sentinel = 'SYNTHETIC_SECRET_SENTINEL_8ac6';
 const cli = (args, timeout = 30000) => new Promise((resolve, reject) => {
   const child = spawn(process.execPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -65,6 +63,75 @@ test('FIX-01 / BR-01..03 — synthetic Chromium helpers', { timeout: 840000 }, a
     return report;
   };
   try {
+    await t.test('CT-01/02 evidence paths reject escape, symlink and overwrite; legacy compatible', async () => {
+      const root = path.join(evidence, 'path-tests');
+      await mkdir(root, { recursive: true });
+      for (const raw of ['', '/tmp/escape', '../escape', '.qa/../escape', '.qa/restore-seo-qa-readiness/QG/./x', '.qa/restore-seo-qa-readiness/QGevil', '.qa/another-change/x', '.qa/restore-seo-qa-readiness/QA-RETRY-1', '.qa/harden-agent-verification-pipeline', '.qa/restore-seo-qa-readiness/QG/a\\b']) {
+        assert.throws(() => suiteEvidence('unused', 'child', root, raw));
+      }
+      for (const raw of ['.qa/restore-seo-qa-readiness/QA-BROWSER-1', '.qa/restore-seo-qa-readiness/QG', '.qa/harden-agent-verification-pipeline/legacy']) {
+        const child = suiteEvidence('unused', 'child', root, raw);
+        evidenceFs.writeFileSync(path.join(child, 'unchanged'), 'owned');
+        assert.throws(() => suiteEvidence('unused', 'child', root, raw));
+        assert.equal(evidenceFs.readFileSync(path.join(child, 'unchanged'), 'utf8'), 'owned');
+      }
+      const lane = path.join(root, '.qa/restore-seo-qa-readiness/QG');
+      evidenceFs.symlinkSync(path.join(root, '.qa/harden-agent-verification-pipeline'), path.join(lane, 'link'), 'dir');
+      assert.throws(() => suiteEvidence('unused', 'child', root, '.qa/restore-seo-qa-readiness/QG/link'));
+      evidenceFs.writeFileSync(path.join(lane, 'file'), 'not-directory');
+      assert.throws(() => suiteEvidence('unused', 'child', root, '.qa/restore-seo-qa-readiness/QG/file'));
+      assert.ok(!JSON.stringify(contrastUnsupported(sentinel)).includes(sentinel));
+      assert.equal(contrastUnsupported(sentinel).unsupportedReason, undefined);
+      assert.equal(new Set(CONTRAST_UNSUPPORTED_REASONS).size, 7);
+    });
+    await t.test('CT-01 analytical ratios and independent normal/hover/focus/error; CT-02 finite paint refusals', async () => {
+      const positives = contrastCases.map(c => contrastScenario(c));
+      const negatives = unsupportedCases.map(c => contrastScenario(c));
+      // Put an unsupported state first: it must not prevent other scenario IDs executing.
+      const report = await run('contrast-contract', [negatives[0], ...positives, ...negatives.slice(1),
+        contrastScenario({ id: 'CT-01-identical', selector: '#ct-identical' }),
+        contrastScenario({ id: 'CT-01-error-inapplicable', selector: '#ct-state', state: 'error' }),
+        contrastScenario({ id: 'CT-01-size-inapplicable', selector: '#ct-small', kind: 'largeText', threshold: 3 }),
+      ]);
+      assert.equal(new Set(report.results.map(r => r.scenarioId)).size, positives.length + negatives.length + 3);
+      for (const c of contrastCases) {
+        const result = report.results.find(r => r.scenarioId === c.id);
+        assert.equal(result.status, 'passed', JSON.stringify(result));
+        const step = result.steps[0];
+        assert.equal(step.state, c.state ?? 'normal');
+        assert.ok(Math.abs(step.ratio - c.ratio) < .001, `${c.id}: ${step.ratio}`);
+        assert.equal(step.threshold, c.threshold ?? 4.5);
+      }
+      for (const c of unsupportedCases) {
+        const result = report.results.find(r => r.scenarioId === c.id);
+        assert.equal(result.status, 'failed');
+        assert.deepEqual(result.reasons, ['contrast_unsupported'], c.id);
+        assert.equal(result.steps[0].unsupportedReason, c.reason, c.id);
+        assert.equal(result.steps[0].state, 'normal');
+        assert.ok(!('ratio' in result.steps[0]));
+      }
+      for (const [id, code] of [['CT-01-identical', 'contrast_below_threshold'], ['CT-01-error-inapplicable', 'contrast_state_or_size_mismatch'], ['CT-01-size-inapplicable', 'contrast_state_or_size_mismatch']]) {
+        assert.deepEqual(report.results.find(r => r.scenarioId === id).reasons, [code]);
+      }
+      const browser = await loadPlaywright().chromium.launch();
+      try {
+        const context = await browser.newContext({ viewport: CMS_VIEWPORT });
+        const page = await context.newPage();
+        await context.route('**/*', route => new URL(route.request().url()).origin === fixture.baseUrl ? route.continue() : route.abort());
+        await page.goto(fixture.baseUrl);
+        const identical = await page.locator('#ct-identical').evaluate(computedContrast, { kind: 'text' });
+        assert.equal(identical.ratio, 1);
+        // Focus must clear hover and normal must clear focus on this same page.
+        for (const state of ['hover', 'focus', 'normal']) {
+          const c = contrastCases.find(c => c.state === state);
+          const actual = await runStep(page, { action: 'checkContrast', ...c, threshold: 4.5 }, { baseUrl: fixture.baseUrl });
+          assert.ok(Math.abs(actual.ratio - c.ratio) < .001);
+        }
+        await context.close();
+      } finally { await browser.close(); }
+      assert.ok(!JSON.stringify(report).includes(sentinel));
+      outcomes.push({ id: 'CT-01', status: 'passed' }, { id: 'CT-02', status: 'passed' });
+    });
     await t.test('BR-03 schema / selection / budgets fail closed before browser', () => {
       const valid = definition([scenario('valid', [{ action: 'checkVisible', selector: '#open' }])]);
       assert.equal(selectScenarios(valid, { mode: 'self-check', scenarioIds: 'valid' }).length, 1);
@@ -216,6 +283,6 @@ test('FIX-01 / BR-01..03 — synthetic Chromium helpers', { timeout: 840000 }, a
     });
   } finally {
     await fixture.close();
-    await writeFile(path.join(evidence, 'suite.json'), JSON.stringify({ schemaVersion: 1, scenarioIds: ['FIX-01', 'BR-01', 'BR-02', 'BR-03'], codeFingerprint: await fingerprint(), outcomes, status: outcomes.length === 8 ? 'passed' : 'failed' }, null, 2) + '\n');
+    await writeFile(path.join(evidence, 'suite.json'), JSON.stringify({ schemaVersion: 1, scenarioIds: ['FIX-01', 'BR-01', 'BR-02', 'BR-03', 'CT-01', 'CT-02'], codeFingerprint: await fingerprint(), outcomes, status: outcomes.length === 10 ? 'passed' : 'failed' }, null, 2) + '\n');
   }
 });

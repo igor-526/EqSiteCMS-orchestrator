@@ -1,3 +1,11 @@
+export const CONTRAST_UNSUPPORTED_REASONS = Object.freeze([
+  'color-format', 'background-image', 'opacity', 'filter-or-blend', 'pseudo-paint', 'overlap', 'not-visible',
+]);
+export function contrastUnsupported(reason) {
+  const error = new CheckError('contrast_unsupported');
+  if (CONTRAST_UNSUPPORTED_REASONS.includes(reason)) error.unsupportedReason = reason;
+  return error;
+}
 // Pure validation: no browser, filesystem or process side effects.
 export class CheckError extends Error {
   constructor(code) { super(code); this.code = code; }

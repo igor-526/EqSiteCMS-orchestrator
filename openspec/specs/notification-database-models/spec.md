@@ -1,7 +1,7 @@
 # notification-database-models Specification
 
 ## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
+Модели каналов, событий и пользовательских настроек уведомлений обеспечивают хранение метаданных, связей и уникальных записей, а также начальных каналов и события обратного звонка.
 ## Requirements
 ### Requirement: Channel Model
 The system MUST provide a Channel model for storing notification delivery channels.

@@ -1,7 +1,7 @@
 # database-connection-pooling Specification
 
 ## Purpose
-TBD - created by archiving change fix-bugs-085-glitchtip-ci. Update Purpose after archive.
+Зафиксировать конфигурацию пула соединений SQLAlchemy AsyncEngine основного backend-сервиса, её настройку через переменные окружения и поведение при конкурентных запросах, устаревших и долгоживущих соединениях PostgreSQL.
 ## Requirements
 ### Requirement: PostgreSQL connection pool configuration
 

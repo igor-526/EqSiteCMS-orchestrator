@@ -1,7 +1,7 @@
 # ci-workflows Specification
 
 ## Purpose
-TBD - created by archiving change fix-bugs-085-glitchtip-ci. Update Purpose after archive.
+Настройка пользовательского кеша uv в GitHub Actions workflow backend для установки зависимостей без ошибок доступа и повторного использования кешированных зависимостей между запусками CI.
 ## Requirements
 ### Requirement: GitHub Actions backend workflow uv cache
 

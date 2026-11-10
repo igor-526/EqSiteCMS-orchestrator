@@ -3,12 +3,22 @@
   "title": "Merge State Schema",
   "description": "JSON schema for shipctl merge-state.json output",
   "type": "object",
-  "required": ["phase", "change", "branchName", "repos"],
+  "required": [
+    "phase",
+    "change",
+    "branchName",
+    "repos"
+  ],
   "additionalProperties": false,
   "properties": {
     "phase": {
       "type": "string",
-      "enum": ["phase1", "sync-failed", "phase2-partial", "phase2-complete"],
+      "enum": [
+        "phase1",
+        "sync-failed",
+        "phase2-partial",
+        "phase2-complete"
+      ],
       "description": "Current merge phase"
     },
     "change": {
@@ -23,7 +33,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "stage", "head", "included", "foreign"],
+        "required": [
+          "name",
+          "stage",
+          "head",
+          "included",
+          "foreign"
+        ],
         "additionalProperties": false,
         "properties": {
           "name": {
@@ -32,7 +48,18 @@
           },
           "stage": {
             "type": "string",
-            "enum": ["planned", "branch-pushed", "failed", "synced", "conflict", "merged", "pushed"],
+            "enum": [
+              "planned",
+              "branch-pushed",
+              "failed",
+              "synced",
+              "conflict",
+              "merged",
+              "pushed",
+              "committed",
+              "switched",
+              "untouched"
+            ],
             "description": "Current stage of this repository"
           },
           "head": {
@@ -43,12 +70,37 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["path", "status"],
+              "required": [
+                "path",
+                "status"
+              ],
               "additionalProperties": false,
               "properties": {
-                "path": { "type": "string" },
-                "status": { "type": "string" },
-                "blobHash": { "type": "string", "description": "Optional git blob hash" }
+                "path": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "blobHash": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Git blob hash; null for deletion"
+                },
+                "mode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "indexHash": {
+                  "type": "string"
+                },
+                "statusHash": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -56,12 +108,37 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["path", "status"],
+              "required": [
+                "path",
+                "status"
+              ],
               "additionalProperties": false,
               "properties": {
-                "path": { "type": "string" },
-                "status": { "type": "string" },
-                "blobHash": { "type": "string", "description": "Optional git blob hash" }
+                "path": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "blobHash": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Git blob hash; null for deletion"
+                },
+                "mode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "indexHash": {
+                  "type": "string"
+                },
+                "statusHash": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -75,7 +152,9 @@
           },
           "conflictFiles": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "List of conflicted files"
           },
           "mergedSha": {
@@ -85,9 +164,27 @@
           "pushedSha": {
             "type": "string",
             "description": "SHA of main after push"
+          },
+          "featureSha": {
+            "type": "string"
+          },
+          "checkpointHead": {
+            "type": "string"
+          },
+          "checkpointBranch": {
+            "type": "string"
+          },
+          "lastSuccessfulStage": {
+            "type": "string"
           }
         }
       }
+    },
+    "version": {
+      "const": 2
+    },
+    "planToken": {
+      "type": "string"
     }
   }
 }

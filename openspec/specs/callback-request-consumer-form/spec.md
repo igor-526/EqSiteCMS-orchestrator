@@ -1,7 +1,7 @@
 # callback-request-consumer-form Specification
 
 ## Purpose
-TBD - synchronized from change callback-requests-management-055.
+Публичная форма обратного звонка `site-ad` обеспечивает прямую анонимную отправку контактных данных посетителя в backend через публичный API с tenant selector и credentialless CORS, валидацией полей, защитой от повторной отправки и сохранением введённых данных при ошибке.
 
 ## Requirements
 ### Requirement: Публичная форма отправляет совместимый request

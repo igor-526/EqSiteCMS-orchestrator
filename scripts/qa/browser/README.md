@@ -11,17 +11,25 @@
 source scripts/qa/browser-env.sh && node --test scripts/tests/qa-browser.test.mjs
 ```
 
-FIX-01/BR-01..03: настоящий Chromium, последовательно, **1366×768**. Managed HTTP
+FIX-01/BR-01..03 и CT-01/02: настоящий Chromium, последовательно, **1366×768**. Managed HTTP
 fixture слушает случайный port только на 127.0.0.1, ограничен 14 минутами и закрывается
 в finally; suite timeout 14 минут, scenario ≤120 секунд (в suite 5 секунд).
 Нет PG/NATS, credentials, product server или vendor calls. Deliberately bad fixtures
 должны FAIL; suite проверяет эти FAIL как ожидаемый результат. Это демонстрация
 exact reproducer на синтетике, **не доказательство исправления продукта**.
 
-Evidence: `.qa/harden-agent-verification-pipeline/BROWSER-1/`: `suite.json`,
+Evidence по умолчанию: `.qa/restore-seo-qa-readiness/QA-BROWSER-1/qa-browser-<timestamp>-<pid>/`: `suite.json`,
 `positive/report.json`, `negative/report.json`, `reproducer-{pending,nonpending}-{before,after}.json`
 и соответствующие browser reports. Пары reproducer имеют одинаковые scenario/input/
 keys/route/DOM/expected, actual содержит оба слоя, pending и focus return.
+`QA_EVIDENCE_ROOT` принимает только относительные безопасные lane roots
+`.qa/restore-seo-qa-readiness/QA-BROWSER-1[/child]`,
+`.qa/restore-seo-qa-readiness/QG[/child]` и legacy
+`.qa/harden-agent-verification-pipeline/<lane>[/child]`. Suite создаёт эксклюзивный
+`qa-browser` child; существующий child, symlink, файл вместо каталога,
+absolute/traversal/backslash/чужой change отклоняются без перезаписи evidence.
+Default также проверяется и получает уникальный child. Старые suites/ledgers не мигрируются.
+
 Fixture cases и пригодные для сериализации examples: `fixtures/scenarios.mjs`.
 Suite writes synthetic input `cli-scenarios.json` отдельно от report: это input,
 не экспортируемый evidence (последний кейс намеренно невалиден).
@@ -98,6 +106,35 @@ axe DOM не экспортируется. Empty/missing scope не PASS.
   aria-invalid=true или data-state=error. Hover использует pointer, focus — focus API.
   Gradient/image, opacity/filter/blend, pseudo paint/overlap ambiguity — `contrast_unsupported`
   и failed, не выдуманный ratio. Не снижать threshold ради PASS.
+  Failed step сохраняет `code:contrast_unsupported`, `stepId`, `state` и только
+  allowlisted `unsupportedReason`: `color-format`, `background-image`, `opacity`,
+  `filter-or-blend`, `pseudo-paint`, `overlap`, `not-visible`. Ratio/threshold при
+  отказе не экспортируются; неизвестная причина не переносится в report.
+  Никаких DOM text, CSS strings или raw exception messages в диагностике.
+  `overlap` — консервативная граница: любой несвязанный элемент hit-test stack,
+  даже если он может оказаться за target. Helper не доказывает порядок paint или
+  непрозрачность перекрывающихся слоёв и не считает такую неоднозначность PASS.
+  Pseudo content target/предков также считается неоднозначностью (не rasterization).
+
+CT-01: отдельные scenario IDs normal/hover/focus/error; black/white=21,
+alpha/white и #333/white=12.6347, #666/white=5.7418, #600/white=13.4189
+(допуск 0.001); одинаковые цвета=1 и FAIL. Есть transparent ancestors,
+largeText/UI=21, size/error applicability negatives. Перед каждым состоянием helper
+убирает pointer и focus target, затем применяет только нужное состояние. Error
+требует реальную разметку applicability; он не создаёт ошибку искусственно.
+CT-02: gradient/image, opacity, filter/blend/backdrop, target/ancestor pseudo,
+overlap, неподдерживаемый color format и невидимость дают failed без ratio.
+Чтобы unsupported одного состояния не скрыл остальные, состояния размещают в
+**отдельных сценариях**: внутри одного сценария сохраняется legacy fail-fast.
+Numeric assertions не заменяются axe; thresholds и прежние исключения не ослаблены.
+
+CT-03: exact `UI-QA-07-error`/`UI-QA-07-contrast` воспроизводятся только при наличии
+прежнего production build и fail-closed synthetic routes. Owner evidence нового
+change хранится отдельно от прежнего SEO evidence. Оба исходных normal шага
+остаются `contrast_unsupported:overlap`; supported paint classification fix не
+доказан, исходные findings **blocked**, hover/focus после первого отказа **unchecked**.
+Это не numeric/product acceptance; расширение stacked paint, gradient rasterization,
+CSS color spaces и screenshot pixel sampling не поддерживаются.
 
 Сортировка/page-size проверяют fixture callbacks/data-offset, **не реальную API семантику**.
 

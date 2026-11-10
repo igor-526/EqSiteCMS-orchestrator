@@ -87,16 +87,40 @@ make sync SYNC_FLAGS="--strict --include-root --report .qa/ship/<c>/sync.json"
 # Пересборка и health-check runtime-сервисов
 scripts/stackctl ready app frontend site-ad site-ksk-inlove
 
-# План слияния change (пофайловая классификация, имя ветки, блокеры)
-scripts/shipctl plan --change <id> --summary "<text>" --paths-file paths.txt
-
-# Merge в main (feature-ветки, commit, push; конфликт → --resume)
-scripts/shipctl merge --plan .qa/ship/<c>/plan.json
-
-# Dry-run без мутаций
-scripts/shipctl merge --plan <f> --dry-run
-scripts/stackctl ready <aliases> --dry-run
+# Read-only диагностика адаптера
+node scripts/services-autogit --help
 ```
+
+### Безопасная финализация через Make
+
+После QG → ready → sync/archive Router предлагает точные ветку и subject, затем создаёт финальный план. Примеры ниже — шаблоны для fake-root/local-only проверки, не разрешение выполнять shipping в рабочем checkout. `PLAN_TOKEN` и `RELEASE_TOKEN` заменяются значениями из показанных preview **только после** соответствующего ответа пользователя.
+
+```bash
+# ACTION=plan по умолчанию: только план, без commit/push
+make services-autogit CHANGE=task-108 BRANCH=feature/seo-improve \
+  MESSAGE="Улучшено SEO" PATHS_FILE=.qa/task-108/paths.txt
+
+# Только после gate «Слить в main?» для конкретного PLAN_TOKEN
+make services-autogit ACTION=merge PLAN=.qa/ship/task-108/plan.json \
+  CONFIRM_PUSH='PLAN_TOKEN' RELEASE=1
+
+# Поздний read-only preview (REPOS необязателен)
+make services-autogit ACTION=release CHANGE=task-108 REPOS=backend,frontend
+
+# Только после отдельного gate «Релизить?» с тем же REPOS
+make services-autogit ACTION=release CHANGE=task-108 REPOS=backend,frontend \
+  CONFIRM_RELEASE='RELEASE_TOKEN'
+```
+
+- Для plan обязательны `CHANGE`, `BRANCH`, `MESSAGE`, `PATHS_FILE`; для merge — `PLAN`, `CONFIRM_PUSH`; для release — `CHANGE`. Без `CONFIRM_RELEASE` release создаёт только preview. `ACTION=plan`, `RELEASE=0` — defaults. `RELEASE=1` лишь намерение: после полного merge возвращаются `release_pending` и read-only preview, не deploy. При `RELEASE=0` поздний отдельно подтверждённый release разрешён.
+- GNU Make `-b`/`-m` не передают параметры рецепту, `--release` не поддерживается; используйте `BRANCH=`, `MESSAGE=`, `RELEASE=1`. Для буквального `$` в Make CLI нужны `$$` и одинарные shell-кавычки: `MESSAGE='Цена $$5'`. Значения окружения передаются буквально. Subject однострочный, до 72 символов; точный `MESSAGE` не получает feat/fix-префикс, trailers сохраняются. Точная занятая ветка блокируется без автосуффикса. Прямой CLI также поддерживает `shipctl plan --branch ... --message ...`.
+- `PATHS_FILE`: UTF-8, один literal путь от корня монорепозитория на строку, без glob/абсолютных путей/`..`; `services/<name>/...` направляется своему repo. Директория разворачивается только в dirty descendants. Whole-file: included коммитятся целиком, partial staging included не сохраняется. Foreign не коммитятся; foreign staged блокируют. Ignored/секреты исключаются либо блокируют; scanner не заменяет review.
+- База — `main` у корня и **всех** manifest-клонов. Missing/dev/detached/незавершённая Git-операция — остановка без auto-clone/switch. Gate показывает repo/origin, included/foreign/exclusions, branch, subject/trailers и whole-file scope; предупреждает: **feature и main будут отправлены в origin**, strict sync может ff-обновить clean клоны вне included.
+- `CONFIRM_PUSH` связан с `PLAN_TOKEN`, `CONFIRM_RELEASE` — с `RELEASE_TOKEN`, subset/SHA/origin и merge-state. Правка ветки/сообщения/scope требует replan и нового gate; stale plan не исполняется. Push release запускает workflow и возможный deploy: это отдельное согласие, не approval change или QG. Если кнопки нет — текстовый вопрос и остановка до ответа, без auto-yes.
+- Lock/global preflight, durable state и fail-stop сохраняются. При partial/conflict показать успешные/failed/untouched repo и `resumeCommand`; только явный `scripts/shipctl merge --resume --change task-108` после ручного разрешения и проверки предусловий. Никаких auto-retry/rollback/stash/reset/clean или generic checkout-main после конфликта. Release после partial merge запрещён. Успешный путь оставляет клоны на main, release без checkout release. CI контролируется отдельно через `shipctl ci --wait` фоном.
+- stdout — один JSON с `adapter_exit_code`: 0 успех/preview, 1 stop, 2 окружение, 3 invalid/stale. GNU Make при ошибке рецепта возвращает свой exit 2; исходный код смотрите в JSON. Код 3 не откатывает предыдущие стадии.
+
+Подробный протокол: [task-finalize](.agents/skills/task-finalize/SKILL.md), [финализация](WORKFLOW.md#шаг-6-финализация-skill-task-finalize).
 
 Release/recreate/migration/readiness/rollback workflow: `WORKFLOW.md`, `docs/operations/core-release.md`.
 

@@ -5,7 +5,7 @@
 ## Requirements
 
 ### Requirement: Контракт CLI shipctl
-Репозиторий SHALL предоставлять `scripts/shipctl` с подкомандами `status`, `plan`, `merge` (включая `--resume`), `release`, `ci` (включая `--wait`). stdout MUST содержать только JSON-объект `{ "ok": true|false, ... }`, прогресс и человекочитаемые таблицы SHALL идти в stderr. Exit-коды SHALL быть фиксированы: `0` — успех; `1` — операция остановлена (конфликт, отказ push, сбой sync, неуспешный CI); `2` — недоступно окружение (нет `git`/`gh`/`flock`, `gh` не авторизован, lock занят); `3` — нарушено предусловие или устарел план, при этом ни один репозиторий не изменён в этом запуске. Код MUST NOT содержать `stash`, `reset`, `checkout --`, `restore`, `clean`, `rebase`, `merge --abort`, `worktree` и push с `--force*` или `+refspec`. Мутирующие подкоманды (`merge`, `release`) MUST выполняться под системным `flock`; `status`, `plan`, `ci` и любой `--dry-run` MUST NOT менять refs, индекс, рабочие деревья и удалённые репозитории. Состояние SHALL сохраняться в `.qa/ship/<change>/` (`plan.json`, `merge-state.json`, `sync.json`, `release-state.json`, `ci.json`, `ci/*.log`).
+Репозиторий SHALL предоставлять `scripts/shipctl` с фиксированными подкомандами, JSON-выводом, exit-кодами, безопасными режимами и сохранением состояния по полному контракту сценария ниже.
 
 #### Scenario: Параллельный запуск мутирующих команд
 - **WHEN** `shipctl merge` выполняется, а второй процесс запускает `shipctl release`
@@ -15,8 +15,13 @@
 - **WHEN** `shipctl merge --plan <file> --dry-run` выполняется на реальных репозиториях
 - **THEN** вывод содержит пошаговый список git-операций по каждому репозиторию, а `git status --porcelain`, `git for-each-ref` и HEAD всех репозиториев совпадают до и после запуска
 
+#### Scenario: Полный исходный контракт — Контракт CLI shipctl
+- **WHEN** применяется требование «Контракт CLI shipctl»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  Репозиторий SHALL предоставлять `scripts/shipctl` с подкомандами `status`, `plan`, `merge` (включая `--resume`), `release`, `ci` (включая `--wait`). stdout MUST содержать только JSON-объект `{ "ok": true|false, ... }`, прогресс и человекочитаемые таблицы SHALL идти в stderr. Exit-коды SHALL быть фиксированы: `0` — успех; `1` — операция остановлена (конфликт, отказ push, сбой sync, неуспешный CI); `2` — недоступно окружение (нет `git`/`gh`/`flock`, `gh` не авторизован, lock занят); `3` — нарушено предусловие или устарел план, при этом ни один репозиторий не изменён в этом запуске. Код MUST NOT содержать `stash`, `reset`, `checkout --`, `restore`, `clean`, `rebase`, `merge --abort`, `worktree` и push с `--force*` или `+refspec`. Мутирующие подкоманды (`merge`, `release`) MUST выполняться под системным `flock`; `status`, `plan`, `ci` и любой `--dry-run` MUST NOT менять refs, индекс, рабочие деревья и удалённые репозитории. Состояние SHALL сохраняться в `.qa/ship/<change>/` (`plan.json`, `merge-state.json`, `sync.json`, `release-state.json`, `ci.json`, `ci/*.log`).
+
 ### Requirement: Определение изменённого репозитория и пофайловый план
-`shipctl plan --change <name>` SHALL рассматривать корень монорепы и каждый клон из `services.manifest`. Объявленные пути change SHALL собираться из: путей, переданных Router через `--paths-file`/`--include` (объединение «Изменённые файлы» из handoff всех units и отчёта `QG-SYNTH`, пути от корня монорепы); автоматически — директории change (`openspec/changes/<change>/` и `openspec/changes/archive/*-<change>/`), main specs capability из `specs/` change и `--task` файла. Каждая dirty-запись `git status --porcelain=v1 -z --untracked-files=all` SHALL классифицироваться как `included` (совпадает с объявленным файлом или лежит под объявленной директорией и не исключена `--exclude`) или `foreign`. Репозиторий SHALL считаться изменённым только при наличии хотя бы одного `included` файла. План MUST содержать по каждому репозиторию: ветку, HEAD, текущую ветку, `included`, `foreign`, объявленные, но чистые пути (`declaredClean`), runtime aliases, наличие `origin/release`, блокеры предусловий, выбранное имя ветки и общий fingerprint (HEAD + имя ветки + список included + blob-хэши их содержимого).
+`shipctl plan --change <name>` SHALL строить пофайловый план корня и клонов manifest, различая `included`, `foreign`, `declaredClean` и фиксируя состояние репозиториев и fingerprint по полному контракту сценария ниже.
 
 #### Scenario: Посторонние dirty-файлы в репозитории
 - **WHEN** в `services/backend` 16 dirty-файлов, из которых 3 объявлены change
@@ -34,8 +39,13 @@
 - **WHEN** handoff перечисляет путь, которого нет среди dirty-записей
 - **THEN** путь попадает в `declaredClean` как предупреждение для пользователя, а не в коммит
 
+#### Scenario: Полный исходный контракт — Определение изменённого репозитория и пофайловый план
+- **WHEN** применяется требование «Определение изменённого репозитория и пофайловый план»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  `shipctl plan --change <name>` SHALL рассматривать корень монорепы и каждый клон из `services.manifest`. Объявленные пути change SHALL собираться из: путей, переданных Router через `--paths-file`/`--include` (объединение «Изменённые файлы» из handoff всех units и отчёта `QG-SYNTH`, пути от корня монорепы); автоматически — директории change (`openspec/changes/<change>/` и `openspec/changes/archive/*-<change>/`), main specs capability из `specs/` change и `--task` файла. Каждая dirty-запись `git status --porcelain=v1 -z --untracked-files=all` SHALL классифицироваться как `included` (совпадает с объявленным файлом или лежит под объявленной директорией и не исключена `--exclude`) или `foreign`. Репозиторий SHALL считаться изменённым только при наличии хотя бы одного `included` файла. План MUST содержать по каждому репозиторию: ветку, HEAD, текущую ветку, `included`, `foreign`, объявленные, но чистые пути (`declaredClean`), runtime aliases, наличие `origin/release`, блокеры предусловий, выбранное имя ветки и общий fingerprint (HEAD + имя ветки + список included + blob-хэши их содержимого).
+
 ### Requirement: Защита посторонних изменений
-`shipctl` MUST NOT коммитить, stage'ить, stash'ить, сбрасывать (`reset`, `checkout --`, `restore`, `clean`) или иначе изменять `foreign` файлы; это страховка, очистку посторонних файлов выполняет пользователь. Коммит SHALL включать только `included` пути целиком (выбор hunk'ов вне scope). Если в индексе есть staged-записи вне `included` или `git switch`/`git merge` требует перезаписать локальные изменения, `shipctl` MUST остановиться без автоисправления. Файл, содержащий одновременно правки change и посторонние правки, классифицируется целиком; решение о его включении принимает пользователь при подтверждении плана.
+`shipctl` MUST сохранять `foreign` файлы без изменений, включать в коммит только `included` пути целиком и останавливаться при постороннем staged-содержимом либо угрозе перезаписи; смешанный файл включается только по решению пользователя по контракту сценария ниже.
 
 #### Scenario: Переключение на main с посторонними изменениями
 - **WHEN** после коммита included-файлов в `feature/<change>` выполняется `git switch main`
@@ -45,8 +55,13 @@
 - **WHEN** в индексе репозитория уже staged файл, не входящий в `included`
 - **THEN** preflight завершает `merge` exit `3` с блокером `foreign_staged` до любой мутации
 
+#### Scenario: Полный исходный контракт — Защита посторонних изменений
+- **WHEN** применяется требование «Защита посторонних изменений»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  `shipctl` MUST NOT коммитить, stage'ить, stash'ить, сбрасывать (`reset`, `checkout --`, `restore`, `clean`) или иначе изменять `foreign` файлы; это страховка, очистку посторонних файлов выполняет пользователь. Коммит SHALL включать только `included` пути целиком (выбор hunk'ов вне scope). Если в индексе есть staged-записи вне `included` или `git switch`/`git merge` требует перезаписать локальные изменения, `shipctl` MUST остановиться без автоисправления. Файл, содержащий одновременно правки change и посторонние правки, классифицируется целиком; решение о его включении принимает пользователь при подтверждении плана.
+
 ### Requirement: Именование веток и commit convention
-Тип ветки SHALL определяться флагом `--kind feature|bug`; без флага change с префиксом `fix-` или `bug-` SHALL получать `bug`, остальные — `feature`. Ветка SHALL называться `feature/<change>` или `bug/<change>`, где `<change>` — имя change без даты архива. Коммит изменений SHALL иметь заголовок `feat(<change>): <summary>` или `fix(<change>): <summary>` (summary передаёт Router через `--summary`, до 72 символов) и trailers `OpenSpec: <change>` и `Task: <docs/tasks/...>` при наличии. Merge-коммит в `main` SHALL иметь сообщение `Merge branch '<branch>' into main` с trailer `OpenSpec: <change>`; в `release` merge-коммиты MUST NOT создаваться. Если базовое имя занято (ветка существует локально или на `origin`, проверка через `ls-remote`) хотя бы в одном изменённом репозитории, `plan` SHALL выбрать первое из `<base>-2`, `<base>-3`, …, свободное во всех изменённых репозиториях, и использовать одно имя для всех; выбранное имя и пропущенные занятые варианты SHALL отражаться в плане.
+Имена веток, заголовки и trailers коммитов SHALL следовать существующим conventions; занятое автоматическое имя SHALL заменяться единым свободным suffix во всех изменённых репозиториях по полному контракту сценария ниже.
 
 #### Scenario: Багфикс change
 - **WHEN** change называется `fix-074-user-management-tenant-isolation` и `--kind` не передан
@@ -56,8 +71,13 @@
 - **WHEN** в `services/frontend` уже есть локальная ветка `feature/<change>`, а на `origin` корня — `feature/<change>-2`
 - **THEN** план для всех изменённых репозиториев использует `feature/<change>-3` и перечисляет занятые имена
 
+#### Scenario: Полный исходный контракт — Именование веток и commit convention
+- **WHEN** применяется требование «Именование веток и commit convention»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  Тип ветки SHALL определяться флагом `--kind feature|bug`; без флага change с префиксом `fix-` или `bug-` SHALL получать `bug`, остальные — `feature`. Ветка SHALL называться `feature/<change>` или `bug/<change>`, где `<change>` — имя change без даты архива. Коммит изменений SHALL иметь заголовок `feat(<change>): <summary>` или `fix(<change>): <summary>` (summary передаёт Router через `--summary`, до 72 символов) и trailers `OpenSpec: <change>` и `Task: <docs/tasks/...>` при наличии. Merge-коммит в `main` SHALL иметь сообщение `Merge branch '<branch>' into main` с trailer `OpenSpec: <change>`; в `release` merge-коммиты MUST NOT создаваться. Если базовое имя занято (ветка существует локально или на `origin`, проверка через `ls-remote`) хотя бы в одном изменённом репозитории, `plan` SHALL выбрать первое из `<base>-2`, `<base>-3`, …, свободное во всех изменённых репозиториях, и использовать одно имя для всех; выбранное имя и пропущенные занятые варианты SHALL отражаться в плане.
+
 ### Requirement: Порядок MERGE и остановка при сбое
-`shipctl merge --plan <file>` SHALL сначала выполнить preflight всех изменённых репозиториев (fingerprint и свободное имя ветки, текущая ветка `main`, не detached HEAD, нет незавершённого merge/rebase, нет `foreign_staged`, локальный `main` не опережает `origin/main`) и только при отсутствии блокеров перейти к мутациям. Фаза 1 по каждому изменённому репозиторию (сервисы в порядке manifest, корень последним): `git switch -c <branch>` от текущего HEAD → `git add -A -- <included>` → `git commit` → `git switch main` → `git push origin <branch>`. Feature-ветка MUST пушиться всегда, в каждом изменённом репозитории, включая корень. Барьер: однократный `make sync SYNC_FLAGS="--strict --include-root --report .qa/ship/<change>/sync.json"`; сбой sync в изменённом репозитории MUST останавливать merge, сбой в неизменённом SHALL фиксироваться как предупреждение. Фаза 2 по каждому изменённому репозиторию: `git merge --no-ff <branch>` → `git push origin main`. При любом сбое `shipctl` MUST остановиться немедленно, без повторов и обходных действий. `merge-state.json` и JSON-итог SHALL отражать стадию каждого репозитория (`planned`, `committed`, `switched`, `branch-pushed`, `synced`, `conflict`, `merged`, `pushed`, `failed`, `untouched`) с SHA и ошибкой.
+`shipctl merge --plan <file>` SHALL выполнять общий preflight, две упорядоченные фазы с барьером строгого sync, обязательный push feature/main и сохранение стадий; любой сбой MUST немедленно останавливать выполнение по полному контракту сценария ниже.
 
 #### Scenario: Успешный merge нескольких репозиториев
 - **WHEN** план содержит `backend`, `frontend` и корень, preflight чист, sync и merge без конфликтов
@@ -71,8 +91,13 @@
 - **WHEN** `git push origin main` или `git push origin <branch>` отклонён (non-fast-forward или права)
 - **THEN** shipctl останавливается exit `1`, репозиторий остаётся на `main`, локальные коммиты сохраняются, state отражает последнюю успешную стадию, повторного push и rebase нет
 
+#### Scenario: Полный исходный контракт — Порядок MERGE и остановка при сбое
+- **WHEN** применяется требование «Порядок MERGE и остановка при сбое»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  `shipctl merge --plan <file>` SHALL сначала выполнить preflight всех изменённых репозиториев (fingerprint и свободное имя ветки, текущая ветка `main`, не detached HEAD, нет незавершённого merge/rebase, нет `foreign_staged`, локальный `main` не опережает `origin/main`) и только при отсутствии блокеров перейти к мутациям. Фаза 1 по каждому изменённому репозиторию (сервисы в порядке manifest, корень последним): `git switch -c <branch>` от текущего HEAD → `git add -A -- <included>` → `git commit` → `git switch main` → `git push origin <branch>`. Feature-ветка MUST пушиться всегда, в каждом изменённом репозитории, включая корень. Барьер: однократный `make sync SYNC_FLAGS="--strict --include-root --report .qa/ship/<change>/sync.json"`; сбой sync в изменённом репозитории MUST останавливать merge, сбой в неизменённом SHALL фиксироваться как предупреждение. Фаза 2 по каждому изменённому репозиторию: `git merge --no-ff <branch>` → `git push origin main`. При любом сбое `shipctl` MUST остановиться немедленно, без повторов и обходных действий. `merge-state.json` и JSON-итог SHALL отражать стадию каждого репозитория (`planned`, `committed`, `switched`, `branch-pushed`, `synced`, `conflict`, `merged`, `pushed`, `failed`, `untouched`) с SHA и ошибкой.
+
 ### Requirement: Ручное разрешение конфликта и продолжение
-При конфликте `git merge --no-ff <branch>` в фазе 2 `shipctl` MUST NOT выполнять `git merge --abort` или иное разрешение: конфликт SHALL оставаться в рабочем дереве для ручного разбора, репозиторий SHALL получать стадию `conflict` со списком конфликтующих файлов, следующие репозитории MUST NOT обрабатываться, exit `1`. JSON-итог SHALL перечислять уже слитые и запушенные репозитории, репозиторий с конфликтом и его файлы, ещё не обработанные репозитории и команду продолжения. `shipctl merge --resume --change <name>` SHALL: для репозитория в стадии `conflict` — завершаться exit `3` с `merge_in_progress`, если `MERGE_HEAD` ещё существует; с `conflict_unresolved`, если tip feature-ветки не является предком `HEAD`; с `foreign_in_merge`, если первый родитель `HEAD` не совпадает с записанным pre-merge `main` или файлы `git diff --name-only HEAD^1 HEAD` выходят за `included` репозитория; иначе принять merge-коммит пользователя как стадию `merged`. Для остальных репозиториев фактическая ветка и SHA MUST совпадать с записанными, иначе exit `3` `state_mismatch`. Затем `--resume` SHALL повторить барьер строгого `make sync`, выполнить `git push origin main` для `merged` и продолжить фазу 2 для оставшихся репозиториев.
+При конфликте `shipctl` MUST оставлять merge для ручного разрешения и останавливать следующие репозитории. Явный `merge --resume` SHALL проверять состояние и допустимость пользовательского merge-коммита, повторять строгий sync и продолжать по полному контракту сценария ниже.
 
 #### Scenario: Конфликт во втором репозитории
 - **WHEN** `backend` уже слит и запушен, а merge во `frontend` даёт конфликт
@@ -90,6 +115,11 @@
 - **WHEN** пользователь закоммитил разрешение вместе с `foreign` файлом
 - **THEN** `--resume` завершается exit `3` с `foreign_in_merge`, push не выполняется
 
+#### Scenario: Полный исходный контракт — Ручное разрешение конфликта и продолжение
+- **WHEN** применяется требование «Ручное разрешение конфликта и продолжение»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  При конфликте `git merge --no-ff <branch>` в фазе 2 `shipctl` MUST NOT выполнять `git merge --abort` или иное разрешение: конфликт SHALL оставаться в рабочем дереве для ручного разбора, репозиторий SHALL получать стадию `conflict` со списком конфликтующих файлов, следующие репозитории MUST NOT обрабатываться, exit `1`. JSON-итог SHALL перечислять уже слитые и запушенные репозитории, репозиторий с конфликтом и его файлы, ещё не обработанные репозитории и команду продолжения. `shipctl merge --resume --change <name>` SHALL: для репозитория в стадии `conflict` — завершаться exit `3` с `merge_in_progress`, если `MERGE_HEAD` ещё существует; с `conflict_unresolved`, если tip feature-ветки не является предком `HEAD`; с `foreign_in_merge`, если первый родитель `HEAD` не совпадает с записанным pre-merge `main` или файлы `git diff --name-only HEAD^1 HEAD` выходят за `included` репозитория; иначе принять merge-коммит пользователя как стадию `merged`. Для остальных репозиториев фактическая ветка и SHA MUST совпадать с записанными, иначе exit `3` `state_mismatch`. Затем `--resume` SHALL повторить барьер строгого `make sync`, выполнить `git push origin main` для `merged` и продолжить фазу 2 для оставшихся репозиториев.
+
 ### Requirement: Строгий режим make sync
 `scripts/sync.sh` SHALL сохранять текущее поведение по умолчанию и SHALL поддерживать флаги `--strict` (pull через `git pull --ff-only`, накопление ошибок и exit `1` при любом сбое вместо проглатывания), `--include-root` (сначала `git pull --ff-only` корня по текущей ветке) и `--report <file>` (JSON-итог по каждому репозиторию: имя, ветка, результат `updated|fetched|cloned|failed`, ошибка). `make sync` SHALL передавать скрипту переменную `SYNC_FLAGS`.
 
@@ -102,7 +132,7 @@
 - **THEN** поведение совпадает с прежним: ошибки выводятся, но exit `0`
 
 ### Requirement: RELEASE fast-forward main в release
-`shipctl release --change <name>` SHALL обрабатывать только репозитории со стадией `pushed` в `merge-state.json` и существующей `origin/release`, с опциональным сужением `--repos`. Корень монорепы SHALL получать статус `not-applicable` (релизить нечего), сервис без `origin/release` — `no-release-branch`, исключённый пользователем — `skipped`. В ветке `release` MUST NOT создаваться коммиты: `release` SHALL указывать на тот же коммит, что `main`. Preflight всех выбранных репозиториев SHALL выполняться до любого push: `git fetch origin main release`; `sha := origin/main`; `sha` ≠ записанного в `merge-state.json` SHA `main` → блокер `main_moved`; `origin/release == sha` → `noop`; `git merge-base --is-ancestor origin/release sha` → готов к fast-forward; иначе → блокер `release_diverged` со списком коммитов, отсутствующих в `main`. Любой блокер MUST завершать команду exit `3` без единого push. Затем по каждому готовому репозиторию SHALL выполняться `git push origin <sha>:refs/heads/release` без force с записью `owner/repo` (из URL `origin`), SHA и статуса в `release-state.json`. Отказ push SHALL немедленно останавливать команду exit `1` с таблицей уже зарелиженных репозиториев. Рабочие клоны MUST оставаться на `main`, их рабочие деревья MUST NOT затрагиваться, временные worktree и локальная ветка `release` MUST NOT создаваться.
+`shipctl release --change <name>` SHALL выполнять только безопасный fast-forward выбранных release refs после общего preflight, не создавая коммиты и не меняя рабочие клоны; блокеры и отказы push SHALL останавливать выполнение по полному контракту сценария ниже.
 
 #### Scenario: Релиз двух сервисов
 - **WHEN** `backend` и `frontend` слиты в этой задаче, `origin/release` у обоих — предок нового `main`
@@ -120,8 +150,13 @@
 - **WHEN** `origin/release` уже равен SHA `main`
 - **THEN** репозиторий получает статус `noop` без push и без контроля CI
 
+#### Scenario: Полный исходный контракт — RELEASE fast-forward main в release
+- **WHEN** применяется требование «RELEASE fast-forward main в release»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  `shipctl release --change <name>` SHALL обрабатывать только репозитории со стадией `pushed` в `merge-state.json` и существующей `origin/release`, с опциональным сужением `--repos`. Корень монорепы SHALL получать статус `not-applicable` (релизить нечего), сервис без `origin/release` — `no-release-branch`, исключённый пользователем — `skipped`. В ветке `release` MUST NOT создаваться коммиты: `release` SHALL указывать на тот же коммит, что `main`. Preflight всех выбранных репозиториев SHALL выполняться до любого push: `git fetch origin main release`; `sha := origin/main`; `sha` ≠ записанного в `merge-state.json` SHA `main` → блокер `main_moved`; `origin/release == sha` → `noop`; `git merge-base --is-ancestor origin/release sha` → готов к fast-forward; иначе → блокер `release_diverged` со списком коммитов, отсутствующих в `main`. Любой блокер MUST завершать команду exit `3` без единого push. Затем по каждому готовому репозиторию SHALL выполняться `git push origin <sha>:refs/heads/release` без force с записью `owner/repo` (из URL `origin`), SHA и статуса в `release-state.json`. Отказ push SHALL немедленно останавливать команду exit `1` с таблицей уже зарелиженных репозиториев. Рабочие клоны MUST оставаться на `main`, их рабочие деревья MUST NOT затрагиваться, временные worktree и локальная ветка `release` MUST NOT создаваться.
+
 ### Requirement: Контроль CI через gh
-`shipctl ci --change <name>` SHALL для каждой записи `release-state.json` со статусом push (кроме `noop`) опрашивать `gh run list --repo <owner/repo> --branch release --commit <sha> --json databaseId,status,conclusion,url,workflowName,event`. Без `--wait` команда SHALL выполнять один снимок (статус `pending` допустим, exit `0` при успешном запросе). С `--wait` команда SHALL ждать терминального статуса всех runs этого коммита с общим таймаутом (`--timeout`, по умолчанию 1800 с), таймаутом появления run (`--appear-timeout`, по умолчанию 180 с) и интервалом (`--interval`, по умолчанию 20 с). Итог SHALL содержать таблицу repo → run URL → workflow → conclusion и итоговый статус `success|failure|cancelled|timed_out|no_run`, сохраняемую также в `ci.json`. Для неуспешных runs SHALL сохраняться `gh run view <id> --log-failed` в `.qa/ship/<change>/ci/<repo>-<id>.log` и выдержка последних строк в JSON. `shipctl` MUST NOT выполнять `gh run rerun`, `cancel`, revert или любые правки; с `--wait` exit `0` только когда все runs `success`, иначе `1`.
+`shipctl ci --change <name>` SHALL читать CI релизных SHA через `gh`, поддерживать снимок и ограниченное ожидание, сохранять результаты и failed logs; команда MUST NOT перезапускать, отменять или исправлять runs по полному контракту сценария ниже.
 
 #### Scenario: Один CI упал
 - **WHEN** run `frontend` завершился `failure`, а `backend` — `success`
@@ -139,9 +174,85 @@
 - **WHEN** `ci --change <name>` запускается без `--wait`, пока run `in_progress`
 - **THEN** команда один раз опрашивает `gh`, возвращает статус `pending` и exit `0`
 
+#### Scenario: Полный исходный контракт — Контроль CI через gh
+- **WHEN** применяется требование «Контроль CI через gh»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  `shipctl ci --change <name>` SHALL для каждой записи `release-state.json` со статусом push (кроме `noop`) опрашивать `gh run list --repo <owner/repo> --branch release --commit <sha> --json databaseId,status,conclusion,url,workflowName,event`. Без `--wait` команда SHALL выполнять один снимок (статус `pending` допустим, exit `0` при успешном запросе). С `--wait` команда SHALL ждать терминального статуса всех runs этого коммита с общим таймаутом (`--timeout`, по умолчанию 1800 с), таймаутом появления run (`--appear-timeout`, по умолчанию 180 с) и интервалом (`--interval`, по умолчанию 20 с). Итог SHALL содержать таблицу repo → run URL → workflow → conclusion и итоговый статус `success|failure|cancelled|timed_out|no_run`, сохраняемую также в `ci.json`. Для неуспешных runs SHALL сохраняться `gh run view <id> --log-failed` в `.qa/ship/<change>/ci/<repo>-<id>.log` и выдержка последних строк в JSON. `shipctl` MUST NOT выполнять `gh run rerun`, `cancel`, revert или любые правки; с `--wait` exit `0` только когда все runs `success`, иначе `1`.
+
 ### Requirement: Тестирование инструментов без реальных push
-Поведение `shipctl` и строгого `sync.sh` SHALL покрываться автоматическими тестами `node --test` на временных git-репозиториях с локальными bare remote и fake `gh` (через переменные окружения `SHIPCTL_ROOT`, `SHIPCTL_GH_BIN`). Тесты MUST NOT обращаться к сети и MUST падать, если обнаруживают remote, не являющийся локальным путём. Корневой `make ship-test` SHALL запускать весь набор. Проверка на реальных репозиториях монорепы SHALL выполняться только в режимах `status`, `plan`, `--dry-run` и read-only `ci`.
+Поведение `shipctl` и строгого `sync.sh` SHALL проверяться изолированными автоматическими тестами без сети и реальных push; проверки реальных репозиториев SHALL оставаться read-only по полному контракту сценария ниже.
 
 #### Scenario: Прогон тестов
 - **WHEN** инженер выполняет `make ship-test`
 - **THEN** выполняются сценарии plan/merge/release/ci/sync на временных репозиториях, ни один реальный remote не изменён, exit `0`
+
+#### Scenario: Полный исходный контракт — Тестирование инструментов без реальных push
+- **WHEN** применяется требование «Тестирование инструментов без реальных push»
+- **THEN** сохраняется весь исходный контракт без изменения поведения:
+  Поведение `shipctl` и строгого `sync.sh` SHALL покрываться автоматическими тестами `node --test` на временных git-репозиториях с локальными bare remote и fake `gh` (через переменные окружения `SHIPCTL_ROOT`, `SHIPCTL_GH_BIN`). Тесты MUST NOT обращаться к сети и MUST падать, если обнаруживают remote, не являющийся локальным путём. Корневой `make ship-test` SHALL запускать весь набор. Проверка на реальных репозиториях монорепы SHALL выполняться только в режимах `status`, `plan`, `--dry-run` и read-only `ci`.
+
+### Requirement: Безопасный Make-интерфейс финализации
+`make services-autogit` SHALL использовать существующий `shipctl`, принимать `ACTION=plan|merge|release` и по умолчанию выполнять только `plan`. Для plan обязательны непустые `CHANGE`, `BRANCH`, `MESSAGE`, `PATHS_FILE`. Для merge обязательны `PLAN` и подтверждение конкретного плана; для release — `CHANGE` и отдельное подтверждение release-плана. Неизвестные действия и некорректные значения MUST завершаться до мутаций.
+
+#### Scenario: AG-01 — корректный синтаксис Make
+- **WHEN** вызывается `make services-autogit CHANGE=task-108 BRANCH=feature/seo-improve MESSAGE="Улучшено SEO" PATHS_FILE=.qa/task-108/paths.txt`
+- **THEN** создаётся только пофайловый план; push, commit и deploy не выполняются; help поясняет, что `-b`/`-m` не передают аргументы рецепту GNU Make
+
+#### Scenario: AG-02 — значения не являются командами
+- **WHEN** ветка содержит недопустимый ref либо сообщение содержит кавычки, пробелы, shell-метасимволы или перенос строки
+- **THEN** ref и многострочное сообщение отклоняются, а допустимое однострочное сообщение передаётся буквально без исполнения shell/Make-кода; для знака доллара документация поясняет экранирование GNU Make
+
+### Requirement: Точные пользовательские ветка и сообщение
+`shipctl plan` SHALL поддерживать `--branch` и `--message` как overrides автоматических имени и subject; trailers сохраняются. Явная ветка MUST быть допустимой новой feature-веткой, не `main`/`release`/`dev`, и свободной во всех included-репозиториях. Занятое явное имя MUST блокировать план без тихого suffix. Без overrides существующие conventions и suffix SHALL сохраняться.
+
+#### Scenario: AG-03 — явные overrides
+- **WHEN** пользователь задаёт `bugs/seo-improve` и `Исправлено SEO` при свободном имени
+- **THEN** все included-репозитории используют точную ветку и точный subject, сохраняя trailers OpenSpec/Task; сообщение не дополняется feat/fix-префиксом
+
+#### Scenario: AG-04 — занятое имя и совместимость
+- **WHEN** явная ветка занята локально или на origin хотя бы одного included-репозитория
+- **THEN** plan возвращает блокер; без явного override продолжает действовать существующий алгоритм автоматического именования
+
+### Requirement: Полный inventory preflight автоматизации
+Перед мутациями services-autogit MUST проверить корень и все клоны manifest: доступность Git/origin, ветку `main`, отсутствие detached HEAD и незавершённых Git-операций. Недостающий клон, невалидный manifest или недостоверный remote probe MUST блокировать весь запуск без auto-clone/switch. Только included-репозитории участвуют в commit/push; included dirty сам по себе MUST NOT быть блокером.
+
+#### Scenario: AG-05 — блокер вне included
+- **WHEN** не участвующий в change клон находится на dev, отсутствует или имеет незавершённый rebase
+- **THEN** автоматизация останавливается до первого commit/push во всех репозиториях с указанием причины, не переключая и не восстанавливая клоны
+
+#### Scenario: AG-06 — допустимое dirty-дерево
+- **WHEN** included содержит unstaged/staged правки или новые файлы, а foreign содержит только не мешающие unstaged правки
+- **THEN** план допускает included dirty; foreign не включаются, не stage-ятся и сохраняют содержимое; foreign staged блокируют запуск
+
+### Requirement: Безопасная пофайловая селекция
+Автоматизация MUST включать только объявленные в плане dirty-пути, включая безопасные скрытые файлы, удаления и обе стороны rename. Ignored-пути, `.qa`, вложенные чужие репозитории и потенциальные credential-файлы MUST NOT автоматически попадать в included. Явное включение credential-пути MUST блокировать запуск; пути вне корня и glob/pathspec-инъекции MUST отклоняться. Содержимое секретов MUST NOT выводиться в evidence.
+
+#### Scenario: AG-07 — скрытые файлы и секреты
+- **WHEN** объявлены безопасный `.github/workflows/check.yml`, удалённый файл, rename и `.env` или private key
+- **THEN** безопасные пути учитываются точно, credential-путь блокирует запуск без commit/push и без вывода его содержимого; ignored не добавляются принудительно
+
+#### Scenario: AG-08 — посторонний репозиторий и необычные пути
+- **WHEN** paths-file содержит путь другого клона, внешний путь, symlink-выход или имя с пробелами/начальным дефисом
+- **THEN** вложенный клон маршрутизируется только своему владельцу из manifest, выход за его границу блокируется, допустимые имена передаются буквально без glob и без трактовки как опций
+
+### Requirement: Подтверждение фиксированного плана push и deploy
+Router и Make-адаптер MUST требовать отдельное явное подтверждение merge-плана с перечнем repo, origin, included/foreign, веткой и сообщением; gate MUST предупреждать о push feature/main. Изменение плана MUST инвалидировать подтверждение. `RELEASE=1` SHALL выражать только намерение: после успешного merge требуется второй gate с repo/SHA и предупреждением о CI/CD deploy. Отсутствие интерактивного канала MUST приводить к остановке без auto-yes.
+
+#### Scenario: AG-09 — два gate
+- **WHEN** пользователь подтверждает merge с `RELEASE=1`
+- **THEN** выполняются только разрешённые merge/push, а release ожидает нового подтверждения после полного успеха merge; отказ не отменяет выполненный merge и не запускает deploy
+
+#### Scenario: AG-10 — правка предложения и stale plan
+- **WHEN** пользователь исправляет ветку/сообщение или после подтверждения меняются included content, HEAD, origin либо inventory
+- **THEN** старое подтверждение не используется; требуется новый план и gate, до этого никаких новых мутаций
+
+### Requirement: Сквозная совместимость плана и частичного выполнения
+Созданный plan SHALL приниматься merge без ручной правки JSON, включая корневой репозиторий. Обязательный fingerprint MUST учитывать selected content и параметры подтверждения и повторно проверяться под lock. При сбое state SHALL сохранять успешные стадии всех репозиториев; обёртка MUST NOT автоматически повторять merge, выполнять rollback или запускать release после частичного успеха.
+
+#### Scenario: AG-11 — план корня и сервиса исполняется
+- **WHEN** план создан штатным CLI для dirty корня и одного сервиса
+- **THEN** merge принимает этот же plan, коммитит только included и публикует feature/main; root идентифицируется одинаково во всех стадиях, release корня остаётся not-applicable
+
+#### Scenario: AG-12 — отказ после частичного успеха
+- **WHEN** в одном из локальных тестовых remote отклонён push или merge конфликтует после успеха предыдущего репозитория
+- **THEN** обработка останавливается, state показывает завершённые и незавершённые стадии, release не вызывается; продолжение допускается только существующим явно вызванным resume при выполнении его предусловий

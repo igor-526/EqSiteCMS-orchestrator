@@ -5,7 +5,11 @@
 
 ## Requirements
 ### Requirement: Таблица email_logs
-MUST создать таблицу `email_logs` с полями: `id` (UUID, PK), `event_uuid` (UUID, UNIQUE), `to` (JSON array), `subject` (String), `body` (Text), `cc` (JSON array, nullable), `bcc` (JSON array, nullable), `reply_to` (String, nullable), `from_name` (String, nullable), `from_email` (String, nullable), `status` (String: pending/sent/failed), `error_message` (Text, nullable), `attempts` (Integer, default 0), `created_at` (DateTime), `sent_at` (DateTime, nullable), `updated_at` (DateTime).
+Таблица `email_logs` MUST хранить журнал отправки с полным составом полей и ограничений, указанным в сценарии «Структура журнала отправки».
+
+#### Scenario: Структура журнала отправки
+- **WHEN** создаётся таблица журнала отправки
+- **THEN** MUST создать таблицу `email_logs` с полями: `id` (UUID, PK), `event_uuid` (UUID, UNIQUE), `to` (JSON array), `subject` (String), `body` (Text), `cc` (JSON array, nullable), `bcc` (JSON array, nullable), `reply_to` (String, nullable), `from_name` (String, nullable), `from_email` (String, nullable), `status` (String: pending/sent/failed), `error_message` (Text, nullable), `attempts` (Integer, default 0), `created_at` (DateTime), `sent_at` (DateTime, nullable), `updated_at` (DateTime).
 
 #### Scenario: Создание таблицы
 - **WHEN** миграция применяется
@@ -16,15 +20,23 @@ MUST создать таблицу `email_logs` с полями: `id` (UUID, PK)
 - **THEN** MUST возникнуть ошибка unique constraint violation
 
 ### Requirement: Alembic миграция
-MUST создать миграцию `20260710_0002_add_email_logs.py` для создания таблицы `email_logs`.
+Миграции MUST создавать `email_logs` через `20260710_0002_add_email_logs.py`, а `user_emails` и `email_confirmations` — через `20260814_0003_add_user_emails_and_confirmations.py`, с сохранением обратного удаления создаваемых таблиц при откате.
 
 #### Scenario: Применение миграции
-- **WHEN** выполняется `alembic upgrade head`
+- **WHEN** выполняется `alembic upgrade head` с миграцией `20260710_0002_add_email_logs.py`
 - **THEN** таблица `email_logs` MUST быть создана
 
 #### Scenario: Откат миграции
-- **WHEN** выполняется `alembic downgrade -1`
+- **WHEN** выполняется `alembic downgrade -1` для миграции `20260710_0002_add_email_logs.py`
 - **THEN** таблица `email_logs` MUST быть удалена
+
+#### Scenario: Применение миграции user_emails и email_confirmations
+- **WHEN** выполняется `alembic upgrade head` с миграцией `20260814_0003_add_user_emails_and_confirmations.py`
+- **THEN** таблицы `user_emails` и `email_confirmations` MUST быть созданы
+
+#### Scenario: Откат миграции user_emails и email_confirmations
+- **WHEN** выполняется `alembic downgrade -1` для миграции `20260814_0003_add_user_emails_and_confirmations.py`
+- **THEN** таблицы `user_emails` и `email_confirmations` MUST быть удалены
 
 ### Requirement: SQLAlchemy модель EmailLog
 MUST создать модель `EmailLog` в `src/models/email_log.py` с маппингом на таблицу `email_logs`.
@@ -100,16 +112,7 @@ MUST создать таблицу `email_confirmations` с полями: `id` (
 - **WHEN** попытка вставить запись с существующим code
 - **THEN** MUST возникнуть ошибка unique constraint violation
 
-### Requirement: Alembic миграция
-MUST создать миграцию `20260814_0003_add_user_emails_and_confirmations.py`.
 
-#### Scenario: Применение миграции
-- **WHEN** выполняется `alembic upgrade head`
-- **THEN** таблицы `user_emails` и `email_confirmations` MUST быть созданы
-
-#### Scenario: Откат миграции
-- **WHEN** выполняется `alembic downgrade -1`
-- **THEN** таблицы MUST быть удалены
 
 ### Requirement: SQLAlchemy модели
 MUST создать модели `UserEmail` и `EmailConfirmation` с маппингом на соответствующие таблицы.

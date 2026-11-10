@@ -1,7 +1,7 @@
 # photo-batch-upload-attach Specification
 
 ## Purpose
-TBD - created by archiving change photos-selector-improve. Update Purpose after archive.
+Пакетная загрузка фотографий с присоединением к услугам, лошадям и новостям: формат multipart-запросов, метаданные, частичный успех, транзакционность и проверка административных прав и принадлежности сущности tenant.
 ## Requirements
 ### Requirement: Batch upload endpoint для услуг
 
@@ -158,13 +158,7 @@ TBD - created by archiving change photos-selector-improve. Update Purpose after 
 
 ### Requirement: Access control матрица
 
-Все batch upload endpoints ДОЛЖНЫ (SHALL) проверять права доступа согласно следующей матрице:
-
-| Method | Path | Access Class | Roles | Expected без auth | Expected с auth (owner) | Expected с auth (не owner) |
-|--------|------|--------------|-------|-------------------|------------------------|---------------------------|
-| POST | `/prices/{id}/photos/upload` | Protected Write | admin | 401 Unauthorized | 200 OK | 403 Forbidden |
-| POST | `/horses/{id}/photos/upload` | Protected Write | admin | 401 Unauthorized | 200 OK | 403 Forbidden |
-| POST | `/news/{id}/photos/upload` | Protected Write | admin | 401 Unauthorized | 200 OK | 403 Forbidden |
+Все batch upload endpoints ДОЛЖНЫ (SHALL) проверять права доступа по роли admin и принадлежности сущности tenant согласно матрице в сценарии «Матрица доступа для всех batch upload endpoints».
 
 #### Scenario: Anonymous request к batch upload endpoint
 
@@ -183,4 +177,15 @@ TBD - created by archiving change photos-selector-improve. Update Purpose after 
 - **WHEN** admin tenant A отправляет запрос к entity tenant B
 - **THEN** система возвращает `403 Forbidden`
 - **AND** файлы НЕ загружаются
+
+#### Scenario: Матрица доступа для всех batch upload endpoints
+
+- **WHEN** поступает запрос к любому из перечисленных batch upload endpoints
+- **THEN** применяется соответствующая строка матрицы доступа без изменения ролей и статусов
+
+| Method | Path | Access Class | Roles | Expected без auth | Expected с auth (owner) | Expected с auth (не owner) |
+|--------|------|--------------|-------|-------------------|------------------------|---------------------------|
+| POST | `/prices/{id}/photos/upload` | Protected Write | admin | 401 Unauthorized | 200 OK | 403 Forbidden |
+| POST | `/horses/{id}/photos/upload` | Protected Write | admin | 401 Unauthorized | 200 OK | 403 Forbidden |
+| POST | `/news/{id}/photos/upload` | Protected Write | admin | 401 Unauthorized | 200 OK | 403 Forbidden |
 

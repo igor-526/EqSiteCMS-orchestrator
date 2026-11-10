@@ -1,10 +1,10 @@
 # notification-callback-handler Specification
 
 ## Purpose
-TBD - created by archiving change notification-service-initialization. Update Purpose after archive.
+Обработка событий обратного звонка формирует уведомления email и VK для разрешённых получателей конюшни, исключает внутренние идентификаторы из текста и отмечает доставку после публикации команды, не ожидая результата провайдера.
 ## Requirements
 ### Requirement: CallbackEventHandler
-Система MUST предоставлять handler форматирования callback_request notification, который для каждого канала выбирает получателей только внутри `equestrian_id` события: запрашивает активных пользователей Backend Core с одновременными фильтрами `equestrian_ids=[equestrian_id]` и `role=[ADMIN,SUPERUSER]` и пересекает их с `enabled_user_ids` соответствующего канала. Для email handler MUST оставить только подтверждённые email; для VK MUST передать только UUID eligible/enabled пользователей, не запрашивая VK bindings. Subject/body/text MUST содержать только имя, телефон и комментарий заявителя и MUST NOT содержать callback, tenant/equestrian, event или user UUID.
+Система MUST форматировать callback_request по каналу с tenant-scoped выборкой активных ADMIN/SUPERUSER и enabled_user_ids; для email MUST использовать подтверждённые адреса, для VK — UUID без lookup bindings, а тексты MUST исключать внутренние UUID согласно сценариям.
 
 #### Scenario: Tenant-scoped email notification
 - **WHEN** валидное callback_request событие tenant A форматируется для `channel_code="email"`
@@ -45,6 +45,10 @@ TBD - created by archiving change notification-service-initialization. Update Pu
 #### Scenario: Ошибка recipient lookup
 - **WHEN** tenant-scoped запрос пользователей или channel destination lookup завершается ошибкой
 - **THEN** handler работает fail-closed, не возвращает command этого канала и не расширяет выборку до всех пользователей
+
+#### Scenario: Полный контракт выбора получателей и приватности текста
+- **WHEN** handler форматирует callback_request notification для выбранного канала
+- **THEN** Система MUST предоставлять handler форматирования callback_request notification, который для каждого канала выбирает получателей только внутри `equestrian_id` события: запрашивает активных пользователей Backend Core с одновременными фильтрами `equestrian_ids=[equestrian_id]` и `role=[ADMIN,SUPERUSER]` и пересекает их с `enabled_user_ids` соответствующего канала. Для email handler MUST оставить только подтверждённые email; для VK MUST передать только UUID eligible/enabled пользователей, не запрашивая VK bindings. Subject/body/text MUST содержать только имя, телефон и комментарий заявителя и MUST NOT содержать callback, tenant/equestrian, event или user UUID.
 
 ### Requirement: CallbackRequestHandler Integration
 CallbackRequestHandler MUST использовать NotificationOrchestratorService, MUST принимать внутренние `callback_request_id` и `equestrian_id` для service correlation и tenant routing, передавать их без подмены в orchestrator и MUST NOT отображать эти UUID в subject/body.

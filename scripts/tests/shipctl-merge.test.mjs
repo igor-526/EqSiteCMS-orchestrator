@@ -1,39 +1,31 @@
 /**
- * Tests for shipctl merge command (SHIP-3 + SHIP-4: phases 1 and 2, resume).
- * 
- * Coverage: UT-MERGE-01..12, UT-RESUME-01..04
- * - UT-MERGE-01: --dry-run does not mutate
- * - UT-MERGE-02: preflight blockers stop before mutations
- * - UT-MERGE-03: stale plan detection
- * - UT-MERGE-04: phase 1 protects foreign files and pushes feature branch
- * - UT-MERGE-05: happy path full merge (phases 1 + 2)
- * - UT-MERGE-06: conflict handling (leave in tree, no abort)
- * - UT-MERGE-07: push failure handling
- * - UT-MERGE-08: sync barrier errors
- * - UT-MERGE-09: resume after push failure
- * - UT-MERGE-10: commit messages and trailers
- * - UT-MERGE-11: resume after conflict resolution
- * - UT-MERGE-12: dry-run accumulates blockers from all repos (F-083-02)
- * - UT-RESUME-01: merge_in_progress blocker (MERGE_HEAD exists)
- * - UT-RESUME-02: conflict_unresolved blocker (feature branch not in history)
- * - UT-RESUME-03: foreign_in_merge blocker (foreign files in merge commit)
- * - UT-RESUME-04: state_mismatch blocker (phase already complete)
+ * Offline merge integration: v2 producer, preflight and whole-file isolation,
+ * durable phase1/phase2 failures, actual conflicts and explicit safe resume.
+ * Legacy UT-MERGE/UT-RESUME coverage uses generated plans and real Git state;
+ * former placeholder conflict/sync tests and skipped fake states are replaced
+ * by OPS-2c AG-11/12 cases below (no skipped scenarios).
  */
-
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { writeFile, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { spawn, spawnSync } from 'node:child_process';
+import { writeFile, readFile, chmod } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { digest } from '../ship/plan.mjs';
 import {
-  createMonorepoFixture,
+  createMonorepoFixture as createBaseFixture,
   cleanup,
   captureMonorepoSnapshot,
   assertSnapshotsEqual,
   makeDirty,
-  createMergeInProgress,
-  createFakeMergeState
+  guardNonLocalRemote
 } from './helpers/fixture.mjs';
+
+const createMonorepoFixture = options => createBaseFixture({ ...options,
+  fixtureBase: join(process.cwd(), '.qa/add-safe-services-autogit/OPS-2c/fixtures'), withRootOrigin: true });
+
+for (const key of ['GIT_DIR', 'GIT_COMMON_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_CONFIG_PARAMETERS']) delete process.env[key];
+Object.assign(process.env, { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_COUNT: '0', GIT_TERMINAL_PROMPT: '0' });
 
 const SHIPCTL = join(process.cwd(), 'scripts/shipctl');
 
@@ -41,6 +33,18 @@ const SHIPCTL = join(process.cwd(), 'scripts/shipctl');
  * Run shipctl command in fixture.
  */
 function runShipctl(fixtureRoot, args, opts = {}) {
+  assert.ok(resolve(fixtureRoot).startsWith(resolve('.qa/add-safe-services-autogit/OPS-2c/fixtures') + '/'));
+  const dirs = [fixtureRoot, ...readdirSync(join(fixtureRoot, 'services'), { withFileTypes: true })
+    .filter(e => e.isDirectory()).map(e => join(fixtureRoot, 'services', e.name))];
+  for (const cwd of dirs) {
+    for (const flags of [[], ['--push']]) {
+      const urls = spawnSync('git', ['remote', 'get-url', ...flags, '--all', 'origin'], { cwd, encoding: 'utf8' });
+      for (const url of urls.stdout.trim().split('\n').filter(Boolean)) {
+        guardNonLocalRemote(url);
+        assert.ok(url.startsWith(join(fixtureRoot, 'bare-repos') + '/'), 'only owned local remotes');
+      }
+    }
+  }
   const result = spawnSync('node', [SHIPCTL, ...args], {
     cwd: fixtureRoot,
     encoding: 'utf8',
@@ -48,7 +52,7 @@ function runShipctl(fixtureRoot, args, opts = {}) {
       ...process.env,
       SHIPCTL_ROOT: fixtureRoot,
       SHIPCTL_GH_BIN: join(fixtureRoot, 'fake-gh'),
-      SHIPCTL_MAKE_BIN: 'make',
+      SHIPCTL_MAKE_BIN: opts.makeBin || 'make',
       SHIPCTL_TEST_SKIP_SYNC: opts.skipSync !== false ? 'true' : 'false'
     }
   });
@@ -68,84 +72,16 @@ function runShipctl(fixtureRoot, args, opts = {}) {
   };
 }
 
-/**
- * Create a minimal plan.json for testing.
- */
-/**
- * Normalize repo object to match plan.json schema requirements.
- */
-function normalizeRepoForSchema(repo, fixtureRoot) {
-  if (repo.status === 'untouched') {
-    return {
-      name: repo.name,
-      status: 'untouched',
-      branch: repo.branch || 'main',
-      head: repo.head || '0000000000000000000000000000000000000000'
-    };
-  }
-  
-  // status === 'changed'
-  const repoPath = repo.name === 'root' ? fixtureRoot : join(fixtureRoot, 'services', repo.name);
-  
-  // Normalize included/foreign: preserve blobHash if present (optional in schema)
-  const normalizeFile = (f) => {
-    const normalized = {
-      path: f.path,
-      status: f.status || ' M'  // default to modified
-    };
-    if (f.blobHash) {
-      normalized.blobHash = f.blobHash;
-    }
-    return normalized;
-  };
-  
-  return {
-    name: repo.name,
-    status: 'changed',
-    path: repo.path || repoPath,
-    branch: repo.branch || 'main',
-    head: repo.head,
-    included: (repo.included || []).map(normalizeFile),
-    foreign: (repo.foreign || []).map(normalizeFile),
-    blockers: repo.blockers || [],
-    hasRelease: repo.hasRelease !== undefined ? repo.hasRelease : false,
-    ownerRepo: repo.ownerRepo !== undefined ? repo.ownerRepo : null,
-    fingerprint: repo.fingerprint || 'a'.repeat(64),
-    runtimeAliases: repo.runtimeAliases || []
-  };
-}
-
+/** Legacy scenarios now use the real v2 producer, never patched hashes. */
 async function createPlan(fixtureRoot, options = {}) {
-  const {
-    change = 'test-change-083',
-    branchName = 'feature/test-change-083',
-    repos = []
-  } = options;
-
-  const normalizedRepos = repos.map(r => normalizeRepoForSchema(r, fixtureRoot));
-
-  const plan = {
-    change,
-    kind: 'feature',
-    branchName,
-    skippedBranches: [],
-    commitMessage: {
-      subject: `feat(${change}): Test change`,
-      trailers: [`OpenSpec: ${change}`]
-    },
-    repos: normalizedRepos,
-    blockers: [],
-    hasBlockers: false
-  };
-
-  const stateDir = join(fixtureRoot, '.qa/ship', change);
-  const planPath = join(stateDir, 'plan.json');
-  
-  const { mkdir } = await import('node:fs/promises');
-  await mkdir(stateDir, { recursive: true });
-  await writeFile(planPath, JSON.stringify(plan, null, 2));
-
-  return { plan, planPath };
+  const { change = 'test-change-083', branchName = 'feature/test-change-083', repos = [] } = options;
+  const includes = repos.flatMap(repo => (repo.included || []).map(file =>
+    ['root', '.'].includes(repo.name) ? file.path : `services/${repo.name}/${file.path}`));
+  const result = runShipctl(fixtureRoot, ['plan', '--change', change, '--branch', branchName,
+    '--summary', 'Test change', ...includes.flatMap(p => ['--include', p])]);
+  assert.equal(result.status, 0, JSON.stringify(result));
+  const planPath = join(fixtureRoot, '.qa/ship', change, 'plan.json');
+  return { plan: JSON.parse(await readFile(planPath, 'utf8')), planPath };
 }
 
 /**
@@ -235,8 +171,6 @@ test('UT-MERGE-02: preflight blocker stops before any mutation', async () => {
       encoding: 'utf8'
     }).stdout.trim();
 
-    // Create detached HEAD blocker
-    spawnSync('git', ['checkout', '--detach'], { cwd: backendPath });
 
     const { planPath } = await createPlan(fixture.root, {
       repos: [
@@ -248,6 +182,8 @@ test('UT-MERGE-02: preflight blocker stops before any mutation', async () => {
         }
       ]
     });
+
+    spawnSync('git', ['checkout', '--detach'], { cwd: backendPath });
 
     // Capture before
     const before = await captureMonorepoSnapshot(fixture);
@@ -534,80 +470,6 @@ test('UT-MERGE-05: full merge with 2 services', async () => {
 });
 
 /**
- * UT-MERGE-06: Conflict handling (leave in tree, no abort, stop processing)
- * 
- * Modified for test environment: Creates manual conflict state since SHIPCTL_TEST_SKIP_SYNC
- * prevents natural conflicts. Tests conflict detection and state management.
- */
-test('UT-MERGE-06: conflict in second repo stops processing, leaves conflict in tree', async () => {
-  const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
-
-  try {
-    const backendPath = fixture.services.backend.clonePath;
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Backend: get HEAD and create simple change
-    const backendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-    await makeDirty(backendPath, { 'src/be.py': 'backend content' });
-    const beHash = spawnSync('git', ['hash-object', 'src/be.py'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Frontend: Create simple dirty file for normal merge flow
-    // We'll skip the complex conflict setup and just test that merge handles
-    // the case correctly when it exists
-    const branchName = 'feature/test-conflict';
-    
-    await makeDirty(frontendPath, { 'src/conflict.ts': 'feature version AAAAA' });
-    const feConflictHash = spawnSync('git', ['hash-object', 'src/conflict.ts'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const frontendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const { planPath } = await createPlan(fixture.root, {
-      change: 'test-conflict',
-      branchName,
-      repos: [
-        {
-          name: 'backend',
-          status: 'changed',
-          head: backendHead,
-          included: [{ path: 'src/be.py', blobHash: beHash }]
-        },
-        {
-          name: 'frontend',
-          status: 'changed',
-          head: frontendHead,
-          included: [{ path: 'src/conflict.ts', blobHash: feConflictHash }]
-        }
-      ]
-    });
-
-    // Run merge - in test environment without real conflicts, this will succeed
-    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
-
-    // Modified assertions: Since we can't create real conflicts in test environment,
-    // verify that merge completes successfully and both repos are processed
-    assert.equal(result.status, 0, 'merge should succeed in test environment');
-    assert.equal(result.json?.ok, true);
-    assert.equal(result.json?.mergeState?.phase, 'phase2-complete');
-
-    // Check both repos were pushed
-    const backendState = result.json.mergeState.repos.find(r => r.name === 'backend');
-    const frontendState = result.json.mergeState.repos.find(r => r.name === 'frontend');
-    assert.equal(backendState?.stage, 'pushed', 'backend should be pushed');
-    assert.equal(frontendState?.stage, 'pushed', 'frontend should be pushed');
-    
-    // Verify conflict handling code exists (checked by resume tests with real conflicts)
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
  * UT-MERGE-07: Push failure handling
  */
 test('UT-MERGE-07: push failure leaves repo on main with local commits', async () => {
@@ -678,61 +540,6 @@ exit 0
 });
 
 /**
- * UT-MERGE-08: Sync barrier errors
- * 
- * Modified for test environment: With SHIPCTL_TEST_SKIP_SYNC=true, sync is bypassed.
- * Tests that merge completes successfully when sync is skipped.
- */
-test('UT-MERGE-08: sync failure in changed repo stops merge', async () => {
-  const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
-
-  try {
-    const backendPath = fixture.services.backend.clonePath;
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Get HEADs
-    const backendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const frontendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Create dirty files
-    await makeDirty(backendPath, { 'be.txt': 'be' });
-    await makeDirty(frontendPath, { 'fe.txt': 'fe' });
-
-    const beHash = spawnSync('git', ['hash-object', 'be.txt'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const feHash = spawnSync('git', ['hash-object', 'fe.txt'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    const branchName = 'feature/test-sync-fail';
-    const { planPath } = await createPlan(fixture.root, {
-      change: 'test-sync-fail',
-      branchName,
-      repos: [
-        { name: 'backend', status: 'changed', head: backendHead, included: [{ path: 'be.txt', blobHash: beHash }] },
-        { name: 'frontend', status: 'changed', head: frontendHead, included: [{ path: 'fe.txt', blobHash: feHash }] }
-      ]
-    });
-
-    // Run merge - in test environment sync is skipped, so merge succeeds
-    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
-
-    // Modified assertions: With SHIPCTL_TEST_SKIP_SYNC=true, sync is bypassed
-    // and merge completes successfully
-    assert.equal(result.status, 0, 'merge should succeed when sync is skipped');
-    assert.equal(result.json?.ok, true);
-    assert.equal(result.json?.mergeState?.phase, 'phase2-complete');
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
  * UT-MERGE-09: Resume after push failure (idempotency)
  */
 test('UT-MERGE-09: resume continues from last successful stage', async () => {
@@ -788,8 +595,8 @@ exit 0
     const firstResult = runShipctl(fixture.root, ['merge', '--plan', planPath]);
     assert.equal(firstResult.status, 1, 'first run should fail on push');
 
-    // Remove hook
-    spawnSync('rm', [hookPath]);
+    // Disable only the owned hook; no filesystem deletion needed.
+    await writeFile(hookPath, '#!/bin/sh\nexit 0\n');
 
     // Resume should continue
     const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
@@ -860,471 +667,20 @@ test('UT-MERGE-10: commit messages follow convention with trailers', async () =>
   }
 });
 
-/**
- * UT-MERGE-11: Resume after conflict resolution
- * 
- * Modified for test environment: Without real conflicts, tests successful merge flow.
- */
-test('UT-MERGE-11: resume validates conflict resolution and continues', async () => {
-  const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
-
-  try {
-    const backendPath = fixture.services.backend.clonePath;
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Backend: get HEAD and simple change
-    const backendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-    await makeDirty(backendPath, { 'be.txt': 'backend' });
-    const beHash = spawnSync('git', ['hash-object', 'be.txt'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Frontend: create dirty file first
-    await makeDirty(frontendPath, { 'conflict.ts': 'feature' });
-    const feHash = spawnSync('git', ['hash-object', 'conflict.ts'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Commit to main to create future conflict
-    await writeFile(join(frontendPath, 'conflict.ts'), 'main');
-    spawnSync('git', ['add', 'conflict.ts'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '-m', 'main commit'], { cwd: frontendPath });
-    spawnSync('git', ['push', 'origin', 'main'], { cwd: frontendPath });
-
-    // Get frontend HEAD AFTER commit
-    const frontendUpdatedHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Restore dirty feature file
-    await writeFile(join(frontendPath, 'conflict.ts'), 'feature');
-
-    const changeName = 'test-resume-083';
-    const branchName = 'feature/test-resume-083';
-    const { planPath } = await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [
-        { name: 'backend', status: 'changed', head: backendHead, included: [{ path: 'be.txt', blobHash: beHash }] },
-        { name: 'frontend', status: 'changed', head: frontendUpdatedHead, included: [{ path: 'conflict.ts', blobHash: feHash }] }
-      ]
-    });
-
-    // First run: without real conflicts, this succeeds
-    const firstResult = runShipctl(fixture.root, ['merge', '--plan', planPath]);
-    assert.equal(firstResult.status, 0, 'merge should succeed without conflicts');
-    assert.equal(firstResult.json?.mergeState?.phase, 'phase2-complete');
-    
-    // Verify both repos completed successfully
-    const beState = firstResult.json.mergeState.repos.find(r => r.name === 'backend');
-    const feState = firstResult.json.mergeState.repos.find(r => r.name === 'frontend');
-    assert.equal(beState?.stage, 'pushed');
-    assert.equal(feState?.stage, 'pushed');
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
- * UT-MERGE-11c: Resume detects conflict_unresolved (merge aborted)
- * 
- * SKIPPED: Requires real merge conflicts (see UT-MERGE-06).
- */
-test.skip('UT-MERGE-11c: resume detects when merge was aborted', async () => {
-  const fixture = await createMonorepoFixture({ services: ['frontend'] });
-
-  try {
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Create dirty file first
-    await makeDirty(frontendPath, { 'conflict.ts': 'feature' });
-    const feHash = spawnSync('git', ['hash-object', 'conflict.ts'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Commit to main to create future conflict
-    await writeFile(join(frontendPath, 'conflict.ts'), 'main');
-    spawnSync('git', ['add', 'conflict.ts'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '-m', 'main'], { cwd: frontendPath });
-    spawnSync('git', ['push', 'origin', 'main'], { cwd: frontendPath });
-
-    // Get HEAD AFTER commit
-    const frontendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Restore dirty feature file
-    await writeFile(join(frontendPath, 'conflict.ts'), 'feature');
-
-    const changeName = 'test-abort-083';
-    const branchName = 'feature/test-abort-083';
-    const { planPath } = await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [{ name: 'frontend', status: 'changed', head: frontendHead, included: [{ path: 'conflict.ts', blobHash: feHash }] }]
-    });
-
-    // Run and hit conflict
-    const firstResult = runShipctl(fixture.root, ['merge', '--plan', planPath]);
-    assert.equal(firstResult.status, 1);
-
-    // User aborts merge
-    spawnSync('git', ['merge', '--abort'], { cwd: frontendPath });
-
-    // Resume should detect abort
-    const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
-    assert.equal(resumeResult.status, 3, 'resume after abort should exit 3');
-    assert.ok(resumeResult.json?.blockers?.some(b => b.blocker === 'conflict_unresolved'));
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
- * UT-MERGE-11d: Resume detects foreign_in_merge
- * 
- * SKIPPED: Requires real merge conflicts (see UT-MERGE-06).
- */
-test.skip('UT-MERGE-11d: resume detects foreign files in merge commit', async () => {
-  const fixture = await createMonorepoFixture({ services: ['frontend'] });
-
-  try {
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Create dirty files first
-    await makeDirty(frontendPath, { 
-      'conflict.ts': 'feature',
-      'foreign.txt': 'foreign content'
-    });
-    const feHash = spawnSync('git', ['hash-object', 'conflict.ts'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Commit to main to create future conflict
-    await writeFile(join(frontendPath, 'conflict.ts'), 'main');
-    spawnSync('git', ['add', 'conflict.ts'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '-m', 'main'], { cwd: frontendPath });
-    spawnSync('git', ['push', 'origin', 'main'], { cwd: frontendPath });
-
-    // Get HEAD AFTER commit
-    const frontendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Restore dirty files
-    await writeFile(join(frontendPath, 'conflict.ts'), 'feature');
-    await writeFile(join(frontendPath, 'foreign.txt'), 'foreign content');
-
-    const changeName = 'test-foreign-083';
-    const branchName = 'feature/test-foreign-083';
-    const { planPath } = await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [{
-        name: 'frontend',
-        status: 'changed',
-        head: frontendHead,
-        included: [{ path: 'conflict.ts', blobHash: feHash }],
-        foreign: [{ path: 'foreign.txt' }]
-      }]
-    });
-
-    // Run and hit conflict
-    const firstResult = runShipctl(fixture.root, ['merge', '--plan', planPath]);
-    assert.equal(firstResult.status, 1);
-
-    // Resolve but accidentally include foreign file
-    await writeFile(join(frontendPath, 'conflict.ts'), 'resolved');
-    spawnSync('git', ['add', '.'], { cwd: frontendPath });  // adds everything including foreign
-    spawnSync('git', ['commit', '--no-edit'], { cwd: frontendPath });
-
-    // Resume should detect foreign
-    const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
-    assert.equal(resumeResult.status, 3, 'resume with foreign should exit 3');
-    assert.ok(resumeResult.json?.blockers?.some(b => b.blocker === 'foreign_in_merge'));
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
 test('UT-MERGE-12: dry-run accumulates blockers from all repos (F-083-02)', async () => {
-  const fixture = await createMonorepoFixture({ 
-    services: ['backend', 'frontend'],
-    allowNonLocal: true
-  });
-  
+  const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
   try {
-    const backendPath = fixture.services.backend.clonePath;
-    const frontendPath = fixture.services.frontend.clonePath;
-    
-    // Create blockers in backend: not_on_main
-    spawnSync('git', ['checkout', '-b', 'wrong-branch'], { cwd: backendPath });
-    await makeDirty(backendPath, { 'test.py': 'test' });
-    const backendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const backendHash = spawnSync('git', ['hash-object', 'test.py'], {
-      cwd: backendPath, encoding: 'utf8'
-    }).stdout.trim();
-    
-    // Create blockers in frontend: main_ahead
-    spawnSync('git', ['checkout', 'main'], { cwd: frontendPath });
-    await makeDirty(frontendPath, { 'test.ts': 'test' });
-    spawnSync('git', ['add', 'test.ts'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '-m', 'ahead'], { cwd: frontendPath });
-    const frontendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const frontendHash = spawnSync('git', ['hash-object', 'test.ts'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    
-    const changeName = 'test-multi-blockers-083';
-    const branchName = 'feature/test-multi-blockers-083';
-    const { planPath } = await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [
-        {
-          name: 'backend',
-          status: 'changed',
-          head: backendHead,
-          included: [{ path: 'test.py', blobHash: backendHash }],
-          foreign: []
-        },
-        {
-          name: 'frontend',
-          status: 'changed',
-          head: frontendHead,
-          included: [{ path: 'test.ts', blobHash: frontendHash }],
-          foreign: []
-        }
-      ]
-    });
-    
-    // Run dry-run: should accumulate blockers from BOTH repos
+    await makeDirty(fixture.services.backend.clonePath, { 'selected.txt': 'selected' });
+    const { planPath } = await v2Plan(fixture);
+    fixtureGit(fixture.services.backend.clonePath, 'switch', '-c', 'wrong-branch');
+    fixtureGit(fixture.services.frontend.clonePath, 'commit', '--allow-empty', '-m', 'ahead');
+    const before = await fullSnapshot(fixture);
     const result = runShipctl(fixture.root, ['merge', '--plan', planPath, '--dry-run']);
-    
-    assert.equal(result.status, 3, 'dry-run should exit 3 on blockers');
-    assert.ok(result.json?.blockers, 'blockers array exists');
-    assert.ok(Array.isArray(result.json.blockers), 'blockers is array');
-    assert.ok(result.json.blockers.length >= 2, 'at least 2 blockers accumulated');
-    
-    // Verify both repos are represented
-    const backendBlockers = result.json.blockers.filter(b => b.repo === 'backend');
-    const frontendBlockers = result.json.blockers.filter(b => b.repo === 'frontend');
-    
-    assert.ok(backendBlockers.length > 0, 'backend blocker present');
-    assert.ok(frontendBlockers.length > 0, 'frontend blocker present');
-    assert.ok(backendBlockers.some(b => b.blocker === 'not_on_main'), 'backend not_on_main');
-    assert.ok(frontendBlockers.some(b => b.blocker === 'main_ahead'), 'frontend main_ahead');
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
- * UT-RESUME-01: merge_in_progress blocker when MERGE_HEAD exists
- */
-test('UT-RESUME-01: resume detects merge_in_progress when MERGE_HEAD exists', async () => {
-  const fixture = await createMonorepoFixture({ services: ['frontend'] });
-
-  try {
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Create feature branch
-    await makeDirty(frontendPath, { 'test.ts': 'test' });
-    const feHash = spawnSync('git', ['hash-object', 'test.ts'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    const frontendHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    const changeName = 'test-merge-in-progress';
-    const branchName = 'feature/test-merge-in-progress';
-    
-    // Create plan
-    const { planPath } = await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [{ name: 'frontend', status: 'changed', head: frontendHead, included: [{ path: 'test.ts', blobHash: feHash }] }]
-    });
-
-    // Create fake merge-state with conflict stage
-    await createFakeMergeState(fixture.root, {
-      changeName,
-      branchName,
-      repos: [{
-        name: 'frontend',
-        stage: 'conflict',
-        head: frontendHead,
-        preMergeMain: frontendHead,
-        included: [{ path: 'test.ts', blobHash: feHash }]
-      }]
-    });
-
-    // Simulate MERGE_HEAD (conflict not resolved)
-    const featureBranchSha = spawnSync('git', ['rev-parse', frontendHead], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    await createMergeInProgress(frontendPath, featureBranchSha);
-
-    // Resume should detect merge_in_progress
-    const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
-    assert.equal(resumeResult.status, 3, 'resume should exit 3 on merge_in_progress');
-    assert.ok(resumeResult.json?.blockers, 'blockers array exists');
-    assert.ok(resumeResult.json.blockers.some(b => b.blocker === 'merge_in_progress'), 'merge_in_progress blocker present');
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
- * UT-RESUME-02: conflict_unresolved blocker when merge was aborted
- */
-test('UT-RESUME-02: resume detects conflict_unresolved when feature branch not in history', async () => {
-  const fixture = await createMonorepoFixture({ services: ['frontend'] });
-
-  try {
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Create feature branch with commit
-    await makeDirty(frontendPath, { 'test.ts': 'test' });
-    spawnSync('git', ['add', 'test.ts'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '-m', 'feature'], { cwd: frontendPath });
-    const featureTip = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    
-    // Create feature branch
-    const branchName = 'feature/test-abort';
-    spawnSync('git', ['checkout', '-b', branchName], { cwd: frontendPath });
-    spawnSync('git', ['push', 'origin', branchName], { cwd: frontendPath });
-    
-    // Back to main
-    spawnSync('git', ['checkout', 'main'], { cwd: frontendPath });
-    const mainHead = spawnSync('git', ['rev-parse', 'HEAD~1'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    
-    // Reset main to before feature commit
-    spawnSync('git', ['reset', '--hard', 'HEAD~1'], { cwd: frontendPath });
-    const currentMain = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    const changeName = 'test-abort';
-    const feHash = spawnSync('git', ['hash-object', join(frontendPath, 'test.ts')], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    
-    // Create plan
-    await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [{ name: 'frontend', status: 'changed', head: currentMain, included: [{ path: 'test.ts', blobHash: feHash }] }]
-    });
-
-    // Create fake conflict state + simulate abort (no MERGE_HEAD, feature not in history)
-    await createFakeMergeState(fixture.root, {
-      changeName,
-      branchName,
-      repos: [{
-        name: 'frontend',
-        stage: 'conflict',
-        head: currentMain,
-        preMergeMain: currentMain,
-        included: [{ path: 'test.ts', blobHash: feHash }]
-      }]
-    });
-
-    // Resume should detect conflict_unresolved (feature branch not ancestor of HEAD)
-    const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
-    assert.equal(resumeResult.status, 3, 'resume should exit 3 on conflict_unresolved');
-    assert.ok(resumeResult.json?.blockers?.some(b => b.blocker === 'conflict_unresolved'), 'conflict_unresolved blocker present');
-  } finally {
-    await cleanup(fixture);
-  }
-});
-
-/**
- * UT-RESUME-03: foreign_in_merge blocker when merge commit contains foreign files
- */
-test('UT-RESUME-03: resume detects foreign_in_merge when merge commit has foreign files', async () => {
-  const fixture = await createMonorepoFixture({ services: ['frontend'] });
-
-  try {
-    const frontendPath = fixture.services.frontend.clonePath;
-
-    // Create feature branch
-    await makeDirty(frontendPath, { 'test.ts': 'test' });
-    spawnSync('git', ['add', 'test.ts'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '-m', 'feature'], { cwd: frontendPath });
-    spawnSync('git', ['checkout', '-b', 'feature/test-foreign'], { cwd: frontendPath });
-    spawnSync('git', ['push', 'origin', 'feature/test-foreign'], { cwd: frontendPath });
-    const featureTip = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-    
-    // Back to main (before feature)
-    spawnSync('git', ['checkout', 'main'], { cwd: frontendPath });
-    spawnSync('git', ['reset', '--hard', 'HEAD~1'], { cwd: frontendPath });
-    const preMergeMain = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Create merge commit manually with foreign file
-    spawnSync('git', ['merge', '--no-ff', 'feature/test-foreign', '-m', 'Merge feature'], { cwd: frontendPath });
-    await writeFile(join(frontendPath, 'foreign.txt'), 'foreign content');
-    spawnSync('git', ['add', 'foreign.txt'], { cwd: frontendPath });
-    spawnSync('git', ['commit', '--amend', '--no-edit'], { cwd: frontendPath });
-    
-    const mergeHead = spawnSync('git', ['rev-parse', 'HEAD'], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    const changeName = 'test-foreign';
-    const branchName = 'feature/test-foreign';
-    const feHash = spawnSync('git', ['hash-object', join(frontendPath, 'test.ts')], {
-      cwd: frontendPath, encoding: 'utf8'
-    }).stdout.trim();
-
-    // Create plan
-    await createPlan(fixture.root, {
-      change: changeName,
-      branchName,
-      repos: [{
-        name: 'frontend',
-        status: 'changed',
-        head: preMergeMain,
-        included: [{ path: 'test.ts', blobHash: feHash }],
-        foreign: [{ path: 'foreign.txt' }]
-      }]
-    });
-
-    // Create fake conflict state (resolved but with foreign)
-    await createFakeMergeState(fixture.root, {
-      changeName,
-      branchName,
-      repos: [{
-        name: 'frontend',
-        stage: 'conflict',
-        head: preMergeMain,
-        preMergeMain,
-        included: [{ path: 'test.ts', blobHash: feHash }]
-      }]
-    });
-
-    // Resume should detect foreign_in_merge
-    const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
-    assert.equal(resumeResult.status, 3, 'resume should exit 3 on foreign_in_merge');
-    assert.ok(resumeResult.json?.blockers?.some(b => b.blocker === 'foreign_in_merge'), 'foreign_in_merge blocker present');
-  } finally {
-    await cleanup(fixture);
-  }
+    assert.equal(result.status, 3, JSON.stringify(result.json));
+    assert.ok(result.json.blockers.some(b => b.repo === 'backend' && b.blocker === 'not_on_main'));
+    assert.ok(result.json.blockers.some(b => b.repo === 'frontend' && b.blocker === 'main_ahead_or_diverged'));
+    assert.deepEqual(await fullSnapshot(fixture), before);
+  } finally { await cleanup(fixture); }
 });
 
 /**
@@ -1359,7 +715,7 @@ test('UT-RESUME-04: resume detects state_mismatch when phase already complete', 
 
     // Resume on already-complete merge should be rejected (no work to resume)
     const resumeResult = runShipctl(fixture.root, ['merge', '--resume', '--change', changeName]);
-    
+
     // Expected behavior: exit 3 or exit 0 with message "nothing to resume"
     // Implementation may vary; check that it doesn't mutate again
     assert.ok(resumeResult.status === 3 || resumeResult.status === 0, 'resume should exit cleanly');
@@ -1369,4 +725,437 @@ test('UT-RESUME-04: resume detects state_mismatch when phase already complete', 
   } finally {
     await cleanup(fixture);
   }
+});
+
+
+// All merge scenarios use the production v2 producer.
+function fixtureGit(cwd, ...args) {
+  assert.ok(resolve(cwd).startsWith(resolve('.qa/add-safe-services-autogit/OPS-2c/fixtures') + '/'));
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8', env: process.env });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout;
+}
+
+async function v2Plan(fixture, includes = ['services/backend/selected.txt']) {
+  const result = runShipctl(fixture.root, ['plan', '--change', 'ops-2b', '--branch', 'bugs/exact-name',
+    '--message', 'Точный subject без префикса', ...includes.flatMap(p => ['--include', p])]);
+  assert.equal(result.status, 0, JSON.stringify(result.json));
+  const planPath = join(fixture.root, '.qa/ship/ops-2b/plan.json');
+  return { planPath, plan: JSON.parse(await readFile(planPath, 'utf8')) };
+}
+
+async function fullSnapshot(fixture) {
+  const repos = [fixture.root, ...Object.values(fixture.services).map(r => r.clonePath)];
+  const indexes = await Promise.all(repos.map(p => readFile(join(p, '.git/index')).then(b => b.toString('hex')).catch(() => null)));
+  const snapshots = await captureMonorepoSnapshot(fixture);
+  const remotes = Object.fromEntries(Object.entries(fixture.services).map(([name, r]) =>
+    [name, fixtureGit(r.barePath, 'for-each-ref', '--format=%(refname) %(objectname)')]));
+  remotes['.'] = fixtureGit(join(fixture.baresRoot, 'root.git'), 'for-each-ref', '--format=%(refname) %(objectname)');
+  return { snapshots, indexes, remotes };
+}
+
+async function resignPlan(planPath, plan) {
+  for (const data of Object.values(plan.repos)) {
+    delete data.fingerprint;
+    data.fingerprint = digest({ ...data, branchName: plan.branchName });
+  }
+  delete plan.PLAN_TOKEN;
+  plan.PLAN_TOKEN = digest(plan);
+  await writeFile(planPath, JSON.stringify(plan, null, 2));
+}
+
+test('OPS-2b AG-06/11: real v2 minimal merge, exact subject, root last and foreign preserved', async () => {
+  const fixture = await createMonorepoFixture({ services: ['backend'] });
+  try {
+    const svc = fixture.services.backend.clonePath;
+    await makeDirty(svc, { 'selected.txt': 'selected', 'README.md': 'foreign unstaged' });
+    await makeDirty(fixture.root, { '-root.txt': 'root selected' });
+    fixtureGit(svc, 'add', '--', 'selected.txt');
+    const foreignIndex = fixtureGit(svc, 'ls-files', '--stage', '--', 'README.md');
+    const { planPath, plan } = await v2Plan(fixture, ['services/backend/selected.txt', '-root.txt']);
+    const before = await fullSnapshot(fixture);
+    const preview = runShipctl(fixture.root, ['merge', '--plan', planPath, '--dry-run']);
+    assert.equal(preview.status, 0, JSON.stringify(preview.json));
+    assert.deepEqual(preview.json.phase1Steps.map(r => r.repo), ['backend', '.']);
+    assert.deepEqual(await fullSnapshot(fixture), before);
+    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 0, JSON.stringify(result.json));
+    assert.deepEqual(result.json.mergeState.repos.map(r => r.name), ['backend', '.']);
+    for (const p of [svc, fixture.root]) {
+      assert.equal(fixtureGit(p, 'branch', '--show-current').trim(), 'main');
+      assert.equal(fixtureGit(p, 'log', '-1', '--format=%s', plan.branchName).trim(), plan.commitMessage.subject);
+      assert.ok(fixtureGit(p, 'log', '-1', '--format=%B', plan.branchName).includes('OpenSpec: ops-2b'));
+    }
+    assert.equal(await readFile(join(svc, 'README.md'), 'utf8'), 'foreign unstaged');
+    assert.equal(fixtureGit(svc, 'ls-files', '--stage', '--', 'README.md'), foreignIndex);
+    assert.equal(fixtureGit(svc, 'show', `${plan.branchName}:README.md`).trim(), 'backend');
+  } finally { await cleanup(fixture); }
+});
+
+const staleCases = {
+  content: async (f) => makeDirty(f.services.backend.clonePath, { 'selected.txt': 'new content' }),
+  mode: async f => { const { chmod } = await import('node:fs/promises'); await chmod(join(f.services.backend.clonePath, 'selected.txt'), 0o755); },
+  foreignContent: async f => makeDirty(f.services.backend.clonePath, { 'README.md': 'new foreign' }),
+  index: async f => { fixtureGit(f.services.backend.clonePath, 'add', '--', 'selected.txt'); },
+  foreignStaged: async f => { fixtureGit(f.services.frontend.clonePath, 'add', '--', 'README.md'); },
+  head: async f => { fixtureGit(f.services.frontend.clonePath, 'commit', '--allow-empty', '-m', 'local head'); },
+  dev: async f => { fixtureGit(f.services.frontend.clonePath, 'switch', '-c', 'dev'); },
+  detached: async f => { fixtureGit(f.services.frontend.clonePath, 'switch', '--detach'); },
+  operation: async f => { const { mkdir } = await import('node:fs/promises'); await mkdir(join(f.services.frontend.clonePath, '.git/rebase-merge')); },
+  noOrigin: async f => { fixtureGit(f.services.frontend.clonePath, 'remote', 'remove', 'origin'); },
+  origin: async f => { fixtureGit(f.services.backend.clonePath, 'remote', 'set-url', 'origin', f.services.frontend.barePath); },
+  pushOrigin: async f => { fixtureGit(f.services.backend.clonePath, 'remote', 'set-url', '--push', 'origin', f.services.frontend.barePath); },
+  failedProbe: async f => { fixtureGit(f.services.frontend.clonePath, 'remote', 'set-url', 'origin', join(f.baresRoot, 'unavailable.git')); },
+  missingMain: async f => { fixtureGit(f.services.frontend.barePath, 'update-ref', '-d', 'refs/heads/main'); },
+  remoteRefs: async f => { fixtureGit(f.services.frontend.barePath, 'update-ref', 'refs/heads/other', fixtureGit(f.services.frontend.barePath, 'rev-parse', 'main').trim()); },
+  occupiedLocal: async f => { fixtureGit(f.services.backend.clonePath, 'branch', 'bugs/exact-name'); },
+  occupiedRemote: async f => { fixtureGit(f.services.backend.barePath, 'update-ref', 'refs/heads/bugs/exact-name', fixtureGit(f.services.backend.barePath, 'rev-parse', 'main').trim()); },
+  inventory: async f => { await writeFile(f.manifestPath, ''); },
+  duplicateInventory: async f => { await writeFile(f.manifestPath, (await readFile(f.manifestPath, 'utf8')).repeat(2)); },
+  missingClone: async f => {
+    const { rename } = await import('node:fs/promises');
+    const target = resolve(f.services.frontend.clonePath);
+    assert.equal(target, join(resolve(f.root), 'services/frontend'));
+    await rename(target, join(f.root, 'missing-frontend'));
+  },
+  token: async (f, p) => { p.plan.commitMessage.subject = 'changed'; await writeFile(p.planPath, JSON.stringify(p.plan)); },
+  incomplete: async (f, p) => { delete p.plan.repos.backend.included[0].blobHash; await resignPlan(p.planPath, p.plan); },
+  legacy: async (f, p) => { delete p.plan.version; await writeFile(p.planPath, JSON.stringify(p.plan)); },
+  rootAliasConflict: async (f, p) => { p.plan.repos.root = p.plan.repos['.']; await resignPlan(p.planPath, p.plan); }
+};
+
+for (const [label, mutate] of Object.entries(staleCases)) {
+  test(`OPS-2b AG-05/06/10: ${label} blocks globally with zero mutation`, async () => {
+    const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+    try {
+      await makeDirty(fixture.services.backend.clonePath, { 'selected.txt': 'selected', 'README.md': 'foreign' });
+      await makeDirty(fixture.services.frontend.clonePath, { 'README.md': 'foreign frontend' });
+      const p = await v2Plan(fixture);
+      await mutate(fixture, p);
+      const before = await fullSnapshot(fixture);
+      const foreign = await readFile(join(fixture.services.backend.clonePath, 'README.md'), 'utf8');
+      const result = runShipctl(fixture.root, ['merge', '--plan', p.planPath]);
+      assert.equal(result.status, 3, JSON.stringify(result.json));
+      assert.ok(result.json.blockers?.length, JSON.stringify(result.json));
+      assert.deepEqual(await fullSnapshot(fixture), before);
+      assert.equal(await readFile(join(fixture.services.backend.clonePath, 'README.md'), 'utf8'), foreign);
+    } finally { await cleanup(fixture); }
+  });
+}
+
+test('OPS-2b AG-05: global preflight accumulates blockers outside included', async () => {
+  const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+  try {
+    await makeDirty(fixture.services.backend.clonePath, { 'selected.txt': 'selected' });
+    const { planPath } = await v2Plan(fixture);
+    fixtureGit(fixture.root, 'switch', '-c', 'dev');
+    fixtureGit(fixture.services.frontend.clonePath, 'switch', '--detach');
+    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 3);
+    assert.ok(result.json.blockers.some(b => b.repo === '.' && b.blocker === 'not_on_main'));
+    assert.ok(result.json.blockers.some(b => b.repo === 'frontend' && b.blocker === 'detached_head'));
+  } finally { await cleanup(fixture); }
+});
+
+
+test('OPS-2b AG-10: merge respects existing global lock before preflight/mutation', async () => {
+  const fixture = await createMonorepoFixture({ services: ['backend'] });
+  let holder;
+  try {
+    await makeDirty(fixture.services.backend.clonePath, { 'selected.txt': 'selected' });
+    const { planPath } = await v2Plan(fixture);
+    const before = await fullSnapshot(fixture);
+    holder = spawn('flock', ['--no-fork', '-n', join(fixture.root, '.qa/ship/shipctl.lock'),
+      'node', '-e', "process.stdout.write('locked'); setTimeout(() => {}, 10000)"], { stdio: ['ignore', 'pipe', 'pipe'] });
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('lock readiness timeout')), 3000);
+      holder.stdout.once('data', () => { clearTimeout(timer); resolve(); });
+      holder.once('error', error => { clearTimeout(timer); reject(error); });
+    });
+    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 2, JSON.stringify(result.json));
+    assert.deepEqual(await fullSnapshot(fixture), before);
+  } finally { holder?.kill(); await cleanup(fixture); }
+});
+
+test('OPS-2b AG-06/10: deletion, rename, literal names and symlink bytes survive v2 preflight', async () => {
+  const fixture = await createMonorepoFixture({ services: ['backend'] });
+  try {
+    const { symlink, unlink } = await import('node:fs/promises');
+    const svc = fixture.services.backend.clonePath;
+    await makeDirty(svc, { 'old.txt': 'rename bytes', 'delete.txt': 'delete bytes' });
+    fixtureGit(svc, 'add', '--', 'old.txt', 'delete.txt');
+    fixtureGit(svc, 'commit', '-m', 'seed files');
+    fixtureGit(svc, 'push', 'origin', 'main');
+    fixtureGit(svc, 'mv', '--', 'old.txt', 'new name.txt');
+    const target = resolve(svc, 'delete.txt');
+    assert.equal(target, join(resolve(fixture.root), 'services/backend/delete.txt'));
+    await unlink(target);
+    await symlink('new name.txt', join(svc, 'link.txt'));
+    await makeDirty(svc, { '-literal.txt': 'literal' });
+    const { planPath } = await v2Plan(fixture, ['services/backend/old.txt', 'services/backend/new name.txt',
+      'services/backend/delete.txt', 'services/backend/link.txt', 'services/backend/-literal.txt']);
+    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 0, JSON.stringify(result.json));
+    assert.equal(fixtureGit(svc, 'show', 'HEAD:link.txt'), 'new name.txt');
+    assert.equal(fixtureGit(svc, 'show', 'HEAD:new name.txt'), 'rename bytes');
+    assert.equal(fixtureGit(svc, 'ls-tree', '--name-only', 'HEAD', '--', 'delete.txt', 'old.txt'), '');
+  } finally { await cleanup(fixture); }
+});
+
+test('OPS-2b AG-10: lone root alias normalizes, conflicting alias is rejected', async () => {
+  const fixture = await createMonorepoFixture({ services: [] });
+  try {
+    await makeDirty(fixture.root, { 'selected.txt': 'root' });
+    const { planPath, plan } = await v2Plan(fixture, ['selected.txt']);
+    plan.repos.root = plan.repos['.'];
+    delete plan.repos['.'];
+    plan.inventory[0].name = 'root';
+    await resignPlan(planPath, plan);
+    const result = runShipctl(fixture.root, ['merge', '--plan', planPath, '--dry-run']);
+    assert.equal(result.status, 0, JSON.stringify(result.json));
+    assert.equal(result.json.phase1Steps[0].repo, '.');
+  } finally { await cleanup(fixture); }
+});
+
+
+test('OPS-2b AG-06: unsafe foreign overlap with pending strict sync is blocked', async () => {
+  const fixture = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+  try {
+    const svc = fixture.services.frontend.clonePath;
+    fixtureGit(svc, 'switch', '-c', 'upstream');
+    await makeDirty(svc, { 'README.md': 'upstream bytes' });
+    fixtureGit(svc, 'add', '--', 'README.md');
+    fixtureGit(svc, 'commit', '-m', 'upstream');
+    fixtureGit(svc, 'push', 'origin', 'HEAD:main');
+    fixtureGit(svc, 'switch', 'main');
+    await makeDirty(svc, { 'README.md': 'foreign bytes' });
+    await makeDirty(fixture.services.backend.clonePath, { 'selected.txt': 'selected' });
+    const { planPath } = await v2Plan(fixture);
+    const before = await fullSnapshot(fixture);
+    const result = runShipctl(fixture.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 3, JSON.stringify(result.json));
+    assert.ok(result.json.blockers.some(b => b.repo === 'frontend' && b.blocker === 'unsafe_dirty_sync'));
+    assert.deepEqual(await fullSnapshot(fixture), before);
+    assert.equal(await readFile(join(svc, 'README.md'), 'utf8'), 'foreign bytes');
+  } finally { await cleanup(fixture); }
+});
+
+async function assertSchema(name, value) {
+  const { default: Ajv } = await import('ajv');
+  const schema = JSON.parse(await readFile(join(process.cwd(), 'scripts/ship/schemas', `${name}.json`), 'utf8'));
+  const validate = new Ajv({ strict: true, allErrors: true }).compile(schema);
+  assert.ok(validate(value), JSON.stringify(validate.errors));
+}
+const stateFile = f => join(f.root, '.qa/ship/ops-2b/merge-state.json');
+const diskState = async f => JSON.parse(await readFile(stateFile(f), 'utf8'));
+async function rejectPush(f, name, ref = 'main') {
+  const hook = join(f.services[name].barePath, 'hooks/pre-receive');
+  await writeFile(hook, `#!/bin/sh
+while read old new ref; do
+  if [ "$ref" = "refs/heads/${ref}" ]; then
+    echo rejected >> '${f.root}/.qa/rejections'
+    exit 1
+  fi
+done
+exit 0
+`);
+  await chmod(hook, 0o755);
+  return hook;
+}
+
+async function conflictFixture() {
+  const f = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+  await makeDirty(f.services.backend.clonePath, { 'selected.txt': 'backend' });
+  await makeDirty(f.services.frontend.clonePath, { 'README.md': 'feature version\n' });
+  await makeDirty(f.root, { 'root.txt': 'root' });
+  const plan = await v2Plan(f, ['services/backend/selected.txt', 'services/frontend/README.md', 'root.txt']);
+  // Simulate an upstream main advance during the real sync barrier, after
+  // feature branches were published. This causes an actual Git conflict.
+  const makeBin = join(f.root, '.qa/fake-sync');
+  await writeFile(makeBin, `#!/bin/sh
+set -eu
+printf 'upstream version\\n' > services/frontend/README.md
+git -C services/frontend add -- README.md
+git -C services/frontend commit -m 'Upstream change during sync'
+git -C services/frontend push origin main
+`);
+  await chmod(makeBin, 0o755);
+  const result = runShipctl(f.root, ['merge', '--plan', plan.planPath], { skipSync: false, makeBin });
+  assert.equal(result.status, 1, JSON.stringify(result));
+  assert.deepEqual(result.json.mergeState.repos.map(r => [r.name, r.stage]),
+    [['backend', 'pushed'], ['frontend', 'conflict'], ['.', 'synced']]);
+  assert.deepEqual(await diskState(f), result.json.mergeState);
+  await assertSchema('merge-state', result.json.mergeState);
+  return { f, ...plan };
+}
+
+async function resolveConflict(f, foreign = false) {
+  const cwd = f.services.frontend.clonePath;
+  await makeDirty(cwd, { 'README.md': 'resolved version\n' });
+  fixtureGit(cwd, 'add', '--', 'README.md');
+  if (foreign) {
+    await makeDirty(cwd, { 'foreign.txt': 'not approved' });
+    fixtureGit(cwd, 'add', '--', 'foreign.txt');
+  }
+  fixtureGit(cwd, 'commit', '-m', 'Manual conflict resolution');
+}
+
+// UT-MERGE-05 expanded to root + two services and all production consumers.
+test('OPS-2c AG-11: generated plan -> merge -> status -> release preview, canonical schemas', async () => {
+  const f = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+  try {
+    const includes = ['root.txt'];
+    await makeDirty(f.root, { 'root.txt': 'root' });
+    for (const [name, svc] of Object.entries(f.services)) {
+      await makeDirty(svc.clonePath, { 'selected.txt': name, 'README.md': `foreign ${name}` });
+      includes.push(`services/${name}/selected.txt`);
+    }
+    const { plan, planPath } = await v2Plan(f, includes);
+    await assertSchema('plan', plan);
+    const planBytes = await readFile(planPath, 'utf8');
+    const before = await fullSnapshot(f);
+    assert.equal(runShipctl(f.root, ['merge', '--plan', planPath, '--dry-run']).status, 0);
+    assert.deepEqual(await fullSnapshot(f), before);
+    const result = runShipctl(f.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 0, JSON.stringify(result));
+    assert.deepEqual(result.json.mergeState.repos.map(r => [r.name, r.stage]),
+      [['backend', 'pushed'], ['frontend', 'pushed'], ['.', 'pushed']]);
+    await assertSchema('merge-state', await diskState(f));
+    assert.equal(await readFile(planPath, 'utf8'), planBytes, 'no plan rewrite/patch');
+    const complete = await fullSnapshot(f);
+    const status = runShipctl(f.root, ['status']);
+    assert.equal(status.status, 0, JSON.stringify(status));
+    assert.deepEqual(status.json.repos.map(r => r.name), ['.', 'backend', 'frontend']);
+    assert.ok(status.json.repos.every(r => r.branch === 'main'));
+    const preview = runShipctl(f.root, ['release', '--change', 'ops-2b', '--dry-run']);
+    assert.equal(preview.status, 0, JSON.stringify(preview));
+    assert.match(preview.json.RELEASE_TOKEN, /^[a-f0-9]{64}$/);
+    assert.deepEqual(preview.json.plan.map(r => [r.repo, r.status]),
+      [['backend', 'ff'], ['frontend', 'ff'], ['.', 'not-applicable']]);
+    assert.deepEqual(await fullSnapshot(f), complete);
+    // Explicit approved local release, not an automatic continuation of merge.
+    const release = runShipctl(f.root, ['release', '--change', 'ops-2b', '--release-token', preview.json.RELEASE_TOKEN]);
+    assert.equal(release.status, 0, JSON.stringify(release));
+    const releaseState = JSON.parse(await readFile(join(f.root, '.qa/ship/ops-2b/release-state.json'), 'utf8'));
+    await assertSchema('release-state', releaseState);
+    assert.ok(releaseState.repos.filter(r => r.status === 'pushed').every(r => 'ownerRepo' in r && 'sha' in r));
+    for (const [name, svc] of Object.entries(f.services)) {
+      assert.equal(fixtureGit(svc.barePath, 'rev-parse', 'release').trim(), result.json.mergeState.repos.find(r => r.name === name).pushedSha);
+      assert.equal(fixtureGit(svc.clonePath, 'branch', '--show-current').trim(), 'main');
+      assert.equal(await readFile(join(svc.clonePath, 'README.md'), 'utf8'), `foreign ${name}`);
+    }
+  } finally { await cleanup(f); }
+});
+
+test('OPS-2c AG-12 UT-MERGE-07/09: partial main push failure is durable, explicit resume only', async () => {
+  const f = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+  try {
+    for (const svc of Object.values(f.services)) await makeDirty(svc.clonePath, { 'selected.txt': 'selected' });
+    await makeDirty(f.root, { 'root.txt': 'root' });
+    const { planPath } = await v2Plan(f, ['services/backend/selected.txt', 'services/frontend/selected.txt', 'root.txt']);
+    const hook = await rejectPush(f, 'frontend');
+    const result = runShipctl(f.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 1, JSON.stringify(result));
+    assert.deepEqual(result.json.mergeState.repos.map(r => [r.name, r.stage]),
+      [['backend', 'pushed'], ['frontend', 'merged'], ['.', 'synced']]);
+    assert.deepEqual(await diskState(f), result.json.mergeState);
+    assert.equal((await readFile(join(f.root, '.qa/rejections'), 'utf8')).trim(), 'rejected', 'one attempt');
+    const before = await fullSnapshot(f);
+    const blocked = runShipctl(f.root, ['release', '--change', 'ops-2b', '--dry-run']);
+    assert.equal(blocked.status, 3);
+    assert.equal(blocked.json.RELEASE_TOKEN, undefined);
+    assert.deepEqual(await fullSnapshot(f), before);
+    const check = runShipctl(f.root, ['merge', '--resume', '--change', 'ops-2b', '--dry-run']);
+    assert.equal(check.status, 0, JSON.stringify(check));
+    assert.deepEqual(await fullSnapshot(f), before);
+    await writeFile(hook, '#!/bin/sh\nexit 0\n');
+    const resumed = runShipctl(f.root, ['merge', '--resume', '--change', 'ops-2b']);
+    assert.equal(resumed.status, 0, JSON.stringify(resumed));
+    assert.equal(resumed.json.mergeState.phase, 'phase2-complete');
+    assert.deepEqual(await diskState(f), resumed.json.mergeState);
+    assert.equal(fixtureGit(f.services.backend.clonePath, 'rev-parse', 'HEAD').trim(), result.json.mergeState.repos[0].pushedSha, 'already published repo untouched');
+    assert.equal(await readFile(join(f.root, '.qa/ship/ops-2b/release-state.json'), 'utf8').catch(() => null), null);
+  } finally { await cleanup(f); }
+});
+
+test('OPS-2c AG-12: phase1 hook stops with failed and untouched rows, no automatic retry', async () => {
+  const f = await createMonorepoFixture({ services: ['backend', 'frontend'] });
+  try {
+    for (const svc of Object.values(f.services)) await makeDirty(svc.clonePath, { 'selected.txt': 'selected' });
+    await makeDirty(f.root, { 'root.txt': 'root' });
+    const { planPath, plan } = await v2Plan(f, ['services/backend/selected.txt', 'services/frontend/selected.txt', 'root.txt']);
+    await rejectPush(f, 'frontend', plan.branchName);
+    const result = runShipctl(f.root, ['merge', '--plan', planPath]);
+    assert.equal(result.status, 1, JSON.stringify(result));
+    assert.deepEqual(result.json.mergeState.repos.map(r => [r.name, r.stage]),
+      [['backend', 'branch-pushed'], ['frontend', 'failed'], ['.', 'untouched']]);
+    assert.equal(result.json.mergeState.repos[1].lastSuccessfulStage, 'switched');
+    assert.deepEqual(await diskState(f), result.json.mergeState);
+    const before = await fullSnapshot(f);
+    assert.equal(runShipctl(f.root, ['merge', '--resume', '--change', 'ops-2b']).status, 3);
+    assert.deepEqual(await fullSnapshot(f), before);
+    assert.equal((await readFile(join(f.root, '.qa/rejections'), 'utf8')).trim(), 'rejected');
+  } finally { await cleanup(f); }
+});
+
+for (const variant of ['pending', 'resolved', 'aborted', 'foreign', 'first-parent', 'moved-pushed', 'moved-pending', 'changed-origin', 'root-alias', 'alias-conflict', 'legacy-plan']) {
+  test(`OPS-2c AG-12 UT-MERGE-06/11 UT-RESUME: real conflict ${variant}`, async () => {
+    const { f } = await conflictFixture();
+    try {
+      const cwd = f.services.frontend.clonePath;
+      if (['resolved', 'foreign', 'first-parent'].includes(variant)) await resolveConflict(f, variant === 'foreign');
+      if (variant === 'first-parent') fixtureGit(cwd, 'commit', '--allow-empty', '-m', 'Unrelated descendant');
+      // Operator action in isolated fixture, never a shipctl recovery action.
+      if (variant === 'aborted') fixtureGit(cwd, 'merge', '--abort');
+      if (variant === 'moved-pushed') fixtureGit(f.services.backend.clonePath, 'commit', '--allow-empty', '-m', 'Unexpected commit');
+      if (variant === 'moved-pending') fixtureGit(f.root, 'commit', '--allow-empty', '-m', 'Unexpected commit');
+      if (variant === 'changed-origin') fixtureGit(f.root, 'remote', 'set-url', 'origin', f.services.backend.barePath);
+      if (['root-alias', 'alias-conflict'].includes(variant)) {
+        await resolveConflict(f);
+        const state = await diskState(f);
+        const root = state.repos.find(r => r.name === '.');
+        if (variant === 'root-alias') root.name = 'root';
+        else state.repos.push({ ...root, name: 'root' });
+        await writeFile(stateFile(f), JSON.stringify(state));
+      }
+      if (variant === 'legacy-plan') {
+        const planPath = join(f.root, '.qa/ship/ops-2b/plan.json');
+        const plan = JSON.parse(await readFile(planPath, 'utf8'));
+        delete plan.version;
+        await writeFile(planPath, JSON.stringify(plan));
+      }
+      const before = await fullSnapshot(f);
+      const persisted = await readFile(stateFile(f), 'utf8');
+      const result = runShipctl(f.root, ['merge', '--resume', '--change', 'ops-2b']);
+      if (variant === 'resolved' || variant === 'root-alias') {
+        assert.equal(result.status, 0, JSON.stringify(result));
+        assert.equal(result.json.mergeState.phase, 'phase2-complete');
+        assert.deepEqual(await diskState(f), result.json.mergeState);
+      } else {
+        assert.equal(result.status, 3, JSON.stringify(result));
+        const expected = { pending: 'merge_in_progress', aborted: 'conflict_unresolved', foreign: 'foreign_in_merge', 'first-parent': 'foreign_in_merge' }[variant] || 'state_mismatch';
+        assert.ok(result.json.blockers.some(b => b.blocker === expected), JSON.stringify(result));
+        assert.deepEqual(await fullSnapshot(f), before);
+        assert.equal(await readFile(stateFile(f), 'utf8'), persisted);
+      }
+    } finally { await cleanup(f); }
+  });
+}
+
+test('OPS-2c AG-12 UT-MERGE-08: sync failure persisted, explicit resume repeats barrier', async () => {
+  const f = await createMonorepoFixture({ services: ['backend'] });
+  try {
+    await makeDirty(f.services.backend.clonePath, { 'selected.txt': 'selected' });
+    const { planPath } = await v2Plan(f);
+    const makeBin = join(f.root, '.qa/reject-sync');
+    await writeFile(makeBin, '#!/bin/sh\nexit 1\n');
+    await chmod(makeBin, 0o755);
+    const result = runShipctl(f.root, ['merge', '--plan', planPath], { skipSync: false, makeBin });
+    assert.equal(result.status, 1, JSON.stringify(result));
+    assert.equal(result.json.mergeState.phase, 'sync-failed');
+    assert.deepEqual(await diskState(f), result.json.mergeState);
+    const resumed = runShipctl(f.root, ['merge', '--resume', '--change', 'ops-2b']);
+    assert.equal(resumed.status, 0, JSON.stringify(resumed));
+  } finally { await cleanup(f); }
 });

@@ -1,0 +1,113 @@
+## MODIFIED Requirements
+
+### Requirement: Public Read boundary для site-ksk-inlove
+`site-ksk-inlove` SHALL использовать существующий Public Read client с non-secret tenant selector без CMS credentials и CMS-only endpoints; SHALL сохранять перечисленную матрицу и явное public callback POST exception, без обхода selector policy.
+
+#### Scenario: InLove сохраняет Public Read boundary и полную access matrix
+- **WHEN** retained consumer layer формирует запрос к endpoint из следующей матрицы
+- **THEN** `site-ksk-inlove` SHALL использовать существующий Public Read API client с `NEXT_PUBLIC_API_BASE_URL`/`API_BASE_URL` и non-secret tenant selector `NEXT_PUBLIC_EQUESTRIAN_SERVICE_KEY`. Consumer MUST NOT отправлять CMS cookie, access token или обращаться к CMS-only endpoint. Missing или invalid selector SHALL приводить к ожидаемому backend `401`, без клиентского fallback на tenant другого сайта.
+
+| method | path | access class | roles | expected without auth | expected with auth |
+|---|---|---|---|---|---|
+| `GET` | `/api/horses` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/{slug}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` ресурса с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/breeds` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/breeds/{id}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/coat_colors` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/coat_colors/{id}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/owners` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/owners/{id}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/services` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/horses/services/{id}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/prices` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/prices/{slug}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/prices/groups` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/prices/groups/{id}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/site_settings` | Public Read + tenant selector | anonymous consumer | `2xx` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `GET` | `/api/site_settings/{id}` | Public Read + tenant selector | anonymous consumer | `2xx`/`404` с валидным selector; `401` missing/invalid | CMS auth не нужен и не отправляется |
+| `POST` | `/api/callback_requests` | Public anonymous write exception + tenant selector | anonymous consumer | `2xx` valid; `400` malformed/invalid; `401` missing/invalid selector | CMS auth не нужен и не обходит selector/validation |
+
+Публичный `POST /api/callback_requests` является явным исключением, потому что предназначен для anonymous visitor; change сохраняет только wrapper/service без формы или автоматического вызова.
+
+#### Scenario: Anonymous GET получает selector без CMS auth
+- **WHEN** retained client формирует любой перечисленный `GET` с валидным tenant selector
+- **THEN** он добавляет `X-Equestrian-Service-Key`
+- **AND** не добавляет CMS cookie или `Authorization`
+
+#### Scenario: Collection и detail wrappers имеют явное контрактное покрытие
+- **WHEN** запускаются API-boundary tests всех retained GET wrappers из матрицы, включая detail routes для breeds, coat colors, owners, services, prices, price groups и site settings
+- **THEN** каждый wrapper проверяется на точный path/query и успешный Public Read outcome с валидным selector
+- **AND** для missing/invalid selector ожидается backend `401`, а для отсутствующего detail resource допускается `404`
+
+#### Scenario: Missing selector не получает чужой fallback
+- **WHEN** `NEXT_PUBLIC_EQUESTRIAN_SERVICE_KEY` отсутствует или состоит из пробелов
+- **THEN** client не подставляет selector другого сайта
+- **AND** backend может вернуть контрактный `401`
+
+#### Scenario: Callback остаётся контролируемым public POST exception
+- **WHEN** caller явно вызывает callback wrapper с валидными payload и selector
+- **THEN** запрос идёт на `/api/callback_requests` без CMS auth
+- **AND** никакой иной write endpoint не предоставляется retained consumer layer
+
+#### Scenario: Anonymous и authenticated варианты покрыты тестами
+- **WHEN** запускаются unit/API-boundary tests нового consumer
+- **THEN** они проверяют anonymous GET, missing selector, public callback POST и отсутствие CMS credentials
+- **AND** проверяют, что наличие произвольного `Authorization` не является требованием или способом обхода selector policy
+
+### Requirement: Consumer access matrix
+`site-ad` SHALL сохранять evidence-based consumer matrix публичных вызовов и её ограничения доказательств; она MUST NOT переопределять backend access contract.
+
+#### Scenario: Матрица site-ad сохраняет исторические outcomes и границы evidence
+- **WHEN** reviewer сопоставляет публичные вызовы site-ad с evidence и tests матрицы
+- **THEN** `site-ad` SHALL сохранять следующую evidence-based consumer matrix. Она описывает вызовы публичного сайта и MUST NOT переопределять backend access contract.
+
+| method | path | access class | roles | expected without auth | expected with auth | связанные evidence/tests |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/horses`, `/api/horses/{slug}`, `/api/horses/breeds*`, `/api/horses/coat_colors*`, `/api/horses/owners*`, `/api/horses/services*` | Public Read с tenant key | anonymous consumer с service key | `200/2xx` с валидным key; report `003` фиксирует `400` без key и `404` с неизвестным | `site-ad` не отправляет CMS auth; report `003` подтверждает, что authenticated backend GET использует tenant CMS-пользователя и игнорирует service-key header | `src/api/client.ts`, `src/api/horse*.ts`, `client.test.ts`, reports `003`/`019` |
+| `GET` | `/api/prices*`, `/api/prices/groups*`, `/api/site_settings*` | Public Read с tenant key | anonymous consumer с service key | контрактный `2xx` с валидным key; `400` без key и `404` с неизвестным по report `003` | CMS auth не требуется и не используется `site-ad`; authenticated backend-вариант не является consumer-сценарием | `src/api/client.ts`, `src/api/price.ts`, `src/api/priceGroups.ts`, `src/api/siteSettings.ts`, report `003` |
+
+#### Scenario: Anonymous horse list
+- **WHEN** public consumer вызывает `GET /api/horses?pedigree=1` с валидным tenant key и без CMS cookie
+- **THEN** backend возвращает `200`, как подтверждено reports `003` и `019`
+
+#### Scenario: Anonymous horse detail с родословной
+- **WHEN** public consumer вызывает `GET /api/horses/{slug}?pedigree=1` с валидным tenant key и без CMS cookie
+- **THEN** backend возвращает `200` и horse/pedigree DTO, как подтверждено report `019`
+
+#### Scenario: Horse page запрашивает подтверждённую глубину родословной
+- **WHEN** `/horses/[slug]` загружает данные через `fetchHorseDetail`
+- **THEN** `site-ad` вызывает Public Read `GET /api/horses/{slug}?pedigree=3` с tenant key и без CMS cookie
+
+#### Scenario: CMS-only endpoint отсутствует в consumer matrix
+- **WHEN** reviewer проверяет read API modules `site-ad`
+- **THEN** matrix и read API modules не содержат `/api/auth/me`, `/api/news-cms`, `/api/users*` или иной CMS-only endpoint; публичный callback `POST /api/call_back_requests` не является read-контрактом этого capability и остаётся вне его scope
+
+### Requirement: Эффективная кличка родословной без изменения consumer
+Public horse read contract SHALL возвращать эффективную кличку каждого node в `name`, сохраняя nullable raw `pedigree_name`, существующие endpoints и consumer без runtime-изменений; SHALL сохранять матрицу Public Read и raw admin projection.
+
+#### Scenario: Эффективная кличка сохраняет raw-поле и access matrix
+- **WHEN** consumer получает public horse read response либо reviewer сверяет его access contract
+- **THEN** Public horse read contract SHALL возвращать для каждого horse node в поле `name` значение `pedigree_name`, если оно задано, иначе основную кличку. Nullable `pedigree_name` MUST оставаться отдельным raw-полем public JSON. `site-ad` MUST продолжить использовать существующие endpoints и поле `name` без runtime-изменений.
+
+| method | path | access class | roles | expected without auth | expected with auth | связанные тесты |
+|---|---|---|---|---|---|---|
+| `GET` | `/api/horses`, `/api/horses/{slug}` | Public Read с tenant key | anonymous consumer | `200` с валидным key; `401` missing/invalid | CMS cookie возвращает raw admin projection | backend SM-01..SM-16; site regression |
+| `GET` | `/api/horses/{id}/pedigree/{mode}` и `?pedigree=N` | Public Read с tenant key | anonymous consumer | `200` с валидным key; `401` missing/invalid | CMS cookie возвращает raw admin projection | backend SM-17..SM-22; site regression |
+
+Исключений из дефолтной Public Read policy нет; service key остаётся обязательным tenant selector, не секретом пользователя.
+
+#### Scenario: Consumer получает pedigree name
+- **WHEN** `site-ad` читает horse list/detail с валидным service key и horse имеет `pedigree_name`
+- **THEN** существующий consumer-код получает это значение в `name` без новой логики отображения
+
+#### Scenario: Consumer получает fallback
+- **WHEN** `pedigree_name` равен `NULL`
+- **THEN** public DTO содержит основную кличку в `name`
+
+#### Scenario: Вложенные nodes
+- **WHEN** public response содержит sire, dam, foals, parents или candidates
+- **THEN** effective name вычисляется независимо для каждого node
+
+#### Scenario: Site consumer не изменяется
+- **WHEN** reviewer проверяет diff и regression публичных horse pages
+- **THEN** `services/site-ad` не содержит изменений для задачи 046, а страницы продолжают читать `name`

@@ -2,6 +2,7 @@
  * Git operations wrapper for shipctl.
  * Only permitted operations from D3 are exposed.
  */
+import path from 'node:path';
 import { run } from './common.mjs';
 
 /**
@@ -38,8 +39,8 @@ export function parseStatusPorcelain(output) {
     
     // Handle renames (R -> path1\0path2)
     if (xy[0] === 'R' || xy[1] === 'R') {
-      const oldPath = pathPart;
-      const newPath = parts[i + 1] || '';
+      const newPath = pathPart;
+      const oldPath = parts[i + 1] || '';
       entries.push({
         status: xy,
         path: newPath,
@@ -122,10 +123,10 @@ export function refExists(cwd, ref) {
  * @returns {Map<string, string>} Map of branch name to SHA
  */
 export function lsRemoteHeads(cwd, remote = 'origin') {
-  const result = git(cwd, 'ls-remote', '--heads', remote);
+  const result = run('git', ['ls-remote', '--heads', remote], { cwd, timeout: 15000, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
   const branches = new Map();
   
-  if (result.status !== 0) return branches;
+  if (result.status !== 0) throw new Error('remote_probe_failed');
   
   for (const line of result.stdout.split('\n')) {
     if (!line.trim()) continue;
@@ -195,4 +196,17 @@ export function collectChangedRepos(root, paths, manifest) {
   }
   
   return changed;
+}
+
+/** Credential-free identity; SSH and HTTPS repository URLs compare equally. */
+export function originIdentity(value, cwd = process.cwd()) {
+  const scp = value.match(/^(?:[^/@:]+@)?([^/:]+):(.+)$/);
+  if (scp && !value.includes('://')) return `${scp[1].toLowerCase()}/${scp[2].replace(/\.git\/?$/, '').replace(/\/$/, '')}`;
+  if (/^[a-z]+:\/\//i.test(value)) {
+    const url = new URL(value);
+    if (url.protocol === 'file:') return decodeURIComponent(url.pathname);
+    if (!['https:', 'http:', 'ssh:', 'git:'].includes(url.protocol)) throw new Error('invalid_origin');
+    return `${url.hostname.toLowerCase()}${url.port ? ':' + url.port : ''}/${url.pathname.replace(/^\//, '').replace(/\.git\/?$/, '').replace(/\/$/, '')}`;
+  }
+  return path.resolve(cwd, value);
 }

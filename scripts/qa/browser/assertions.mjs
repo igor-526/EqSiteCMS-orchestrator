@@ -1,4 +1,4 @@
-import { fail } from './schema.mjs';
+import { fail, contrastUnsupported } from './schema.mjs';
 
 export async function unique(page, selector, { absent = false } = {}) {
   const target = page.locator(selector);
@@ -70,7 +70,10 @@ export async function runStep(page, step, { baseUrl, timeout = 7500, screenshot 
     }
     case 'checkContrast': {
       const loc = await target();
+      if (!await loc.isVisible()) throw contrastUnsupported('not-visible');
       await loc.scrollIntoViewIfNeeded({ timeout: limit });
+      await page.mouse.move(0, 0);
+      await loc.evaluate(el => { if (el === document.activeElement) el.blur(); });
       if (step.state === 'hover') await loc.hover({ timeout: limit });
       else if (step.state === 'focus') await loc.focus({ timeout: limit });
       else if ((step.state ?? 'normal') === 'normal') {
@@ -78,10 +81,10 @@ export async function runStep(page, step, { baseUrl, timeout = 7500, screenshot 
         await loc.evaluate(el => { if (el === document.activeElement) el.blur(); });
       }
       const data = await loc.evaluate(computedContrast, step);
-      if (data.unsupported) fail('contrast_unsupported');
+      if (data.unsupportedReason) throw contrastUnsupported(data.unsupportedReason);
       if (!data.applicable) fail('contrast_state_or_size_mismatch');
       if (data.ratio < step.threshold) fail('contrast_below_threshold');
-      return { ratio: Number(data.ratio.toFixed(4)), threshold: step.threshold };
+      return { state: step.state ?? 'normal', ratio: Number(data.ratio.toFixed(4)), threshold: step.threshold };
     }
     case 'screenshot': await screenshot(); break;
     default: fail('unknown_action');
@@ -90,7 +93,7 @@ export async function runStep(page, step, { baseUrl, timeout = 7500, screenshot 
 }
 
 // Executed in Chromium, with computed values, not scenario-supplied colors.
-function computedContrast(el, step) {
+export function computedContrast(el, step) {
   const parse = value => {
     const m = value.match(/^rgba?\(([^)]+)\)$/);
     if (!m) return null;
@@ -100,19 +103,26 @@ function computedContrast(el, step) {
   const blend = (f, b) => f.slice(0, 3).map((v, i) => v * f[3] + b[i] * (1 - f[3])).concat(1);
   const cs = getComputedStyle(el);
   const rect = el.getBoundingClientRect();
+  if (cs.visibility !== 'visible' || !el.getClientRects().length || !rect.width || !rect.height) return { unsupportedReason: 'not-visible' };
   const stack = document.elementsFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
   // Sibling/overlay paint cannot be reconstructed by ancestor alpha compositing.
-  if (!stack.includes(el) || stack.some(node => !node.contains(el) && !el.contains(node))) return { unsupported: true };
+  if (!stack.includes(el) || stack.some(node => !node.contains(el) && !el.contains(node))) return { unsupportedReason: 'overlap' };
   for (const pseudo of ['::before', '::after']) {
     const style = getComputedStyle(el, pseudo);
-    if (style.content !== 'none' && style.content !== 'normal') return { unsupported: true };
+    if (style.content !== 'none' && style.content !== 'normal') return { unsupportedReason: 'pseudo-paint' };
   }
   let applicable = (step.state !== 'error' || el.getAttribute('aria-invalid') === 'true' || el.dataset.state === 'error');
   if (step.kind === 'largeText') applicable &&= parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.666 && Number(cs.fontWeight) >= 700);
   const nodes = [];
   for (let p = el; p; p = p.parentElement) {
     const s = getComputedStyle(p);
-    if (s.backgroundImage !== 'none' || Number(s.opacity) !== 1 || s.filter !== 'none' || s.mixBlendMode !== 'normal' || (s.backdropFilter && s.backdropFilter !== 'none')) return { unsupported: true };
+    if (s.backgroundImage !== 'none') return { unsupportedReason: 'background-image' };
+    if (Number(s.opacity) !== 1) return { unsupportedReason: 'opacity' };
+    if (s.filter !== 'none' || s.mixBlendMode !== 'normal' || (s.backdropFilter && s.backdropFilter !== 'none')) return { unsupportedReason: 'filter-or-blend' };
+    for (const pseudo of ['::before', '::after']) {
+      const style = getComputedStyle(p, pseudo);
+      if (style.content !== 'none' && style.content !== 'normal') return { unsupportedReason: 'pseudo-paint' };
+    }
     nodes.unshift(p);
   }
   // Default browser canvas is opaque white. Composite all alpha backgrounds in paint order.
@@ -120,11 +130,11 @@ function computedContrast(el, step) {
   for (const node of nodes) {
     if (node === el && step.kind === 'ui') continue;
     const color = parse(getComputedStyle(node).backgroundColor);
-    if (!color) return { unsupported: true };
+    if (!color) return { unsupportedReason: 'color-format' };
     bg = blend(color, bg);
   }
   const fg = parse(cs[step.kind === 'ui' ? step.property : 'color']);
-  if (!fg || cs.visibility !== 'visible' || !el.getClientRects().length) return { unsupported: true };
+  if (!fg || cs.visibility !== 'visible' || !el.getClientRects().length) return { unsupportedReason: 'color-format' };
   const rgb = blend(fg, bg);
   const lum = c => c.slice(0, 3).map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4).reduce((v, n, i) => v + n * [.2126, .7152, .0722][i], 0);
   const a = lum(rgb), b = lum(bg);

@@ -47,7 +47,7 @@ def validate(manifest, permit, kind, *, now=None, environ=None):
         type(m["version"]) is int and type(p["version"]) is int and m["version"] == p["version"] == 1,
         "invalid-version",
     )
-    require(m["change"] == p["change"] == CHANGE, "wrong-change")
+    require(isinstance(m["change"], str) and m["change"] in REGISTRY and p["change"] == m["change"], "wrong-change")
     require(m["kind"] == p["kind"] == kind and kind in ("pg", "nats"), "wrong-kind")
     require(isinstance(m["runId"], str) and re.fullmatch(r"[0-9a-f]{32}", m["runId"]), "invalid-run-id")
     require(p["runId"] == m["runId"], "wrong-run")
@@ -107,7 +107,7 @@ def validate(manifest, permit, kind, *, now=None, environ=None):
     return raw
 
 
-# Fixed test paths; no arbitrary argv, file paths, selectors or pytest options.
+# Legacy fixed test paths; new changes register exact nodes, never arbitrary argv.
 FILES = {
     ("seo-service", "pg"): {"test_acceptance_boundaries.py"},
     ("seo-service", "nats"): {"test_nats_broker.py"},
@@ -116,12 +116,35 @@ FILES = {
 }
 
 
+REGISTRY = {
+    CHANGE: FILES,
+    "seo-metrica-task-monitor": {
+        ("ya-metrica-service", "pg"): {
+            "tests/integration/test_metrica_task_list_postgres.py::test_aggregate_identity",
+            "tests/integration/test_metrica_task_list_postgres.py::test_status_order_pagination",
+            "tests/integration/test_metrica_task_list_postgres.py::test_consistent_read_snapshot",
+            "tests/integration/test_metrica_task_list_postgres.py::test_history_survives_cleanup",
+        },
+    },
+}
+
+
 def from_registry(m):
-    if m["nodeIds"] == ["selftest"]:
+    require(isinstance(m["change"], str) and m["change"] in REGISTRY, "wrong-change")
+    require(
+        isinstance(m["service"], str)
+        and isinstance(m["kind"], str)
+        and (m["service"], m["kind"]) in REGISTRY[m["change"]],
+        "service-kind-not-allowlisted",
+    )
+    if m["nodeIds"] == ["selftest"] and m["change"] == CHANGE:
         return
     for node in m["nodeIds"]:
+        if m["change"] != CHANGE:
+            require(node in REGISTRY[m["change"]][(m["service"], m["kind"])], "node-not-allowlisted")
+            continue
         match = re.fullmatch(r"tests/integration/(test_[a-z_]+\.py)::(test_[a-z0-9_]+)(\[[a-zA-Z0-9_-]+\])?", node)
-        require(match and match[1] in FILES[(m["service"], m["kind"])], "node-not-allowlisted")
+        require(match and match[1] in REGISTRY[m["change"]][(m["service"], m["kind"])], "node-not-allowlisted")
 
 
 def fingerprint(m):
@@ -129,4 +152,10 @@ def fingerprint(m):
 
 
 def evidence_dir(m):
-    return ROOT / ".qa" / CHANGE / "INFRA-1" / m["runId"]
+    require(isinstance(m["change"], str) and m["change"] in REGISTRY, "wrong-change")
+    require(isinstance(m["runId"], str) and re.fullmatch(r"[0-9a-f]{32}", m["runId"]), "invalid-run-id")
+    root = (ROOT / ".qa" / m["change"] / "INFRA-1").resolve()
+    directory = root / m["runId"]
+    require(root == ROOT / ".qa" / m["change"] / "INFRA-1", "unsafe-evidence-root")
+    require(directory.resolve() == directory, "unsafe-evidence-root")
+    return directory

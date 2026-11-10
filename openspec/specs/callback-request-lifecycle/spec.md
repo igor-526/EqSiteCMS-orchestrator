@@ -1,7 +1,7 @@
 # callback-request-lifecycle Specification
 
 ## Purpose
-TBD - synchronized from change callback-requests-management-055.
+Жизненный цикл заявок на обратный звонок охватывает их хранение с tenant ownership, реестр статусов, публичное создание, защищённый просмотр персональных данных и ограниченные изменения статуса, spam и подтверждения публикации уведомления с разграничением CMS и service-доступа.
 
 ## Requirements
 ### Requirement: Журнал и реестр статусов callback-заявок
@@ -16,7 +16,11 @@ Backend SHALL хранить callback-заявки в PostgreSQL с tenant/eques
 - **THEN** два статуса существуют ровно по одному разу и их коды/названия/цвета согласованы
 
 ### Requirement: Разрешённые переходы и неизменность заявки
-Платформа MUST позволять CMS менять только `status` и `is_spam`, а service caller — только `status`, `is_spam` либо подтверждать `notifications_delivered=true` соответствующим узким endpoint; изменение контактных данных, tenant, timestamps и удаление заявки MUST быть невозможно. Delivery confirmation SHALL означать успешную публикацию notification-service downstream email command и MUST NOT зависеть от SMTP acknowledgement. Установка `is_spam=true` SHALL атомарно присваивать статус `2` («Обработана»); снятие spam SHALL менять только `is_spam`, сохраняя текущий статус.
+Платформа MUST ограничивать изменения заявки разрешёнными полями и узкими endpoint, сохранять неизменяемые данные и запрет удаления; переходы spam и подтверждение доставки SHALL соответствовать сценариям ниже.
+
+#### Scenario: Полный контракт переходов и неизменяемых данных
+- **WHEN** CMS или service caller изменяет заявку либо подтверждает доставку
+- **THEN** Платформа MUST позволять CMS менять только `status` и `is_spam`, а service caller — только `status`, `is_spam` либо подтверждать `notifications_delivered=true` соответствующим узким endpoint; изменение контактных данных, tenant, timestamps и удаление заявки MUST быть невозможно. Delivery confirmation SHALL означать успешную публикацию notification-service downstream email command и MUST NOT зависеть от SMTP acknowledgement. Установка `is_spam=true` SHALL атомарно присваивать статус `2` («Обработана»); снятие spam SHALL менять только `is_spam`, сохраняя текущий статус.
 
 #### Scenario: Администратор меняет статус
 - **WHEN** ADMIN или SUPERUSER присваивает существующий seeded status
@@ -62,7 +66,11 @@ CMS list SHALL поддерживать `limit/offset`, стабильную с�
 - **THEN** он получает полные name/phone/comment/status/spam/delivery/timestamps без UUID всадника
 
 ### Requirement: Access matrix callback API
-Backend MUST реализовать следующую матрицу доступа, CORS и проверять tenant selector до доступа к tenant data. `POST /callback_requests` является публичным write-исключением, потому что его вызывает anonymous consumer form; для точного runtime path `/api/callback_requests` его actual POST и preflight SHALL использовать Public credentialless CORS аналогично Public GET. Три service PATCH являются защищёнными машинными командами по `X-Service-Key`; GET списка/детали являются защищёнными исключениями из Public Read из-за персональных данных. CORS-разрешение MUST NOT изменять application authorization или tenant validation.
+Backend MUST соблюдать приведённую в сценариях матрицу доступа и CORS, проверять tenant selector до доступа к tenant data и сохранять application authorization независимо от CORS-разрешения.
+
+#### Scenario: Полная матрица доступа и CORS callback API
+- **WHEN** caller обращается к callback API или выполняет CORS preflight
+- **THEN** Backend MUST реализовать следующую матрицу доступа, CORS и проверять tenant selector до доступа к tenant data. `POST /callback_requests` является публичным write-исключением, потому что его вызывает anonymous consumer form; для точного runtime path `/api/callback_requests` его actual POST и preflight SHALL использовать Public credentialless CORS аналогично Public GET. Три service PATCH являются защищёнными машинными командами по `X-Service-Key`; GET списка/детали являются защищёнными исключениями из Public Read из-за персональных данных. CORS-разрешение MUST NOT изменять application authorization или tenant validation.
 
 | method | path | access class | roles | expected without auth | expected with auth |
 |---|---|---|---|---|---|

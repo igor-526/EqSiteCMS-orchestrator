@@ -1,0 +1,93 @@
+#!/usr/bin/env node
+/** Thin Make adapter. No shell, prompts, retry, rollback or implicit deploy. */
+import { spawnSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+
+const SHIPCTL = fileURLToPath(new URL('./shipctl', import.meta.url));
+const HELP = `services-autogit — безопасный адаптер shipctl
+make services-autogit CHANGE=task-108 BRANCH=feature/seo-improve MESSAGE="Улучшено SEO" PATHS_FILE=.qa/task-108/paths.txt
+make services-autogit ACTION=merge PLAN=.qa/ship/task-108/plan.json CONFIRM_PUSH=<PLAN_TOKEN> RELEASE=1
+make services-autogit ACTION=release CHANGE=task-108 [REPOS=backend,frontend]
+make services-autogit ACTION=release CHANGE=task-108 [REPOS=backend,frontend] CONFIRM_RELEASE=<RELEASE_TOKEN>
+node scripts/services-autogit --help
+ACTION=plan (default), RELEASE=0 (default) или 1. GNU Make -b/-m не передают аргументы рецепту; --release не является флагом адаптера.
+Для literal $ в Make CLI используйте $$ и одинарные shell-кавычки: MESSAGE='Цена $$5'. Окружение передаётся буквально.
+PATHS_FILE: UTF-8, один literal repo-root-relative путь на строку. Whole-file: included коммитятся целиком, partial staging не сохраняется. Foreign не коммитятся; foreign staged блокируют. Ignored/секреты исключаются или блокируют; scanner не заменяет review.
+Gate 1: покажите plan (repo/origin, included/foreign/exclusions, branch, subject/trailers, whole-file и strict sync); feature и main будут отправлены в origin. CONFIRM_PUSH — точный PLAN_TOKEN, не yes.
+Gate 2: покажите release preview (repo/SHA, ff/noop, root not-applicable, no-release); push release запускает workflow и возможный deploy. CONFIRM_RELEASE — точный RELEASE_TOKEN с тем же REPOS. RELEASE=1 — лишь намерение: после полного merge возвращается release_pending и preview, без deploy.
+При отказе/отсутствии канала Router задаёт текстовый вопрос и останавливается, auto-yes нет. Изменение плана требует нового gate.
+Partial failure: проверьте durable mergeState/resumeCommand; вручную разрешите конфликт. Только явный shipctl merge --resume --change NAME; phase1 failure автоматически не повторяется. Не делать rollback/reset/stash/cleanup-switch; release после partial merge запрещён.
+stdout: один JSON; stderr: диагностика. Exit 0 успех/preview, 1 остановка, 2 окружение, 3 invalid/stale (без новых мутаций). GNU Make возвращает свой exit 2 при ошибке рецепта; исходный код — в JSON adapter_exit_code.
+`;
+
+const fail = error => ({ code: 3, payload: { ok: false, error } });
+const required = (env, key) => {
+  if (!env[key]?.trim()) throw new Error(`required_${key}`);
+  return env[key];
+};
+function child(args) {
+  const result = spawnSync(process.execPath, [SHIPCTL, ...args], {
+    env: process.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 16 * 1024 * 1024
+  });
+  if (result.error || result.signal) return { code: 2, payload: { ok: false, error: 'shipctl_unavailable' } };
+  // shipctl owns safe diagnostics. Never invoke a shell or print raw inputs.
+  if (result.stderr) process.stderr.write(result.stderr);
+  try {
+    const payload = JSON.parse(result.stdout);
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error();
+    return { code: result.status ?? 2, payload };
+  } catch {
+    return { code: 2, payload: { ok: false, error: 'invalid_shipctl_json' } };
+  }
+}
+
+async function main(args, env) {
+  if (args.length === 1 && args[0] === '--help') return { code: 0, payload: { ok: true, help: HELP } };
+  if (args.length) return fail('unknown_argument');
+  for (const key of ['ACTION', 'CHANGE', 'BRANCH', 'MESSAGE', 'PATHS_FILE', 'PLAN', 'RELEASE', 'REPOS', 'CONFIRM_PUSH', 'CONFIRM_RELEASE']) {
+    if (/[\0\r\n]/.test(env[key] || '')) return fail(`invalid_${key}`);
+  }
+  const action = env.ACTION || 'plan';
+  const release = env.RELEASE || '0';
+  if (!['plan', 'merge', 'release'].includes(action)) return fail('invalid_ACTION');
+  if (!['0', '1'].includes(release)) return fail('invalid_RELEASE');
+  try {
+    if (action === 'plan') {
+      const argv = ['plan', '--change', required(env, 'CHANGE'), '--branch', required(env, 'BRANCH'),
+        '--message', required(env, 'MESSAGE'), '--paths-file', required(env, 'PATHS_FILE')];
+      if ([...env.MESSAGE].length > 72) return fail('subject_exceeds_72_characters');
+      return child(argv);
+    }
+    if (action === 'release') {
+      const argv = ['release', '--change', required(env, 'CHANGE')];
+      if (env.REPOS) argv.push('--repos', env.REPOS);
+      // No approval means preview only. shipctl rechecks token under its lock.
+      if (env.CONFIRM_RELEASE) argv.push('--release-token', env.CONFIRM_RELEASE);
+      else argv.push('--dry-run');
+      return child(argv);
+    }
+    const planPath = required(env, 'PLAN');
+    const approval = required(env, 'CONFIRM_PUSH');
+    let plan;
+    try { plan = JSON.parse(await readFile(planPath, 'utf8')); } catch { return fail('invalid_plan'); }
+    if (!plan || plan.version !== 2 || !/^[a-f0-9]{64}$/.test(approval) || approval !== plan.PLAN_TOKEN) return fail('plan_approval_mismatch');
+    const { PLAN_TOKEN, ...material } = plan;
+    if (createHash('sha256').update(JSON.stringify(material)).digest('hex') !== PLAN_TOKEN) return fail('plan_stale');
+    const merged = child(['merge', '--plan', planPath, '--plan-token', approval]);
+    if (merged.code !== 0 || !merged.payload.ok || release === '0') return merged;
+    const state = merged.payload.mergeState;
+    if (state?.phase !== 'phase2-complete' || !state.repos?.length || state.repos.some(repo => repo.stage !== 'pushed')) return merged;
+    const previewArgs = ['release', '--change', plan.change, '--dry-run'];
+    if (env.REPOS) previewArgs.push('--repos', env.REPOS);
+    const preview = child(previewArgs);
+    return { code: preview.code, payload: { ...merged.payload, release_pending: true, releasePreview: preview.payload } };
+  } catch (error) {
+    return fail(/^required_[A-Z_]+$/.test(error.message) ? error.message : 'invalid_input');
+  }
+}
+
+const result = await main(process.argv.slice(2), process.env);
+process.stdout.write(`${JSON.stringify({ ...result.payload, adapter_exit_code: result.code }, null, 2)}\n`);
+process.exitCode = result.code;

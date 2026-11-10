@@ -5,12 +5,30 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { execSync, spawnSync } from 'node:child_process';
+import { execSync, spawnSync as rawSpawnSync } from 'node:child_process';
 import {
-  createMonorepoFixture,
+  createMonorepoFixture as createBaseFixture,
+  createTempDir,
+  guardNonLocalRemote,
   cleanup,
   makeDirty
 } from './helpers/fixture.mjs';
+
+const FIXTURE_BASE = path.resolve('.qa/add-safe-services-autogit/OPS-3/sync-fixtures');
+for (const key of ['GIT_DIR', 'GIT_COMMON_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_CONFIG_PARAMETERS']) delete process.env[key];
+Object.assign(process.env, { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_COUNT: '0', GIT_TERMINAL_PROMPT: '0' });
+const createMonorepoFixture = options => createBaseFixture({ ...options, fixtureBase: FIXTURE_BASE });
+function spawnSync(command, args, options = {}) {
+  if (command === 'git' && args[0] === 'push') {
+    const result = rawSpawnSync('git', ['remote', 'get-url', '--push', '--all', 'origin'], { cwd: options.cwd, encoding: 'utf8' });
+    assert.equal(result.status, 0);
+    for (const url of result.stdout.trim().split('\n')) {
+      guardNonLocalRemote(url);
+      assert.ok(url.startsWith(FIXTURE_BASE + path.sep), 'only owned local remotes');
+    }
+  }
+  return rawSpawnSync(command, args, options);
+}
 
 /**
  * Runs sync.sh in a fixture directory.
@@ -182,14 +200,14 @@ test('UT-SYNC-04: --strict --include-root --report, root pulled first, JSON sche
   
   try {
     // Create a bare remote for root
-    const rootBarePath = path.join(fixture.root, '..', `root-bare-${Date.now()}.git`);
+    const rootBarePath = await createTempDir('root-bare-', FIXTURE_BASE);
     await fs.mkdir(path.dirname(rootBarePath), { recursive: true });
     spawnSync('git', ['init', '--bare', '--initial-branch=main', rootBarePath]);
     spawnSync('git', ['remote', 'add', 'origin', rootBarePath], { cwd: fixture.root });
     spawnSync('git', ['push', '-u', 'origin', 'main'], { cwd: fixture.root });
     
     // Make a commit in root bare
-    const tempRoot = path.join(fixture.root, '..', `temp-root-${Date.now()}`);
+    const tempRoot = await createTempDir('temp-root-', FIXTURE_BASE);
     spawnSync('git', ['clone', rootBarePath, tempRoot]);
     const testFilePath = path.join(tempRoot, 'test.txt');
     await fs.mkdir(path.dirname(testFilePath), { recursive: true });
@@ -199,7 +217,7 @@ test('UT-SYNC-04: --strict --include-root --report, root pulled first, JSON sche
     spawnSync('git', ['config', 'user.email', 'test@example.com'], { cwd: tempRoot });
     spawnSync('git', ['commit', '-m', 'Root commit'], { cwd: tempRoot });
     spawnSync('git', ['push'], { cwd: tempRoot });
-    await fs.rm(tempRoot, { recursive: true, force: true });
+    await cleanup(tempRoot);
     
     // Run sync --strict --include-root --report
     const result = runSync(fixture, ['--strict', '--include-root', '--report', reportPath]);
@@ -226,7 +244,7 @@ test('UT-SYNC-04: --strict --include-root --report, root pulled first, JSON sche
     }
     
     // Cleanup root bare
-    await fs.rm(rootBarePath, { recursive: true, force: true });
+    await cleanup(rootBarePath);
     
   } finally {
     await cleanup(fixture);

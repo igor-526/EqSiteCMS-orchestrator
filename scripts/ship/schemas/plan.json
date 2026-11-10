@@ -1,132 +1,341 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Plan Schema",
-  "description": "JSON schema for shipctl plan.json output",
+  "title": "Canonical shipping plan v2",
   "type": "object",
-  "required": ["change", "kind", "branchName", "commitMessage", "repos", "hasBlockers"],
   "additionalProperties": false,
+  "required": [
+    "version",
+    "change",
+    "kind",
+    "branchName",
+    "skippedBranches",
+    "commitMessage",
+    "inventory",
+    "exclusions",
+    "repos",
+    "blockers",
+    "hasBlockers",
+    "noop",
+    "PLAN_TOKEN"
+  ],
   "properties": {
+    "version": {
+      "const": 2
+    },
     "change": {
-      "type": "string",
-      "description": "Change name"
+      "type": "string"
     },
     "kind": {
-      "type": "string",
-      "enum": ["feature", "bug"],
-      "description": "Branch kind"
+      "enum": [
+        "feature",
+        "bug"
+      ]
     },
     "branchName": {
-      "type": "string",
-      "description": "Selected branch name"
+      "type": "string"
     },
     "skippedBranches": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Branch names that were already taken"
+      "items": {
+        "type": "string"
+      }
     },
     "commitMessage": {
       "type": "object",
-      "required": ["subject", "trailers"],
       "additionalProperties": false,
+      "required": [
+        "subject",
+        "trailers"
+      ],
       "properties": {
         "subject": {
           "type": "string",
-          "description": "Commit subject line"
+          "maxLength": 72
         },
         "trailers": {
           "type": "array",
-          "items": { "type": "string" },
-          "description": "Git commit trailers"
+          "items": {
+            "type": "string"
+          }
         }
+      }
+    },
+    "inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "origin"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "origin": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     },
     "repos": {
       "type": "object",
-      "description": "Map of repository name to repository metadata",
       "additionalProperties": {
-        "oneOf": [
-          {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "path",
+          "branch",
+          "head",
+          "origin",
+          "remoteHeads",
+          "blockers",
+          "included",
+          "foreign",
+          "excluded",
+          "warnings",
+          "hasRelease",
+          "ownerRepo",
+          "runtimeAliases",
+          "fingerprint",
+          "pushOrigins"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "changed",
+              "untouched"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "branch": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "head": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "origin": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "remoteHeads": {
             "type": "object",
-            "required": ["status"],
-            "additionalProperties": false,
-            "properties": {
-              "status": { "const": "untouched" },
-              "branch": { "type": "string" },
-              "head": { "type": "string" }
+            "additionalProperties": {
+              "type": "string"
             }
           },
-          {
-            "type": "object",
-            "required": ["status", "path", "branch", "head", "included", "foreign", "blockers", "hasRelease", "fingerprint", "runtimeAliases"],
-            "additionalProperties": false,
-            "properties": {
-              "status": { "const": "changed" },
-              "path": { "type": "string" },
-              "branch": { "type": "string" },
-              "head": { "type": "string" },
-              "included": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["path", "status"],
-                  "additionalProperties": false,
-                  "properties": {
-                    "path": { "type": "string" },
-                    "status": { "type": "string" },
-                    "blobHash": { "type": "string", "description": "Optional git blob hash for validation" }
-                  }
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "included": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "status",
+                "blobHash",
+                "mode",
+                "indexHash",
+                "statusHash"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                "blobHash": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^[a-f0-9]{40,64}$"
+                },
+                "mode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "indexHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "statusHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
                 }
-              },
-              "foreign": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["path", "status"],
-                  "additionalProperties": false,
-                  "properties": {
-                    "path": { "type": "string" },
-                    "status": { "type": "string" },
-                    "blobHash": { "type": "string", "description": "Optional git blob hash" }
-                  }
-                }
-              },
-              "blockers": {
-                "type": "array",
-                "items": { "type": "string" }
-              },
-              "hasRelease": { "type": "boolean" },
-              "ownerRepo": {
-                "oneOf": [
-                  { "type": "null" },
-                  {
-                    "type": "object",
-                    "required": ["owner", "repo"],
-                    "additionalProperties": false,
-                    "properties": {
-                      "owner": { "type": "string" },
-                      "repo": { "type": "string" }
-                    }
-                  }
-                ]
-              },
-              "fingerprint": { "type": "string" },
-              "runtimeAliases": {
-                "type": "array",
-                "items": { "type": "string" }
               }
             }
+          },
+          "foreign": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "status",
+                "blobHash",
+                "mode",
+                "indexHash",
+                "statusHash"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                "blobHash": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^[a-f0-9]{40,64}$"
+                },
+                "mode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "indexHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "statusHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          },
+          "excluded": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "rule"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "rule": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hasRelease": {
+            "type": "boolean"
+          },
+          "ownerRepo": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "owner",
+                  "repo"
+                ],
+                "properties": {
+                  "owner": {
+                    "type": "string"
+                  },
+                  "repo": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "runtimeAliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "statusHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "indexHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "pushOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
-        ]
+        }
       }
     },
     "blockers": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Flat list of all blockers from all repos"
+      "items": {
+        "type": "string"
+      }
     },
     "hasBlockers": {
-      "type": "boolean",
-      "description": "Whether any blockers exist"
+      "type": "boolean"
+    },
+    "noop": {
+      "type": "boolean"
+    },
+    "PLAN_TOKEN": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
     }
   }
 }
