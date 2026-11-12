@@ -31,6 +31,8 @@ make infra notification email be fe
 
 ### Документация (user stories, MD)
 
+- [Multiarch delivery: образы и Helm charts](docs/operations/multiarch-delivery.md)
+
 ```bash
 make docs   # http://localhost:3333 — Docsify, каталог docs/, без сборки
 ```

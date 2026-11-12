@@ -68,7 +68,7 @@ services:
     stop_grace_period: 300s
     command: >-
       uv run --no-sync celery -A workers.celery_app worker -Q ya_metrica -l info
-      --concurrency=${WORKER_CONCURRENCY:-1} --hostname ya-metrica-worker@%h
+      --concurrency=${WORKER_CONCURRENCY:-1} --hostname ya_metrica@%h
     healthcheck:
       test:
         - CMD-SHELL
